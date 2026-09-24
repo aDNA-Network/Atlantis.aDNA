@@ -1,0 +1,67 @@
+# hab_crash_risk — configuration (S329, 2026-09-23)
+target:
+  bloom_threshold_cells_per_l: 100000     # FWC "medium": fish kills / respiratory irritation likely
+  sensitivity_threshold: 50000            # secondary run reported on the site
+  horizon_weeks: 4                        # onset within t+1..t+4
+  detect_threshold: 1000                  # "present" for weeks_since_detect
+split:
+  min_train_year: 1994
+  train_end: 2016
+  val_start: 2017
+  val_end: 2019
+  test_start: 2020
+  test_end: 2023
+  rolling_origin_years: [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]
+xgb:
+  objective: binary:logistic
+  eval_metric: logloss   # AUPRC plateaus after one tree; log-loss keeps improving to ~200 — calibration is the work
+  max_depth: 4
+  learning_rate: 0.03
+  n_estimators: 2000
+  early_stopping_rounds: 100
+  subsample: 0.8
+  colsample_bytree: 0.8
+  min_child_weight: 5
+  reg_lambda: 1.0
+  tree_method: hist
+  random_state: 42
+  monotone_increasing: [log_max_t0, roll_max_4w]
+shap:
+  background_n: 1000
+  perturbation: interventional
+  site_rows_max: 3000
+  interaction_rows: 1000
+regions:
+  # order matters: first matching rule wins. lat/lon only — never LOCATION strings.
+  - {id: 9, name: "Atlantic",                 rule: "lon >= -80.6 or (lat >= 28.0 and lon >= -81.7)"}
+  - {id: 1, name: "Panhandle",                rule: "lat >= 29.6 and lon < -84.5"}
+  - {id: 2, name: "Big Bend",                 rule: "lat >= 29.0"}
+  - {id: 3, name: "Nature Coast",             rule: "lat >= 28.4"}
+  - {id: 4, name: "Tampa Bay",                rule: "lat >= 27.6"}
+  - {id: 5, name: "Sarasota-Venice",          rule: "lat >= 27.0"}
+  - {id: 6, name: "Charlotte Harbor",         rule: "lat >= 26.6"}
+  - {id: 7, name: "Lee-Collier",              rule: "lat >= 25.9"}
+  - {id: 8, name: "Ten Thousand Islands-Keys", rule: "True"}
+region_boxes:   # OISST averaging boxes [lat_min, lat_max, lon_min, lon_max], nearshore Gulf side
+  1: [29.6, 30.4, -87.6, -84.5]
+  2: [29.0, 30.2, -84.5, -83.0]
+  3: [28.4, 29.0, -83.4, -82.5]
+  4: [27.6, 28.4, -83.2, -82.4]
+  5: [27.0, 27.6, -83.0, -82.2]
+  6: [26.6, 27.0, -82.8, -82.0]
+  7: [25.9, 26.6, -82.6, -81.6]
+  8: [24.4, 25.9, -82.2, -80.6]
+  9: [25.0, 30.7, -80.6, -79.8]
+gauges:   # USGS NWIS site → regions it feeds (discharge 00060, daily values)
+  "02292900": {name: "Caloosahatchee R at S-79 (Olga)", regions: [7, 6], lever: true}
+  "02296750": {name: "Peace R at Arcadia",             regions: [6, 5], lever: false}
+  "02304500": {name: "Hillsborough R nr Tampa",         regions: [4],    lever: false}
+  "02323500": {name: "Suwannee R nr Wilcox",            regions: [2, 3], lever: false}
+  "02359170": {name: "Apalachicola R nr Sumatra",       regions: [1],    lever: false}
+fwc_layers:   # verified 2026-09-23; expected pre-filter counts
+  - {name: "1970___1979", layer: 2,  expected: 5807}
+  - {name: "1980___1989", layer: 3,  expected: 5414}
+  - {name: "1990___1999", layer: 4,  expected: 16832}
+  - {name: "2000___2006", layer: 5,  expected: 27354}
+  - {name: "2007___2014", layer: 6,  expected: 52744}
+  - {name: "2015___2023", layer: 12, expected: 87873}

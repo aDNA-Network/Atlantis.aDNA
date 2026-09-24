@@ -1,0 +1,967 @@
+{
+ "n_samples": 196024,
+ "coverage_year_region": {
+  "1970": {
+   "Panhandle": 0,
+   "Big Bend": 1,
+   "Nature Coast": 0,
+   "Tampa Bay": 0,
+   "Sarasota-Venice": 0,
+   "Charlotte Harbor": 0,
+   "Lee-Collier": 0,
+   "Ten Thousand Islands-Keys": 0,
+   "Atlantic": 0
+  },
+  "1971": {
+   "Panhandle": 8,
+   "Big Bend": 0,
+   "Nature Coast": 0,
+   "Tampa Bay": 356,
+   "Sarasota-Venice": 73,
+   "Charlotte Harbor": 30,
+   "Lee-Collier": 10,
+   "Ten Thousand Islands-Keys": 0,
+   "Atlantic": 0
+  },
+  "1972": {
+   "Panhandle": 0,
+   "Big Bend": 0,
+   "Nature Coast": 0,
+   "Tampa Bay": 2,
+   "Sarasota-Venice": 10,
+   "Charlotte Harbor": 2,
+   "Lee-Collier": 20,
+   "Ten Thousand Islands-Keys": 12,
+   "Atlantic": 150
+  },
+  "1973": {
+   "Panhandle": 0,
+   "Big Bend": 0,
+   "Nature Coast": 0,
+   "Tampa Bay": 16,
+   "Sarasota-Venice": 66,
+   "Charlotte Harbor": 16,
+   "Lee-Collier": 14,
+   "Ten Thousand Islands-Keys": 2,
+   "Atlantic": 0
+  },
+  "1974": {
+   "Panhandle": 133,
+   "Big Bend": 0,
+   "Nature Coast": 0,
+   "Tampa Bay": 1099,
+   "Sarasota-Venice": 386,
+   "Charlotte Harbor": 105,
+   "Lee-Collier": 17,
+   "Ten Thousand Islands-Keys": 4,
+   "Atlantic": 0
+  },
+  "1975": {
+   "Panhandle": 0,
+   "Big Bend": 0,
+   "Nature Coast": 0,
+   "Tampa Bay": 59,
+   "Sarasota-Venice": 273,
+   "Charlotte Harbor": 42,
+   "Lee-Collier": 37,
+   "Ten Thousand Islands-Keys": 10,
+   "Atlantic": 0
+  },
+  "1976": {
+   "Panhandle": 0,
+   "Big Bend": 0,
+   "Nature Coast": 1,
+   "Tampa Bay": 29,
+   "Sarasota-Venice": 563,
+   "Charlotte Harbor": 124,
+   "Lee-Collier": 145,
+   "Ten Thousand Islands-Keys": 56,
+   "Atlantic": 0
+  },
+  "1977": {
+   "Panhandle": 0,
+   "Big Bend": 0,
+   "Nature Coast": 3,
+   "Tampa Bay": 13,
+   "Sarasota-Venice": 345,
+   "Charlotte Harbor": 94,
+   "Lee-Collier": 47,
+   "Ten Thousand Islands-Keys": 10,
+   "Atlantic": 18
+  },
+  "1978": {
+   "Panhandle": 0,
+   "Big Bend": 0,
+   "Nature Coast": 0,
+   "Tampa Bay": 86,
+   "Sarasota-Venice": 473,
+   "Charlotte Harbor": 126,
+   "Lee-Collier": 84,
+   "Ten Thousand Islands-Keys": 15,
+   "Atlantic": 3
+  },
+  "1979": {
+   "Panhandle": 0,
+   "Big Bend": 26,
+   "Nature Coast": 23,
+   "Tampa Bay": 116,
+   "Sarasota-Venice": 304,
+   "Charlotte Harbor": 109,
+   "Lee-Collier": 24,
+   "Ten Thousand Islands-Keys": 12,
+   "Atlantic": 5
+  },
+  "1980": {
+   "Panhandle": 0,
+   "Big Bend": 68,
+   "Nature Coast": 43,
+   "Tampa Bay": 245,
+   "Sarasota-Venice": 295,
+   "Charlotte Harbor": 139,
+   "Lee-Collier": 72,
+   "Ten Thousand Islands-Keys": 21,
+   "Atlantic": 36
+  },
+  "1981": {
+   "Panhandle": 0,
+   "Big Bend": 0,
+   "Nature Coast": 0,
+   "Tampa Bay": 43,
+   "Sarasota-Venice": 61,
+   "Charlotte Harbor": 39,
+   "Lee-Collier": 7,
+   "Ten Thousand Islands-Keys": 9,
+   "Atlantic": 12
+  },
+  "1982": {
+   "Panhandle": 96,
+   "Big Bend": 21,
+   "Nature Coast": 2,
+   "Tampa Bay": 179,
+   "Sarasota-Venice": 114,
+   "Charlotte Harbor": 144,
+   "Lee-Collier": 91,
+   "Ten Thousand Islands-Keys": 37,
+   "Atlantic": 0
+  },
+  "1983": {
+   "Panhandle": 0,
+   "Big Bend": 23,
+   "Nature Coast": 21,
+   "Tampa Bay": 78,
+   "Sarasota-Venice": 51,
+   "Charlotte Harbor": 35,
+   "Lee-Collier": 52,
+   "Ten Thousand Islands-Keys": 6,
+   "Atlantic": 106
+  },
+  "1984": {
+   "Panhandle": 0,
+   "Big Bend": 2,
+   "Nature Coast": 2,
+   "Tampa Bay": 44,
+   "Sarasota-Venice": 52,
+   "Charlotte Harbor": 60,
+   "Lee-Collier": 52,
+   "Ten Thousand Islands-Keys": 10,
+   "Atlantic": 0
+  },
+  "1985": {
+   "Panhandle": 0,
+   "Big Bend": 9,
+   "Nature Coast": 9,
+   "Tampa Bay": 48,
+   "Sarasota-Venice": 36,
+   "Charlotte Harbor": 32,
+   "Lee-Collier": 4,
+   "Ten Thousand Islands-Keys": 0,
+   "Atlantic": 0
+  },
+  "1986": {
+   "Panhandle": 0,
+   "Big Bend": 0,
+   "Nature Coast": 0,
+   "Tampa Bay": 105,
+   "Sarasota-Venice": 88,
+   "Charlotte Harbor": 56,
+   "Lee-Collier": 23,
+   "Ten Thousand Islands-Keys": 4,
+   "Atlantic": 0
+  },
+  "1987": {
+   "Panhandle": 0,
+   "Big Bend": 1,
+   "Nature Coast": 0,
+   "Tampa Bay": 749,
+   "Sarasota-Venice": 225,
+   "Charlotte Harbor": 99,
+   "Lee-Collier": 39,
+   "Ten Thousand Islands-Keys": 5,
+   "Atlantic": 0
+  },
+  "1988": {
+   "Panhandle": 0,
+   "Big Bend": 0,
+   "Nature Coast": 0,
+   "Tampa Bay": 626,
+   "Sarasota-Venice": 95,
+   "Charlotte Harbor": 30,
+   "Lee-Collier": 25,
+   "Ten Thousand Islands-Keys": 4,
+   "Atlantic": 0
+  },
+  "1989": {
+   "Panhandle": 0,
+   "Big Bend": 4,
+   "Nature Coast": 2,
+   "Tampa Bay": 645,
+   "Sarasota-Venice": 76,
+   "Charlotte Harbor": 7,
+   "Lee-Collier": 0,
+   "Ten Thousand Islands-Keys": 0,
+   "Atlantic": 0
+  },
+  "1990": {
+   "Panhandle": 9,
+   "Big Bend": 20,
+   "Nature Coast": 13,
+   "Tampa Bay": 599,
+   "Sarasota-Venice": 71,
+   "Charlotte Harbor": 16,
+   "Lee-Collier": 9,
+   "Ten Thousand Islands-Keys": 23,
+   "Atlantic": 44
+  },
+  "1991": {
+   "Panhandle": 0,
+   "Big Bend": 1,
+   "Nature Coast": 3,
+   "Tampa Bay": 667,
+   "Sarasota-Venice": 331,
+   "Charlotte Harbor": 55,
+   "Lee-Collier": 34,
+   "Ten Thousand Islands-Keys": 40,
+   "Atlantic": 31
+  },
+  "1992": {
+   "Panhandle": 0,
+   "Big Bend": 0,
+   "Nature Coast": 0,
+   "Tampa Bay": 689,
+   "Sarasota-Venice": 318,
+   "Charlotte Harbor": 48,
+   "Lee-Collier": 37,
+   "Ten Thousand Islands-Keys": 4,
+   "Atlantic": 0
+  },
+  "1993": {
+   "Panhandle": 0,
+   "Big Bend": 0,
+   "Nature Coast": 0,
+   "Tampa Bay": 612,
+   "Sarasota-Venice": 62,
+   "Charlotte Harbor": 4,
+   "Lee-Collier": 9,
+   "Ten Thousand Islands-Keys": 0,
+   "Atlantic": 0
+  },
+  "1994": {
+   "Panhandle": 0,
+   "Big Bend": 0,
+   "Nature Coast": 0,
+   "Tampa Bay": 656,
+   "Sarasota-Venice": 454,
+   "Charlotte Harbor": 61,
+   "Lee-Collier": 39,
+   "Ten Thousand Islands-Keys": 5,
+   "Atlantic": 3
+  },
+  "1995": {
+   "Panhandle": 424,
+   "Big Bend": 47,
+   "Nature Coast": 14,
+   "Tampa Bay": 795,
+   "Sarasota-Venice": 969,
+   "Charlotte Harbor": 218,
+   "Lee-Collier": 92,
+   "Ten Thousand Islands-Keys": 24,
+   "Atlantic": 25
+  },
+  "1996": {
+   "Panhandle": 331,
+   "Big Bend": 151,
+   "Nature Coast": 17,
+   "Tampa Bay": 695,
+   "Sarasota-Venice": 791,
+   "Charlotte Harbor": 261,
+   "Lee-Collier": 294,
+   "Ten Thousand Islands-Keys": 69,
+   "Atlantic": 59
+  },
+  "1997": {
+   "Panhandle": 20,
+   "Big Bend": 51,
+   "Nature Coast": 6,
+   "Tampa Bay": 641,
+   "Sarasota-Venice": 513,
+   "Charlotte Harbor": 215,
+   "Lee-Collier": 212,
+   "Ten Thousand Islands-Keys": 31,
+   "Atlantic": 14
+  },
+  "1998": {
+   "Panhandle": 25,
+   "Big Bend": 11,
+   "Nature Coast": 3,
+   "Tampa Bay": 614,
+   "Sarasota-Venice": 559,
+   "Charlotte Harbor": 231,
+   "Lee-Collier": 233,
+   "Ten Thousand Islands-Keys": 13,
+   "Atlantic": 5
+  },
+  "1999": {
+   "Panhandle": 550,
+   "Big Bend": 112,
+   "Nature Coast": 30,
+   "Tampa Bay": 686,
+   "Sarasota-Venice": 910,
+   "Charlotte Harbor": 373,
+   "Lee-Collier": 507,
+   "Ten Thousand Islands-Keys": 19,
+   "Atlantic": 5
+  },
+  "2000": {
+   "Panhandle": 1010,
+   "Big Bend": 43,
+   "Nature Coast": 14,
+   "Tampa Bay": 461,
+   "Sarasota-Venice": 1142,
+   "Charlotte Harbor": 313,
+   "Lee-Collier": 626,
+   "Ten Thousand Islands-Keys": 187,
+   "Atlantic": 4
+  },
+  "2001": {
+   "Panhandle": 380,
+   "Big Bend": 47,
+   "Nature Coast": 9,
+   "Tampa Bay": 326,
+   "Sarasota-Venice": 1329,
+   "Charlotte Harbor": 602,
+   "Lee-Collier": 394,
+   "Ten Thousand Islands-Keys": 299,
+   "Atlantic": 21
+  },
+  "2002": {
+   "Panhandle": 176,
+   "Big Bend": 51,
+   "Nature Coast": 12,
+   "Tampa Bay": 312,
+   "Sarasota-Venice": 935,
+   "Charlotte Harbor": 707,
+   "Lee-Collier": 519,
+   "Ten Thousand Islands-Keys": 296,
+   "Atlantic": 160
+  },
+  "2003": {
+   "Panhandle": 330,
+   "Big Bend": 92,
+   "Nature Coast": 25,
+   "Tampa Bay": 335,
+   "Sarasota-Venice": 675,
+   "Charlotte Harbor": 776,
+   "Lee-Collier": 978,
+   "Ten Thousand Islands-Keys": 399,
+   "Atlantic": 60
+  },
+  "2004": {
+   "Panhandle": 136,
+   "Big Bend": 32,
+   "Nature Coast": 56,
+   "Tampa Bay": 272,
+   "Sarasota-Venice": 494,
+   "Charlotte Harbor": 334,
+   "Lee-Collier": 735,
+   "Ten Thousand Islands-Keys": 171,
+   "Atlantic": 43
+  },
+  "2005": {
+   "Panhandle": 459,
+   "Big Bend": 227,
+   "Nature Coast": 117,
+   "Tampa Bay": 1032,
+   "Sarasota-Venice": 971,
+   "Charlotte Harbor": 504,
+   "Lee-Collier": 734,
+   "Ten Thousand Islands-Keys": 367,
+   "Atlantic": 10
+  },
+  "2006": {
+   "Panhandle": 470,
+   "Big Bend": 205,
+   "Nature Coast": 102,
+   "Tampa Bay": 653,
+   "Sarasota-Venice": 2176,
+   "Charlotte Harbor": 891,
+   "Lee-Collier": 1237,
+   "Ten Thousand Islands-Keys": 817,
+   "Atlantic": 64
+  },
+  "2007": {
+   "Panhandle": 734,
+   "Big Bend": 750,
+   "Nature Coast": 333,
+   "Tampa Bay": 462,
+   "Sarasota-Venice": 2091,
+   "Charlotte Harbor": 499,
+   "Lee-Collier": 1204,
+   "Ten Thousand Islands-Keys": 663,
+   "Atlantic": 195
+  },
+  "2008": {
+   "Panhandle": 347,
+   "Big Bend": 339,
+   "Nature Coast": 310,
+   "Tampa Bay": 542,
+   "Sarasota-Venice": 2209,
+   "Charlotte Harbor": 342,
+   "Lee-Collier": 884,
+   "Ten Thousand Islands-Keys": 649,
+   "Atlantic": 104
+  },
+  "2009": {
+   "Panhandle": 172,
+   "Big Bend": 216,
+   "Nature Coast": 413,
+   "Tampa Bay": 721,
+   "Sarasota-Venice": 2337,
+   "Charlotte Harbor": 482,
+   "Lee-Collier": 1169,
+   "Ten Thousand Islands-Keys": 599,
+   "Atlantic": 231
+  },
+  "2010": {
+   "Panhandle": 329,
+   "Big Bend": 171,
+   "Nature Coast": 328,
+   "Tampa Bay": 753,
+   "Sarasota-Venice": 2124,
+   "Charlotte Harbor": 404,
+   "Lee-Collier": 1073,
+   "Ten Thousand Islands-Keys": 519,
+   "Atlantic": 214
+  },
+  "2011": {
+   "Panhandle": 259,
+   "Big Bend": 273,
+   "Nature Coast": 217,
+   "Tampa Bay": 841,
+   "Sarasota-Venice": 2371,
+   "Charlotte Harbor": 466,
+   "Lee-Collier": 1174,
+   "Ten Thousand Islands-Keys": 512,
+   "Atlantic": 133
+  },
+  "2012": {
+   "Panhandle": 282,
+   "Big Bend": 294,
+   "Nature Coast": 185,
+   "Tampa Bay": 843,
+   "Sarasota-Venice": 2585,
+   "Charlotte Harbor": 603,
+   "Lee-Collier": 1171,
+   "Ten Thousand Islands-Keys": 619,
+   "Atlantic": 144
+  },
+  "2013": {
+   "Panhandle": 335,
+   "Big Bend": 339,
+   "Nature Coast": 225,
+   "Tampa Bay": 948,
+   "Sarasota-Venice": 2579,
+   "Charlotte Harbor": 948,
+   "Lee-Collier": 1397,
+   "Ten Thousand Islands-Keys": 463,
+   "Atlantic": 215
+  },
+  "2014": {
+   "Panhandle": 438,
+   "Big Bend": 725,
+   "Nature Coast": 457,
+   "Tampa Bay": 956,
+   "Sarasota-Venice": 2378,
+   "Charlotte Harbor": 698,
+   "Lee-Collier": 1195,
+   "Ten Thousand Islands-Keys": 466,
+   "Atlantic": 98
+  },
+  "2015": {
+   "Panhandle": 802,
+   "Big Bend": 538,
+   "Nature Coast": 246,
+   "Tampa Bay": 779,
+   "Sarasota-Venice": 1998,
+   "Charlotte Harbor": 651,
+   "Lee-Collier": 1093,
+   "Ten Thousand Islands-Keys": 582,
+   "Atlantic": 117
+  },
+  "2016": {
+   "Panhandle": 730,
+   "Big Bend": 581,
+   "Nature Coast": 335,
+   "Tampa Bay": 1453,
+   "Sarasota-Venice": 2458,
+   "Charlotte Harbor": 881,
+   "Lee-Collier": 1350,
+   "Ten Thousand Islands-Keys": 675,
+   "Atlantic": 413
+  },
+  "2017": {
+   "Panhandle": 1070,
+   "Big Bend": 666,
+   "Nature Coast": 465,
+   "Tampa Bay": 1551,
+   "Sarasota-Venice": 2486,
+   "Charlotte Harbor": 1045,
+   "Lee-Collier": 1376,
+   "Ten Thousand Islands-Keys": 630,
+   "Atlantic": 300
+  },
+  "2018": {
+   "Panhandle": 1076,
+   "Big Bend": 612,
+   "Nature Coast": 590,
+   "Tampa Bay": 1810,
+   "Sarasota-Venice": 2520,
+   "Charlotte Harbor": 1303,
+   "Lee-Collier": 1923,
+   "Ten Thousand Islands-Keys": 790,
+   "Atlantic": 1342
+  },
+  "2019": {
+   "Panhandle": 1062,
+   "Big Bend": 471,
+   "Nature Coast": 526,
+   "Tampa Bay": 1645,
+   "Sarasota-Venice": 2148,
+   "Charlotte Harbor": 1280,
+   "Lee-Collier": 1793,
+   "Ten Thousand Islands-Keys": 749,
+   "Atlantic": 662
+  },
+  "2020": {
+   "Panhandle": 860,
+   "Big Bend": 306,
+   "Nature Coast": 448,
+   "Tampa Bay": 1313,
+   "Sarasota-Venice": 1618,
+   "Charlotte Harbor": 722,
+   "Lee-Collier": 1289,
+   "Ten Thousand Islands-Keys": 285,
+   "Atlantic": 410
+  },
+  "2021": {
+   "Panhandle": 1177,
+   "Big Bend": 922,
+   "Nature Coast": 535,
+   "Tampa Bay": 2667,
+   "Sarasota-Venice": 2946,
+   "Charlotte Harbor": 1142,
+   "Lee-Collier": 1800,
+   "Ten Thousand Islands-Keys": 542,
+   "Atlantic": 464
+  },
+  "2022": {
+   "Panhandle": 866,
+   "Big Bend": 757,
+   "Nature Coast": 453,
+   "Tampa Bay": 1961,
+   "Sarasota-Venice": 2359,
+   "Charlotte Harbor": 825,
+   "Lee-Collier": 1458,
+   "Ten Thousand Islands-Keys": 534,
+   "Atlantic": 504
+  },
+  "2023": {
+   "Panhandle": 896,
+   "Big Bend": 782,
+   "Nature Coast": 500,
+   "Tampa Bay": 2391,
+   "Sarasota-Venice": 2615,
+   "Charlotte Harbor": 1001,
+   "Lee-Collier": 1762,
+   "Ten Thousand Islands-Keys": 575,
+   "Atlantic": 615
+  }
+ },
+ "per_year": {
+  "1970": {
+   "n": 1,
+   "ge1e5": 1,
+   "ge1e6": 0
+  },
+  "1971": {
+   "n": 477,
+   "ge1e5": 196,
+   "ge1e6": 90
+  },
+  "1972": {
+   "n": 196,
+   "ge1e5": 49,
+   "ge1e6": 3
+  },
+  "1973": {
+   "n": 114,
+   "ge1e5": 39,
+   "ge1e6": 3
+  },
+  "1974": {
+   "n": 1744,
+   "ge1e5": 423,
+   "ge1e6": 77
+  },
+  "1975": {
+   "n": 421,
+   "ge1e5": 0,
+   "ge1e6": 0
+  },
+  "1976": {
+   "n": 918,
+   "ge1e5": 90,
+   "ge1e6": 17
+  },
+  "1977": {
+   "n": 530,
+   "ge1e5": 33,
+   "ge1e6": 4
+  },
+  "1978": {
+   "n": 787,
+   "ge1e5": 122,
+   "ge1e6": 24
+  },
+  "1979": {
+   "n": 619,
+   "ge1e5": 27,
+   "ge1e6": 4
+  },
+  "1980": {
+   "n": 919,
+   "ge1e5": 99,
+   "ge1e6": 9
+  },
+  "1981": {
+   "n": 171,
+   "ge1e5": 7,
+   "ge1e6": 0
+  },
+  "1982": {
+   "n": 684,
+   "ge1e5": 79,
+   "ge1e6": 19
+  },
+  "1983": {
+   "n": 372,
+   "ge1e5": 81,
+   "ge1e6": 31
+  },
+  "1984": {
+   "n": 222,
+   "ge1e5": 11,
+   "ge1e6": 3
+  },
+  "1985": {
+   "n": 138,
+   "ge1e5": 17,
+   "ge1e6": 3
+  },
+  "1986": {
+   "n": 276,
+   "ge1e5": 72,
+   "ge1e6": 22
+  },
+  "1987": {
+   "n": 1118,
+   "ge1e5": 24,
+   "ge1e6": 7
+  },
+  "1988": {
+   "n": 780,
+   "ge1e5": 15,
+   "ge1e6": 2
+  },
+  "1989": {
+   "n": 734,
+   "ge1e5": 10,
+   "ge1e6": 0
+  },
+  "1990": {
+   "n": 804,
+   "ge1e5": 5,
+   "ge1e6": 0
+  },
+  "1991": {
+   "n": 1162,
+   "ge1e5": 158,
+   "ge1e6": 24
+  },
+  "1992": {
+   "n": 1096,
+   "ge1e5": 158,
+   "ge1e6": 85
+  },
+  "1993": {
+   "n": 687,
+   "ge1e5": 0,
+   "ge1e6": 0
+  },
+  "1994": {
+   "n": 1218,
+   "ge1e5": 231,
+   "ge1e6": 65
+  },
+  "1995": {
+   "n": 2608,
+   "ge1e5": 469,
+   "ge1e6": 95
+  },
+  "1996": {
+   "n": 2668,
+   "ge1e5": 290,
+   "ge1e6": 42
+  },
+  "1997": {
+   "n": 1703,
+   "ge1e5": 39,
+   "ge1e6": 3
+  },
+  "1998": {
+   "n": 1694,
+   "ge1e5": 70,
+   "ge1e6": 12
+  },
+  "1999": {
+   "n": 3192,
+   "ge1e5": 295,
+   "ge1e6": 49
+  },
+  "2000": {
+   "n": 3800,
+   "ge1e5": 374,
+   "ge1e6": 40
+  },
+  "2001": {
+   "n": 3407,
+   "ge1e5": 742,
+   "ge1e6": 224
+  },
+  "2002": {
+   "n": 3168,
+   "ge1e5": 231,
+   "ge1e6": 58
+  },
+  "2003": {
+   "n": 3670,
+   "ge1e5": 310,
+   "ge1e6": 31
+  },
+  "2004": {
+   "n": 2273,
+   "ge1e5": 112,
+   "ge1e6": 7
+  },
+  "2005": {
+   "n": 4421,
+   "ge1e5": 929,
+   "ge1e6": 203
+  },
+  "2006": {
+   "n": 6615,
+   "ge1e5": 785,
+   "ge1e6": 212
+  },
+  "2007": {
+   "n": 6931,
+   "ge1e5": 299,
+   "ge1e6": 59
+  },
+  "2008": {
+   "n": 5726,
+   "ge1e5": 23,
+   "ge1e6": 0
+  },
+  "2009": {
+   "n": 6340,
+   "ge1e5": 46,
+   "ge1e6": 17
+  },
+  "2010": {
+   "n": 5915,
+   "ge1e5": 8,
+   "ge1e6": 0
+  },
+  "2011": {
+   "n": 6246,
+   "ge1e5": 217,
+   "ge1e6": 57
+  },
+  "2012": {
+   "n": 6726,
+   "ge1e5": 387,
+   "ge1e6": 53
+  },
+  "2013": {
+   "n": 7449,
+   "ge1e5": 450,
+   "ge1e6": 87
+  },
+  "2014": {
+   "n": 7411,
+   "ge1e5": 149,
+   "ge1e6": 17
+  },
+  "2015": {
+   "n": 6806,
+   "ge1e5": 387,
+   "ge1e6": 93
+  },
+  "2016": {
+   "n": 8876,
+   "ge1e5": 849,
+   "ge1e6": 149
+  },
+  "2017": {
+   "n": 9589,
+   "ge1e5": 285,
+   "ge1e6": 28
+  },
+  "2018": {
+   "n": 11966,
+   "ge1e5": 1598,
+   "ge1e6": 577
+  },
+  "2019": {
+   "n": 10336,
+   "ge1e5": 433,
+   "ge1e6": 165
+  },
+  "2020": {
+   "n": 7251,
+   "ge1e5": 71,
+   "ge1e6": 24
+  },
+  "2021": {
+   "n": 12195,
+   "ge1e5": 1101,
+   "ge1e6": 282
+  },
+  "2022": {
+   "n": 9717,
+   "ge1e5": 302,
+   "ge1e6": 93
+  },
+  "2023": {
+   "n": 11137,
+   "ge1e5": 452,
+   "ge1e6": 93
+  }
+ },
+ "per_region": {
+  "Panhandle": {
+   "n": 15992,
+   "ge1e5": 0.0603,
+   "lat_mean": 30.0683,
+   "lon_mean": -85.8744
+  },
+  "Big Bend": {
+   "n": 9987,
+   "ge1e5": 0.0198,
+   "lat_mean": 29.6606,
+   "lon_mean": -82.8368
+  },
+  "Nature Coast": {
+   "n": 7093,
+   "ge1e5": 0.0127,
+   "lat_mean": 28.628,
+   "lon_mean": -81.6158
+  },
+  "Tampa Bay": {
+   "n": 36219,
+   "ge1e5": 0.055,
+   "lat_mean": 27.87,
+   "lon_mean": -82.5333
+  },
+  "Sarasota-Venice": {
+   "n": 56108,
+   "ge1e5": 0.0976,
+   "lat_mean": 27.2932,
+   "lon_mean": -82.6258
+  },
+  "Charlotte Harbor": {
+   "n": 20190,
+   "ge1e5": 0.1073,
+   "lat_mean": 26.7934,
+   "lon_mean": -82.3643
+  },
+  "Lee-Collier": {
+   "n": 30563,
+   "ge1e5": 0.0736,
+   "lat_mean": 26.3171,
+   "lon_mean": -82.0268
+  },
+  "Ten Thousand Islands-Keys": {
+   "n": 12833,
+   "ge1e5": 0.0221,
+   "lat_mean": 25.0428,
+   "lon_mean": -81.6215
+  },
+  "Atlantic": {
+   "n": 7039,
+   "ge1e5": 0.0324,
+   "lat_mean": 27.0644,
+   "lon_mean": -80.2932
+  }
+ },
+ "count_distribution_log10_quantiles": {
+  "0.5": 0.0,
+  "0.75": 0.0,
+  "0.9": 4.477135730961123,
+  "0.95": 5.30997044238125,
+  "0.99": 6.240997571406427
+ },
+ "zero_fraction": 0.7837356650206098,
+ "layer_location_examples": {
+  "1970___1979": [
+   "St. Marks Lighthouse Point; 2 mi South",
+   "Sarasota Yacht Club",
+   "Sarasota Yacht Club"
+  ],
+  "1980___1989": [
+   "Egmont Key; 11 mi West",
+   "Egmont Key; 3 mi West",
+   "Egmont Key; 6 mi West"
+  ],
+  "1990___1999": [
+   "HCEPC Station Number 32",
+   "HCEPC Station Number 13",
+   "HCEPC Station Number 33"
+  ],
+  "2000___2006": [
+   "Naples Pier",
+   "Seagate  ",
+   "Vanderbilt Beach "
+  ],
+  "2007___2014": [
+   "Venice Fishing Pier ",
+   "Cortez; dock at Bells Fish Co.",
+   "Anna Maria Island Rod & Reel Pier (Lower Tampa Bay)  "
+  ],
+  "2015___2023": [
+   "Anna Maria Island Rod & Reel Pier (Lower Tampa Bay)",
+   "Lee Avenue; docks NE of (Big Marco Pass)",
+   "Caxambas Park"
+  ]
+ }
+}

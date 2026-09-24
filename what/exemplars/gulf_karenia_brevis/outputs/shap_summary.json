@@ -1,0 +1,63 @@
+{
+ "base_logit": -2.797102274074239,
+ "base_p": 0.05748096455642124,
+ "additivity_max_gap": 4.3256757686904734e-06,
+ "mean_abs_shap": {
+  "roll_max_4w": 0.40634,
+  "woy_sin": 0.33385,
+  "roll_max_8w": 0.25515,
+  "weeks_since_bloom": 0.23133,
+  "discharge_anom_t0": 0.19123,
+  "sst_delta_4w": 0.18172,
+  "sst_t0": 0.14195,
+  "n_samples_4w": 0.11878,
+  "sst_anom_t2": 0.09805,
+  "log_max_t0": 0.08665,
+  "woy_cos": 0.06955,
+  "sst_anom_t4": 0.05822,
+  "log_max_t1": 0.05361,
+  "n_samples_t0": 0.05032,
+  "discharge_30d_t3": 0.04998,
+  "log_p90_t0": 0.04429,
+  "discharge_30d_t0": 0.03183,
+  "weeks_since_detect": 0.02953,
+  "log_max_t3": 0.01504,
+  "sst_anom_t0": 0.01378,
+  "log_max_t2": 0.01247,
+  "growth_2w": 0.0079,
+  "growth_1w": 0.00709,
+  "weeks_since_sample": 0.00148,
+  "log_med_t0": 0.0004
+ },
+ "group_mean_abs_shap": {
+  "counts": 1.15127,
+  "sst": 0.49372,
+  "season": 0.4034,
+  "discharge": 0.27305,
+  "surveillance": 0.16911
+ },
+ "top6": [
+  "roll_max_4w",
+  "woy_sin",
+  "roll_max_8w",
+  "weeks_since_bloom",
+  "discharge_anom_t0",
+  "sst_delta_4w"
+ ],
+ "dependence_partners": {
+  "roll_max_4w": "log_max_t0",
+  "woy_sin": "roll_max_8w",
+  "roll_max_8w": "woy_sin",
+  "weeks_since_bloom": "woy_sin",
+  "discharge_anom_t0": "roll_max_8w",
+  "sst_delta_4w": "roll_max_8w"
+ },
+ "top_interaction_pair": {
+  "a": "roll_max_8w",
+  "b": "woy_sin",
+  "mean_abs_interaction": 0.030130183324217796
+ },
+ "perturbation": "interventional",
+ "background_n": 1000,
+ "n_test_rows": 1640
+}

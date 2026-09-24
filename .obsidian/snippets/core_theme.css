@@ -1,0 +1,784 @@
+/* =============================================================================
+ * core_theme.css — Base Visual Identity Bundle
+ * Consolidated from: tokyo_night_purple, headings_styled, links_enhanced,
+ *                    code_blocks, scrollbar_custom, modals_translucent
+ * Theme: Tokyo Night + Rebecca Purple (#663399) accent
+ * ========================================================================== */
+
+
+/* =============================================================================
+ * 1. TOKYO NIGHT PURPLE ACCENT
+ * Replaces default Tokyo Night blue accent with Rebecca Purple
+ * ========================================================================== */
+
+:root {
+  --accent-h: 263;
+  --accent-s: 72%;
+  --accent-l: 42%;
+  --interactive-accent: #663399;
+  --interactive-accent-hover: #7a45b5;
+  --interactive-accent-rgb: 102, 51, 153;
+
+  --text-accent: #663399;
+  --text-accent-hover: #7a45b5;
+
+  --link-color: #663399;
+  --link-color-hover: #7a45b5;
+  --link-external-color: #8855bb;
+  --link-external-color-hover: #9966cc;
+
+  --text-selection: rgba(102, 51, 153, 0.2);
+  --text-highlight-bg: rgba(102, 51, 153, 0.25);
+}
+
+.theme-dark {
+  --accent-h: 258;
+  --accent-s: 89%;
+  --accent-l: 66%;
+  --interactive-accent: #8b5cf6;        /* vivid violet — buttons / active / CTA */
+  --interactive-accent-hover: #a78bfa;
+  --interactive-accent-rgb: 139, 92, 246;
+  --text-accent: #b48aff;               /* bright + legible (~6.5:1 on #1a1b26) */
+  --text-accent-hover: #c9b1ff;
+  --link-color: #b48aff;
+  --link-color-hover: #c9b1ff;
+  --link-external-color: #c4a5ff;
+  --link-external-color-hover: #d6c4ff;
+  --text-selection: rgba(139, 92, 246, 0.28);
+  --text-highlight-bg: rgba(139, 92, 246, 0.30);
+}
+
+/* Buttons */
+.mod-cta,
+button.mod-cta {
+  background-color: #663399 !important;
+  color: white !important;
+}
+
+button.mod-cta:hover {
+  background-color: #7744aa !important;
+}
+
+/* Tags */
+.tag,
+a.tag {
+  background-color: rgba(102, 51, 153, 0.15);
+  color: #663399;
+  border-color: rgba(102, 51, 153, 0.3);
+}
+
+.theme-dark .tag,
+.theme-dark a.tag {
+  background-color: rgba(153, 102, 204, 0.2);
+  color: #aa88dd;
+}
+
+.tag:hover,
+a.tag:hover {
+  background-color: rgba(102, 51, 153, 0.25);
+  color: #7744aa;
+}
+
+/* Graph view */
+.graph-view.color-fill-highlight { color: #663399; }
+.graph-view.color-line-highlight { color: #9966cc; }
+
+/* Checkboxes */
+input[type="checkbox"]:checked {
+  background-color: #663399;
+  border-color: #663399;
+}
+
+.theme-dark input[type="checkbox"]:checked {
+  background-color: #7744aa;
+  border-color: #7744aa;
+}
+
+.task-list-item-checkbox:checked {
+  background-color: #663399;
+  border-color: #663399;
+}
+
+/* Internal links */
+.internal-link { color: #663399; }
+.theme-dark .internal-link { color: var(--text-accent); }
+.internal-link:hover { color: #7744aa; }
+
+/* Callouts */
+.callout[data-callout="tip"] { --callout-color: 102, 51, 153; }
+.callout[data-callout="info"] { --callout-color: 119, 68, 170; }
+
+/* Progress bars */
+progress::-webkit-progress-value { background-color: #663399; }
+progress::-moz-progress-bar { background-color: #663399; }
+
+/* Slider */
+input[type="range"]::-webkit-slider-thumb { background-color: #663399; }
+
+/* Search match */
+.search-result-file-matched-text,
+.cm-s-obsidian span.obsidian-search-match-highlight {
+  background-color: rgba(102, 51, 153, 0.3);
+}
+
+/* Nav active state */
+.nav-file-title.is-active,
+.nav-folder-title.is-active { color: #663399; }
+
+.theme-dark .nav-file-title.is-active,
+.theme-dark .nav-folder-title.is-active { color: var(--text-accent); }
+
+/* Sidebar tab active */
+.workspace-tab-header.is-active { color: #663399; }
+.theme-dark .workspace-tab-header.is-active { color: var(--text-accent); }
+
+/* Frontmatter property keys */
+.metadata-property-key { color: #663399; }
+.theme-dark .metadata-property-key { color: var(--text-accent); }
+
+
+/* =============================================================================
+ * 2. STYLED HEADINGS
+ * H1: centered, H2: accent left border, H3+: accent text color
+ * ========================================================================== */
+
+/* @settings
+name: Styled Headings
+id: styled-headings
+settings:
+  -
+    id: heading-h1-center
+    title: Center H1 headings
+    type: class-toggle
+    default: true
+  -
+    id: heading-h2-border
+    title: H2 accent left border
+    type: class-toggle
+    default: true
+  -
+    id: heading-scale
+    title: Heading scale multiplier
+    type: variable-number-slider
+    default: 1
+    min: 0.8
+    max: 1.3
+    step: 0.05
+    format: ""
+*/
+
+body {
+  --heading-scale: 1;
+}
+
+/* H1 — Centered */
+.heading-h1-center .markdown-rendered h1 {
+  text-align: center;
+  border-bottom: none;
+}
+
+.heading-h1-center .cm-s-obsidian .HyperMD-header-1 {
+  text-align: center;
+}
+
+/* H2 — Accent left border */
+.heading-h2-border .markdown-rendered h2 {
+  border-left: 4px solid var(--accent-color, #663399);
+  padding-left: 0.5em;
+  border-bottom: none;
+}
+
+.heading-h2-border .cm-s-obsidian .HyperMD-header-2 {
+  border-left: 4px solid var(--accent-color, #663399);
+  padding-left: 0.5em;
+}
+
+.theme-dark .heading-h2-border .markdown-rendered h2 {
+  border-left-color: var(--text-accent);
+}
+
+.theme-dark .heading-h2-border .cm-s-obsidian .HyperMD-header-2 {
+  border-left-color: var(--text-accent);
+}
+
+/* H3+ — Accent text color */
+.markdown-rendered h3,
+.markdown-rendered h4,
+.markdown-rendered h5,
+.markdown-rendered h6 {
+  color: var(--text-accent, #9966cc);
+}
+
+.cm-s-obsidian .HyperMD-header-3,
+.cm-s-obsidian .HyperMD-header-4,
+.cm-s-obsidian .HyperMD-header-5,
+.cm-s-obsidian .HyperMD-header-6 {
+  color: var(--text-accent, #9966cc);
+}
+
+/* Heading sizes/weights/tracking are consolidated in Section 7 (Typography & Rhythm).
+ * The --heading-scale knob (this section's @settings) still scales them. */
+
+
+/* =============================================================================
+ * 3. ENHANCED LINKS
+ * Internal: hover underline. External: arrow icon. Unresolved: dashed red.
+ * ========================================================================== */
+
+/* @settings
+name: Enhanced Links
+id: enhanced-links
+settings:
+  -
+    id: external-link-icon
+    title: External link arrow icon
+    type: class-toggle
+    default: true
+  -
+    id: unresolved-link-style
+    title: Unresolved link dashed underline
+    type: class-toggle
+    default: true
+*/
+
+/* Internal links — underline on hover only */
+.markdown-rendered .internal-link { text-decoration: none; }
+.markdown-rendered .internal-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cm-s-obsidian .cm-hmd-internal-link .cm-underline { text-decoration: none; }
+.cm-s-obsidian .cm-hmd-internal-link .cm-underline:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* External links — arrow indicator */
+.external-link-icon .markdown-rendered a.external-link::after {
+  content: " ↗";
+  font-size: 0.75em;
+  opacity: 0.6;
+  vertical-align: super;
+  line-height: 1;
+}
+
+.external-link-icon .markdown-rendered a.external-link:hover::after {
+  opacity: 1;
+}
+
+/* Unresolved links — dashed red underline */
+.unresolved-link-style .markdown-rendered .internal-link.is-unresolved {
+  color: var(--text-muted);
+  text-decoration: underline dashed;
+  text-decoration-color: rgba(239, 68, 68, 0.6);
+  text-underline-offset: 3px;
+}
+
+.theme-dark .unresolved-link-style .markdown-rendered .internal-link.is-unresolved {
+  text-decoration-color: rgba(248, 113, 113, 0.5);
+}
+
+.unresolved-link-style .cm-s-obsidian .is-unresolved .cm-underline {
+  color: var(--text-muted);
+  text-decoration: underline dashed;
+  text-decoration-color: rgba(239, 68, 68, 0.6);
+  text-underline-offset: 3px;
+}
+
+.theme-dark .unresolved-link-style .cm-s-obsidian .is-unresolved .cm-underline {
+  text-decoration-color: rgba(248, 113, 113, 0.5);
+}
+
+
+/* =============================================================================
+ * 4. CODE BLOCKS
+ * Accent left border, rounded corners, tinted inline code
+ * ========================================================================== */
+
+/* @settings
+name: Code Blocks
+id: code-blocks
+settings:
+  -
+    id: code-border-width
+    title: Code block border width
+    type: variable-number-slider
+    default: 3
+    min: 1
+    max: 6
+    step: 1
+    format: px
+  -
+    id: code-border-color
+    title: Code block border color
+    type: variable-color
+    format: hex
+    default: "#663399"
+  -
+    id: code-inline-tint
+    title: Tinted inline code background
+    type: class-toggle
+    default: true
+*/
+
+body {
+  --code-border-width: 3px;
+  --code-border-color: #663399;
+}
+
+/* Reading View */
+.markdown-rendered pre {
+  border-left: var(--code-border-width) solid var(--code-border-color);
+  border-radius: 4px;
+}
+
+/* Live Preview */
+.cm-s-obsidian .HyperMD-codeblock-begin,
+.cm-s-obsidian .HyperMD-codeblock,
+.cm-s-obsidian .HyperMD-codeblock-end {
+  border-left: var(--code-border-width) solid var(--code-border-color);
+}
+
+.cm-s-obsidian .HyperMD-codeblock-begin { border-top-left-radius: 4px; }
+.cm-s-obsidian .HyperMD-codeblock-end { border-bottom-left-radius: 4px; }
+
+/* Inline code — tinted background (Reading View) */
+.code-inline-tint .markdown-rendered code:not(pre code) {
+  background-color: rgba(102, 51, 153, 0.1);
+  border-radius: 3px;
+  padding: 0.15em 0.35em;
+}
+
+.theme-dark .code-inline-tint .markdown-rendered code:not(pre code) {
+  background-color: rgba(153, 102, 204, 0.15);
+}
+
+/* Inline code — tinted background (Live Preview) */
+.code-inline-tint .cm-s-obsidian .cm-inline-code:not(.cm-formatting) {
+  background-color: rgba(102, 51, 153, 0.1);
+  border-radius: 3px;
+  padding: 0.1em 0.25em;
+}
+
+.theme-dark .code-inline-tint .cm-s-obsidian .cm-inline-code:not(.cm-formatting) {
+  background-color: rgba(153, 102, 204, 0.15);
+}
+
+/* Language badge — fenced-block language label, top-right (Reading View; Prism language-* class) */
+.markdown-rendered pre[class*="language-"] { position: relative; }
+.markdown-rendered pre[class*="language-"]::before {
+  position: absolute;
+  top: 0;
+  right: 2.6em;
+  font-size: 0.68em;
+  font-family: var(--font-interface);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--code-border-color);
+  background-color: rgba(102, 51, 153, 0.12);
+  padding: 0.12em 0.6em;
+  border-radius: 0 0 4px 4px;
+  pointer-events: none;
+}
+.theme-dark .markdown-rendered pre[class*="language-"]::before {
+  color: #b48aff;
+  background-color: rgba(153, 102, 204, 0.18);
+}
+/* per-language labels (only these render a badge; unlisted languages stay unlabelled) */
+.markdown-rendered pre.language-python::before { content: "Python"; }
+.markdown-rendered pre.language-bash::before,
+.markdown-rendered pre.language-sh::before,
+.markdown-rendered pre.language-shell::before { content: "Bash"; }
+.markdown-rendered pre.language-json::before { content: "JSON"; }
+.markdown-rendered pre.language-javascript::before,
+.markdown-rendered pre.language-js::before { content: "JavaScript"; }
+.markdown-rendered pre.language-typescript::before,
+.markdown-rendered pre.language-ts::before { content: "TypeScript"; }
+.markdown-rendered pre.language-yaml::before,
+.markdown-rendered pre.language-yml::before { content: "YAML"; }
+.markdown-rendered pre.language-css::before { content: "CSS"; }
+.markdown-rendered pre.language-html::before { content: "HTML"; }
+.markdown-rendered pre.language-markdown::before,
+.markdown-rendered pre.language-md::before { content: "Markdown"; }
+.markdown-rendered pre.language-sql::before { content: "SQL"; }
+
+
+/* =============================================================================
+ * 5. CUSTOM SCROLLBAR
+ * Accent-tinted slim scrollbar (Webkit + Firefox)
+ * ========================================================================== */
+
+/* @settings
+name: Custom Scrollbar
+id: custom-scrollbar
+settings:
+  -
+    id: scrollbar-thumb-color
+    title: Scrollbar thumb color
+    type: variable-color
+    format: hex
+    default: "#663399"
+  -
+    id: scrollbar-width
+    title: Scrollbar width
+    type: variable-select
+    default: thin
+    options:
+      -
+        label: Thin
+        value: thin
+      -
+        label: Auto
+        value: auto
+  -
+    id: scrollbar-track-visible
+    title: Show scrollbar track
+    type: class-toggle
+    default: false
+*/
+
+body {
+  --scrollbar-thumb-color: #663399;
+  --scrollbar-width: thin;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: var(--scrollbar-width);
+  scrollbar-color: var(--scrollbar-thumb-color) transparent;
+}
+
+.scrollbar-track-visible * {
+  scrollbar-color: var(--scrollbar-thumb-color) rgba(0, 0, 0, 0.1);
+}
+
+/* Webkit (Obsidian uses Electron/Chromium) */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb-color);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--accent-color-hover, #7744aa);
+}
+
+::-webkit-scrollbar-track { background: transparent; }
+
+.scrollbar-track-visible ::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.theme-dark .scrollbar-track-visible ::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+
+/* =============================================================================
+ * 6. TRANSLUCENT MODALS
+ * Frosted glass effect on modals and command palette
+ * ========================================================================== */
+
+/* @settings
+name: Translucent Modals
+id: translucent-modals
+settings:
+  -
+    id: modal-blur-intensity
+    title: Modal blur intensity
+    type: variable-number-slider
+    default: 10
+    min: 4
+    max: 16
+    step: 1
+    format: px
+  -
+    id: modal-accent-border
+    title: Accent border on modals
+    type: class-toggle
+    default: true
+*/
+
+body {
+  --modal-blur-intensity: 10px;
+}
+
+/* Modal overlay */
+.modal-bg {
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(var(--modal-blur-intensity));
+  -webkit-backdrop-filter: blur(var(--modal-blur-intensity));
+}
+
+/* Modal container */
+.modal {
+  background-color: rgba(var(--background-primary-rgb, 30, 30, 30), 0.92);
+  backdrop-filter: blur(calc(var(--modal-blur-intensity) / 2));
+  -webkit-backdrop-filter: blur(calc(var(--modal-blur-intensity) / 2));
+}
+
+.modal-accent-border .modal {
+  border: 1px solid rgba(102, 51, 153, 0.3);
+}
+
+.theme-dark .modal-accent-border .modal {
+  border: 1px solid rgba(153, 102, 204, 0.25);
+}
+
+/* Command palette */
+.prompt {
+  background-color: rgba(var(--background-primary-rgb, 30, 30, 30), 0.92);
+  backdrop-filter: blur(var(--modal-blur-intensity));
+  -webkit-backdrop-filter: blur(var(--modal-blur-intensity));
+}
+
+.modal-accent-border .prompt {
+  border: 1px solid rgba(102, 51, 153, 0.3);
+}
+
+.theme-dark .modal-accent-border .prompt {
+  border: 1px solid rgba(153, 102, 204, 0.25);
+}
+
+/* Suggestion container */
+.suggestion-container {
+  background-color: rgba(var(--background-primary-rgb, 30, 30, 30), 0.95);
+}
+
+/* Selected suggestion */
+.suggestion-item.is-selected {
+  background-color: rgba(102, 51, 153, 0.15);
+}
+
+.theme-dark .suggestion-item.is-selected {
+  background-color: rgba(153, 102, 204, 0.2);
+}
+
+
+/* =============================================================================
+ * 7. TYPOGRAPHY & RHYTHM — bold aDNA signature (Cycle 2, M2.5)
+ * Distinctive heading hierarchy (weight + tracking) + comfortable reading rhythm.
+ * Heading sizes respect the --heading-scale knob (section 2).
+ * ========================================================================== */
+
+/* @settings
+name: Typography & Rhythm
+id: typography-rhythm
+settings:
+  -
+    id: body-line-height
+    title: Body line height
+    type: variable-number-slider
+    default: 1.6
+    min: 1.4
+    max: 1.9
+    step: 0.05
+    format: ""
+  -
+    id: heading-accent-rule
+    title: H1 accent underline rule
+    type: class-toggle
+    default: true
+*/
+
+body { --body-line-height: 1.6; }
+
+/* Reading rhythm */
+.markdown-rendered { line-height: var(--body-line-height); }
+.markdown-rendered p,
+.markdown-rendered li { line-height: var(--body-line-height); }
+.markdown-rendered p { margin-block: 0.9em; }
+
+/* Signature heading hierarchy — weights + tracking */
+.markdown-rendered h1,
+.cm-s-obsidian .HyperMD-header-1 {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-size: calc(2.3em * var(--heading-scale));
+  line-height: 1.15;
+}
+.markdown-rendered h2,
+.cm-s-obsidian .HyperMD-header-2 {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-size: calc(1.6em * var(--heading-scale));
+  margin-top: 1.7em;
+}
+.markdown-rendered h3,
+.cm-s-obsidian .HyperMD-header-3 {
+  font-weight: 700;
+  font-size: calc(1.28em * var(--heading-scale));
+  margin-top: 1.35em;
+}
+.markdown-rendered h4 { font-weight: 600; font-size: calc(1.1em * var(--heading-scale)); }
+.markdown-rendered h5,
+.markdown-rendered h6 {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-size: calc(0.95em * var(--heading-scale));
+  color: var(--text-muted);
+}
+
+/* Signature H1 accent rule (toggle) — short accent bar under H1 */
+.heading-accent-rule .markdown-rendered h1::after {
+  content: "";
+  display: block;
+  width: 2.5em;
+  height: 3px;
+  margin: 0.4em auto 0;
+  border-radius: 2px;
+  background: var(--interactive-accent);
+  opacity: 0.9;
+}
+
+/* =============================================================================
+ * 8. HOME DASHBOARD STRUCTURE — Operation Atrium (Phase C, 2026-06-11)
+ * Structural layer for generated HOME.md pages (cssclasses: [dashboard, homepage]).
+ * Palette-NEUTRAL: keyed to the theme/accent vars + the .dashboard custom props
+ * below. Per-vault persona accents (ADR-008 override layer) override the props
+ * and style banner-<vault_slug> / <persona>-greeting — never this seed.
+ * Spec: Obsidian.aDNA spec_homepage_structure §3 (structural vs accent split).
+ * ========================================================================== */
+
+.dashboard {
+  --home-accent: var(--interactive-accent);
+  --home-accent-bright: var(--interactive-accent-hover);
+  --home-card-bg: var(--background-secondary);
+  --home-card-border: var(--background-modifier-border);
+  --home-glow: rgba(var(--interactive-accent-rgb), 0.30);
+}
+
+/* ── Masthead scaffold (image + text-fallback variants) ─────────────────── */
+.dashboard .home-masthead {
+  position: relative;
+  width: 100%;
+  margin: 0.2em 0 1.4em;
+  border-radius: 14px;
+  overflow: hidden;
+  background: linear-gradient(120deg, var(--background-primary) 0%, var(--background-secondary) 60%, var(--background-secondary-alt) 100%);
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--home-card-border);
+}
+.dashboard .home-masthead img {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 21 / 9;
+  object-fit: cover;
+  display: block;
+}
+.dashboard .home-masthead .banner-text {
+  position: absolute;
+  left: 1.1em;
+  bottom: 0.7em;
+  right: 1.1em;
+  font-size: 1.85em;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  line-height: 1.18;
+  color: var(--text-normal);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55), 0 0 18px var(--home-glow);
+}
+/* text-only variant (no <img>, or img hidden by onerror): flow-sized gradient band
+   (a fixed aspect clipped long display+tagline text — PercySleep, Phase-C capture) */
+.dashboard .home-masthead.banner-fallback { min-height: 5.2em; display: flex; align-items: flex-end; }
+.dashboard .home-masthead.banner-fallback .banner-text { position: static; padding: 0.9em 1.15em; font-size: 1.55em; }
+
+/* ── Timeline HUD ─────────────────────────────────────────────────────────── */
+.dashboard .timeline-hud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35em;
+  margin: 0.4em 0 1.2em;
+  font-size: 0.86em;
+}
+.dashboard .timeline-hud .hud-tick {
+  padding: 0.2em 0.7em;
+  border-radius: 6px;
+  background: var(--home-card-bg);
+  border: 1px solid var(--home-card-border);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.dashboard .timeline-hud .hud-tick.done {
+  background: rgba(var(--interactive-accent-rgb), 0.16);
+  color: var(--text-normal);
+  border-color: rgba(var(--interactive-accent-rgb), 0.35);
+}
+.dashboard .timeline-hud .hud-tick.current {
+  background: var(--home-accent);
+  color: var(--text-on-accent);
+  border-color: var(--home-accent-bright);
+  box-shadow: 0 0 12px var(--home-glow);
+}
+.dashboard .timeline-hud .hud-sep { color: var(--text-faint); opacity: 0.6; }
+
+/* ── Key-systems cards ────────────────────────────────────────────────────── */
+.dashboard .hq-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 0.8em;
+  margin: 0.6em 0 0.4em;
+}
+.dashboard .hq-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35em;
+  padding: 0.85em 1em;
+  border-radius: 10px;
+  background: var(--home-card-bg);
+  border: 1px solid var(--home-card-border);
+  text-decoration: none !important;
+  transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease;
+}
+.dashboard .hq-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--home-accent-bright);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), 0 0 14px var(--home-glow);
+}
+.dashboard .hq-card .hq-card-title {
+  font-weight: 700;
+  color: var(--text-accent);
+  font-size: 1.02em;
+}
+.dashboard .hq-card .hq-card-sub {
+  color: var(--text-muted);
+  font-size: 0.85em;
+  line-height: 1.35;
+}
+
+/* ── Triad nav (vault-grid) — markdown block; links render as pills ───────── */
+.dashboard .vault-grid {
+  margin: 0.3em 0 1.1em;
+  padding: 0.7em 1em 0.55em;
+  border-radius: 10px;
+  background: var(--home-card-bg);
+  border: 1px solid var(--home-card-border);
+}
+.dashboard .vault-grid p { margin: 0.45em 0; }
+.dashboard .vault-grid a {
+  display: inline-block;
+  padding: 0.12em 0.66em;
+  margin: 0.1em 0;
+  border-radius: 999px;
+  background: rgba(var(--interactive-accent-rgb), 0.10);
+  border: 1px solid var(--home-card-border);
+  font-size: 0.9em;
+  text-decoration: none !important;
+  white-space: nowrap;
+}
+.dashboard .vault-grid a:hover {
+  background: rgba(var(--interactive-accent-rgb), 0.26);
+  border-color: var(--home-accent-bright);
+}
+
+/* Responsive: tighten masthead caption + stack cards on narrow panes */
+@media (max-width: 600px) {
+  .dashboard .home-masthead .banner-text { font-size: 1.35em; }
+  .dashboard .hq-cards { grid-template-columns: 1fr; }
+}

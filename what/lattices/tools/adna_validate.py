@@ -1,0 +1,485 @@
+#!/usr/bin/env python3
+"""aDNA Instance Validator — checks conformance per §5.5 of the aDNA Universal Standard v2.5.
+
+Usage:
+    python adna_validate.py <path>                     # Validate instance at path
+    python adna_validate.py <path> --level standard    # Check specific level
+    python adna_validate.py <path> --governance        # Governance sync + harness-injection hygiene (§13.2)
+    python adna_validate.py <path> --verbose           # Detailed output
+    python adna_validate.py <path> --json              # Machine-readable JSON output
+"""
+import argparse
+import json
+import os
+import re
+import sys
+
+import yaml
+
+# ---------------------------------------------------------------------------
+# Conformance requirements per §5.5
+# ---------------------------------------------------------------------------
+
+STARTER_GOV_FILES = ["CLAUDE.md", "MANIFEST.md", "README.md"]
+STARTER_DIRS = [
+    "what/context",
+    "how/missions",
+    "how/sessions",
+    "how/templates",
+    "who/coordination",
+    "who/governance",
+]
+TRIAD_DIRS = ["what", "how", "who"]
+
+STANDARD_GOV_FILES = ["STATE.md", "AGENTS.md"]
+STANDARD_AGENTS_DIRS = ["what", "how", "who"]
+STANDARD_RECOMMENDED_DIRS = [
+    "what/decisions",
+    "how/backlog",
+    "how/sessions/active",
+    "how/sessions/history",
+]
+
+REQUIRED_FRONTMATTER = ["type", "created", "updated", "status", "last_edited_by", "tags"]
+DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+# Entity classes whose canonical templates omit the lifecycle `status` field by
+# design — a directory index / correspondence record has no lifecycle state.
+# (`.adna/**/AGENTS.md` and `how/templates/template_coordination.md` omit it.)
+# `status` stays REQUIRED for content + session entities. See ADR-044.
+STATUS_OPTIONAL_TYPES = ("directory_index", "coordination")
+
+# Nested example/template INSTANCE trees are documentation sub-vaults — each is a
+# standalone instance, validated on its own, NOT part of THIS instance's
+# conformance. Pruned from the triad walk. See ADR-044.
+#
+# These two hardcoded paths are the FALLBACK: they name doc sub-vaults that carry
+# neither their own `.git` nor governance files (so the general detector below
+# cannot see them). The general detector (see `_is_nested_instance`) auto-excludes
+# any embedded standalone instance — a subtree carrying its own `.git` AND its own
+# governance file (CLAUDE.md or MANIFEST.md), e.g. a code-as-WHAT relocation such
+# as LatticeProtocol.aDNA/what/latticeprotocol/. §5.5's rule is general; this
+# fallback preserves the two known documentation-tree cases. See ADR-044, F-CHM-215.
+NESTED_INSTANCE_DIRS = (
+    os.path.join("what", "docs", "examples"),
+    os.path.join("how", "templates", "template_node_adna_exemplar"),
+)
+
+# Governance files whose presence (with a sibling `.git`) marks a subtree as its
+# own standalone aDNA/code instance — matching what the blessed code-as-WHAT
+# nested instance actually carries (e.g. a relocated repo's own CLAUDE.md).
+NESTED_INSTANCE_GOV_FILES = ("CLAUDE.md", "MANIFEST.md")
+
+
+def _is_nested_instance(dirpath):
+    """True if `dirpath` is an embedded standalone instance: it carries its own
+    `.git` (a nested repo — dir OR file, covering submodules/worktrees) AND at
+    least one of its own governance files. Such a subtree is validated on its
+    own, not as part of THIS instance's conformance (§5.5, ADR-044). General
+    detector added for F-CHM-215 (was: two hardcoded reference paths only)."""
+    if not os.path.exists(os.path.join(dirpath, ".git")):
+        return False
+    return any(
+        os.path.isfile(os.path.join(dirpath, gf)) for gf in NESTED_INSTANCE_GOV_FILES
+    )
+
+# Governance files that MUST NOT carry committed harness-injected context boundaries (§13.2)
+GOVERNANCE_FILES_FOR_HYGIENE = ("CLAUDE.md", "STATE.md", "AGENTS.md")
+# Harness boundaries the agent runtime injects: `# userEmail`, `# currentDate (Today's date is ...)`
+HARNESS_INJECTION_RE = re.compile(r"^#\s+(userEmail|currentDate)\b")
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _resolve_root(path):
+    """Detect bare vs embedded triad and return (root, triad_prefix)."""
+    if os.path.isdir(os.path.join(path, ".agentic", "what")):
+        return path, ".agentic"
+    return path, ""
+
+
+def _parse_frontmatter(filepath):
+    """Extract YAML frontmatter from a markdown file. Returns dict or None."""
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            content = f.read()
+    except (OSError, UnicodeDecodeError):
+        return None
+    if not content.startswith("---"):
+        return None
+    parts = content.split("---", 2)
+    if len(parts) < 3:
+        return None
+    try:
+        return yaml.safe_load(parts[1])
+    except yaml.YAMLError:
+        return None
+
+
+def _find_md_files(root, triad_prefix):
+    """Yield all .md files inside the triad directories, pruning nested
+    example/template instance trees (validated standalone — see ADR-044)."""
+    base = os.path.join(root, triad_prefix) if triad_prefix else root
+    excludes = tuple(os.path.normpath(os.path.join(base, d)) for d in NESTED_INSTANCE_DIRS)
+    for leg in TRIAD_DIRS:
+        leg_path = os.path.join(base, leg)
+        if not os.path.isdir(leg_path):
+            continue
+        for dirpath, dirnames, filenames in os.walk(leg_path):
+            ndp = os.path.normpath(dirpath)
+            # Hardcoded fallback paths (doc sub-vaults with no own .git/governance)
+            if any(ndp == ex or ndp.startswith(ex + os.sep) for ex in excludes):
+                dirnames[:] = []  # don't descend into a nested instance
+                continue
+            # General detector: an embedded standalone instance (own .git +
+            # governance) is validated on its own — prune it and its subtree.
+            # The leg root itself is never treated as a nested instance.
+            if ndp != os.path.normpath(leg_path) and _is_nested_instance(dirpath):
+                dirnames[:] = []
+                continue
+            for fn in filenames:
+                if fn.endswith(".md"):
+                    yield os.path.join(dirpath, fn)
+
+
+# ---------------------------------------------------------------------------
+# Checks
+# ---------------------------------------------------------------------------
+
+class ValidationResult:
+    def __init__(self):
+        self.errors = []     # MUST violations
+        self.warnings = []   # SHOULD violations
+        self.info = []       # informational
+        self.level = None    # determined conformance level
+
+    @property
+    def passed(self):
+        return len(self.errors) == 0
+
+    def as_dict(self):
+        return {
+            "passed": self.passed,
+            "level": self.level,
+            "errors": self.errors,
+            "warnings": self.warnings,
+            "info": self.info,
+        }
+
+
+def check_starter(root, prefix, result):
+    """Check Level 1 (Starter) conformance."""
+    # Governance files
+    for gf in STARTER_GOV_FILES:
+        if not os.path.isfile(os.path.join(root, gf)):
+            result.errors.append(f"Starter: missing governance file '{gf}'")
+
+    # Triad directories
+    for td in TRIAD_DIRS:
+        p = os.path.join(root, prefix, td) if prefix else os.path.join(root, td)
+        if not os.path.isdir(p):
+            result.errors.append(f"Starter: missing triad directory '{td}/'")
+
+    # Required subdirectories
+    for sd in STARTER_DIRS:
+        p = os.path.join(root, prefix, sd) if prefix else os.path.join(root, sd)
+        if not os.path.isdir(p):
+            result.errors.append(f"Starter: missing required directory '{sd}/'")
+
+    # Frontmatter on content files
+    fm_errors = 0
+    total_files = 0
+    for fp in _find_md_files(root, prefix):
+        total_files += 1
+        fm = _parse_frontmatter(fp)
+        rel = os.path.relpath(fp, root)
+        if fm is None:
+            fm_errors += 1
+            result.errors.append(f"Frontmatter: missing or unparseable in '{rel}'")
+            continue
+        required = REQUIRED_FRONTMATTER
+        if fm.get("type") in STATUS_OPTIONAL_TYPES:
+            required = [f for f in REQUIRED_FRONTMATTER if f != "status"]
+        for field in required:
+            if field not in fm:
+                fm_errors += 1
+                result.errors.append(f"Frontmatter: missing required field '{field}' in '{rel}'")
+
+    result.info.append(f"Scanned {total_files} content files, {fm_errors} frontmatter issues")
+
+
+def check_standard(root, prefix, result):
+    """Check Level 2 (Standard) conformance — assumes Starter already checked."""
+    for gf in STANDARD_GOV_FILES:
+        if not os.path.isfile(os.path.join(root, gf)):
+            result.errors.append(f"Standard: missing governance file '{gf}'")
+
+    for ad in STANDARD_AGENTS_DIRS:
+        p = os.path.join(root, prefix, ad, "AGENTS.md") if prefix else os.path.join(root, ad, "AGENTS.md")
+        if not os.path.isfile(p):
+            result.errors.append(f"Standard: missing '{ad}/AGENTS.md'")
+
+    for rd in STANDARD_RECOMMENDED_DIRS:
+        p = os.path.join(root, prefix, rd) if prefix else os.path.join(root, rd)
+        if not os.path.isdir(p):
+            result.warnings.append(f"Standard: recommended directory '{rd}/' not found")
+
+
+def check_full(root, prefix, result):
+    """Check Level 3 (Full) conformance — assumes Standard already checked."""
+    # Context library with topic dirs
+    ctx = os.path.join(root, prefix, "what/context") if prefix else os.path.join(root, "what/context")
+    if os.path.isdir(ctx):
+        topic_dirs = [d for d in os.listdir(ctx) if os.path.isdir(os.path.join(ctx, d))]
+        if not topic_dirs:
+            result.errors.append("Full: what/context/ has no topic subdirectories")
+        else:
+            has_agents = any(os.path.isfile(os.path.join(ctx, td, "AGENTS.md")) for td in topic_dirs)
+            if not has_agents:
+                result.errors.append("Full: no topic directory in what/context/ has AGENTS.md")
+    else:
+        result.errors.append("Full: what/context/ directory missing")
+
+    # Ontology artifact
+    onto = os.path.join(root, prefix, "what/ontology.md") if prefix else os.path.join(root, "what/ontology.md")
+    if not os.path.isfile(onto):
+        result.errors.append("Full: missing what/ontology.md")
+
+    # Template compliance — check templates dir has files
+    tmpl = os.path.join(root, prefix, "how/templates") if prefix else os.path.join(root, "how/templates")
+    if os.path.isdir(tmpl):
+        templates = [f for f in os.listdir(tmpl) if f.endswith(".md") and f.startswith("template_")]
+        result.info.append(f"Found {len(templates)} templates in how/templates/")
+    else:
+        result.errors.append("Full: how/templates/ directory missing")
+
+
+def determine_level(root, prefix):
+    """Determine the highest conformance level the instance passes."""
+    for level_name, checker in [("full", check_full), ("standard", check_standard), ("starter", check_starter)]:
+        pass  # we check bottom-up
+
+    # Check starter
+    r = ValidationResult()
+    check_starter(root, prefix, r)
+    if not r.passed:
+        return None, r
+
+    # Check standard
+    r2 = ValidationResult()
+    r2.errors = list(r.errors)
+    r2.warnings = list(r.warnings)
+    r2.info = list(r.info)
+    check_standard(root, prefix, r2)
+    standard_errors = [e for e in r2.errors if e not in r.errors]
+
+    # Check full
+    r3 = ValidationResult()
+    r3.errors = list(r2.errors)
+    r3.warnings = list(r2.warnings)
+    r3.info = list(r2.info)
+    check_full(root, prefix, r3)
+    full_errors = [e for e in r3.errors if e not in r2.errors]
+
+    if not full_errors and not standard_errors:
+        r3.level = "full"
+        return "full", r3
+    elif not standard_errors:
+        r2.level = "standard"
+        return "standard", r2
+    else:
+        r.level = "starter"
+        return "starter", r
+
+
+# ---------------------------------------------------------------------------
+# Governance sync checks (--governance flag)
+# ---------------------------------------------------------------------------
+
+def check_harness_injection(root, result):
+    """Flag harness-injected context boundaries committed into governance files (§13.2, ADR-042).
+
+    The agent harness injects `# userEmail` / `# currentDate (Today's date is ...)` lines into a
+    running session as context boundaries. A session that commits a governance file can capture that
+    injected tail. Such lines are session context, not governance, and are stale once committed — a
+    MUST violation per §13.2 Tier-1.
+    """
+    for dirpath, dirnames, filenames in os.walk(root):
+        # never descend into VCS metadata
+        if ".git" in dirnames:
+            dirnames.remove(".git")
+        for fn in filenames:
+            if fn not in GOVERNANCE_FILES_FOR_HYGIENE:
+                continue
+            fp = os.path.join(dirpath, fn)
+            try:
+                with open(fp, "r", encoding="utf-8") as f:
+                    lines = f.readlines()
+            except (OSError, UnicodeDecodeError):
+                continue
+            for i, line in enumerate(lines, 1):
+                if HARNESS_INJECTION_RE.match(line):
+                    rel = os.path.relpath(fp, root)
+                    result.errors.append(
+                        f"Harness-injection: '{rel}:{i}' commits a harness context boundary "
+                        f"('{line.strip()}') — strip before commit (§13.2, ADR-042)"
+                    )
+
+
+def check_governance_sync(root, result):
+    """Check governance file consistency: template counts, version strings."""
+    # Template count
+    tmpl_dir = os.path.join(root, "how", "templates")
+    if os.path.isdir(tmpl_dir):
+        actual = len([f for f in os.listdir(tmpl_dir) if f.endswith(".md") and f.startswith("template_")])
+        # Check documented counts
+        for gf in ["MANIFEST.md", "CLAUDE.md", "README.md"]:
+            gf_path = os.path.join(root, gf)
+            if not os.path.isfile(gf_path):
+                continue
+            with open(gf_path, "r") as f:
+                content = f.read()
+            # Look for patterns like "20 templates" or "Templates (20)"
+            for m in re.finditer(r"(\d+)\s*templates|Templates?\s*\((\d+)\)", content):
+                documented = int(m.group(1) or m.group(2))
+                if documented != actual:
+                    result.errors.append(
+                        f"Governance drift: {gf} says {documented} templates, actual count is {actual}"
+                    )
+
+    # Skill count (mirrors template count; §19.3). Skills are not auto-counted
+    # anywhere else, so this guard is what makes skills-count drift catchable.
+    skills_dir = os.path.join(root, "how", "skills")
+    if os.path.isdir(skills_dir):
+        actual_skills = len([f for f in os.listdir(skills_dir)
+                             if f.endswith(".md") and f.startswith("skill_")])
+        for gf in ["MANIFEST.md", "CLAUDE.md", "README.md", "AGENTS.md"]:
+            gf_path = os.path.join(root, gf)
+            if not os.path.isfile(gf_path):
+                continue
+            with open(gf_path, "r") as f:
+                content = f.read()
+            # Look for patterns like "45 skills" or "Skills (45)"
+            for m in re.finditer(r"(\d+)\s*skills|Skills?\s*\((\d+)\)", content):
+                documented = int(m.group(1) or m.group(2))
+                if documented != actual_skills:
+                    result.errors.append(
+                        f"Governance drift: {gf} says {documented} skills, actual count is {actual_skills}"
+                    )
+
+    # Version string consistency
+    versions_found = {}
+    claude_path = os.path.join(root, "CLAUDE.md")
+    if os.path.isfile(claude_path):
+        fm = _parse_frontmatter(claude_path)
+        if fm and "version" in fm:
+            versions_found["CLAUDE.md (frontmatter)"] = str(fm["version"])
+
+    readme_path = os.path.join(root, "README.md")
+    if os.path.isfile(readme_path):
+        with open(readme_path, "r") as f:
+            for line in f:
+                m = re.search(r"Version\s+(\d+\.\d+)", line)
+                if m:
+                    versions_found["README.md"] = m.group(1)
+                    break
+
+    changelog_path = os.path.join(root, "CHANGELOG.md")
+    if os.path.isfile(changelog_path):
+        with open(changelog_path, "r") as f:
+            for line in f:
+                m = re.search(r"\[v?(\d+\.\d+)\]", line)
+                if m:
+                    versions_found["CHANGELOG.md (latest)"] = m.group(1)
+                    break
+
+    if versions_found:
+        gov_versions = {k: v for k, v in versions_found.items() if "standard" not in k.lower()}
+        unique = set(gov_versions.values())
+        if len(unique) > 1:
+            details = ", ".join(f"{k}={v}" for k, v in gov_versions.items())
+            result.warnings.append(f"Version note: governance versions differ across files ({details})")
+        result.info.append(f"Versions found: {versions_found}")
+
+    # Harness-injection hygiene (§13.2, ADR-042)
+    check_harness_injection(root, result)
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+def main():
+    parser = argparse.ArgumentParser(description="aDNA Instance Validator (§5.5)")
+    parser.add_argument("path", help="Path to aDNA instance root")
+    parser.add_argument("--level", choices=["starter", "standard", "full"],
+                        help="Check specific conformance level (default: auto-detect)")
+    parser.add_argument("--governance", action="store_true",
+                        help="Run governance sync checks (template counts, version strings)")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Detailed output")
+    parser.add_argument("--json", action="store_true", help="JSON output")
+    args = parser.parse_args()
+
+    root = os.path.abspath(args.path)
+    if not os.path.isdir(root):
+        print(f"Error: '{root}' is not a directory", file=sys.stderr)
+        sys.exit(2)
+
+    root, prefix = _resolve_root(root)
+
+    if args.governance:
+        result = ValidationResult()
+        check_governance_sync(root, result)
+        if args.json:
+            print(json.dumps(result.as_dict(), indent=2))
+        else:
+            if result.errors:
+                print("GOVERNANCE SYNC: DRIFT DETECTED")
+                for e in result.errors:
+                    print(f"  ERROR: {e}")
+            else:
+                print("GOVERNANCE SYNC: Zero drift")
+            for w in result.warnings:
+                print(f"  WARNING: {w}")
+            if args.verbose:
+                for i in result.info:
+                    print(f"  INFO: {i}")
+        sys.exit(0 if result.passed else 1)
+
+    if args.level:
+        result = ValidationResult()
+        check_starter(root, prefix, result)
+        if args.level in ("standard", "full"):
+            check_standard(root, prefix, result)
+        if args.level == "full":
+            check_full(root, prefix, result)
+        result.level = args.level
+    else:
+        _, result = determine_level(root, prefix)
+
+    if args.json:
+        print(json.dumps(result.as_dict(), indent=2))
+        sys.exit(0 if result.passed else 1)
+
+    # Human-readable output
+    level_label = result.level.capitalize() if result.level else "NONE"
+    if result.passed:
+        print(f"{level_label} conformance, all checks pass")
+    else:
+        print(f"FAILED — does not meet Starter conformance")
+
+    if result.errors or args.verbose:
+        for e in result.errors:
+            print(f"  ERROR: {e}")
+    if args.verbose:
+        for w in result.warnings:
+            print(f"  WARNING: {w}")
+        for i in result.info:
+            print(f"  INFO: {i}")
+
+    sys.exit(0 if result.passed else 1)
+
+
+if __name__ == "__main__":
+    main()

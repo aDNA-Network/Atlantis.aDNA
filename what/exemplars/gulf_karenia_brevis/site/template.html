@@ -1,0 +1,586 @@
+<title>Red Tide Early Warning</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#f4f7f6; --surface:#ffffff; --surface-2:#eaf0ee; --ink:#152220; --ink-2:#4a5956; --ink-3:#7d8b88; --line:#d9e2df; --line-2:#c3cfcb;
+  --bloom:#c2412d; --bloom-soft:#f4d9d4; --water:#2a78d6; --water-soft:#d6e5f8;
+  --g-counts:#2a78d6; --g-surveillance:#eb6834; --g-season:#1baf7a; --g-sst:#eda100; --g-discharge:#e87ba4;
+  --seq-1:#cde2fb; --seq-2:#9ec5f4; --seq-3:#6da7ec; --seq-4:#3987e5; --seq-5:#256abf; --seq-6:#184f95; --seq-7:#0d366b;
+  --tag-lever:#e87ba4; --tag-proxy:#eda100; --tag-artifact:#eb6834; --tag-state:#2a78d6;
+  --shadow:0 1px 2px rgba(21,34,32,.06),0 8px 24px -12px rgba(21,34,32,.18);
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg:#101816; --surface:#16211e; --surface-2:#1d2926; --ink:#eef3f1; --ink-2:#b3c1bd; --ink-3:#879793; --line:#2a3733; --line-2:#3a4844;
+  --bloom:#e4634d; --bloom-soft:#4a2a25; --water:#3987e5; --water-soft:#1e3350;
+  --g-counts:#3987e5; --g-surveillance:#d95926; --g-season:#199e70; --g-sst:#c98500; --g-discharge:#d55181;
+  --seq-1:#184f95; --seq-2:#1c5cab; --seq-3:#256abf; --seq-4:#2a78d6; --seq-5:#3987e5; --seq-6:#5598e7; --seq-7:#86b6ef;
+  --tag-lever:#d55181; --tag-proxy:#c98500; --tag-artifact:#d95926; --tag-state:#3987e5;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#101816; --surface:#16211e; --surface-2:#1d2926; --ink:#eef3f1; --ink-2:#b3c1bd; --ink-3:#879793; --line:#2a3733; --line-2:#3a4844;
+  --bloom:#e4634d; --bloom-soft:#4a2a25; --water:#3987e5; --water-soft:#1e3350;
+  --g-counts:#3987e5; --g-surveillance:#d95926; --g-season:#199e70; --g-sst:#c98500; --g-discharge:#d55181;
+  --seq-1:#184f95; --seq-2:#1c5cab; --seq-3:#256abf; --seq-4:#2a78d6; --seq-5:#3987e5; --seq-6:#5598e7; --seq-7:#86b6ef;
+  --tag-lever:#d55181; --tag-proxy:#c98500; --tag-artifact:#d95926; --tag-state:#3987e5;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Source Serif 4",Georgia,"Times New Roman",serif;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1040px;margin:0 auto;padding-inline:20px;padding-block:0 96px}
+h1,h2,h3,h4{font-family:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;text-wrap:balance;line-height:1.1;margin:0}
+h1{font-size:clamp(2.4rem,6vw,4.2rem);font-weight:700;letter-spacing:-.02em}
+h2{font-size:clamp(1.7rem,3.4vw,2.3rem);font-weight:650;letter-spacing:-.015em;margin-top:8px}
+h3{font-size:1.25rem;font-weight:600;margin:32px 0 8px}
+h4{font-size:1rem;font-weight:600;margin:20px 0 6px}
+p{margin:0 0 1em;max-width:68ch}
+p.lede{font-size:1.25rem;line-height:1.5;color:var(--ink-2)}
+a{color:var(--water);text-decoration-thickness:1px;text-underline-offset:3px}
+a:focus-visible,button:focus-visible{outline:2px solid var(--water);outline-offset:2px}
+code,.mono{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em}
+code{background:var(--surface-2);padding:.1em .35em;border-radius:3px}
+pre{background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:14px 16px;overflow-x:auto;font-size:.8rem;line-height:1.5;margin:12px 0 20px}
+pre code{background:none;padding:0;font-size:inherit}
+.eyebrow{font-family:"Bricolage Grotesque",sans-serif;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.num{font-family:"JetBrains Mono",monospace;font-variant-numeric:tabular-nums}
+strong{font-weight:600}
+hr.sep{border:0;border-top:1px solid var(--line);margin:48px 0}
+
+/* nav */
+nav.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);margin-inline:-20px;padding-inline:20px}
+nav.top .row{display:flex;gap:18px;overflow-x:auto;padding-block:10px;scrollbar-width:none;font-family:"Bricolage Grotesque",sans-serif;font-size:.8rem;font-weight:600;letter-spacing:.02em}
+nav.top .row::-webkit-scrollbar{display:none}
+nav.top a{color:var(--ink-2);text-decoration:none;white-space:nowrap}
+nav.top a:hover{color:var(--ink)}
+nav.top a span{color:var(--ink-3);margin-right:4px;font-family:"JetBrains Mono",monospace;font-weight:400}
+
+/* hero */
+header.hero{padding-block:56px 32px;display:grid;gap:22px}
+header.hero .kicker{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pill{display:inline-block;font-family:"Bricolage Grotesque",sans-serif;font-size:.72rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:999px;border:1px solid var(--line-2);color:var(--ink-2)}
+.pill.bloom{background:var(--bloom-soft);border-color:transparent;color:var(--bloom)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-top:6px}
+.stat{background:var(--surface);padding:14px 16px}
+.stat .v{font-family:"Bricolage Grotesque",sans-serif;font-size:1.9rem;font-weight:700;letter-spacing:-.02em;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat .l{font-size:.8rem;color:var(--ink-2);margin-top:4px;line-height:1.3}
+.stat .s{font-size:.72rem;color:var(--ink-3);font-family:"JetBrains Mono",monospace;margin-top:4px}
+
+/* sections */
+section{padding-block:40px 8px;scroll-margin-top:60px}
+section .head{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:baseline;margin-bottom:18px}
+section .head .n{font-family:"JetBrains Mono",monospace;color:var(--bloom);font-size:.9rem;padding-top:.5rem}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+@media (max-width:760px){.two{grid-template-columns:1fr}}
+
+/* figures */
+figure{margin:20px 0 28px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 12px 10px;box-shadow:var(--shadow)}
+figure .ft{font-family:"Bricolage Grotesque",sans-serif;font-weight:600;font-size:.95rem;margin:0 4px 2px}
+figure .fs{font-size:.8rem;color:var(--ink-2);margin:0 4px 8px}
+figure figcaption{font-size:.82rem;color:var(--ink-2);margin:8px 4px 0;line-height:1.45;max-width:none}
+.chart{width:100%;min-height:280px}
+.chart.tall{min-height:460px}
+.chart.short{min-height:220px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media (max-width:820px){.grid2,.grid3{grid-template-columns:1fr}}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.78rem;color:var(--ink-2);margin:2px 4px 8px;font-family:"Bricolage Grotesque",sans-serif}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.swatch{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:5px}
+
+/* tables */
+.tbl{width:100%;border-collapse:collapse;font-size:.88rem;margin:10px 0 22px}
+.tbl th,.tbl td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl th{font-family:"Bricolage Grotesque",sans-serif;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.tbl td.r,.tbl th.r{text-align:right;font-variant-numeric:tabular-nums}
+.tbl td.mono{font-size:.8rem}
+.tblwrap{overflow-x:auto}
+.tag{display:inline-block;font-family:"Bricolage Grotesque",sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:3px;color:#fff}
+.tag.lever{background:var(--tag-lever)} .tag.proxy{background:var(--tag-proxy);color:#1a1200} .tag.artifact{background:var(--tag-artifact)} .tag.state{background:var(--tag-state)}
+
+/* callouts */
+.note{border-left:3px solid var(--water);background:var(--surface);padding:12px 16px;margin:18px 0;border-radius:0 6px 6px 0;font-size:.95rem}
+.note.warn{border-color:var(--bloom)}
+.note p:last-child{margin-bottom:0}
+.note .t{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px;color:var(--ink-2)}
+.analogy{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:16px 0 24px}
+.analogy>div{background:var(--surface);padding:12px 14px;font-size:.92rem}
+.analogy .h{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.analogy .k{font-family:"Bricolage Grotesque",sans-serif;font-weight:600;font-size:.78rem;color:var(--ink-3);display:block;margin-bottom:2px}
+@media (max-width:600px){.analogy{grid-template-columns:1fr}}
+
+/* coverage heatmap */
+.heat{display:grid;gap:2px;font-size:.7rem;font-family:"JetBrains Mono",monospace;color:var(--ink-2);overflow-x:auto}
+.heat .c{height:18px;border-radius:2px;min-width:14px}
+.heat .rl{padding-right:8px;white-space:nowrap;line-height:18px;font-family:"Bricolage Grotesque",sans-serif}
+.heat .yl{writing-mode:vertical-rl;transform:rotate(180deg);line-height:14px;font-size:.62rem}
+
+/* controls */
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:6px;overflow:hidden;font-family:"Bricolage Grotesque",sans-serif;font-size:.8rem;font-weight:600}
+.seg button{background:var(--surface);color:var(--ink-2);border:0;padding:6px 12px;cursor:pointer;border-right:1px solid var(--line-2)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.ctl{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:6px 4px 10px}
+
+/* case cards */
+.cases{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media (max-width:900px){.cases{grid-template-columns:1fr}}
+.case{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 12px 8px;box-shadow:var(--shadow)}
+.case .hd{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:0 4px 4px}
+.case .hd b{font-family:"Bricolage Grotesque",sans-serif;font-size:1rem}
+.case .meta{font-size:.78rem;color:var(--ink-2);margin:0 4px 6px;line-height:1.45}
+.case .p{font-family:"Bricolage Grotesque",sans-serif;font-size:1.6rem;font-weight:700;letter-spacing:-.02em}
+
+/* playbook */
+.play{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin:14px 0 24px}
+.play>div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px}
+.play .h{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.play ul{margin:0;padding-left:18px;font-size:.9rem}
+.play li{margin-bottom:4px}
+ul.plain{padding-left:20px;max-width:70ch} ul.plain li{margin-bottom:6px}
+ol.plain{padding-left:22px;max-width:70ch} ol.plain li{margin-bottom:8px}
+footer{margin-top:64px;border-top:1px solid var(--line);padding-top:20px;font-size:.82rem;color:var(--ink-2)}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+</style>
+
+<div class="wrap">
+<nav class="top" aria-label="Sections"><div class="row">
+  <a href="#analogy"><span>1</span>Analogy</a><a href="#data"><span>2</span>Data</a><a href="#patient"><span>3</span>Patient</a><a href="#vitals"><span>4</span>Vitals</a><a href="#label"><span>5</span>Label</a><a href="#model"><span>6</span>Model</a><a href="#shap"><span>7</span>SHAP</a><a href="#cases"><span>8</span>Cases</a><a href="#strip"><span>9</span>Risk over time</a><a href="#interventions"><span>10</span>Interventions</a><a href="#limits"><span>11</span>Limits</a><a href="#reproduce"><span>12</span>Reproduce</a>
+</div></nav>
+
+<header class="hero">
+  <div class="kicker"><span class="pill bloom">Karenia brevis · brevetoxin</span><span class="pill">XGBoost + SHAP</span><span class="pill">Public data, 1994–2023</span></div>
+  <h1>A sepsis alert for the sea</h1>
+  <p class="lede">Hospitals score a patient's vitals every hour and raise an alarm hours before septic shock. This page does the same for a stretch of Florida coast: it reads the last few weeks of <em>Karenia brevis</em> cell counts, water temperature, season and river flow, and asks one question — <strong>will this region tip into a fish-killing bloom within four weeks?</strong> Then it uses SHAP values to say <em>why</em>, and what that does and does not tell you about what to do.</p>
+  <div class="stats">
+    <div class="stat"><div class="v num" data-v="metrics.full.test.auprc" data-f="2"></div><div class="l">AUPRC on 2020–23, held out</div><div class="s">prevalence <span data-v="metrics.full.test.prevalence" data-f="2"></span></div></div>
+    <div class="stat"><div class="v num" data-v="metrics.full.test.auroc" data-f="2"></div><div class="l">AUROC, same test years</div><div class="s">climatology <span data-v="metrics.climatology_baseline_test.auroc" data-f="2"></span></div></div>
+    <div class="stat"><div class="v num" data-v="metrics.full.lead_time_test_10pct.detected_fraction" data-f="pct0"></div><div class="l">of onsets flagged ahead of time at a 10% alert rate</div><div class="s">median lead <span data-v="metrics.full.lead_time_test_10pct.median_lead_weeks" data-f="1"></span> wk</div></div>
+    <div class="stat"><div class="v num" data-v="data.n_samples" data-f="k"></div><div class="l">water samples, FWC 1970–2023</div><div class="s"><span data-v="data.features_report.modelling_rows" data-f="comma"></span> region-weeks modelled</div></div>
+  </div>
+</header>
+
+<!-- 1 ANALOGY -->
+<section id="analogy"><div class="head"><div class="n">01</div><div><div class="eyebrow">The idea</div><h2>Borrowing the sepsis playbook</h2></div></div>
+<p>A sepsis early-warning system does not diagnose anything. It watches a trajectory — heart rate, temperature, lactate, white count — and estimates the probability that the patient deteriorates within a horizon. Two design choices make those systems work, and both transfer cleanly: <strong>score the trend, not the level</strong> (a rising lactate matters more than a high one), and <strong>evaluate at a fixed alert budget</strong>, because a ward can only chase so many alarms.</p>
+<div class="analogy">
+  <div class="h">Sepsis model</div><div class="h">Bloom-onset model</div>
+  <div><span class="k">Patient</span>one admitted person</div><div><span class="k">Patient</span>one coastal region (nine along Florida) in one ISO week</div>
+  <div><span class="k">Vitals</span>heart rate, temperature, lactate, WBC, trend over 6–24 h</div><div><span class="k">Vitals</span>cell counts this week and the three before, growth rate, weeks since last bloom, SST anomaly, river discharge</div>
+  <div><span class="k">Event</span>sepsis / shock within 6–48 h</div><div><span class="k">Event</span>first sample ≥ 100,000 cells/L within the next 4 weeks (FWC "medium": fish kills and respiratory irritation become likely)</div>
+  <div><span class="k">Onset rule</span>patients already septic are excluded — you predict deterioration, not persistence</div><div><span class="k">Onset rule</span>regions already at bloom level are excluded for the same reason</div>
+  <div><span class="k">Evaluation</span>AUPRC, precision at an alert rate the ward can absorb, lead time before the event</div><div><span class="k">Evaluation</span>identical — plus a check that "how hard we looked" isn't doing the predicting</div>
+  <div><span class="k">Explanation</span>per-patient SHAP: which vitals pushed this score up</div><div><span class="k">Explanation</span>per-region-week SHAP, grouped into counts / season / temperature / rivers / surveillance</div>
+</div>
+<p>Where the analogy strains is worth saying up front, and section 11 does. The short version: patients don't flow into each other, and a hospital knows what to do when the alarm fires. Neither is true of a coastline.</p>
+</section>
+
+<!-- 2 DATA -->
+<section id="data"><div class="head"><div class="n">02</div><div><div class="eyebrow">Ingredients</div><h2>Four public data streams</h2></div></div>
+<p>Everything here is downloaded from a public endpoint by a script in the repo; nothing is hand-curated. The cell counts are the Florida Fish and Wildlife Conservation Commission's historic harmful-algal-bloom sample archive, served as ArcGIS layers by decade. Environment comes from NOAA and USGS.</p>
+<div class="tblwrap"><table class="tbl">
+<tr><th>Stream</th><th>Source</th><th>What it contributes</th><th class="r">Coverage</th></tr>
+<tr><td><strong>Cell counts</strong></td><td>FWC HAB monitoring archive (ArcGIS Open Data, six decade layers)</td><td>Date, position, depth, <em>K. brevis</em> cells per litre for every water sample</td><td class="r num"><span data-v="data.n_samples" data-f="comma"></span> samples · 1970–2023</td></tr>
+<tr><td><strong>Sea-surface temperature</strong></td><td>NOAA OISST v2.1 daily, 0.25° (CoastWatch ERDDAP)</td><td>Weekly mean over each region's nearshore box; anomaly against a 1982–2011 normal</td><td class="r num">1982–2023</td></tr>
+<tr><td><strong>River discharge</strong></td><td>USGS NWIS daily values, five gauges</td><td>30-day mean flow of the river(s) feeding each region; Caloosahatchee at S-79 is the managed one</td><td class="r num">1990–2023</td></tr>
+<tr><td><strong>Season</strong></td><td>the calendar</td><td>week-of-year as sine and cosine, so week 52 sits next to week 1</td><td class="r num">—</td></tr>
+</table></div>
+<div class="grid2">
+<figure><div class="ft">How hard Florida looked, by year</div><div class="fs">Samples per year, with the share at or above the bloom threshold</div><div id="c_peryear" class="chart short"></div><figcaption>Monitoring was thin before the mid-1990s, which is why the model starts in 1994. The bars also carry the first warning of the whole page: sampling intensifies <em>during</em> blooms, so "how many samples" is partly a symptom of the outcome.</figcaption></figure>
+<figure><div class="ft">Where the samples are</div><div class="fs">Sample locations (rounded to 0.05°), coloured by the region they are assigned to</div><div id="c_map" class="chart short"></div><figcaption>Regions are latitude bands along the Gulf coast plus one Atlantic region; assignment uses coordinates only, never the free-text location names, which change convention between decade layers.</figcaption></figure>
+</div>
+<figure><div class="ft">Coverage: samples per region per year</div><div class="fs">Rows are regions north to south (Atlantic last); darker is more samples. Empty cells are exactly that — no bottle was dipped.</div><div id="c_cov" class="heat"></div><figcaption>The Sarasota–Venice and Tampa Bay bands are sampled far more than the Big Bend or the Keys. The model sees that unevenness as a feature (section 4) rather than pretending it away.</figcaption></figure>
+</section>
+
+<!-- 3 PATIENT -->
+<section id="patient"><div class="head"><div class="n">03</div><div><div class="eyebrow">The unit of prediction</div><h2>Defining the patient</h2></div></div>
+<div class="two"><div>
+<p>A sample is a point. A patient has to be something with a history, so samples are pooled into <strong>region × ISO week</strong>: nine coastal regions, every week from 1994 to 2023. That gives <span class="num" data-v="data.features_report.region_weeks_in_window" data-f="comma"></span> patient-weeks before the onset filters in section 5.</p>
+<p>Nine is a choice, not a fact. <em>K. brevis</em> blooms are coherent along the shore over roughly 50–100 km and Florida's own weekly status reports are organised by county band, so bands of about half a degree of latitude match how the phenomenon and the surveillance actually behave. Finer units (counties) would mostly be empty weeks; coarser ones (whole coast) would average away the onset.</p>
+<p><strong>Weeks with no samples are kept, not filled in.</strong> A patient whose vitals were not taken this week is still a patient. The count features are simply missing that week, XGBoost learns a default branch for missing values, and a separate feature records how stale the last reading is. Forward-filling would fabricate "stable vitals" that nobody measured.</p>
+</div><div>
+<div class="tblwrap"><table class="tbl" id="t_regions"><tr><th>#</th><th>Region</th><th class="r">Samples</th><th class="r">≥100k share</th><th>River gauge</th></tr></table></div>
+</div></div>
+</section>
+
+<!-- 4 VITALS -->
+<section id="vitals"><div class="head"><div class="n">04</div><div><div class="eyebrow">Features</div><h2>The vitals</h2></div></div>
+<p>Every feature for week <em>t</em> is computed from data dated on or before the end of week <em>t</em>. The repo has a self-test that perturbs week <em>t+1</em> and asserts that nothing at week <em>t</em> moves while the label does, and that a change five weeks out moves nothing at all. Each feature carries one of four tags that section 10 depends on:</p>
+<div class="legend"><span><span class="tag state">state</span> where the system is now</span><span><span class="tag proxy">proxy</span> a correlate you can forecast but not pull</span><span><span class="tag lever">lever</span> something a manager can actually change</span><span><span class="tag artifact">artifact</span> a property of the surveillance, not the sea</span></div>
+<div class="tblwrap"><table class="tbl" id="t_features"><tr><th>Feature</th><th>Meaning</th><th>Group</th><th>Tag</th></tr></table></div>
+<figure><div class="ft">One patient's chart: Lee–Collier, June 2017 to March 2019</div><div class="fs">The vitals over the region's most destructive recent bloom. Weekly maximum count (log scale), sea-surface temperature, 30-day Caloosahatchee discharge at S-79, and samples per week.</div><div id="c_trace" class="chart tall"></div><figcaption>Read it like a bedside chart. Counts creep up through autumn 2017, the water cools, discharge spikes after the wet season, and the number of samples explodes once the bloom is obvious — which is the surveillance-intensity problem in one picture.</figcaption></figure>
+</section>
+
+<!-- 5 LABEL -->
+<section id="label"><div class="head"><div class="n">05</div><div><div class="eyebrow">Outcome</div><h2>What counts as a crash</h2></div></div>
+<div class="two"><div>
+<p>The label is <strong>onset</strong>: <code>y = 1</code> if any sample in the region in weeks <em>t+1…t+4</em> reaches 100,000 cells/L, evaluated only for weeks where the region's last known reading is <em>below</em> that level. Region-weeks already in bloom are dropped (<span class="num" data-v="data.features_report.dropped_already_in_bloom" data-f="comma"></span> of them), exactly as a sepsis model drops patients who are already septic. Predicting that a bloom persists is easy and would inflate every number on this page.</p>
+<p>Weeks with <em>no</em> samples in the following four weeks have an unknown outcome and are dropped too (<span class="num" data-v="data.features_report.dropped_outcome_unknown" data-f="comma"></span>). That leaves <span class="num" data-v="data.features_report.modelling_rows" data-f="comma"></span> region-weeks with <span class="num" data-v="data.features_report.positives" data-f="comma"></span> onsets: a prevalence of <span class="num" data-v="data.features_report.prevalence" data-f="pct1"></span>. Every metric below is read against that base rate.</p>
+<div class="note"><div class="t">The alternative</div><p>"Any exceedance in the horizon", without dropping in-bloom weeks, gives a higher AUROC and a less useful model — it mostly learns that blooms last more than a week. A 50,000 cells/L threshold is reported in section 6 as a sensitivity check.</p></div>
+</div><div>
+<figure><div class="ft">Onset labelling, drawn</div><svg viewBox="0 0 420 190" width="100%" role="img" aria-label="Diagram of the onset label: features use weeks up to t, the label looks at weeks t+1 to t+4">
+<style>.lbl{font:600 11px "Bricolage Grotesque",sans-serif;fill:var(--ink-2)} .sm{font:10px "JetBrains Mono",monospace;fill:var(--ink-3)}</style>
+<g id="wk"></g>
+<text x="12" y="20" class="lbl">features: everything dated ≤ end of week t</text>
+<text x="12" y="176" class="lbl">label: does any sample in t+1…t+4 reach 100k cells/L?</text>
+<rect x="12" y="30" width="216" height="110" rx="6" fill="var(--water-soft)" stroke="var(--water)"/>
+<rect x="236" y="30" width="172" height="110" rx="6" fill="var(--bloom-soft)" stroke="var(--bloom)"/>
+<text x="20" y="48" class="sm">t-3</text><text x="72" y="48" class="sm">t-2</text><text x="124" y="48" class="sm">t-1</text><text x="176" y="48" class="sm">t</text>
+<text x="244" y="48" class="sm">t+1</text><text x="284" y="48" class="sm">t+2</text><text x="324" y="48" class="sm">t+3</text><text x="364" y="48" class="sm">t+4</text>
+<polyline points="24,120 76,116 128,104 180,92" fill="none" stroke="var(--water)" stroke-width="2"/>
+<circle cx="24" cy="120" r="4" fill="var(--water)"/><circle cx="76" cy="116" r="4" fill="var(--water)"/><circle cx="128" cy="104" r="4" fill="var(--water)"/><circle cx="180" cy="92" r="4" fill="var(--water)"/>
+<polyline points="180,92 248,80 288,66 328,52 368,58" fill="none" stroke="var(--bloom)" stroke-width="2" stroke-dasharray="4 3"/>
+<circle cx="248" cy="80" r="4" fill="var(--bloom)"/><circle cx="288" cy="66" r="4" fill="var(--bloom)"/><circle cx="328" cy="52" r="4" fill="var(--bloom)"/><circle cx="368" cy="58" r="4" fill="var(--bloom)"/>
+<line x1="12" y1="60" x2="408" y2="60" stroke="var(--ink-3)" stroke-dasharray="2 3"/>
+<text x="300" y="72" class="sm" text-anchor="end" fill="var(--ink-3)">100,000 cells/L</text>
+<text x="212" y="134" class="sm" text-anchor="end">must be below the line at t</text>
+<text x="400" y="134" class="sm" text-anchor="end">y = 1 (crossed at t+3)</text>
+</svg></figure>
+</div></div>
+</section>
+
+<!-- 6 MODEL -->
+<section id="model"><div class="head"><div class="n">06</div><div><div class="eyebrow">Learning and checking</div><h2>The model, and how it was tested</h2></div></div>
+<p>The classifier is gradient-boosted trees (XGBoost), the same family behind most deployed sepsis scores, because it handles missing vitals natively, learns interactions like "cooling water after a warm autumn" without being told, and explains cleanly with tree SHAP.</p>
+<div class="two"><div>
+<h4>Configuration choices that matter</h4>
+<ul class="plain">
+<li><strong>Temporal split, never random.</strong> Train 1994–2016, tune on 2017–2019, test once on 2020–2023. Adjacent region-weeks share three of four lag features and usually the same bloom; a random split puts twins on both sides and reports a fantasy.</li>
+<li><strong>No class re-weighting.</strong> <code>scale_pos_weight</code> would lift recall at the cost of calibration, and the alert-rate and lead-time analysis need probabilities that mean what they say. AUPRC is threshold-free anyway.</li>
+<li><strong>Two monotone constraints.</strong> More cells this week and a higher 4-week peak are not allowed to <em>lower</em> the risk. Everything else is left free.</li>
+<li><strong>Shallow trees, slow learning, early stopping.</strong> Depth 4, learning rate 0.03, up to 2,000 rounds, early-stopped on validation <em>log-loss</em> (<span class="num" data-v="metrics.full.n_trees"></span> trees survived). Stopping on AUPRC instead picks a two-tree model: the ranking is learned by the first split, and every tree after that is buying calibration, not discrimination. The final model is refit on train + validation at that size and touches the test years exactly once.</li>
+<li><strong>A twin without surveillance features</strong> is trained alongside, so you can see how much of the skill is "we sampled more because something was happening".</li>
+</ul>
+</div><div>
+<figure><div class="ft">The split, in time</div><div id="c_split" class="chart short" style="min-height:150px"></div>
+<div class="tblwrap"><table class="tbl" id="t_splits"><tr><th>Split</th><th>Years</th><th class="r">Region-weeks</th><th class="r">Onsets</th><th class="r">Prevalence</th></tr></table></div></figure>
+</div></div>
+
+<h3>Discrimination and calibration on the held-out years</h3>
+<div class="grid3">
+<figure><div class="ft">Precision–recall</div><div class="fs">Test 2020–23; dashed line is the base rate</div><div id="c_pr" class="chart short"></div></figure>
+<figure><div class="ft">ROC</div><div class="fs">Test 2020–23</div><div id="c_roc" class="chart short"></div></figure>
+<figure><div class="ft">Calibration</div><div class="fs">Predicted vs observed onset rate, deciles of risk</div><div id="c_cal" class="chart short"></div></figure>
+</div>
+<div class="tblwrap"><table class="tbl" id="t_compare">
+<tr><th>Model</th><th class="r">Test AUROC</th><th class="r">Test AUPRC</th><th class="r">Brier</th><th class="r">Calibration slope</th><th class="r">Trees</th></tr>
+</table></div>
+<p>Read the table against the base rate of <span class="num" data-v="metrics.full.test.prevalence" data-f="pct1"></span>: a model that guessed the base rate for everyone would score that as its AUPRC. The <strong>climatology</strong> row is the honest "no model" comparator: the onset rate for that week of the year, learned from the training years. The <strong>surveillance-only</strong> row is a single feature — samples in the last four weeks — and it is the number to keep in mind while reading section 7.</p>
+
+<h3>The operational view: alert budgets and lead time</h3>
+<p>A hospital does not read AUROC; it asks "if we act on the top 10% of scores, how often are we right, and how early?" Same here.</p>
+<div class="grid2">
+<figure><div class="ft">Precision and recall at fixed alert rates</div><div class="fs">Test years. Alert rate = share of region-weeks flagged.</div><div class="tblwrap"><table class="tbl" id="t_alerts"><tr><th>Alert rate</th><th class="r">Threshold</th><th class="r">Precision</th><th class="r">Recall</th><th class="r">Alerts</th></tr></table></div><figcaption>At a 10% alert rate the model flags roughly one region-week in ten; precision says how many of those go on to bloom, recall says how many blooms were caught.</figcaption></figure>
+<figure><div class="ft">Lead time before observed onsets</div><div class="fs">For each onset in the test years: weeks before the first bloom sample that the score first crossed the 10% threshold</div><div id="c_lead" class="chart short"></div><figcaption>"Missed" means the score never crossed the threshold inside the four-week window. Lead time here is limited by how often the region was sampled, not only by the model.</figcaption></figure>
+</div>
+<figure><div class="ft">Rolling-origin check: train through year Y, test on Y+1</div><div class="fs">AUROC and AUPRC per test year, with that year's prevalence</div><div id="c_roll" class="chart short"></div><figcaption>One held-out block can be lucky. Retraining each year and testing on the next shows the skill is not a property of one particular split. Years with fewer than five onsets are skipped.</figcaption></figure>
+<div class="note"><div class="t">Sensitivity: a lower bar</div><p>Relabelling onset at 50,000 cells/L (prevalence <span class="num" data-v="metrics.sensitivity_50k.test_prevalence" data-f="pct1"></span>) gives test AUROC <span class="num" data-v="metrics.sensitivity_50k.test_auroc" data-f="2"></span> and AUPRC <span class="num" data-v="metrics.sensitivity_50k.test_auprc" data-f="2"></span>. The story does not depend on the exact threshold.</p></div>
+</section>
+
+<!-- 7 SHAP -->
+<section id="shap"><div class="head"><div class="n">07</div><div><div class="eyebrow">Explanation</div><h2>SHAP values, globally</h2></div></div>
+<div class="two"><div>
+<p>A SHAP value answers one question per feature per prediction: <strong>how much did this feature's value move this prediction away from the average prediction?</strong> The units are the model's log-odds, so for one region-week the values add up exactly: baseline log-odds + sum of all SHAP values = the log-odds the model output. The repo asserts that identity on every test row (largest gap <span class="num" data-v="shap.additivity_max_gap" data-f="sci"></span>).</p>
+<p>The construction comes from cooperative game theory. Treat each feature as a player, the prediction as the payout, and ask how to divide the payout fairly. Shapley's answer: average each player's marginal contribution over every possible order in which players could join the coalition. Tree SHAP computes that exactly for tree ensembles instead of enumerating orders.</p>
+<h4>One decision you have to make: what "absent" means</h4>
+<p>To measure a feature's marginal contribution you must evaluate the model <em>without</em> it, and trees can't do that. Two conventions exist. <strong>Path-dependent</strong> follows the tree's own training statistics at each split the missing feature would have decided, which is faithful to the trees but lets correlated features (this week's max and the 4-week peak, say) borrow credit from each other along shared paths. <strong>Interventional</strong>, used here, replaces the missing feature with values drawn from a background sample of <span class="num" data-v="shap.background_n" data-f="comma"></span> training rows, breaking the correlations and answering "what if this feature were set independently of the rest". That is the semantics a waterfall and an intervention argument need, so it is the one to use when the point is to act — at the price of sometimes crediting a feature the model reaches only through a correlated partner.</p>
+</div><div>
+<figure><div class="ft">Which vitals carry the signal</div><div class="fs">Mean |SHAP| over the test years, in log-odds, coloured by feature group</div><div id="c_bar" class="chart tall"></div><figcaption>Mean absolute SHAP is the honest importance measure: it is measured on held-out predictions, not on how often the trees happened to split on a feature.</figcaption></figure>
+<figure><div class="ft">By group</div><div id="c_gbar" class="chart short" style="min-height:170px"></div></figure>
+</div></div>
+<figure><div class="ft">Beeswarm: every test region-week, every feature</div><div class="fs">Each dot is one region-week's SHAP value for that feature; colour is the feature's own value (light = low, dark = high). Features ordered by importance; a random <span data-v="shap.beeswarm_n" data-f="comma"></span> of the test rows.</div><div id="c_bee" class="chart tall" style="min-height:560px"></div><figcaption>Read horizontally. A feature whose dark dots sit right and light dots sit left pushes risk up when it is high. Where the colours mix on both sides, the effect depends on other features — that is what the dependence plots below unpack.</figcaption></figure>
+<h3>Dependence: the shape of each effect</h3>
+<p>Each plot is one column of the beeswarm turned sideways: the feature's value on the x-axis, its SHAP value on the y-axis, and colour from the feature the trees most often interact it with. Vertical spread at a fixed x is interaction; the colour tells you with what. The strongest measured pair is <strong><span data-v="shap.top_interaction.a" data-f="label"></span> × <span data-v="shap.top_interaction.b" data-f="label"></span></strong>.</p>
+<div id="c_dep" class="grid3"></div>
+</section>
+
+<!-- 8 CASES -->
+<section id="cases"><div class="head"><div class="n">08</div><div><div class="eyebrow">Explanation, locally</div><h2>Three patients, three waterfalls</h2></div></div>
+<p>This is the bedside view. Start at the baseline probability (<span class="num" data-v="shap.base_p" data-f="pct1"></span>, the average onset rate the model expects with no information), and let each feature push the log-odds up or down until you reach the score. All three are from the held-out years, chosen by rule: the confident true positive with the longest lead; the most confident false alarm; and the quietest July.</p>
+<div class="cases" id="cases_wrap"></div>
+<p style="margin-top:18px">The false alarm is the most instructive of the three. A model can only be wrong in the ways its features allow; when a high score does not pan out, the waterfall shows which vital misled it — and often the answer is a surveillance feature, which is the artifact tag earning its keep.</p>
+</section>
+
+<!-- 9 STRIP -->
+<section id="strip"><div class="head"><div class="n">09</div><div><div class="eyebrow">The dashboard view</div><h2>Risk decomposed over time</h2></div></div>
+<p>Sepsis dashboards show a score trending over the shift with the contributing vitals stacked beneath it. This is the same picture for one region across one bloom: the weekly onset probability on top, the observed weekly maximum in the middle, and beneath them the SHAP values summed by group — what the counts, the season, the water temperature, the rivers and the surveillance each contributed that week.</p>
+<div class="ctl"><span class="eyebrow">Episode</span><div class="seg" id="strip_seg" role="group" aria-label="Choose episode">
+<button aria-pressed="true" data-k="oos_2022_23">Lee–Collier 2022–23 (held out)</button><button aria-pressed="false" data-k="oos_2021_tampa">Tampa Bay 2021 (held out)</button><button aria-pressed="false" data-k="insample_2017_19">Lee–Collier 2017–19 (in-sample)</button></div></div>
+<figure><div class="ft" id="strip_title"></div><div class="fs">Top: predicted onset probability, with weeks that did go on to bloom marked. Middle: observed weekly maximum. Bottom: SHAP by group, log-odds. Grey bands are weeks excluded from the modelling set (already in bloom, or unknown outcome).</div><div id="c_strip" class="chart tall" style="min-height:620px"></div><figcaption id="strip_cap"></figcaption></figure>
+</section>
+
+<!-- 10 INTERVENTIONS -->
+<section id="interventions"><div class="head"><div class="n">10</div><div><div class="eyebrow">From explanation to action</div><h2>What SHAP can and cannot tell a manager</h2></div></div>
+<p>SHAP explains the <em>model</em>. It says which inputs moved this score, under the model's learned associations. It does not say what would happen to the <em>sea</em> if you changed one of them. The bridge from one to the other is the tag on each feature, and it is a human bridge, not a statistical one.</p>
+<div class="play">
+<div><div class="h"><span class="tag lever">lever</span>Modifiable</div><ul><li><strong>River discharge</strong> — the Caloosahatchee at S-79 is a managed release from Lake Okeechobee. A high discharge SHAP contribution is the only one on this page that points at a valve someone holds.</li><li>Nutrient loads ride on that flow; the data here carries flow, not nutrients. Treat discharge as a proxy for the real lever.</li></ul></div>
+<div><div class="h"><span class="tag proxy">proxy</span>Forecastable, not pullable</div><ul><li><strong>SST, season, cooling rate</strong> — nobody cools the Gulf. But these are forecast weeks ahead, so a high contribution here changes <em>when to watch</em>: it justifies pre-positioning sampling and shellfish testing before the counts move.</li></ul></div>
+<div><div class="h"><span class="tag artifact">artifact</span>Surveillance</div><ul><li><strong>Samples per week</strong> — when this contributes strongly, the model is partly reading the monitoring programme's own reaction. That is a warning label on the score, and an argument for a fixed sampling design so that "how hard we looked" stops correlating with the outcome.</li></ul></div>
+<div><div class="h"><span class="tag state">state</span>The trajectory</div><ul><li><strong>Counts and growth</strong> — not levers, but the part of the score that tells you how much time you have. A high score built on growth rate is a different situation from one built on a single hot sample.</li></ul></div>
+</div>
+
+<h3>A what-if on the only lever</h3>
+<p>The cheapest way to see what the model thinks a lever does is to move it and re-score. Below, the 30-day discharge features are reduced by 30% for every week of the episode and the model is asked again. Everything else — including the counts that discharge might, in reality, have influenced — is held fixed, which is precisely why this is a model exercise and not an environmental impact statement.</p>
+<div class="ctl"><span class="eyebrow">Episode</span><div class="seg" id="wi_seg" role="group" aria-label="Choose what-if episode"></div></div>
+<figure><div class="ft" id="wi_title"></div><div class="fs">Predicted onset probability per week, actual features vs. discharge features reduced 30%</div><div id="c_whatif" class="chart"></div><figcaption id="wi_cap"></figcaption></figure>
+<div class="note warn"><div class="t">Why this is not a causal estimate</div><p>Discharge co-varies with the wet season, with rainfall, with wind and with the very temperature signals the model also reads. XGBoost learned a conditional association, not a mechanism; there is no identification strategy here — no instrument, no natural experiment, no dose-response from managed releases. The what-if measures the model's sensitivity, which is a hypothesis generator. The experiment that would test it belongs to the Army Corps and the South Florida Water Management District, not to this page.</p></div>
+
+<h3>How a score like this would actually be used</h3>
+<ol class="plain">
+<li><strong>Tiered alerts at a fixed budget.</strong> Pick the alert rate the monitoring programme can act on (the 10% row in section 6) and let the threshold follow from it, exactly as a ward sets its alarm rate. Precision and recall at that budget are the numbers to publish, not AUROC.</li>
+<li><strong>Read the waterfall before acting.</strong> An alert driven by growth and cooling water means "sample here now, warn shellfish harvesters, pre-stage respiratory-irritation advisories". An alert driven by sample count means "you are looking at your own footprint; verify before escalating".</li>
+<li><strong>Route lever contributions to the lever's owner.</strong> A discharge-driven alert in Lee–Collier is a memo to the people who schedule releases, with the what-if attached as a question, not a finding.</li>
+<li><strong>Fix the surveillance design.</strong> The single most useful intervention this analysis suggests is to the data, not the ecosystem: fixed-station weekly sampling would remove the artifact channel and make every other SHAP value more trustworthy.</li>
+<li><strong>Close the loop.</strong> Every alert and its outcome go back into the training set. A sepsis model that is never retrained drifts; so will this.</li>
+</ol>
+</section>
+
+<!-- 11 LIMITS -->
+<section id="limits"><div class="head"><div class="n">11</div><div><div class="eyebrow">Honesty</div><h2>Where the analogy breaks, and other limits</h2></div></div>
+<ul class="plain">
+<li><strong>Patients are independent; regions are not.</strong> Blooms advect along the coast. Sarasota's onset is often Lee–Collier's bloom moving north, which the region-wise model treats as two events. Neighbouring-region features would be the obvious next step.</li>
+<li><strong>Sepsis has a treatment; a bloom has a response.</strong> Antibiotics within the hour change the outcome. Nothing a manager can do in four weeks stops a bloom that has begun; the actions are protective (closures, advisories) and preparatory (sampling), which is why lead time matters more here than in the clinic.</li>
+<li><strong>Sepsis labels are adjudicated; bloom labels depend on where the bottle was dipped.</strong> An onset that happened between sampling sites is invisible. The 'unknown outcome' filter removes the worst of this and cannot remove all of it.</li>
+<li><strong>Surveillance is endogenous.</strong> Sampling intensifies when blooms are suspected. The ablation in section 6 bounds the effect; it cannot eliminate it.</li>
+<li><strong>Discharge is flow, not nutrients;</strong> temperature is a 0.25° box average, not the water a cell lives in; wind and upwelling, which are physically important for <em>K. brevis</em> transport, are not in this version.</li>
+<li><strong>Interventional SHAP breaks correlations by construction</strong>, so it can assign credit to a feature the model only reaches through a partner. The dependence plots colour that partner for exactly this reason.</li>
+<li><strong>This is a demonstration of method</strong> on a single public archive, not an operational forecast. FWC and NOAA run real ones.</li>
+</ul>
+</section>
+
+<!-- 12 REPRODUCE -->
+<section id="reproduce"><div class="head"><div class="n">12</div><div><div class="eyebrow">Repeat it</div><h2>Reproduce it</h2></div></div>
+<p>The pipeline is a folder of small scripts, each writing a cached file the next one reads. On a laptop the whole arc — download, features, two models, SHAP, this page — runs in under an hour, most of it waiting on the SST server.</p>
+<pre><code>uv venv --python 3.12 .venv &amp;&amp; uv pip install -r requirements.txt
+cd src
+../.venv/bin/python -m hab.fetch_fwc            # 196k samples, six ArcGIS layers, paginated
+../.venv/bin/python -m hab.fetch_env            # OISST per region box + USGS daily discharge
+../.venv/bin/python -m hab.build_features --self-test   # the leakage test
+../.venv/bin/python -m hab.build_features       # region-week table, vitals, onset label
+../.venv/bin/python -m hab.train                # full + no-surveillance models, metrics.json
+../.venv/bin/python -m hab.explain              # interventional TreeExplainer, additivity check
+../.venv/bin/python -m hab.whatif               # discharge −30% re-score
+../.venv/bin/python -m hab.export_site_data     # site_data.json
+../.venv/bin/python -m hab.build_site           # this page</code></pre>
+<div class="tblwrap"><table class="tbl"><tr><th>Setting</th><th>Value</th></tr>
+<tr><td>Onset threshold</td><td class="num" data-v="config.target.bloom_threshold_cells_per_l" data-f="comma"></td></tr>
+<tr><td>Horizon</td><td class="num"><span data-v="config.target.horizon_weeks"></span> weeks</td></tr>
+<tr><td>XGBoost</td><td class="mono" id="t_xgb"></td></tr>
+<tr><td>SHAP</td><td class="mono"><span data-v="shap.perturbation"></span> perturbation, background <span data-v="shap.background_n" data-f="comma"></span> training rows</td></tr>
+<tr><td>Config hash</td><td class="mono" data-v="metrics.config_hash"></td></tr>
+<tr><td>Generated</td><td class="mono" data-v="generated"></td></tr>
+</table></div>
+<p>Data credits: Florida Fish and Wildlife Conservation Commission, Fish and Wildlife Research Institute, HAB Monitoring Database; NOAA/NCEI OISST v2.1 via NOAA CoastWatch ERDDAP; U.S. Geological Survey National Water Information System. SHAP: Lundberg &amp; Lee (2017); Lundberg et al., <em>Nature Machine Intelligence</em> (2020) for tree SHAP and the interventional/path-dependent distinction.</p>
+</section>
+
+<footer>Built for a conversation between a marine ecologist and a freshwater metagenomicist. The method transfers to any monitored system with a trajectory and a threshold; the data credits above are the only part that is Florida-specific.</footer>
+</div>
+
+<script id="site-data" type="application/json">__SITE_DATA__</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/3.1.0/plotly-basic.min.js"></script>
+<script>
+(function(){
+const D = JSON.parse(document.getElementById('site-data').textContent);
+const FEAT = Object.fromEntries(D.features.map(f=>[f.name,f]));
+const GROUPS = ['counts','surveillance','season','sst','discharge'];
+const GLABEL = {counts:'Counts & trajectory',surveillance:'Surveillance',season:'Season',sst:'Temperature',discharge:'Rivers'};
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const tok = () => ({bg:css('--surface'),ink:css('--ink'),ink2:css('--ink-2'),ink3:css('--ink-3'),line:css('--line'),bloom:css('--bloom'),water:css('--water'),
+  g:{counts:css('--g-counts'),surveillance:css('--g-surveillance'),season:css('--g-season'),sst:css('--g-sst'),discharge:css('--g-discharge')},
+  seq:[1,2,3,4,5,6,7].map(i=>css('--seq-'+i))});
+const get = (o,p)=>p.split('.').reduce((a,k)=>a==null?a:a[k],o);
+const fmt = (v,f)=>{ if(v==null||Number.isNaN(v)) return '—';
+  switch(f){case '2':return v.toFixed(2);case '3':return v.toFixed(3);case '1':return v.toFixed(1);case 'pct0':return Math.round(v*100)+'%';case 'pct1':return (v*100).toFixed(1)+'%';
+  case 'comma':return Math.round(v).toLocaleString('en-US');case 'k':return (v/1000).toFixed(0)+'k';case 'sci':return v.toExponential(1);case 'label':return FEAT[v]?FEAT[v].label:v;default:return String(v);}};
+D.shap.beeswarm_n = D.shap.beeswarm.y.length;
+document.querySelectorAll('[data-v]').forEach(el=>{el.textContent=fmt(get(D,el.dataset.v),el.dataset.f);});
+const cells = v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'k':Math.round(v);
+
+// ---------- Plotly base layout ----------
+function L(extra){ const t=tok(); return Object.assign({paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{family:'"Bricolage Grotesque",sans-serif',size:12,color:t.ink2},
+  margin:{l:48,r:14,t:10,b:40},hovermode:'closest',hoverlabel:{bgcolor:t.bg,bordercolor:t.line,font:{color:t.ink,family:'"JetBrains Mono",monospace',size:11}},
+  xaxis:{gridcolor:t.line,zerolinecolor:t.line,linecolor:t.line,tickfont:{color:t.ink3}},yaxis:{gridcolor:t.line,zerolinecolor:t.line,linecolor:t.line,tickfont:{color:t.ink3}},
+  legend:{orientation:'h',y:1.12,x:0,font:{size:11}},showlegend:false},extra||{});}
+const CFG={displayModeBar:false,responsive:true};
+const charts=[];
+function plot(id,traces,layout){ const el=document.getElementById(id); if(!el) return; Plotly.react(el,traces,layout,CFG); }
+function reg(fn){charts.push(fn); fn();}
+
+// ---------- 2 DATA ----------
+reg(()=>{ const t=tok(); const yrs=Object.keys(D.data.per_year).map(Number).filter(y=>y>=1980);
+  const n=yrs.map(y=>D.data.per_year[y].n), hi=yrs.map(y=>D.data.per_year[y].ge1e5);
+  plot('c_peryear',[{type:'bar',x:yrs,y:n.map((v,i)=>v-hi[i]),name:'below 100k',marker:{color:t.water},hovertemplate:'%{x}: %{y:,} samples below 100k<extra></extra>'},
+    {type:'bar',x:yrs,y:hi,name:'≥100k cells/L',marker:{color:t.bloom},hovertemplate:'%{x}: %{y:,} samples ≥100k<extra></extra>'}],
+    L({barmode:'stack',bargap:.25,showlegend:true,yaxis:{title:{text:'samples / year'},gridcolor:t.line,tickfont:{color:t.ink3}},shapes:[{type:'line',x0:1993.5,x1:1993.5,y0:0,y1:1,yref:'paper',line:{color:t.ink3,dash:'dot',width:1}}],
+      annotations:[{x:1993.5,y:1,yref:'paper',text:'model starts',showarrow:false,xanchor:'left',yanchor:'top',font:{size:10,color:t.ink3}}]}));
+  // map: ordinal ramp along the coast for regions 1..8, orange for Atlantic
+  const m=D.data.map; const col=r=>r===9?t.g.surveillance:t.seq[Math.min(6,r-1)];
+  plot('c_map',[{type:'scatter',mode:'markers',x:m.lon,y:m.lat,marker:{size:m.n.map(v=>Math.min(9,3+Math.log10(v)*2.2)),color:m.region.map(col),opacity:.8,line:{width:0}},
+    text:m.region.map((r,i)=>D.regions[r-1].name+' · '+m.n[i]+' samples'),hovertemplate:'%{text}<br>%{y:.2f}, %{x:.2f}<extra></extra>'}],
+    L({xaxis:{title:{text:'longitude'},gridcolor:t.line,tickfont:{color:t.ink3},range:[-88,-79.5]},yaxis:{title:{text:'latitude'},gridcolor:t.line,tickfont:{color:t.ink3},scaleanchor:'x',scaleratio:1.1,range:[24.3,31]},margin:{l:48,r:10,t:10,b:40}}));
+  // coverage heatmap (CSS grid)
+  const cv=D.data.coverage, el=document.getElementById('c_cov'); el.innerHTML='';
+  el.style.gridTemplateColumns='max-content repeat('+cv.years.length+',minmax(14px,1fr))';
+  const mx=Math.max(...cv.counts.flat()); const ramp=v=>v===0?'transparent':t.seq[Math.min(6,Math.floor(Math.log(1+v)/Math.log(1+mx)*7))];
+  cv.regions.forEach((r,ri)=>{ const l=document.createElement('div'); l.className='rl'; l.textContent=r; el.appendChild(l);
+    cv.years.forEach((y,yi)=>{ const c=document.createElement('div'); c.className='c'; const v=cv.counts[yi][ri]; c.style.background=ramp(v); c.style.border=v===0?'1px dashed '+t.line:'0'; c.title=r+' '+y+': '+v+' samples'; el.appendChild(c); }); });
+  el.appendChild(document.createElement('div')); cv.years.forEach(y=>{const d=document.createElement('div'); d.className='yl'; d.textContent=y%5===0?y:''; el.appendChild(d);});
+});
+
+// ---------- 3 regions table ----------
+(function(){ const tb=document.getElementById('t_regions'); const gauge={}; Object.entries(D.gauges).forEach(([s,g])=>g.regions.forEach(r=>{(gauge[r]=gauge[r]||[]).push(g.name.split(' at ')[0].split(' nr ')[0]+(g.lever?' (managed)':''));}));
+  D.regions.forEach(r=>{ const pr=D.data.per_region[r.name]; const tr=document.createElement('tr'); tr.innerHTML=`<td class="num">${r.id}</td><td>${r.name}</td><td class="r num">${pr.n.toLocaleString('en-US')}</td><td class="r num">${(pr.ge1e5*100).toFixed(1)}%</td><td style="font-size:.8rem">${(gauge[r.id]||['—']).join(', ')}</td>`; tb.appendChild(tr);}); })();
+
+// ---------- 4 features table + trace ----------
+(function(){ const tb=document.getElementById('t_features'); D.features.forEach(f=>{const tr=document.createElement('tr'); tr.innerHTML=`<td><b>${f.label}</b><br><code>${f.name}</code></td><td style="font-size:.85rem">${f.desc}</td><td style="font-size:.85rem"><span class="swatch" style="background:var(--g-${f.group})"></span>${GLABEL[f.group]}</td><td><span class="tag ${f.tag}">${f.tag}</span></td>`; tb.appendChild(tr);}); })();
+reg(()=>{ const t=tok(), tr=D.data.trace, thr=D.config.target.bloom_threshold_cells_per_l;
+  const mc=tr.max_cells.map(v=>v==null?null:Math.max(v,1));
+  plot('c_trace',[
+    {type:'scatter',mode:'lines+markers',x:tr.weeks,y:mc,name:'weekly max cells/L',line:{color:t.bloom,width:2},marker:{size:5},connectgaps:false,hovertemplate:'%{x}<br>max %{y:,.0f} cells/L<extra></extra>'},
+    {type:'scatter',mode:'lines',x:tr.weeks,y:tr.sst,name:'SST °C',yaxis:'y2',line:{color:t.g.sst,width:2},hovertemplate:'%{x}<br>SST %{y:.1f} °C<extra></extra>'},
+    {type:'scatter',mode:'lines',x:tr.weeks,y:tr.discharge_cfs,name:'S-79 discharge, 30-day mean (cfs)',yaxis:'y3',line:{color:t.g.discharge,width:2},fill:'tozeroy',fillcolor:t.g.discharge+'22',hovertemplate:'%{x}<br>%{y:,.0f} cfs<extra></extra>'},
+    {type:'bar',x:tr.weeks,y:tr.n_samples,name:'samples / week',yaxis:'y4',marker:{color:t.g.surveillance},hovertemplate:'%{x}<br>%{y} samples<extra></extra>'}],
+    L({grid:{rows:4,columns:1,pattern:'independent',roworder:'top to bottom'},margin:{l:56,r:14,t:10,b:40},showlegend:false,
+      yaxis:{type:'log',title:{text:'max cells/L'},domain:[.76,1],gridcolor:t.line,tickfont:{color:t.ink3},range:[0,7.2]},
+      yaxis2:{title:{text:'SST °C'},domain:[.51,.72],gridcolor:t.line,tickfont:{color:t.ink3}},
+      yaxis3:{title:{text:'S-79 cfs'},domain:[.26,.47],gridcolor:t.line,tickfont:{color:t.ink3}},
+      yaxis4:{title:{text:'samples'},domain:[0,.22],gridcolor:t.line,tickfont:{color:t.ink3}},
+      xaxis:{anchor:'y4',gridcolor:t.line,tickfont:{color:t.ink3},showgrid:false},xaxis2:{matches:'x',visible:false},xaxis3:{matches:'x',visible:false},xaxis4:{matches:'x',visible:false},
+      shapes:[{type:'line',xref:'paper',x0:0,x1:1,y0:thr,y1:thr,yref:'y',line:{color:t.ink3,dash:'dot',width:1}}],
+      annotations:[{xref:'paper',x:0,y:thr,yref:'y',text:'100k cells/L',showarrow:false,xanchor:'left',yanchor:'bottom',font:{size:10,color:t.ink3}},
+        {xref:'paper',x:0,yref:'paper',y:1,text:'weekly max count',showarrow:false,xanchor:'left',yanchor:'top',font:{size:11,color:t.ink2}},
+        {xref:'paper',x:0,yref:'paper',y:.72,text:'sea-surface temperature',showarrow:false,xanchor:'left',yanchor:'top',font:{size:11,color:t.ink2}},
+        {xref:'paper',x:0,yref:'paper',y:.47,text:'Caloosahatchee discharge at S-79',showarrow:false,xanchor:'left',yanchor:'top',font:{size:11,color:t.ink2}},
+        {xref:'paper',x:0,yref:'paper',y:.22,text:'samples per week',showarrow:false,xanchor:'left',yanchor:'top',font:{size:11,color:t.ink2}}]}));
+});
+
+// ---------- 5 label diagram: nothing dynamic ----------
+
+// ---------- 6 model ----------
+(function(){ const tb=document.getElementById('t_splits'); ['train','val','test'].forEach(k=>{const s=D.metrics.splits[k]; const tr=document.createElement('tr'); tr.innerHTML=`<td>${k}</td><td class="num">${s.years[0]}–${s.years[1]}</td><td class="r num">${s.n.toLocaleString('en-US')}</td><td class="r num">${s.positives.toLocaleString('en-US')}</td><td class="r num">${(100*s.positives/s.n).toFixed(1)}%</td>`; tb.appendChild(tr);}); })();
+reg(()=>{ const t=tok(); const s=D.metrics.splits; const col={train:t.water,val:t.g.season,test:t.bloom};
+  plot('c_split',['train','val','test'].map(k=>({type:'bar',orientation:'h',y:['years'],x:[s[k].years[1]-s[k].years[0]+1],base:[s[k].years[0]],name:k,marker:{color:col[k]},text:k+' '+s[k].years[0]+'–'+s[k].years[1],textposition:'inside',insidetextanchor:'middle',textfont:{color:'#fff',size:11},hovertemplate:k+': %{base}–'+s[k].years[1]+'<extra></extra>'})),
+    L({barmode:'stack',margin:{l:10,r:10,t:6,b:30},height:110,yaxis:{visible:false},xaxis:{range:[1993.5,2024],gridcolor:t.line,tickfont:{color:t.ink3},dtick:5}}));
+  const full=D.metrics.full.test, ns=D.metrics.no_surveillance.test;
+  plot('c_pr',[{type:'scatter',mode:'lines',x:full.pr.recall,y:full.pr.precision,name:'full model',line:{color:t.bloom,width:2},hovertemplate:'recall %{x:.2f} · precision %{y:.2f}<extra>full</extra>'},
+    {type:'scatter',mode:'lines',x:ns.pr.recall,y:ns.pr.precision,name:'no surveillance features',line:{color:t.water,width:2,dash:'dot'},hovertemplate:'recall %{x:.2f} · precision %{y:.2f}<extra>no surveillance</extra>'}],
+    L({showlegend:true,legend:{orientation:'h',y:1.18,x:0,font:{size:10}},xaxis:{title:{text:'recall'},range:[0,1],gridcolor:t.line,tickfont:{color:t.ink3}},yaxis:{title:{text:'precision'},range:[0,1],gridcolor:t.line,tickfont:{color:t.ink3}},
+      shapes:[{type:'line',x0:0,x1:1,y0:full.prevalence,y1:full.prevalence,line:{color:t.ink3,dash:'dash',width:1}}]}));
+  plot('c_roc',[{type:'scatter',mode:'lines',x:full.roc.fpr,y:full.roc.tpr,name:'full',line:{color:t.bloom,width:2},hovertemplate:'FPR %{x:.2f} · TPR %{y:.2f}<extra>full</extra>'},
+    {type:'scatter',mode:'lines',x:ns.roc.fpr,y:ns.roc.tpr,name:'no surveillance',line:{color:t.water,width:2,dash:'dot'},hovertemplate:'FPR %{x:.2f} · TPR %{y:.2f}<extra>no surveillance</extra>'},
+    {type:'scatter',mode:'lines',x:[0,1],y:[0,1],line:{color:t.ink3,dash:'dash',width:1},hoverinfo:'skip'}],
+    L({xaxis:{title:{text:'false positive rate'},range:[0,1],gridcolor:t.line,tickfont:{color:t.ink3}},yaxis:{title:{text:'true positive rate'},range:[0,1],gridcolor:t.line,tickfont:{color:t.ink3}}}));
+  const cal=full.calibration;
+  plot('c_cal',[{type:'scatter',mode:'lines',x:[0,Math.max(...cal.map(c=>c.pred))*1.05],y:[0,Math.max(...cal.map(c=>c.pred))*1.05],line:{color:t.ink3,dash:'dash',width:1},hoverinfo:'skip'},
+    {type:'scatter',mode:'lines+markers',x:cal.map(c=>c.pred),y:cal.map(c=>c.obs),marker:{size:cal.map(c=>Math.max(6,Math.sqrt(c.n)/3)),color:t.bloom},line:{color:t.bloom,width:2},text:cal.map(c=>c.n),hovertemplate:'predicted %{x:.3f}<br>observed %{y:.3f}<br>n=%{text}<extra></extra>'}],
+    L({xaxis:{title:{text:'mean predicted probability'},gridcolor:t.line,tickfont:{color:t.ink3},rangemode:'tozero'},yaxis:{title:{text:'observed onset rate'},gridcolor:t.line,tickfont:{color:t.ink3},rangemode:'tozero'}}));
+  const lt=D.metrics.full.lead_time_test_10pct.histogram_weeks_before_onset; const ks=['1','2','3','4','-1'].filter(k=>k in lt);
+  plot('c_lead',[{type:'bar',x:ks.map(k=>k==='-1'?'missed':k+' wk'),y:ks.map(k=>lt[k]),marker:{color:ks.map(k=>k==='-1'?t.ink3:t.water)},text:ks.map(k=>lt[k]),textposition:'outside',textfont:{color:t.ink2},hovertemplate:'%{x}: %{y} onsets<extra></extra>'}],
+    L({bargap:.35,yaxis:{title:{text:'onsets'},gridcolor:t.line,tickfont:{color:t.ink3}},xaxis:{title:{text:'lead time (weeks before first bloom sample)'},gridcolor:t.line,tickfont:{color:t.ink3}}}));
+  const ro=D.metrics.rolling_origin;
+  plot('c_roll',[{type:'bar',x:ro.map(r=>r.test_year),y:ro.map(r=>r.prevalence),name:'prevalence',marker:{color:t.line},hovertemplate:'%{x}: prevalence %{y:.3f}<extra></extra>'},
+    {type:'scatter',mode:'lines+markers',x:ro.map(r=>r.test_year),y:ro.map(r=>r.auroc),name:'AUROC',line:{color:t.water,width:2},marker:{size:7},hovertemplate:'%{x}: AUROC %{y:.3f}<extra></extra>'},
+    {type:'scatter',mode:'lines+markers',x:ro.map(r=>r.test_year),y:ro.map(r=>r.auprc),name:'AUPRC',line:{color:t.bloom,width:2},marker:{size:7},hovertemplate:'%{x}: AUPRC %{y:.3f}<extra></extra>'}],
+    L({showlegend:true,legend:{orientation:'h',y:1.15,x:0},xaxis:{title:{text:'test year'},dtick:1,gridcolor:t.line,tickfont:{color:t.ink3}},yaxis:{range:[0,1],gridcolor:t.line,tickfont:{color:t.ink3}}}));
+});
+(function(){ const tb=document.getElementById('t_compare'); const rows=[['Full model',D.metrics.full.test,D.metrics.full.n_trees],['Without surveillance features',D.metrics.no_surveillance.test,D.metrics.no_surveillance.n_trees]];
+  rows.forEach(([n,m,tr])=>{const r=document.createElement('tr'); r.innerHTML=`<td>${n}</td><td class="r num">${m.auroc.toFixed(3)}</td><td class="r num">${m.auprc.toFixed(3)}</td><td class="r num">${m.brier.toFixed(4)}</td><td class="r num">${m.calibration_slope.toFixed(2)}</td><td class="r num">${tr}</td>`; tb.appendChild(r);});
+  const c=D.metrics.climatology_baseline_test, so=D.metrics.surveillance_only_test_auroc, pv=D.metrics.full.test.prevalence;
+  [['Climatology (week-of-year rate)',c.auroc,c.auprc],['Surveillance only (samples, last 4 wk)',so,null],['Base rate (constant)',0.5,pv]].forEach(([n,a,p])=>{const r=document.createElement('tr'); r.innerHTML=`<td>${n}</td><td class="r num">${a.toFixed(3)}</td><td class="r num">${p==null?'—':p.toFixed(3)}</td><td class="r">—</td><td class="r">—</td><td class="r">—</td>`; tb.appendChild(r);});
+  const ta=document.getElementById('t_alerts'); Object.entries(D.metrics.full.test.alert_rates).forEach(([k,v])=>{const r=document.createElement('tr'); r.innerHTML=`<td>${k.replace('pct','%')}</td><td class="r num">${v.threshold.toFixed(3)}</td><td class="r num">${(v.precision*100).toFixed(0)}%</td><td class="r num">${(v.recall*100).toFixed(0)}%</td><td class="r num">${v.n_alerts}</td>`; ta.appendChild(r);});
+  const x=D.config.xgb; document.getElementById('t_xgb').textContent=`depth ${x.max_depth} · eta ${x.learning_rate} · subsample ${x.subsample} · colsample ${x.colsample_bytree} · min_child_weight ${x.min_child_weight} · lambda ${x.reg_lambda} · early stop ${x.early_stopping_rounds} on ${x.eval_metric} · monotone +1 on ${x.monotone_increasing.join(', ')} · seed ${x.random_state}`;
+})();
+
+// ---------- 7 SHAP global ----------
+reg(()=>{ const t=tok(); const ma=D.shap.mean_abs; const order=Object.keys(ma).sort((a,b)=>ma[a]-ma[b]);
+  plot('c_bar',[{type:'bar',orientation:'h',y:order.map(f=>FEAT[f].label),x:order.map(f=>ma[f]),marker:{color:order.map(f=>t.g[FEAT[f].group])},hovertemplate:'%{y}<br>mean |SHAP| %{x:.3f}<extra></extra>'}],
+    L({margin:{l:170,r:14,t:6,b:36},height:520,bargap:.3,xaxis:{title:{text:'mean |SHAP| (log-odds)'},gridcolor:t.line,tickfont:{color:t.ink3}},yaxis:{tickfont:{size:11,color:t.ink2},gridcolor:'rgba(0,0,0,0)'}}));
+  const gm=D.shap.group_mean_abs; const go=GROUPS.slice().sort((a,b)=>gm[a]-gm[b]);
+  plot('c_gbar',[{type:'bar',orientation:'h',y:go.map(g=>GLABEL[g]),x:go.map(g=>gm[g]),marker:{color:go.map(g=>t.g[g])},text:go.map(g=>gm[g].toFixed(2)),textposition:'outside',textfont:{color:t.ink2},hovertemplate:'%{y}: %{x:.3f}<extra></extra>'}],
+    L({margin:{l:120,r:40,t:6,b:30},height:170,bargap:.3,xaxis:{gridcolor:t.line,tickfont:{color:t.ink3}},yaxis:{tickfont:{size:11,color:t.ink2}}}));
+  // beeswarm: top 14 features, y = rank + jitter, colour = percentile of feature value
+  const B=D.shap.beeswarm; const top=Object.keys(ma).sort((a,b)=>ma[b]-ma[a]).slice(0,14).reverse(); const traces=[];
+  top.forEach((f,fi)=>{ const k=B.features.indexOf(f); const sv=B.shap[k], xv=B.x[k];
+    const vals=xv.filter(v=>v!=null).slice().sort((a,b)=>a-b); const pct=v=>{ if(v==null) return null; let lo=0,hi=vals.length; while(lo<hi){const m=(lo+hi)>>1; if(vals[m]<v) lo=m+1; else hi=m;} return lo/vals.length; };
+    // deterministic jitter, denser near centre
+    const jit=sv.map((v,i)=>{ const h=Math.sin(i*12.9898+fi*78.233)*43758.5453; const u=h-Math.floor(h); return (u-0.5)*0.72; });
+    traces.push({type:'scatter',mode:'markers',x:sv,y:jit.map(j=>fi+j),marker:{size:4,opacity:.75,color:xv.map(pct),colorscale:[[0,t.seq[0]],[0.5,t.seq[3]],[1,t.seq[6]]],cmin:0,cmax:1,line:{width:0}},
+      text:xv.map(v=>v==null?'missing':(+v).toFixed(2)),hovertemplate:FEAT[f].label+'<br>value %{text}<br>SHAP %{x:.2f}<extra></extra>',showlegend:false});
+    // missing values drawn hollow in ink-3
+    const mi=xv.map((v,i)=>v==null?i:-1).filter(i=>i>=0); if(mi.length) traces.push({type:'scatter',mode:'markers',x:mi.map(i=>sv[i]),y:mi.map(i=>fi+jit[i]),marker:{size:4,color:'rgba(0,0,0,0)',line:{width:1,color:t.ink3}},hovertemplate:FEAT[f].label+'<br>value missing<br>SHAP %{x:.2f}<extra></extra>',showlegend:false});
+  });
+  plot('c_bee',traces,L({margin:{l:170,r:14,t:6,b:40},height:560,xaxis:{title:{text:'SHAP value (log-odds); right = pushes toward onset'},gridcolor:t.line,zerolinecolor:t.ink3,tickfont:{color:t.ink3}},
+    yaxis:{tickvals:top.map((f,i)=>i),ticktext:top.map(f=>FEAT[f].label),tickfont:{size:11,color:t.ink2},gridcolor:t.line,range:[-.6,top.length-.4]}}));
+  // dependence
+  const wrap=document.getElementById('c_dep'); wrap.innerHTML='';
+  D.shap.top6.forEach((f,i)=>{ const d=D.shap.dependence[f]; const fig=document.createElement('figure'); fig.innerHTML=`<div class="ft">${FEAT[f].label}</div><div class="fs">colour: ${FEAT[d.partner].label} (light = low, dark = high)</div><div id="c_dep_${i}" class="chart short"></div>`; wrap.appendChild(fig);
+    const pv=d.partner_x.filter(v=>v!=null).slice().sort((a,b)=>a-b); const pct=v=>{ if(v==null) return null; let lo=0,hi=pv.length; while(lo<hi){const m=(lo+hi)>>1; if(pv[m]<v) lo=m+1; else hi=m;} return lo/pv.length; };
+    plot('c_dep_'+i,[{type:'scatter',mode:'markers',x:d.x,y:d.shap,marker:{size:4,opacity:.7,color:d.partner_x.map(pct),colorscale:[[0,t.seq[0]],[0.5,t.seq[3]],[1,t.seq[6]]],cmin:0,cmax:1,line:{width:0}},text:d.partner_x.map(v=>v==null?'missing':(+v).toFixed(2)),hovertemplate:FEAT[f].label+' %{x:.2f}<br>SHAP %{y:.2f}<br>'+FEAT[d.partner].label+' %{text}<extra></extra>'}],
+      L({margin:{l:44,r:10,t:6,b:36},xaxis:{title:{text:FEAT[f].label,font:{size:11}},gridcolor:t.line,tickfont:{color:t.ink3}},yaxis:{title:{text:'SHAP',font:{size:11}},gridcolor:t.line,zerolinecolor:t.ink3,tickfont:{color:t.ink3}}}));
+  });
+});
+
+// ---------- 8 cases ----------
+reg(()=>{ const t=tok(); const wrap=document.getElementById('cases_wrap'); wrap.innerHTML='';
+  const TT={true_positive:'True positive, early',false_positive:'False alarm',quiet:'Quiet week'};
+  D.shap.cases.forEach((c,ci)=>{ const card=document.createElement('div'); card.className='case';
+    const ent=Object.entries(c.shap).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])); const top=ent.slice(0,9), rest=ent.slice(9).reduce((s,e)=>s+e[1],0);
+    const items=top.map(([f,v])=>({l:FEAT[f].label+' = '+(c.x[f]==null?'missing':fmtx(f,c.x[f])),v})); items.push({l:`other ${ent.length-9} features`,v:rest});
+    const outcome=c.tag==='quiet'?'no bloom followed':(c.y?`bloom followed (${cells(c.future_max_cells)} cells/L within 4 wk${c.lead_weeks?', first crossed '+c.lead_weeks+' wk later':''})`:`no bloom followed (max ${c.future_max_cells==null?'unknown':cells(c.future_max_cells)} cells/L)`);
+    card.innerHTML=`<div class="hd"><b>${TT[c.tag]}</b><span class="p num" style="color:${c.y?'var(--bloom)':'var(--ink-2)'}">${(c.p*100).toFixed(0)}%</span></div><div class="meta">${c.region} · week of ${c.week}<br>this week's max: ${c.max_cells_this_week==null?'no samples':cells(c.max_cells_this_week)+' cells/L'}<br>outcome: ${outcome}</div><div id="c_case_${ci}" class="chart" style="min-height:340px"></div>`;
+    wrap.appendChild(card);
+    // waterfall via bar base
+    let cum=D.shap.base_logit; const xs=[],bases=[],cols=[],labels=[],hover=[];
+    items.forEach(it=>{ labels.push(it.l); bases.push(Math.min(cum,cum+it.v)); xs.push(Math.abs(it.v)); cols.push(it.v>=0?t.bloom:t.water); hover.push((it.v>=0?'+':'')+it.v.toFixed(2)+' log-odds'); cum+=it.v; });
+    const sig=z=>1/(1+Math.exp(-z));
+    plot('c_case_'+ci,[{type:'bar',orientation:'h',y:labels,x:xs,base:bases,marker:{color:cols},text:hover,hovertemplate:'%{y}<br>%{text}<extra></extra>',textposition:'none'}],
+      L({margin:{l:150,r:10,t:18,b:34},height:340,bargap:.25,yaxis:{autorange:'reversed',tickfont:{size:10,color:t.ink2}},xaxis:{title:{text:'log-odds',font:{size:11}},gridcolor:t.line,tickfont:{color:t.ink3},zerolinecolor:t.line},
+        shapes:[{type:'line',x0:D.shap.base_logit,x1:D.shap.base_logit,y0:0,y1:1,yref:'paper',line:{color:t.ink3,dash:'dot',width:1}},{type:'line',x0:cum,x1:cum,y0:0,y1:1,yref:'paper',line:{color:c.y?t.bloom:t.ink2,width:1.5}}],
+        annotations:[{x:D.shap.base_logit,y:1,yref:'paper',text:'base '+(sig(D.shap.base_logit)*100).toFixed(1)+'%',showarrow:false,yanchor:'bottom',font:{size:10,color:t.ink3}},{x:cum,y:1,yref:'paper',text:'score '+(sig(cum)*100).toFixed(0)+'%',showarrow:false,yanchor:'bottom',font:{size:10,color:t.ink}}]}));
+  });
+  function fmtx(f,v){ if(f.startsWith('log_')||f.startsWith('roll_')) return cells(Math.pow(10,v)-1)+' cells/L'; if(f.startsWith('discharge_30d')) return cells(Math.pow(10,v)-1)+' cfs'; if(f.startsWith('growth')) return (v>=0?'+':'')+v.toFixed(2)+' log10'; if(f.startsWith('sst')&&f!=='sst_delta_4w') return v.toFixed(1)+' °C'; if(f==='sst_delta_4w'||f==='discharge_anom_t0') return (v>=0?'+':'')+v.toFixed(2); if(f.startsWith('n_samples')||f.startsWith('weeks')) return Math.round(v); return v.toFixed(2); }
+});
+
+// ---------- 9 risk strip ----------
+const stripCap={oos_2022_23:'Held-out years. Hurricane Ian made landfall on 28 September 2022; the bloom that followed ran into spring 2023. Watch which groups carry the score in the weeks before the first ≥100k sample, and how much of it is surveillance once the bloom is obvious.',
+  oos_2021_tampa:'Held-out year. The 2021 Tampa Bay bloom followed the Piney Point wastewater release in early April; the region-week model has no feature for that, so any warning it gives is coming from counts, season and temperature alone.',
+  insample_2017_19:'In-sample: these years were in the training or validation set, so the score is flattered. Shown because it is the episode most people remember — the bloom that reached the Panhandle and killed fish for sixteen months.'};
+function drawStrip(k){ const t=tok(); const s=D.shap.strips[k]; document.getElementById('strip_title').textContent=s.region+' — '+s.weeks[0].slice(0,7)+' to '+s.weeks[s.weeks.length-1].slice(0,7); document.getElementById('strip_cap').textContent=stripCap[k];
+  const tr=[]; const onset=s.weeks.map((w,i)=>s.y[i]===1?s.p[i]:null);
+  tr.push({type:'scatter',mode:'lines',x:s.weeks,y:s.p,name:'P(onset within 4 wk)',line:{color:t.ink,width:2},fill:'tozeroy',fillcolor:t.bloom+'1f',hovertemplate:'%{x}<br>P = %{y:.2f}<extra></extra>'});
+  tr.push({type:'scatter',mode:'markers',x:s.weeks,y:onset,name:'bloom followed',marker:{color:t.bloom,size:8,symbol:'diamond'},hovertemplate:'%{x}<br>bloom within 4 wk · P = %{y:.2f}<extra></extra>'});
+  tr.push({type:'scatter',mode:'lines+markers',x:s.weeks,y:s.max_cells.map(v=>v==null?null:Math.max(v,1)),yaxis:'y2',name:'weekly max cells/L',line:{color:t.bloom,width:1.5},marker:{size:4},connectgaps:false,hovertemplate:'%{x}<br>max %{y:,.0f} cells/L<extra></extra>'});
+  GROUPS.forEach(g=>tr.push({type:'bar',x:s.weeks,y:s.groups[g],yaxis:'y3',name:GLABEL[g],marker:{color:t.g[g]},hovertemplate:'%{x}<br>'+GLABEL[g]+' %{y:+.2f}<extra></extra>'}));
+  const shapes=[{type:'line',xref:'paper',x0:0,x1:1,yref:'y2',y0:1e5,y1:1e5,line:{color:t.ink3,dash:'dot',width:1}}];
+  // grey bands for weeks not in the modelling set: p is NaN there → mark them
+  s.weeks.forEach((w,i)=>{ if(s.split[i]==null) shapes.push({type:'rect',xref:'x',x0:w,x1:w,yref:'paper',y0:0,y1:1,fillcolor:t.ink3,opacity:.08,line:{width:0}}); });
+  plot('c_strip',tr,L({barmode:'relative',bargap:.15,showlegend:true,legend:{orientation:'h',y:-.08,x:0,font:{size:10}},margin:{l:56,r:14,t:10,b:70},height:620,
+    yaxis:{title:{text:'P(onset)'},domain:[.72,1],range:[0,1],gridcolor:t.line,tickfont:{color:t.ink3}},
+    yaxis2:{title:{text:'max cells/L'},type:'log',domain:[.46,.68],gridcolor:t.line,tickfont:{color:t.ink3},range:[0,7.2]},
+    yaxis3:{title:{text:'SHAP by group (log-odds)'},domain:[0,.42],gridcolor:t.line,zerolinecolor:t.ink3,tickfont:{color:t.ink3}},
+    xaxis:{gridcolor:t.line,tickfont:{color:t.ink3},showgrid:false},shapes}));
+}
+let stripK='oos_2022_23'; reg(()=>drawStrip(stripK));
+document.getElementById('strip_seg').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; stripK=b.dataset.k; [...e.currentTarget.children].forEach(x=>x.setAttribute('aria-pressed',x===b)); drawStrip(stripK);});
+
+// ---------- 10 what-if ----------
+const wiKeys=Object.keys(D.whatif); const wiSeg=document.getElementById('wi_seg');
+wiKeys.forEach((k,i)=>{const b=document.createElement('button'); b.dataset.k=k; b.setAttribute('aria-pressed',i===0); const w=D.whatif[k]; b.textContent=D.regions[w.region-1].name+' '+w.weeks[0].slice(0,4)+'–'+w.weeks[w.weeks.length-1].slice(2,4)+(w.split.every(s=>s==='test')?' (held out)':' (in-sample)'); wiSeg.appendChild(b);});
+function drawWI(k){ const t=tok(); const w=D.whatif[k]; document.getElementById('wi_title').textContent=D.regions[w.region-1].name+' — '+w.weeks[0].slice(0,7)+' to '+w.weeks[w.weeks.length-1].slice(0,7);
+  document.getElementById('wi_cap').textContent=`Mean change in predicted probability across the episode: ${(w.mean_delta*100).toFixed(1)} percentage points (mean absolute change ${(w.mean_abs_delta*100).toFixed(1)} pp). ${w.mean_delta<0?'The model associates lower discharge with lower onset risk in this episode':'The model does not associate lower discharge with lower risk in this episode'} — under the caveats below.`;
+  plot('c_whatif',[{type:'scatter',mode:'lines',x:w.weeks,y:w.p_actual,name:'actual features',line:{color:t.ink,width:2},hovertemplate:'%{x}<br>actual P = %{y:.2f}<extra></extra>'},
+    {type:'scatter',mode:'lines',x:w.weeks,y:w.p_discharge_minus30,name:'discharge −30%',line:{color:t.g.discharge,width:2,dash:'dot'},hovertemplate:'%{x}<br>discharge −30% P = %{y:.2f}<extra></extra>'},
+    {type:'scatter',mode:'markers',x:w.weeks,y:w.weeks.map((x,i)=>w.y[i]===1?w.p_actual[i]:null),name:'bloom followed',marker:{color:t.bloom,size:8,symbol:'diamond'},hovertemplate:'%{x}<br>bloom within 4 wk<extra></extra>'}],
+    L({showlegend:true,legend:{orientation:'h',y:1.15,x:0},yaxis:{title:{text:'P(onset within 4 wk)'},range:[0,1],gridcolor:t.line,tickfont:{color:t.ink3}},xaxis:{gridcolor:t.line,tickfont:{color:t.ink3},showgrid:false}}));
+}
+let wiK=wiKeys[0]; reg(()=>drawWI(wiK));
+wiSeg.addEventListener('click',e=>{const b=e.target.closest('button'); if(!b) return; wiK=b.dataset.k; [...wiSeg.children].forEach(x=>x.setAttribute('aria-pressed',x===b)); drawWI(wiK);});
+
+// ---------- theme change → redraw ----------
+const mq=window.matchMedia('(prefers-color-scheme: dark)'); const redraw=()=>charts.forEach(f=>f());
+mq.addEventListener?mq.addEventListener('change',redraw):mq.addListener(redraw);
+new MutationObserver(redraw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+})();
+</script>
