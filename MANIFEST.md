@@ -10,7 +10,7 @@ owner: stanley
 visibility: public            # aDNA-Network/Atlantis.aDNA, MIT
 data_bearing: false           # instances are; Atlantis is not
 created: 2026-09-23
-updated: 2026-10-02   # M-1a complete
+updated: 2026-10-02   # M-1c complete
 last_edited_by: agent_proteus
 tags: [manifest, atlantis, framework, oceans, ecosystem_early_warning, genesis_stub]
 ---

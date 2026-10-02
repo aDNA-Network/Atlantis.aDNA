@@ -1,5 +1,17 @@
 # CHANGELOG — Atlantis.aDNA
 
+## 2026-10-02 — v0.3.0 · M-1c `atl_v0` controls complete (P1 lane 2 of 4)
+
+- **M-1c complete** (opus) — AAR `how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m1c_linkml_controls.md`. Operator rulings at open: SO-9's ≥ 1 alert budget enforced now; `geometry_ref` = denylist of literals.
+  - **`atl_v0` 0.2.0 controlled**: **42 controls** (3 positive · 39 negative), each negative failing only on its `REJECTS_ON` regex at its `REJECTS_AT` path, under **three worlds** (linkml-validate · committed `atl_ontology_v0.schema.json` descendants-off · scratch descendants-on, FORMAT_CHECKER on). Committed JSON == fresh `gen-json-schema --closed`; Rule 4 (flag-proof) asserted. The NO-VALIDATION-CLAIM banner is retired.
+  - **Instrument proven to fail**: rule weakened · committed JSON hand-edited · wrong-reason negative → each RUN FAILED. Removing each geometry/anchor arm reddens exactly its own control.
+  - **Finding of record**: bare-`required` LinkML rule postconditions are emitted untyped, so `owner: null` / `''` satisfied "a lever names its owner" under both validators. Closed with a typed `all_of` guard.
+  - **Fit matrix** (`m1c_vocabulary_fit_matrix.md`): 30 enum values × 7 authorities, 0 bound / 30 local with reasons; Modality vs GOOS EOV (live page, 36 EOVs) → stays local, EOV is a v1 stream annotation. Crosswalk `goos_eov` URL was 404, corrected.
+  - **README**: proof table, finding of record, 9 known limits (referential integrity · uniqueness · cross-field equality · …).
+- **`iii/` adopted** (`how/federation/iii/`, III v0.6.0 @ `be7dba1`, `opt_in`); **SO-10** — III review via the wrapper, in a fresh context. First review: PASS-WITH-FINDINGS, 12 findings, 11 fixed; learning store C-001…C-004.
+- Board entry: `limitations_ref` §12 → §11 (hand fix with provenance note; generator fix → M-1d, **WI-8**).
+- STATE: M-1b queued next (self-contained prompt, opus).
+
 ## 2026-10-02 — v0.2.1 · M-1a exemplar hygiene complete (P1 lane 1 of 4)
 
 - **M-1a complete** (fable, operator-ruled; carded opus) — AAR `how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m1a_exemplar_hygiene.md`. Exemplar `what/exemplars/gulf_karenia_brevis/`:

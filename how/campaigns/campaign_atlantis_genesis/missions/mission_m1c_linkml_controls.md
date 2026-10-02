@@ -4,7 +4,7 @@ mission_id: M-1c
 plan_id: mission_m1c_linkml_controls
 title: "M-1c — `atl_v0` controls — fixtures, `run_controls.sh`, committed JSON Schema, vocabulary fit matrix"
 owner: stanley
-status: in_progress
+status: completed
 campaign: campaign_atlantis_genesis
 campaign_id: campaign_atlantis_genesis
 phase: P1
@@ -12,7 +12,7 @@ campaign_phase: 1
 mission_class: verification
 executor_tier: opus
 token_budget_estimated: "60-90kT"
-token_budget_actual: ""
+token_budget_actual: "~265kT main + ~194kT fresh-context III reviewer (≈5× card; see AAR Finding 4)"
 depends_on: ['M-0']
 aar_path: how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m1c_linkml_controls.md
 session: session_stanley_20261002_162046_m1c_linkml_controls
@@ -34,13 +34,13 @@ Convert the draft ontology's intentions into enforced constraints under the ASOA
 
 ## Acceptance criteria
 
-- [ ] `what/schema/atl_v0/fixtures/controls/{pos,neg}_*.yaml` — ≥ 1 positive per class; negatives with `# REJECTS_ON:` (and `# REJECTS_AT:` where a path is meaningful) for: lever without owner · operational claim without ruling · missing base_rate · missing limitations_ref · bad id prefix · sha256 not hex64 · inline geometry literal · unknown enum value
-- [ ] `run_controls.sh` (ASOAtlas/Ray precedent; `LINKML_BIN` scratch venv) — three worlds: linkml-validate · committed JSON (descendants OFF) · scratch JSON (descendants ON); a stale committed JSON fails the run
-- [ ] `atl_ontology_v0.schema.json` committed and equal to a fresh `gen-json-schema --closed`
-- [ ] `m1c_vocabulary_fit_matrix.md`: every enum value × crosswalk authority; `Modality` re-examined against GOOS EOV; `local` rows carry reasons
-- [ ] Every constraint docstring names what its control proves and the nearest miss it does not catch; README `validation:` updated and the NO-VALIDATION-CLAIM banner replaced by the control count
-- [ ] Known limits named (referential integrity · uniqueness · cross-object equality are a validator's job)
-- [ ] III review via wrapper (`iii/`, adopted in this mission if absent)
+- [x] `what/schema/atl_v0/fixtures/controls/{pos,neg}_*.yaml` — ≥ 1 positive per class; negatives with `# REJECTS_ON:` (and `# REJECTS_AT:` where a path is meaningful) for: lever without owner · operational claim without ruling · missing base_rate · missing limitations_ref · bad id prefix · sha256 not hex64 · inline geometry literal · unknown enum value
+- [x] `run_controls.sh` (ASOAtlas/Ray precedent; `LINKML_BIN` scratch venv) — three worlds: linkml-validate · committed JSON (descendants OFF) · scratch JSON (descendants ON); a stale committed JSON fails the run
+- [x] `atl_ontology_v0.schema.json` committed and equal to a fresh `gen-json-schema --closed`
+- [x] `m1c_vocabulary_fit_matrix.md`: every enum value × crosswalk authority; `Modality` re-examined against GOOS EOV; `local` rows carry reasons
+- [x] Every constraint docstring names what its control proves and the nearest miss it does not catch; README `validation:` updated and the NO-VALIDATION-CLAIM banner replaced by the control count
+- [x] Known limits named (referential integrity · uniqueness · cross-object equality are a validator's job)
+- [x] III review via wrapper (`iii/`, adopted in this mission if absent)
 
 ## Guardrails
 
@@ -75,5 +75,7 @@ The acceptance checklist above, each item checked by a command or a file the AAR
 4. The exemplar `what/exemplars/gulf_karenia_brevis/README.md` + `AGENTS.md`.
 
 ## AAR
+
+**Filed 2026-10-02:** `missions/aar/aar_m1c_linkml_controls.md` — 42 controls, ALL WORLDS AGREE; III review PASS-WITH-FINDINGS, 11/12 fixed, WI-8 carried.
 
 *Mandatory before `status: completed` (SO-6).* Worked · Didn't · Finding · Change · Follow-up → `aar_path`.
