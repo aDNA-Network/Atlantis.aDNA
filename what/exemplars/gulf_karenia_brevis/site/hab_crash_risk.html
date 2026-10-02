@@ -178,7 +178,7 @@ footer{margin-top:64px;border-top:1px solid var(--line);padding-top:20px;font-si
 </section>
 
 <!-- 2 DATA -->
-<section id="data"><div class="head"><div class="n">02</div><div><div class="eyebrow">Ingredients</div><h2>Four public data streams</h2></div></div>
+<section id="data"><div class="head"><div class="n">02</div><div><div class="eyebrow">Ingredients</div><h2>Three public data streams, plus the calendar</h2></div></div>
 <p>Everything here is downloaded from a public endpoint by a script in the repo; nothing is hand-curated. The cell counts are the Florida Fish and Wildlife Conservation Commission's historic harmful-algal-bloom sample archive, served as ArcGIS layers by decade. Environment comes from NOAA and USGS.</p>
 <div class="tblwrap"><table class="tbl">
 <tr><th>Stream</th><th>Source</th><th>What it contributes</th><th class="r">Coverage</th></tr>
@@ -353,7 +353,7 @@ footer{margin-top:64px;border-top:1px solid var(--line);padding-top:20px;font-si
 <!-- 12 REPRODUCE -->
 <section id="reproduce"><div class="head"><div class="n">12</div><div><div class="eyebrow">Repeat it</div><h2>Reproduce it</h2></div></div>
 <p>The pipeline is a folder of small scripts, each writing a cached file the next one reads. On a laptop the whole arc — download, features, two models, SHAP, this page — runs in under an hour, most of it waiting on the SST server.</p>
-<pre><code>uv venv --python 3.12 .venv &amp;&amp; uv pip install -r requirements.txt
+<pre><code>uv sync                                         # pyproject.toml + uv.lock → .venv
 cd src
 ../.venv/bin/python -m hab.fetch_fwc            # 196k samples, six ArcGIS layers, paginated
 ../.venv/bin/python -m hab.fetch_env            # OISST per region box + USGS daily discharge
