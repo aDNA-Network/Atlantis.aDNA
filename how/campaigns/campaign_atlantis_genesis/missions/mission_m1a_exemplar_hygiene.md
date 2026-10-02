@@ -4,7 +4,7 @@ mission_id: M-1a
 plan_id: mission_m1a_exemplar_hygiene
 title: "M-1a — Exemplar hygiene — doc/config drift, provenance hashes, packaging, safe region parser"
 owner: stanley
-status: planned
+status: active
 campaign: campaign_atlantis_genesis
 campaign_id: campaign_atlantis_genesis
 phase: P1
@@ -15,7 +15,7 @@ token_budget_estimated: "40-60kT"
 token_budget_actual: ""
 depends_on: ['M-0']
 aar_path: how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m1a_exemplar_hygiene.md
-session: TBD
+session: session_stanley_20261002_143344_m1a_exemplar_hygiene
 created: 2026-10-02
 updated: 2026-10-02
 last_edited_by: agent_proteus
