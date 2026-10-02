@@ -1,31 +1,38 @@
 ---
 type: schema_pack
 doc_id: atl_schema_v0_readme
-title: "what/schema/atl_v0/ — the Atlantis `atl_` ontology, v0 (draft · NO VALIDATION CLAIM)"
+title: "what/schema/atl_v0/ — the Atlantis `atl_` ontology, v0 (draft · 19 controls under three worlds)"
 status: draft
-version: 0.1.0
+version: 0.2.0
 created: 2026-10-02
 updated: 2026-10-02
 last_edited_by: agent_proteus
-mission: mission_m0_atlantis_genesis_planning
+mission: mission_m1c_linkml_controls   # authored at mission_m0_atlantis_genesis_planning
 authoring_idiom: "LinkML (aDNA.aDNA ADR-062, proposed — preferred-but-optional)"
 precedent: ASOAtlas.aDNA/what/schema/aso_v0/
 validation:
-  run_at: 2026-10-02
-  toolchain: "scratch uv venv · Python 3.12 · linkml 1.11.1 (nothing installed on the node)"
-  linkml_lint: "0 errors · 38 warnings (37 `recommended`: missing description on id/part slots; 1 `canonical_prefixes`: UCUM namespace) — accepted at v0"
-  gen_json_schema: "--closed -t AtlDocument → rc 0, 18 $defs (11 classes + 7 enums); generated to scratch only, NOT committed (M-1c)"
-  smoke: "one positive AtlDocument validates; one negative (lever without owner) rejected at /vitals/0 — a SMOKE test, not a control: no REJECTS_ON discipline, not committed"
-  controls: "none — fixtures/controls/ + run_controls.sh + fit matrix are M-1c"
+  run_at: 2026-10-02   # M-1c
+  toolchain: "scratch uv venv · Python 3.12 · linkml 1.11.1 · jsonschema[format] + rfc3339-validator (nothing installed on the node; LINKML_BIN)"
+  linkml_lint: "0 errors · 32 warnings (31 `recommended` — missing description on part/container slots; 1 `canonical_prefixes` — UCUM namespace) — accepted at v0"
+  gen_json_schema: "gen-json-schema --closed (tree_root AtlDocument) → atl_ontology_v0.schema.json COMMITTED, draft 2019-09, 18 $defs; byte-equality with a fresh generation is checked every run"
+  controls: "19 — 3 positive · 16 negative; each negative fails ONLY on its REJECTS_ON regex AT its REJECTS_AT path, in all three worlds (linkml-validate · committed JSON desc-OFF · scratch JSON desc-ON), FORMAT_CHECKER on"
+  instrument_proven: "three deliberate sabotages each turned the run red (rule weakened · committed JSON hand-edited · a negative naming the wrong reason) — M-1c AAR"
+  flag_proof: "Rule 4 asserted by the runner: 9 range classes, no concrete descendants"
+  fit_matrix: "m1c_vocabulary_fit_matrix.md — 30 enum values; 0 bound / 30 local with reasons; Modality re-examined against GOOS EOV (live page, 36 EOVs) → stays local, EOV = v1 stream annotation"
 tags: [schema, ontology, linkml, atl, atlantis, draft, m0]
 ---
 
 # `atl_v0` — the Atlantis ontology
 
-> ⛔ **NO VALIDATION CLAIM.** This directory holds a *draft* LinkML schema and a crosswalk. No control fixture has
-> been run against it, no JSON Schema is committed, no vocabulary fit matrix exists. A constraint written in the
-> schema is an **intention** until P1 **M-1c** builds `fixtures/controls/{pos,neg}_*.yaml` + `run_controls.sh` and
-> the generated `atl_ontology_v0.schema.json`, and proves — ASOAtlas rule 1 — that **both** validators enforce it.
+> ✅ **19 controls · three worlds · committed JSON == fresh** (M-1c, 2026-10-02). A constraint is claimed here **only**
+> where a fixture in `fixtures/controls/` proves it under `linkml-validate`, the committed `atl_ontology_v0.schema.json`
+> (descendants OFF) and a scratch JSON Schema (descendants ON) — ASOAtlas rule 1. Everything else the schema *says* is
+> documentation. Status stays `draft`; what the controls do **not** prove is listed under **Known limits** below.
+>
+> ```
+> uv venv <scratch> && uv pip install -p <scratch>/bin/python linkml==1.11.1 "jsonschema[format]" rfc3339-validator pyyaml
+> LINKML_BIN=<scratch>/bin what/schema/atl_v0/fixtures/controls/run_controls.sh     # → "== ALL WORLDS AGREE ==", rc 0
+> ```
 
 ## What is here
 
@@ -33,7 +40,9 @@ tags: [schema, ontology, linkml, atl, atlantis, draft, m0]
 |---|---|---|
 | `atl_ontology_v0.linkml.yaml` | Five classes · seven enums · the slots an instance's registries are declared in | draft |
 | `crosswalk_external_vocabularies_v0.yaml` | Which marine authorities an `atl_` slot binds to (6 bound: WDPA · CF · UCUM · WoRMS · Darwin Core · PROV-O), which are deferred and why, and which things are *source protocols*, not vocabularies | draft |
-| `fixtures/controls/` · `run_controls.sh` · `atl_ontology_v0.schema.json` · `m1c_vocabulary_fit_matrix.md` | **M-1c** | absent by design |
+| `atl_ontology_v0.schema.json` | `gen-json-schema --closed` output, committed; the runner fails if it drifts | controlled |
+| `fixtures/controls/` | 3 `pos_*` · 16 `neg_*` (each with `# REJECTS_ON:` + `# REJECTS_AT:`) · `run_controls.sh` · `check_controls_json.py` · `_common_header.txt` (fixture sourcing) | controlled |
+| `m1c_vocabulary_fit_matrix.md` | Every enum value × every crosswalk authority; the GOOS EOV re-examination | draft |
 
 ## The five classes, and why only five
 
@@ -59,7 +68,7 @@ Chosen by the three tests in `context_adna_core_ontology_workshop` (instance · 
 - `Steward`, `Instance` — governance documents (`instance_contract_v0.md`, instance register at P4).
 - `BoardEntry` — the board's own schema (`what/board/README.md`), which **embeds** an `AtlEvaluation`.
 
-## Rules adopted (effective at M-1c)
+## Rules adopted (in force from M-1c)
 
 1. A constraint is claimed only if **both** `linkml-validate` and the committed JSON Schema enforce it.
 2. Every enum is a row in the fit matrix, sourced to the crosswalk authority or marked `local` with the reason.
@@ -69,7 +78,56 @@ Chosen by the three tests in `context_adna_core_ontology_workshop` (instance · 
 5. Referential integrity (does `stream_ref` resolve? does the ruling path exist?), uniqueness and cross-object
    equality are a **validator's** job, not the schema's — named here as known limits, never implied.
 
-## Validation (this sitting)
+## What the controls prove (M-1c)
+
+| Constraint | Positive | Negative(s) — rejected only on this, at this path | Nearest miss NOT caught |
+|---|---|---|---|
+| A lever names its owner (rule) | exemplar (S-79 lever) | `neg_lever_without_owner` · `neg_lever_owner_null` | an owner who cannot move this lever |
+| An operational claim cites its ruling (rule; SO-4) | `pos_operational_with_ruling` | `neg_operational_without_ruling` · `neg_operational_ruling_null` | a ruling path that does not exist |
+| `base_rate` required, in [0,1] (SO-9) | exemplar | `neg_missing_base_rate` | base_rate ≠ n_positives / n_test |
+| `limitations_ref` required, non-blank (SO-4/9) | exemplar | `neg_missing_limitations_ref` · `neg_limitations_ref_blank` | a page with no Limitations section |
+| ≥ 1 alert budget (SO-9 — operator ruling: now, not M-1b) | exemplar (3 budgets) | `neg_evaluation_without_budget` · `neg_evaluation_empty_budgets` | a budget not measured at its rate |
+| `atl_<kind>_` id prefixes | all | `neg_bad_id_prefix` | duplicate ids; dangling `*_ref`s |
+| `sha256` = lowercase hex64 | exemplar (3 pins) | `neg_sha256_not_hex64` | a well-formed hash of the wrong bytes |
+| `geometry_ref` is a pointer (denylist — operator ruling) | exemplar rule strings · `pos_mpa_zone_wdpa` paths | `neg_inline_geometry_wkt` · `_geojson` · `_bbox` | integer / DMS coordinates; WKT mid-string with integer coords |
+| Closed enums | all | `neg_vital_tag_driver` | a wrong-but-legal tag |
+| Closed classes — metrics only (SO-3) | all | `neg_per_patient_predictions` | per-patient values inside a free-text slot |
+
+**Finding of record (M-1c).** A LinkML rule postcondition written as a bare `{required: true}` is emitted by
+gen-json-schema as `then: {required: [x]}` with no type, while the slot itself is typed `["string","null"]`. So
+**`owner: null`, `owner: ''` and a bare YAML `owner:` all satisfied "a lever names its owner" under both validators.**
+Both rules now carry `all_of: [{range: string, pattern: '\S'}]`, which the generator emits typed and non-null. Any
+LinkML schema in the fleet that relies on a rule postcondition for presence has the same hole (ASOAtlas's
+`neg_revoked_without_revoked_by`, for one, may be worth a null twin; memo, not an edit — peer vaults are read-only).
+
+## Known limits — a validator's job, not the schema's
+
+Named so that nobody reads them as implied:
+
+1. **Referential integrity.** `stream_ref`, `event_ref`, `unit_ref`, `parent_unit`, `event_variable_stream` and
+   `data_pins[].stream_ref` are checked for *shape*, never for *resolution*. The negatives deliberately reference
+   undeclared `atl_*_example` objects and still fail only on their named defect. `owner_ruling_ref`,
+   `limitations_ref` and `shap_summary_ref` are not checked to exist.
+2. **Uniqueness.** Two objects with the same id in one document both validate.
+3. **Cross-field and cross-object equality.** `base_rate = n_positives / n_test`; `n_positives ≤ n_test`;
+   `data_pins` ⊇ the streams the vitals read; a surveillance ablation present iff a stream declares
+   `surveillance_channel: true` (T5); `AtlDataPin.sha256` = the stream's `sha256`.
+4. **Warnings.** `mpa_zone` without `external_id` SHOULD warn. LinkML rules have no warning severity, and an error
+   would be wrong, so it is not enforced at all.
+5. **`ifabsent` is not applied by either validator.** `claim` and `tier` defaults document intent for generators;
+   `claim` is required and must be written.
+6. **External ids are not looked up.** `WoRMS:233015`, `WDPA:<id>` and `CF:<name>` are CURIE-shaped only.
+7. **The board entry's embedded `evaluation` block is not a closed `AtlEvaluation`.** It carries `event`, `patient`,
+   `modelling_*`, `dropped_*`, `n_trees`, `n_vitals`, `vital_groups`, `sensitivity` and a `shap_summary` object, and
+   its data pins carry `artifact`. `pos_exemplar_gulf_karenia_brevis` is the *projection* that validates. Reconciling
+   the board schema with `AtlEvaluation` (embed the projection, keep the extras beside it) belongs to M-1d's BOARD
+   generator (STATE WI-8).
+8. **Python-regex world only.** Both declared validators use Python `re`; the `geometry_ref` denylist uses lookaheads,
+   which ECMA-262 also supports, but no ECMA validator is run.
+
+## Validation history
+
+### M-0 (2026-10-02, smoke only)
 
 Run in a scratch venv (uv · Python 3.12 · linkml 1.11.1), nothing installed on the node:
 

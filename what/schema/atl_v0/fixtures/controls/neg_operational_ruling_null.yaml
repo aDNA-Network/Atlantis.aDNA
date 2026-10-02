@@ -1,0 +1,15 @@
+# NEGATIVE — M-1c. An operational claim whose owner_ruling_ref is a bare YAML `owner_ruling_ref:` → null — the same hole as neg_lever_owner_null, on the SO-4 rule. MUST FAIL, and only on this.
+# REJECTS_ON: None is not of type 'string'
+# REJECTS_AT: ^/evaluations/0/owner_ruling_ref$
+evaluations:
+  - evaluation_id: atl_eval_example
+    event_ref: atl_event_example
+    split: "train 2000-2015 · test 2016-2020, scored once"
+    n_test: 100
+    n_positives: 10
+    base_rate: 0.1
+    alert_budgets: [{rate: 0.1, precision: 0.4, recall: 0.4}]
+    config_hash: "0000000000"
+    claim: operational_by_owner_ruling
+    owner_ruling_ref:
+    limitations_ref: "site/example.html#limits"

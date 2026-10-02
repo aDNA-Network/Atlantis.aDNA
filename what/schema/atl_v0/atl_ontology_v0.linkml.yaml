@@ -317,8 +317,8 @@ classes:
           slot_conditions:
             owner_ruling_ref: {required: true, all_of: [{range: string, pattern: '\S'}]}
         description: >-
-          An operational claim cites the owner's ruling (SO-4). Same all_of guard as the lever rule. Control:
-          neg_operational_without_ruling. Positive: pos_operational_with_ruling. Nearest miss NOT caught: a ruling path
+          An operational claim cites the owner's ruling (SO-4). Same all_of guard as the lever rule. Controls:
+          neg_operational_without_ruling (absent) · neg_operational_ruling_null (null). Positive: pos_operational_with_ruling. Nearest miss NOT caught: a ruling path
           that does not exist, or a ruling that does not name the agencies that run the real forecast (referential
           integrity and content are a validator's and a reviewer's, not a schema's).
 
