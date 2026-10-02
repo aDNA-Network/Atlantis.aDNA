@@ -7,6 +7,7 @@ import sys, time, json
 import requests
 import pandas as pd
 from hab import load_config, DATA_RAW
+from hab.provenance import summarise, now_utc
 
 BASE = ("https://gis.myfwc.com/mapping/rest/services/Open_Data/"
         "Historic_Harmful_Algal_Bloom_Events_{name}/MapServer/{layer}/query")
@@ -35,7 +36,7 @@ def fetch_layer(name, layer, expected):
     if out.exists():
         df = pd.read_parquet(out)
         print(f"{name}: cached {len(df)} rows")
-        return df
+        return df, False
     url = BASE.format(name=name, layer=layer)
     n = get(url, {"where": "1=1", "returnCountOnly": "true", "f": "json"})["count"]
     print(f"{name}: server count {n} (expected {expected})")
@@ -57,13 +58,14 @@ def fetch_layer(name, layer, expected):
         print(f"  ⚠ {name}: server count {n} differs from probe-day expected {expected}")
     df.to_parquet(out, index=False)
     print(f"{name}: fetched {len(df)} rows → {out.name}")
-    return df
+    return df, True
 
 
 def main():
     cfg = load_config()
     DATA_RAW.mkdir(parents=True, exist_ok=True)
-    parts = [fetch_layer(l["name"], l["layer"], l["expected"]) for l in cfg["fwc_layers"]]
+    fetched = [fetch_layer(l["name"], l["layer"], l["expected"]) for l in cfg["fwc_layers"]]
+    parts, hit_server = [f[0] for f in fetched], any(f[1] for f in fetched)
     df = pd.concat(parts, ignore_index=True)
     df["sample_date"] = pd.to_datetime(df["SAMPLE_DATE"], unit="ms", utc=True).dt.tz_convert(None).dt.normalize()
     df = df.rename(columns={"LATITUDE": "lat", "LONGITUDE": "lon", "COUNT_": "cells_per_l",
@@ -79,11 +81,8 @@ def main():
     out = DATA_RAW / "fwc_hab_karenia_1970_2023.parquet"
     df.to_parquet(out, index=False)
     print(f"→ {out} ({out.stat().st_size/1e6:.1f} MB)")
-    summary = {"rows": int(len(df)), "min_date": str(df.sample_date.min().date()),
-               "max_date": str(df.sample_date.max().date()),
-               "per_layer": df.groupby("layer").size().to_dict(),
-               "fetched_at": pd.Timestamp.utcnow().isoformat()}
-    (DATA_RAW / "fwc_fetch_summary.json").write_text(json.dumps(summary, indent=2))
+    # provenance: rows · dates · per_layer · sha256 · fetched_at (fresh only if a layer came from the server)
+    summary = summarise("fwc", fetched_at=now_utc() if hit_server else None)
     print(json.dumps(summary, indent=2))
 
 

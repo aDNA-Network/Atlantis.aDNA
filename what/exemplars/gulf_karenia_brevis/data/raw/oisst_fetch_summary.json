@@ -1,0 +1,22 @@
+{
+  "artifact": "oisst_region_daily.parquet",
+  "rows": 127341,
+  "min_date": "1982-01-01",
+  "max_date": "2024-01-01",
+  "sha256": "c26b97f53854d57e61cdd7b9bbca0507504f82aed63faf716744a4963bbb7ec8",
+  "fetched_at": "2026-09-23T12:10:58.216127+00:00",
+  "fetched_at_source": "file mtime (retro-summarised at M-1a; no fetch-time record)",
+  "summarised_at": "2026-10-02T21:40:42.227905+00:00",
+  "regions": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "region_days": 127341
+}

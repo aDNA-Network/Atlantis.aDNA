@@ -1,0 +1,18 @@
+{
+  "artifact": "usgs_discharge_daily.parquet",
+  "rows": 61444,
+  "min_date": "1990-01-01",
+  "max_date": "2023-12-31",
+  "sha256": "66a58af41843b4305afa968dd814854a61e6a4e263f4898b5422d8eb03a789ea",
+  "fetched_at": "2026-09-23T11:20:23.852897+00:00",
+  "fetched_at_source": "file mtime (retro-summarised at M-1a; no fetch-time record)",
+  "summarised_at": "2026-10-02T21:40:42.229887+00:00",
+  "sites": [
+    "02292900",
+    "02296750",
+    "02304500",
+    "02323500",
+    "02359170"
+  ],
+  "site_days": 61444
+}

@@ -7,6 +7,7 @@ import sys, io, time, json
 import requests
 import pandas as pd
 from hab import load_config, DATA_RAW
+from hab.provenance import summarise, now_utc
 
 ERDDAP = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOisst21Agg_LonPM180.csv"
 NWIS = "https://waterservices.usgs.gov/nwis/dv/"
@@ -36,6 +37,7 @@ def fetch_sst(cfg):
     out = DATA_RAW / "oisst_region_daily.parquet"
     if out.exists():
         print(f"sst: cached {out.name}")
+        if not (DATA_RAW / "oisst_fetch_summary.json").exists(): summarise("oisst")
         return pd.read_parquet(out)
     chunks = [(y, min(y + 4, 2023)) for y in range(1982, 2024, 5)]
     frames = []
@@ -63,6 +65,7 @@ def fetch_sst(cfg):
         print("chunks fetched; no merge"); return None
     sst = pd.concat(frames, ignore_index=True)
     sst.to_parquet(out, index=False)
+    summarise("oisst", fetched_at=now_utc())
     print(f"sst: {len(sst)} region-days → {out.name}")
     return sst
 
@@ -71,6 +74,7 @@ def fetch_discharge(cfg):
     out = DATA_RAW / "usgs_discharge_daily.parquet"
     if out.exists():
         print(f"discharge: cached {out.name}")
+        if not (DATA_RAW / "usgs_fetch_summary.json").exists(): summarise("usgs")
         return pd.read_parquet(out)
     frames = []
     for site, meta in cfg["gauges"].items():
@@ -91,6 +95,7 @@ def fetch_discharge(cfg):
         print(f"  {site} {meta['name']}: {len(d)} days {d.date.min().date()}→{d.date.max().date()}")
     q = pd.concat(frames, ignore_index=True)
     q.to_parquet(out, index=False)
+    summarise("usgs", fetched_at=now_utc())
     print(f"discharge: {len(q)} site-days → {out.name}")
     return q
 
