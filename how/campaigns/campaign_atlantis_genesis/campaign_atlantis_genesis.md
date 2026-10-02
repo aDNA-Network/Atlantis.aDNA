@@ -154,7 +154,7 @@ AAR · successor cards. **Exit bar:** AAR in this file; Atlantis joins the fleet
 ## Status
 
 **P1 open — P0 gate MET 2026-10-02.** ADR-000/001/002 ratified, persona Proteus, GO P1 given by the operator at the
-gate. Next: M-1a ∥ M-1c (opus), then M-1b, then M-1d → P1 gate.
+gate. **M-1a complete 2026-10-02** (exemplar hygiene; AAR filed). Next: M-1c (opus), then M-1b, then M-1d → P1 gate.
 
 ## AAR (campaign — filled at P5)
 

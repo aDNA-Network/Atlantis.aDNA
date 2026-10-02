@@ -1,5 +1,18 @@
 # CHANGELOG — Atlantis.aDNA
 
+## 2026-10-02 — v0.2.1 · M-1a exemplar hygiene complete (P1 lane 1 of 4)
+
+- **M-1a complete** (fable, operator-ruled; carded opus) — AAR `how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m1a_exemplar_hygiene.md`. Exemplar `what/exemplars/gulf_karenia_brevis/`:
+  - **Drift fixed**: README §Design (log-loss stopping · 1,000 SHAP background rows · `ast`-parsed regions), site §02 heading "Three public data streams, plus the calendar", `uv sync` run order, AGENTS contents + rules.
+  - **Provenance**: `hab.provenance` writes `data/raw/{fwc,oisst,usgs}_fetch_summary.json` (rows · dates · sha256 · fetched_at); fetchers call it after a download. Pins verified equal to the board entry's `data_pins` and the `what/datasets/` copies.
+  - **Packaging**: `pyproject.toml` + `uv.lock` + `.python-version` (8 pinned direct deps, pytest dev group, `hab` editable from root or `src/`); `requirements.txt` retired; matplotlib dropped (never imported).
+  - **`gauges.*.lever` read**: `export_site_data.discharge_tag` sets the discharge features' lever/proxy tag from config; `whatif` records `lever_gauges`.
+  - **Safe region parser**: `compile`/`eval` on config strings replaced by an `ast` whitelist evaluator, vectorised; `tests/test_regions.py` (11 tests) freezes the nine region counts (196,024 samples, identical to the `eval` baseline).
+  - **T4 negative control**: `python -m hab.train --negative-control` → `outputs/negative_control_auprc_stop.json` — AUPRC early-stopping gives 2 trees, test AUROC 0.877 / AUPRC 0.423 / Brier 0.0705, calibration slope 18.09 (reference 141 trees, 1.17).
+  - **Invariants**: `config.yaml` and `outputs/metrics.json` byte-identical; self-test green before and after; gitleaks clean.
+- **Finding of record (WI-7)**: `metrics.json → config_hash e9dea88254` is the md5 of the *training-time* config (`shap.background_n: 2000`); the live file hashes `979d3fdf16`. Nothing the model sees differs. Documented in README §Provenance; `atlantis_core` (M-1b) records a semantic hash. WI-6 closed.
+- STATE: M-1c queued next (self-contained prompt, opus); M-1b after.
+
 ## 2026-10-02 — v0.2.0 · M-0 complete with the widened remit; P0 gate MET (Operation Tidewatch → P1)
 
 - **P0-exit gate MET 2026-10-02** (operator, `AskUserQuestion`): ADR-000/001/002 **ratified** · persona **Proteus** · **GO P1** · push to the public remote authorised.

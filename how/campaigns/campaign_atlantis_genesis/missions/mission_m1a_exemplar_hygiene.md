@@ -4,7 +4,7 @@ mission_id: M-1a
 plan_id: mission_m1a_exemplar_hygiene
 title: "M-1a — Exemplar hygiene — doc/config drift, provenance hashes, packaging, safe region parser"
 owner: stanley
-status: active
+status: completed
 campaign: campaign_atlantis_genesis
 campaign_id: campaign_atlantis_genesis
 phase: P1
@@ -12,7 +12,7 @@ campaign_phase: 1
 mission_class: implementation
 executor_tier: opus
 token_budget_estimated: "40-60kT"
-token_budget_actual: ""
+token_budget_actual: "~220kT (fable — operator-ruled; carded opus 40-60kT)"
 depends_on: ['M-0']
 aar_path: how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m1a_exemplar_hygiene.md
 session: session_stanley_20261002_143344_m1a_exemplar_hygiene
@@ -34,13 +34,13 @@ Make the exemplar a trustworthy reference before anything is extracted from it: 
 
 ## Acceptance criteria
 
-- [ ] README §Design says **log-loss** stopping and **1000** background rows (matches `config.yaml` + `outputs/`); site §3 heading says three streams, or a fourth is added honestly
-- [ ] `data/raw/*_fetch_summary.json` for all three sources with rows · date range · `fetched_at` · **sha256**; FWC server-count assertion kept
-- [ ] `pyproject.toml` (+ `uv.lock`) replaces the bare `requirements.txt`; `python -m hab.*` still runs; matplotlib dropped or used
-- [ ] `gauges.*.lever` is **read** by code (feeds the tag) or removed from config with a note — never silently ignored
-- [ ] `regions.py` region rules parsed by a safe expression parser (no `compile/eval` on config strings); same 9 regions reproduced (assert region counts equal)
-- [ ] The S329 AUPRC-stopping run reproduced once as a **negative control** and recorded (`outputs/negative_control_auprc_stop.json`) — T4 evidence
-- [ ] `build_features --self-test` green before and after; `outputs/metrics.json` unchanged (config_hash e9dea88254) — hygiene changes nothing the model sees
+- [x] README §Design says **log-loss** stopping and **1000** background rows (matches `config.yaml` + `outputs/`); site §3 heading says three streams, or a fourth is added honestly
+- [x] `data/raw/*_fetch_summary.json` for all three sources with rows · date range · `fetched_at` · **sha256**; FWC server-count assertion kept
+- [x] `pyproject.toml` (+ `uv.lock`) replaces the bare `requirements.txt`; `python -m hab.*` still runs; matplotlib dropped or used
+- [x] `gauges.*.lever` is **read** by code (feeds the tag) or removed from config with a note — never silently ignored
+- [x] `regions.py` region rules parsed by a safe expression parser (no `compile/eval` on config strings); same 9 regions reproduced (assert region counts equal)
+- [x] The S329 AUPRC-stopping run reproduced once as a **negative control** and recorded (`outputs/negative_control_auprc_stop.json`) — T4 evidence
+- [x] `build_features --self-test` green before and after; `outputs/metrics.json` unchanged (config_hash e9dea88254) — hygiene changes nothing the model sees
 
 ## Guardrails
 
@@ -76,4 +76,4 @@ The acceptance checklist above, each item checked by a command or a file the AAR
 
 ## AAR
 
-*Mandatory before `status: completed` (SO-6).* Worked · Didn't · Finding · Change · Follow-up → `aar_path`.
+**Filed 2026-10-02** → `aar/aar_m1a_exemplar_hygiene.md` (Worked · Didn't · Finding · Change · Follow-up). Commits `173613e`…`41d324b` + close. `config.yaml` and `metrics.json` byte-stable; self-test green before/after; 11 tests pass.
