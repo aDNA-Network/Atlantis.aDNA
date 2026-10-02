@@ -30,8 +30,8 @@ The method is borrowed from clinical sepsis early-warning systems and transferre
   0.89, AUPRC 0.55 against a 7.7% base rate, 64% of held-out bloom onsets flagged ahead, median lead 4 weeks.
   Runs end-to-end on a laptop in under an hour.
 - **`what/schema/atl_v0/`** — the `atl_` ontology (LinkML, draft): spatial unit · observation stream · vital · event
-  definition · evaluation, with a crosswalk to WDPA, CF, UCUM, WoRMS, Darwin Core and PROV-O. **No validation claim
-  yet** — controls are P1.
+  definition · evaluation, with a crosswalk to WDPA, CF, UCUM, WoRMS, Darwin Core and PROV-O. **Controlled (P1 M-1c)**:
+  42 fixtures prove each claimed constraint under `linkml-validate` and the committed JSON Schema; known limits are named.
 - **`what/board/`** — the evidence board: GREEN, metrics only, every entry against its base rate and at a stated alert
   budget, **no accuracy claim**. One entry today (the exemplar).
 - **`what/hypotheses/`** — the hypothesis ledger: the literature as testable feature hypotheses with provenance (spec

@@ -141,7 +141,7 @@ AAR · successor cards. **Exit bar:** AAR in this file; Atlantis joins the fleet
 | Risk | Mitigation |
 |---|---|
 | Template drift from the exemplar | P2 forbids instance hacks; every deviation is a P1 template change |
-| **Unvalidated ontology hardens** | `status: draft` + NO-VALIDATION-CLAIM banner; M-1c is first in P1; no generated JSON committed before it |
+| **Unvalidated ontology hardens** | `status: draft` + NO-VALIDATION-CLAIM banner until M-1c; **retired at M-1c** — 19 controls, committed JSON checked against a fresh generation every run |
 | **Board becomes a claim surface** | no-accuracy-claim header on every entry; `base_rate` and `limitations_ref` required; `claim` defaults to method_demonstration |
 | **Snapshot growth under "MPA"** (WDPA polygons, CRW grids) | ADR-002 §4: pointers + sha256 + fetch recipe only |
 | **RareArchive over-import** (council for one principal; conductor with no partner data) | governance set + conductor at P4, contribution guide at P1 |

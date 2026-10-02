@@ -49,8 +49,8 @@ one vitals table on one patient × time grid, with provenance, so that one model
 read them together. The translation layer is the product; the model is the cheapest part.
 
 > ⛩ **Status — P1 open; P0 gate MET 2026-10-02 (SO-1).** M-0 ran 2026-10-02 (fable, operator-opened); ADR-000/001/002
-> **ratified** and persona **Proteus** ruled at the gate; the `atl_v0` ontology is a **draft with no validation claim**
-> until P1 M-1c. Nothing here auto-advances past a phase gate.
+> **ratified** and persona **Proteus** ruled at the gate; the `atl_v0` ontology is a **controlled draft** (M-1c:
+> 42 controls, three worlds; claims only what a control proves). Nothing here auto-advances past a phase gate.
 > Read `STATE.md` → the charter → `artifacts/mission_roster_p1_p5.md`, in that order.
 
 ## First-Run Detection
@@ -100,15 +100,19 @@ Address the commander as Stanley.
 9. **No accuracy claim without its base rate, its budget and its limits.** Every evaluation, card and board entry
    carries `base_rate`, ≥ 1 alert budget, and a `limitations_ref`; `claim` is `method_demonstration` unless the
    instance owner's written ruling is cited (SO-4).
+10. **III review goes through the `iii/` wrapper, in a fresh context.** Load `how/federation/iii/CLAUDE.md` first, then
+    follow its `source_skill`; ACCUMULATE writes only to the local learning store. The reviewer is never the context
+    that produced the artifact. Every phase exit carries an III review (adopted at M-1c, 2026-10-02).
 
 ## Hard Gates
 
 - **Every phase exit is an operator gate** (P0 met 2026-10-02; next: P1 exit after M-1d).
-- **The ontology makes no validation claim until M-1c** — a constraint in `what/schema/atl_v0/` is an intention until
-  a control proves both validators enforce it (ASOAtlas rule 1).
+- **The ontology claims only what a control proves** (from M-1c) — a constraint in `what/schema/atl_v0/` is an intention
+  until a fixture proves both validators enforce it (ASOAtlas rule 1); `run_controls.sh` must say ALL WORLDS AGREE before
+  any schema change is committed.
 - **Human-subject or partner data never enters Atlantis.** An instance that needs it takes its own ADR-016 §8
   ruling before ingest; Atlantis supplies the pattern, not the permission.
-- **III review via wrapper** (`iii/`, when adopted at P1); no bespoke quality gates.
+- **III review via wrapper** (`iii/` → `how/federation/iii/`, adopted at M-1c, III v0.6.0); no bespoke quality gates.
 - **Public repo** (`aDNA-Network/Atlantis.aDNA`, MIT). Anything that is not method, doctrine, template or
   public-data exemplar does not get committed here.
 
@@ -117,11 +121,12 @@ Address the commander as Stanley.
 ```
 Atlantis.aDNA/
 ├── CLAUDE.md  MANIFEST.md  STATE.md  CHANGELOG.md  AGENTS.md  README.md  LICENSE
+├── iii -> how/federation/iii   III.aDNA consumer wrapper (SO-10) · local learning store
 ├── who/governance/        adr_000 identity · adr_001 persona+category+code home · adr_002 remit widening (all PROPOSED)
 │   coordination/          name-form note · (P4) inbox/ for steward memos
 ├── what/context/          concept_atlantis (thesis) · playbook_data_and_literature_mining
 │   what/patterns/         pattern_ecosystem_early_warning (the 8-step method)
-│   what/schema/atl_v0/    L1 ONTOLOGY — atl_ LinkML draft · crosswalk (WDPA · CF · UCUM · WoRMS · dwc · PROV-O) · README (NO VALIDATION CLAIM → M-1c)
+│   what/schema/atl_v0/    L1 ONTOLOGY — atl_ LinkML draft · crosswalk (WDPA · CF · UCUM · WoRMS · dwc · PROV-O) · committed JSON Schema · fixtures/controls (42) · fit matrix
 │   what/atlantis_core/    L2 DATA-MODEL — the reference implementation (P1 M-1b; absent until then)
 │   what/exemplars/        gulf_karenia_brevis/ — the reference run (code · config · outputs · site); atlantis_core's first consumer at P1
 │   what/datasets/         records = pointer + sha256 + recipe; the three grandfathered exemplar parquets; AGENTS.md

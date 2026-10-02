@@ -96,8 +96,8 @@ Domain-specific entity types added by the `LatticeNetwork.aDNA` (Alpha Lattice) 
 ### Atlantis Extensions (5 Entity Types)
 
 Domain-specific entity types added by `Atlantis.aDNA` for ecosystem early warning (sepsis analog). Namespace
-`atl_`; authored as a LinkML schema at `what/schema/atl_v0/` (aDNA.aDNA ADR-062 idiom; **draft, no validation claim
-until M-1c**). Chosen by the instance / independence / lifecycle tests; table shapes (patient grid, observations,
+`atl_`; authored as a LinkML schema at `what/schema/atl_v0/` (aDNA.aDNA ADR-062 idiom; **draft, controlled at M-1c** —
+42 controls under both validators; known limits in the README). Chosen by the instance / independence / lifecycle tests; table shapes (patient grid, observations,
 labels, predictions) are deliberately *not* entities — see `what/schema/atl_v0/README.md`.
 
 | # | Entity | Triad | Directory | Purpose | Merge Behavior |

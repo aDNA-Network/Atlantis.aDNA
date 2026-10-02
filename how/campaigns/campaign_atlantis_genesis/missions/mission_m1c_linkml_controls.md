@@ -65,7 +65,7 @@ The acceptance checklist above, each item checked by a command or a file the AAR
 
 ## Files
 
-- `what/schema/atl_v0/{fixtures/controls/*, run_controls.sh, atl_ontology_v0.schema.json, m1c_vocabulary_fit_matrix.md, README.md}`
+- `what/schema/atl_v0/{fixtures/controls/* (incl. run_controls.sh), atl_ontology_v0.schema.json, m1c_vocabulary_fit_matrix.md, README.md}`
 
 ## Inputs (read in this order)
 
