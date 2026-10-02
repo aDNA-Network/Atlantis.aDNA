@@ -1,0 +1,314 @@
+# atl_ontology_v0.linkml.yaml — Atlantis.aDNA · the `atl_` ontology for ecosystem early warning, v0
+#
+# STATUS: draft — authored at M-0 (2026-10-02, fable sitting). NO VALIDATION CLAIM. No control fixture has been run
+# against this file; no JSON Schema has been generated and committed. Both are P1 M-1c (see README.md). Until then a
+# constraint written here is an INTENTION, not an enforced shape.
+#
+# Rules adopted from ASOAtlas.aDNA/what/schema/aso_v0 (the fleet's worked LinkML precedent), effective from M-1c:
+#   1. A constraint is claimed ONLY if BOTH validators enforce it — linkml-validate AND the committed JSON Schema.
+#   2. Every enum below is a row in a vocabulary fit matrix (M-1c artifact), sourced to the external authority the
+#      crosswalk names, or marked `local` with the reason.
+#   3. A constraint's docstring says what its control proves and names the nearest miss it does NOT catch.
+#   4. No class that is the RANGE of a slot has a concrete descendant (flag-proof under include_range_class_descendants).
+#
+# Authoring idiom: LinkML (aDNA.aDNA ADR-062, `proposed` — preferred-but-optional). Validated in a scratch venv, never
+# installed on the node. Namespace `atl_` per what/ontology.md §Extension Patterns (additive, WHAT leg).
+#
+# Five classes, chosen by the instance / independence / lifecycle tests (context_adna_core_ontology_workshop):
+#   AtlSpatialUnit · AtlObservationStream · AtlVital · AtlEventDefinition · AtlEvaluation.
+# Deliberately NOT classes in v0 (README §Dropped): Patient×TimeStep, Observation, Label (table shapes → type
+# vocabulary); Model (→ RareArchive model.schema.json / Ray RayJobRecord by reference); Hypothesis (v1, P3);
+# Steward, Instance (governance documents); BoardEntry (the board's own schema, which embeds AtlEvaluation).
+
+id: https://w3id.org/adna/atlantis/atl_v0
+name: atl_ontology_v0
+title: Atlantis atl_ ontology v0 — ecosystem early warning (sepsis analog)
+description: >-
+  The five entities a regional early-warning instance declares so that a reviewer can conform it without seeing
+  its data, and so that evaluations from different instances are comparable on the Atlantis evidence board with
+  no data moving. A spatial unit (the patient's space), an observation stream (a source with provenance), a vital
+  (a feature with a tag and a lineage), an event definition (threshold · direction · horizon), and an evaluation
+  (the measurement, always against its base rate). Observations, labels and predictions are table shapes, not
+  entities, and never cross into Atlantis.
+version: 0.1.0
+license: https://opensource.org/licenses/MIT
+status: draft
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  atl: https://w3id.org/adna/atlantis/atl_v0/
+  prov: http://www.w3.org/ns/prov#
+  dcterms: http://purl.org/dc/terms/
+  schema: http://schema.org/
+  WDPA: https://www.protectedplanet.net/
+  CF: https://vocab.nerc.ac.uk/standard_name/
+  UCUM: https://ucum.org/ucum#
+  WoRMS: https://www.marinespecies.org/aphia.php?p=taxdetails&id=
+  dwc: http://rs.tdwg.org/dwc/terms/
+  ENVO: http://purl.obolibrary.org/obo/ENVO_
+default_prefix: atl
+default_range: string
+
+imports:
+  - linkml:types
+
+# ---------------------------------------------------------------------------------------------------------------
+# Enums — each is a row in the M-1c fit matrix. `local` = no external authority adopted; reason in the description.
+# ---------------------------------------------------------------------------------------------------------------
+enums:
+
+  UnitKind:
+    description: >-
+      The kind of spatial unit a patient is. local — no external vocabulary enumerates "the unit a steward
+      manages"; `mpa_zone` is bound to WDPA/MPAtlas ids through AtlSpatialUnit.external_id, not through this enum.
+    permissible_values:
+      mpa_zone:        {description: "A zone or the whole of a marine protected area; external_id SHOULD be a WDPA id"}
+      coastal_band:    {description: "An alongshore band defined by a coordinate rule (the exemplar's 9 Florida regions)"}
+      reef:            {description: "A reef or reef tract"}
+      estuary_segment: {description: "A segment of an estuary or bay"}
+      river_reach:     {description: "A river reach between gauges or confluences"}
+      grid_cell:       {description: "A regular cell of a gridded product (the patient when vitals are gridded-only)"}
+  TimeStep:
+    description: The patient's time step. local — ISO 8601 durations would over-specify; `cruise` is irregular by design.
+    permissible_values:
+      day: {}
+      iso_week: {description: "Monday-keyed ISO week (the exemplar)"}
+      fortnight: {}
+      month: {}
+      cruise: {description: "Irregular — one step per sampling cruise (metagenomic / survey instances)"}
+  Modality:
+    description: >-
+      How a stream speaks. local, informed by GOOS EOV platform classes (not bound in v0 — crosswalk row 7).
+    permissible_values:
+      point_count:   {description: "Discrete samples with a measured abundance (cells/L, CPUE, colony counts)"}
+      gridded_field: {description: "A satellite or model field on a lat/lon grid (SST, chlorophyll, DHW)"}
+      gauge_series:  {description: "A fixed-station time series on land or at a structure (discharge, DO at a gate)"}
+      buoy_series:   {description: "A moored or drifting platform's time series (wind, waves, water temperature)"}
+      edna_profile:  {description: "eDNA / metagenomic taxon-abundance profiles per sample event"}
+      acoustic:      {description: "Passive or active acoustic observations"}
+      survey_log:    {description: "Human survey or transect logs (bleaching surveys, fish counts, kills)"}
+      literature:    {description: Papers and agency reports — a stream whose "observations" are hypotheses (P3)}
+
+  VitalTag:
+    description: >-
+      What a feature is FOR a steward. local — this is the method's own vocabulary (pattern step 8). A tag is a
+      human bridge to action; it is never a causal claim.
+    permissible_values:
+      lever:    {description: "Something a named owner can change (a gate's discharge, a closure, an effluent permit)"}
+      proxy:    {description: "Environmental state nobody controls on the horizon (SST, season, wind)"}
+      artifact: {description: "A property of the monitoring programme, not the ecosystem (sample counts, time since sampling)"}
+      state:    {description: "The patient's own trajectory (recent maxima, growth, time since last event)"}
+  Direction:
+    description: Which way the threshold crossing goes. local.
+    permissible_values:
+      above: {description: "Event when the variable rises to or past the threshold (bloom, DHW, temperature)"}
+      below: {description: "Event when the variable falls to or past the threshold (dissolved oxygen, seagrass cover, pH)"}
+  Claim:
+    description: >-
+      What an evaluation is allowed to claim (SO-4). local. Default is method_demonstration; the other value needs
+      the instance owner's written ruling naming the agencies that run the real forecast.
+    permissible_values:
+      method_demonstration: {}
+      operational_by_owner_ruling: {description: "Requires AtlEvaluation.owner_ruling_ref"}
+  EvidenceTier:
+    description: Review tier of a declared object. local — RareArchive's draft→reviewed→validated→published ladder, minus `published` (the board is the publication).
+    permissible_values:
+      draft: {}
+      reviewed: {}
+      validated: {}
+
+# ---------------------------------------------------------------------------------------------------------------
+# Slots
+# ---------------------------------------------------------------------------------------------------------------
+slots:
+
+  # identifiers ------------------------------------------------------------------------------------------------
+  unit_id:       {identifier: true, range: string, pattern: "^atl_unit_[a-z0-9_]{2,64}$", description: "Instance-local id; prefix fixed so ids are greppable across instances."}
+  stream_id:     {identifier: true, range: string, pattern: "^atl_stream_[a-z0-9_]{2,64}$"}
+  vital_id:      {identifier: true, range: string, pattern: "^atl_vital_[a-z0-9_]{2,64}$"}
+  event_id:      {identifier: true, range: string, pattern: "^atl_event_[a-z0-9_]{2,64}$"}
+  evaluation_id: {identifier: true, range: string, pattern: "^atl_eval_[a-z0-9_]{2,64}$"}
+
+  # common -----------------------------------------------------------------------------------------------------
+  name:          {range: string, description: "Human label. Never a partner site's name when the instance's posture is partner or human_subject."}
+  description:   {range: string}
+  tier:          {range: EvidenceTier, ifabsent: "string(draft)"}
+  version:       {range: string, pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+$", description: "Semantic version of the declared object."}
+  recorded_by:   {range: string, description: "Agent or operator id (e.g. agent_proteus, stanley)."}
+  recorded_at:   {range: datetime}
+
+  # AtlSpatialUnit ---------------------------------------------------------------------------------------------
+  unit_kind:     {range: UnitKind, required: true}
+  external_id:   {range: uriorcurie, description: "WDPA:<id> or MPAtlas:<id> for mpa_zone; optional otherwise. A CURIE, never a polygon."}
+  geometry_ref:  {range: string, description: "POINTER to the geometry (a file path in the instance, a WDPA id, or a coordinate RULE string). Never inline coordinates of partner sites. Control (M-1c): rejects a value that parses as a WKT/GeoJSON literal."}
+  time_step:     {range: TimeStep, required: true}
+  parent_unit:   {range: AtlSpatialUnit, description: "Zone → MPA, reach → basin. Optional."}
+
+  # AtlObservationStream ---------------------------------------------------------------------------------------
+  modality:         {range: Modality, required: true}
+  source_system:    {range: string, required: true, description: "Ingest Rule 5: the system of record (FWC ArcGIS Hub, NOAA CoastWatch ERDDAP, USGS NWIS, NOAA CRW, OBIS, NCBI SRA…)."}
+  source_id:        {range: string, required: true, description: "Ingest Rule 5: the id within that system (layer id, ERDDAP dataset id, NWIS site, BioProject)."}
+  authority:        {range: uriorcurie, description: "The vocabulary the stream's variable is named in: CF standard name, WoRMS AphiaID, Darwin Core term."}
+  variable:         {range: string, description: "The measured quantity as the authority names it (sea_surface_temperature; Karenia brevis; cells_per_litre)."}
+  unit:             {range: string, description: "UCUM code (Cel; /L; m3/s; 1 for dimensionless)."}
+  fetcher:          {range: string, description: "The atlantis_core fetcher class or module that realises this stream (P1)."}
+  captured_at:      {range: datetime, description: "Ingest Rule 5: when the source produced/last updated the data."}
+  ingested_at:      {range: datetime, required: true, description: "Ingest Rule 5: when the instance fetched it."}
+  pipeline_version: {range: string, description: "Ingest Rule 5: which fetcher version wrote the cache."}
+  sha256:           {range: string, pattern: "^[a-f0-9]{64}$", description: "Of the cached artifact. Required from M-1a on; v0 leaves it recommended."}
+  row_count:        {range: integer, minimum_value: 0}
+  license:          {range: string, required: true, description: "SPDX or the agency's terms string."}
+  surveillance_channel: {range: boolean, description: "True if this stream's sampling intensity is itself endogenous to the event (pattern step 3; T5)."}
+
+  # AtlVital ---------------------------------------------------------------------------------------------------
+  stream_ref:     {range: AtlObservationStream, required: true}
+  transform:      {range: string, required: true, description: "The feature recipe in words or a registry key (log10(1+x) weekly max; anomaly vs training-era climatology; rolling max)."}
+  lag:            {range: integer, minimum_value: 0, description: "In time steps. 0 = the patient's current step."}
+  window:         {range: integer, minimum_value: 1, description: "In time steps, for rolling transforms."}
+  group:          {range: string, description: "Feature group for grouped SHAP and ablation (counts · surveillance · season · sst · discharge …)."}
+  tag:            {range: VitalTag, required: true}
+  owner:          {range: string, description: "REQUIRED when tag = lever (rule, M-1c): who can move it (SFWMD for S-79; the sanctuary superintendent for a closure)."}
+  hypothesis_ref: {range: string, description: "Pointer to a hypothesis-ledger row (P3) when the vital exists because the literature asserted it."}
+  monotone:       {range: integer, minimum_value: -1, maximum_value: 1, description: "Monotone constraint passed to the learner, only where physics is unambiguous. 0 = none."}
+
+  # AtlEventDefinition -----------------------------------------------------------------------------------------
+  threshold:      {range: float, required: true}
+  direction:      {range: Direction, required: true}
+  horizon:        {range: integer, required: true, minimum_value: 1, description: "In time steps: event within t+1 … t+horizon."}
+  onset_rule:     {range: string, required: true, description: "How already-past-threshold patients are excluded (last-known state ≥ threshold → dropped) and how unknown outcomes are handled."}
+  event_variable_stream: {range: AtlObservationStream, required: true, description: "The stream the event variable is read from."}
+
+  # AtlEvaluation ----------------------------------------------------------------------------------------------
+  event_ref:        {range: AtlEventDefinition, required: true}
+  unit_ref:         {range: AtlSpatialUnit, description: "The patient population the evaluation covers (the parent unit when many)."}
+  split:            {range: string, required: true, description: "Temporal split in words: train 1994–2016 · val 2017–2019 · test 2020–2023, scored once."}
+  n_test:           {range: integer, required: true, minimum_value: 1}
+  n_positives:      {range: integer, required: true, minimum_value: 0}
+  base_rate:        {range: float, required: true, minimum_value: 0, maximum_value: 1, description: "Test prevalence. REQUIRED — a score without its base rate is not a result (Proteus doctrine 2)."}
+  auroc:            {range: float, minimum_value: 0, maximum_value: 1}
+  auprc:            {range: float, minimum_value: 0, maximum_value: 1}
+  brier:            {range: float, minimum_value: 0, maximum_value: 1}
+  calibration_slope: {range: float}
+  climatology_auroc: {range: float, minimum_value: 0, maximum_value: 1, description: "The cheapest baseline (T11). Required from M-1b on."}
+  climatology_auprc: {range: float, minimum_value: 0, maximum_value: 1}
+  alert_budgets:    {range: AtlAlertBudget, multivalued: true, inlined_as_list: true, description: "At least one from M-1b on (T6)."}
+  lead_time:        {range: AtlLeadTime, inlined: true}
+  ablations:        {range: AtlAblation, multivalued: true, inlined_as_list: true, description: "Surveillance ablation is REQUIRED where a surveillance channel is declared (T5)."}
+  learner:          {range: string, description: "xgboost 3.4.1 · depth 4 · eta 0.03 · logloss early-stop — or the swap."}
+  config_hash:      {range: string, required: true, description: "Hash of the instance's config.yaml at training time."}
+  data_pins:        {range: AtlDataPin, multivalued: true, inlined_as_list: true, description: "Every stream the model saw, with its sha256."}
+  shap_summary_ref: {range: string, description: "Pointer to the instance's shap_summary (mean |SHAP| per vital and group); never per-patient values."}
+  claim:            {range: Claim, required: true, ifabsent: "string(method_demonstration)"}
+  owner_ruling_ref: {range: string, description: "REQUIRED when claim = operational_by_owner_ruling (rule, M-1c)."}
+  limitations_ref:  {range: string, required: true, description: "Pointer to the published page's Limitations section. Required: no evaluation without its limits (SO-4)."}
+
+  # inlined parts ----------------------------------------------------------------------------------------------
+  rate:         {range: float, required: true, minimum_value: 0, maximum_value: 1, description: "Alert rate (fraction of patient-steps flagged)."}
+  precision:    {range: float, required: true, minimum_value: 0, maximum_value: 1}
+  recall:       {range: float, required: true, minimum_value: 0, maximum_value: 1}
+  n_alerts:     {range: integer, minimum_value: 0}
+  budget_rate:  {range: float, required: true, minimum_value: 0, maximum_value: 1, description: "The alert budget the lead time was measured at."}
+  n_onsets:     {range: integer, required: true, minimum_value: 0}
+  flagged_fraction: {range: float, required: true, minimum_value: 0, maximum_value: 1}
+  median_lead:  {range: float, minimum_value: 0, description: "In time steps."}
+  ablation_name: {range: string, required: true, description: "What was removed (the surveillance group; a stream; a lever)."}
+  ablated_auroc: {range: float, minimum_value: 0, maximum_value: 1}
+  ablated_auprc: {range: float, minimum_value: 0, maximum_value: 1}
+
+  # document container -----------------------------------------------------------------------------------------
+  spatial_units:        {range: AtlSpatialUnit, multivalued: true, inlined_as_list: true}
+  observation_streams:  {range: AtlObservationStream, multivalued: true, inlined_as_list: true}
+  vitals:               {range: AtlVital, multivalued: true, inlined_as_list: true}
+  event_definitions:    {range: AtlEventDefinition, multivalued: true, inlined_as_list: true}
+  evaluations:          {range: AtlEvaluation, multivalued: true, inlined_as_list: true}
+
+# ---------------------------------------------------------------------------------------------------------------
+# Classes
+# ---------------------------------------------------------------------------------------------------------------
+classes:
+
+  AtlDocument:
+    tree_root: true
+    description: Container used to validate instance registry files; any file may carry any subset.
+    slots: [spatial_units, observation_streams, vitals, event_definitions, evaluations]
+
+  AtlDeclared:
+    abstract: true
+    description: Mixin — every declared object carries a tier, a version and who/when.
+    slots: [name, description, tier, version, recorded_by, recorded_at]
+
+  AtlSpatialUnit:
+    is_a: AtlDeclared
+    description: >-
+      The patient's space — one of these × one time step is a patient row. Passes the instance test (an MPA zone is
+      countable), independence (it outlives any model) and lifecycle (boundaries change by ruling, versioned).
+      Geometry is a pointer: Atlantis never holds a polygon.
+    slots: [unit_id, unit_kind, external_id, geometry_ref, time_step, parent_unit]
+    slot_usage:
+      external_id:
+        description: "SHOULD be present when unit_kind = mpa_zone. Rule (M-1c): `mpa_zone` without external_id is a WARNING, not an error — some zones have no WDPA row."
+
+  AtlObservationStream:
+    is_a: AtlDeclared
+    description: >-
+      One source of observations with Ingest-Rule-5 provenance and a content hash. The stream is the unit of
+      fetch, cache, licence and drift detection. Observations themselves are a table shape (observation_long,
+      type-vocabulary proposal) and never enter Atlantis.
+    slots: [stream_id, modality, source_system, source_id, authority, variable, unit, fetcher, captured_at, ingested_at, pipeline_version, sha256, row_count, license, surveillance_channel]
+
+  AtlVital:
+    is_a: AtlDeclared
+    description: >-
+      One feature on the patient grid: where it comes from, how it is made, what it is for. Replaces the exemplar's
+      hard-coded FEATURE_GROUPS / FEATURE_DOC (P1 M-1b). The tag is reviewable here instead of buried in code.
+    slots: [vital_id, stream_ref, transform, lag, window, group, tag, owner, hypothesis_ref, monotone]
+    rules:
+      - preconditions:
+          slot_conditions:
+            tag: {equals_string: lever}
+        postconditions:
+          slot_conditions:
+            owner: {required: true}
+        description: "A lever names its owner. Control (M-1c): neg_lever_without_owner. Nearest miss NOT caught: an owner string that names nobody real."
+
+  AtlEventDefinition:
+    is_a: AtlDeclared
+    description: >-
+      Threshold · direction · horizon · onset rule. A ruling with its own version history; a second event on the
+      same vitals is a second definition and a second model (T12).
+    slots: [event_id, event_variable_stream, threshold, unit, direction, horizon, onset_rule]
+
+  AtlEvaluation:
+    is_a: AtlDeclared
+    description: >-
+      The measurement is the artifact (ADR-057). Always against its base rate, at a budget, with lead time, with its
+      ablations, with its data pins and its limitations. This is what crosses to the board — metrics only.
+    slots: [evaluation_id, event_ref, unit_ref, split, n_test, n_positives, base_rate, auroc, auprc, brier, calibration_slope,
+            climatology_auroc, climatology_auprc, alert_budgets, lead_time, ablations, learner, config_hash, data_pins,
+            shap_summary_ref, claim, owner_ruling_ref, limitations_ref]
+    rules:
+      - preconditions:
+          slot_conditions:
+            claim: {equals_string: operational_by_owner_ruling}
+        postconditions:
+          slot_conditions:
+            owner_ruling_ref: {required: true}
+        description: "An operational claim cites the owner's ruling. Control (M-1c): neg_operational_without_ruling. Nearest miss NOT caught: a ruling path that does not exist (referential integrity is a validator's, not a schema's)."
+
+  AtlAlertBudget:
+    description: Precision and recall at one alert rate.
+    slots: [rate, precision, recall, n_alerts]
+
+  AtlLeadTime:
+    description: Lead-time summary at one budget. Histogram stays in the instance.
+    slots: [budget_rate, n_onsets, flagged_fraction, median_lead]
+
+  AtlAblation:
+    description: One ablation result.
+    slots: [ablation_name, ablated_auroc, ablated_auprc]
+
+  AtlDataPin:
+    description: One stream the model saw, pinned by hash.
+    slots: [stream_ref, sha256]
+    slot_usage:
+      sha256: {required: true}

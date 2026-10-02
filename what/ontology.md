@@ -1,14 +1,14 @@
 ---
 type: ontology
 created: 2026-02-20
-updated: 2026-06-18
+updated: 2026-10-02
 status: active
-last_edited_by: agent_rosetta
+last_edited_by: agent_proteus
 tags:
   - ontology
   - architecture
   - adna
-entity_count: 26
+entity_count: 31
 base_version: "v3.1"
 quality_score: 4.2
 signal_density: 5
@@ -91,6 +91,22 @@ Domain-specific entity types added by the `LatticeNetwork.aDNA` (Alpha Lattice) 
 |---|--------|-------|-----------|---------|----------------|
 | 27 | network_node_mirror | WHAT | `what/network/nodes/<hostname>.aDNA/` | Per-node mirror directory (source: each node's own `node.aDNA`; SO-7 read-mostly invariant; aggregator-side; full sub-triad structurally distinct from base `context` per peer ADR-002 §a) | extension/network |
 | 28 | permission_edge | WHAT | `what/network/permissions/<edge_id>.yaml` | Directed authentication edge between nodes (10-field body per peer ADR-008 §g; lifecycle bound to LIP-0003 ledger events at peer arch_01 §6.4 call-site 3) | extension/network |
+
+
+### Atlantis Extensions (5 Entity Types)
+
+Domain-specific entity types added by `Atlantis.aDNA` for ecosystem early warning (sepsis analog). Namespace
+`atl_`; authored as a LinkML schema at `what/schema/atl_v0/` (aDNA.aDNA ADR-062 idiom; **draft, no validation claim
+until M-1c**). Chosen by the instance / independence / lifecycle tests; table shapes (patient grid, observations,
+labels, predictions) are deliberately *not* entities — see `what/schema/atl_v0/README.md`.
+
+| # | Entity | Triad | Directory | Purpose | Merge Behavior |
+|---|--------|-------|-----------|---------|----------------|
+| 29 | atl_spatial_unit | WHAT | `what/schema/atl_v0/` (instances: `config.yaml → patient`) | The patient's space — MPA zone · coastal band · reef · estuary segment · river reach · grid cell; geometry by pointer, WDPA id | extension/atl |
+| 30 | atl_observation_stream | WHAT | instances: `streams.yaml` | One source with Ingest-Rule-5 provenance, sha256, licence, modality | extension/atl |
+| 31 | atl_vital | WHAT | instances: `features.yaml` | One feature: stream · transform · lag · window · group · **tag** (lever / proxy / artifact / state) | extension/atl |
+| 32 | atl_event_definition | WHAT | instances: `events.yaml` | Threshold · direction · horizon · onset rule — a versioned ruling | extension/atl |
+| 33 | atl_evaluation | WHAT | instances: `evaluations/`; Atlantis: `what/board/entries/` (embedded) | The measurement against its base rate: budgets · lead time · ablations · pins · claim · limitations | extension/atl |
 
 ### Triad Structure (Diagram 1)
 

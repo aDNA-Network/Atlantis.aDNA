@@ -1,0 +1,123 @@
+# crosswalk_external_vocabularies_v0.yaml — Atlantis.aDNA · which external marine vocabularies the atl_ ontology
+# binds to, in the Molecules.aDNA shape (what/ontology/v1_0/cross_walk_to_external_ontologies.yaml):
+# external_authority · iri_base · pin_field · adoption_verdict (adopt | adapt | build | defer).
+#
+# STATUS: draft (M-0, 2026-10-02). "bound" means an atl_ slot carries the authority's identifier as a CURIE under the
+# prefix declared in atl_ontology_v0.linkml.yaml. Nothing here is validated against the authority's own service;
+# referential checks are a validator's job (M-1c names them as known limits), not the schema's.
+# Rule: source PROTOCOLS (ERDDAP, ArcGIS Hub, NWIS, NDBC, OBIS/GBIF APIs, Copernicus Marine, NCBI SRA) are NOT
+# vocabularies — they are AtlObservationStream.source_system values and live in the streams registry.
+
+crosswalk_version: "0.1.0"
+canonical_schema: atl_ontology_v0.linkml.yaml
+atl_namespace_iri: https://w3id.org/adna/atlantis/atl_v0/
+
+bound:   # adopted now — an atl_ slot carries this authority's id
+
+  - id: wdpa
+    external_authority: "WDPA — World Database on Protected Areas (UNEP-WCMC / IUCN, Protected Planet)"
+    iri_base: https://www.protectedplanet.net/
+    curie_prefix: WDPA
+    pin_field: AtlSpatialUnit.external_id
+    applies_when: "unit_kind = mpa_zone"
+    adoption_verdict: adopt
+    version_pinned_by: "the instance (WDPA monthly release in streams.yaml)"
+    reason: "The only global id a steward and an agency both recognise for an MPA. MPAtlas ids are accepted as an alternative CURIE (MPAtlas:<id>) when a WDPA row is missing."
+    known_limit: "Zones inside an MPA often have no WDPA row of their own; then external_id is the parent's and geometry_ref points at the instance's zone file."
+
+  - id: cf_standard_names
+    external_authority: "CF Conventions — standard name table (NERC Vocabulary Server P07)"
+    iri_base: https://vocab.nerc.ac.uk/standard_name/
+    curie_prefix: CF
+    pin_field: AtlObservationStream.authority + AtlObservationStream.variable
+    applies_when: "modality in {gridded_field, gauge_series, buoy_series}"
+    adoption_verdict: adopt
+    reason: "ERDDAP, NOAA CRW and Copernicus products already name variables this way (sea_surface_temperature, mass_concentration_of_chlorophyll_a_in_sea_water); adopting means the exemplar's OISST stream is conformant by naming, not by translation."
+    known_limit: "Derived indices (degree-heating-weeks) have no CF standard name; declare `variable` as the producer's name and `authority` as the producer (NOAA CRW) until a name exists."
+
+  - id: ucum
+    external_authority: "UCUM — Unified Code for Units of Measure"
+    iri_base: https://ucum.org/ucum#
+    curie_prefix: UCUM
+    pin_field: AtlObservationStream.unit · AtlEventDefinition.unit
+    adoption_verdict: adopt
+    reason: "Thresholds are comparable across instances only if units are machine-checkable. Exemplar: cells/L → `/L` with the count implicit; discharge `[cft_i]/s` (cfs) — the imperial unit is kept because the gauge reports it, with the SI conversion in the dataset note."
+    known_limit: "Taxon counts are dimensionless-per-volume; UCUM has no 'cells'. Use `/L` and name the counted thing in `variable`."
+
+  - id: worms
+    external_authority: "WoRMS — World Register of Marine Species (AphiaID)"
+    iri_base: https://www.marinespecies.org/aphia.php?p=taxdetails&id=
+    curie_prefix: WoRMS
+    pin_field: AtlObservationStream.authority (when the variable is a taxon)
+    applies_when: "modality in {point_count, edna_profile, survey_log} and the variable is an organism"
+    adoption_verdict: adopt
+    reason: "Karenia brevis = WoRMS:233015; one id across FWC's six decade layers, OBIS, and an eDNA assignment. Instances that count a taxon pin it here so a bloom in Florida and a bloom in Texas are the same event variable."
+    known_limit: "Freshwater taxa fall outside WoRMS — a freshwater metagenomic instance uses NCBI Taxonomy (deferred row) and says so."
+
+  - id: darwin_core
+    external_authority: "Darwin Core (TDWG) — occurrence terms"
+    iri_base: http://rs.tdwg.org/dwc/terms/
+    curie_prefix: dwc
+    pin_field: "observation_long column names when modality = point_count (type-vocabulary proposal, not an atl_ slot)"
+    adoption_verdict: adapt
+    reason: "OBIS and GBIF deliver point occurrences in Darwin Core; adapting its column names (eventDate, decimalLatitude, decimalLongitude, scientificName, organismQuantity, organismQuantityType) for the observation_long table means an OBIS fetch is a rename, not a translation."
+    known_limit: "Darwin Core has no slot for 'cells per litre as the agency reports it'; organismQuantity + organismQuantityType carry it loosely. Adapt, do not adopt."
+
+  - id: prov_o
+    external_authority: "PROV-O (W3C)"
+    iri_base: http://www.w3.org/ns/prov#
+    curie_prefix: prov
+    pin_field: "AtlObservationStream.{captured_at, ingested_at, pipeline_version, recorded_by} — mapped to prov:generatedAtTime / prov:wasGeneratedBy / prov:wasAttributedTo in the RDF projection"
+    adoption_verdict: adapt
+    reason: "Ingest.aDNA Rule 5 fields are PROV-O's minimum by another name; declaring the mapping lets a Datasets.aDNA provenance contract (backlog) consume the same fields."
+    known_limit: "No RDF projection is generated in v0; the mapping is declarative."
+
+deferred:   # listed so nobody re-discovers them; bound when an instance needs them
+
+  - id: envo
+    external_authority: "ENVO — Environment Ontology (OBO)"
+    iri_base: http://purl.obolibrary.org/obo/ENVO_
+    adoption_verdict: defer
+    bind_when: "an eDNA / metagenomic instance needs habitat terms (ENVO:00000447 marine biome; ENVO:01000020 estuarine biome) on AtlSpatialUnit"
+    reason: "Not needed to compare evaluations; useful for the hypothesis ledger's ecosystem-type key at P3."
+
+  - id: mixs
+    external_authority: "MIxS — Minimum Information about any (x) Sequence (GSC); water / sediment packages"
+    iri_base: https://w3id.org/mixs/
+    adoption_verdict: defer
+    bind_when: "the first edna_profile stream (P2+ instance); MIxS fields become AtlObservationStream provenance extensions"
+    reason: "Carries sample-collection metadata an eDNA instance must keep; nothing to bind until there is a sequence stream."
+
+  - id: goos_eov
+    external_authority: "GOOS Essential Ocean Variables / GEO BON Essential Biodiversity Variables"
+    iri_base: https://goosocean.org/what-we-do/framework/essential-ocean-variables-eovs/
+    adoption_verdict: defer
+    bind_when: "the Modality enum is revisited at M-1c's fit matrix — EOV platform/variable classes may replace or annotate it"
+    reason: "Modality is `local` in v0; EOVs are the obvious authority but their granularity (variable, not platform) does not match the enum one-to-one."
+
+  - id: cmecs
+    external_authority: "CMECS — Coastal and Marine Ecological Classification Standard (NOAA / FGDC)"
+    iri_base: https://iocm.noaa.gov/standards/cmecs-home.html
+    adoption_verdict: defer
+    bind_when: "a US instance wants a habitat sub-type on AtlSpatialUnit (biotic / substrate components)"
+
+  - id: ncbi_taxonomy
+    external_authority: "NCBI Taxonomy"
+    iri_base: https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=
+    adoption_verdict: defer
+    bind_when: "a freshwater or sequence-based instance names taxa outside WoRMS"
+
+  - id: noaa_crw_products
+    external_authority: "NOAA Coral Reef Watch product definitions (DHW, HotSpot, Bleaching Alert Area)"
+    iri_base: https://coralreefwatch.noaa.gov/product/5km/
+    adoption_verdict: defer
+    bind_when: "P2 FKNMS — the event variable is DHW; CRW's product doc is the authority until a CF name exists (see cf_standard_names.known_limit)"
+
+not_vocabularies:   # source protocols — streams.yaml material, recorded here only to stop the question recurring
+  - {id: erddap,        is_a: source_system, example: "coastwatch.pfeg.noaa.gov/erddap — ncdcOisst21Agg_LonPM180"}
+  - {id: arcgis_hub,    is_a: source_system, example: "gis.myfwc.com MapServer layers 2–12"}
+  - {id: usgs_nwis,     is_a: source_system, example: "waterservices.usgs.gov/nwis/dv parameter 00060"}
+  - {id: ndbc,          is_a: source_system, example: "stdmet historical files"}
+  - {id: obis_gbif,     is_a: source_system, example: "api.obis.org/v3/occurrence"}
+  - {id: copernicus_marine, is_a: source_system}
+  - {id: ncbi_sra_mgnify,  is_a: source_system}
