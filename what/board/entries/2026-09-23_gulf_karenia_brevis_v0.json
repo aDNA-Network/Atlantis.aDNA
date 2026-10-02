@@ -1,0 +1,156 @@
+{
+  "board_entry_schema": "atl_board_entry_v1",
+  "tier": "GREEN",
+  "accuracy_claim": "NONE \u2014 method demonstration on public data; not an operational forecast (SO-4)",
+  "entry_id": "2026-09-23_gulf_karenia_brevis_v0",
+  "source": "exemplar",
+  "instance": "Atlantis.aDNA/what/exemplars/gulf_karenia_brevis",
+  "method_version": "pattern_ecosystem_early_warning 0.1",
+  "recorded_by": "agent_proteus",
+  "recorded_at": "2026-10-02",
+  "run_date": "2026-09-23",
+  "evaluation": {
+    "evaluation_id": "atl_eval_gulf_karenia_brevis_v0",
+    "event_ref": "atl_event_kbrevis_onset_100k_4w",
+    "event": {
+      "variable": "Karenia brevis cell count (WoRMS:233015)",
+      "threshold": 100000,
+      "unit": "/L",
+      "direction": "above",
+      "horizon": 4,
+      "time_step": "iso_week",
+      "onset_rule": "drop region-weeks whose last-known weekly max >= threshold (already in bloom); drop region-weeks with no sampled week in t+1..t+4 (unknown outcome)"
+    },
+    "patient": {
+      "unit_kind": "coastal_band",
+      "n_units": 9,
+      "geometry_ref": "config.yaml -> regions (lat/lon rules)"
+    },
+    "split": "train 1994-2016 \u00b7 val 2017-2019 \u00b7 test 2020-2023, scored once; rolling origin 2016->2023",
+    "modelling_rows": 10804,
+    "modelling_positives": 1168,
+    "modelling_prevalence": 0.1081,
+    "dropped_already_in_bloom": 1481,
+    "dropped_outcome_unknown": 1800,
+    "n_test": 1640,
+    "n_positives": 127,
+    "base_rate": 0.0774,
+    "auroc": 0.8941,
+    "auprc": 0.5473,
+    "brier": 0.0499,
+    "calibration_slope": 1.17,
+    "climatology_auroc": 0.5767,
+    "climatology_auprc": 0.1038,
+    "alert_budgets": [
+      {
+        "rate": 0.05,
+        "precision": 0.6463,
+        "recall": 0.4173,
+        "n_alerts": 82
+      },
+      {
+        "rate": 0.1,
+        "precision": 0.4634,
+        "recall": 0.5984,
+        "n_alerts": 164
+      },
+      {
+        "rate": 0.2,
+        "precision": 0.314,
+        "recall": 0.811,
+        "n_alerts": 328
+      }
+    ],
+    "lead_time": {
+      "budget_rate": 0.1,
+      "n_onsets": 22,
+      "flagged_fraction": 0.6364,
+      "median_lead": 4.0
+    },
+    "ablations": [
+      {
+        "ablation_name": "without surveillance group (n_samples_t0, n_samples_4w)",
+        "ablated_auroc": 0.8903,
+        "ablated_auprc": 0.5264,
+        "n_trees": 329
+      },
+      {
+        "ablation_name": "surveillance-only single feature (n_samples_4w)",
+        "ablated_auroc": 0.6239
+      }
+    ],
+    "sensitivity": [
+      {
+        "name": "threshold 50k cells/L",
+        "test_auroc": 0.8876,
+        "test_auprc": 0.5965,
+        "test_prevalence": 0.0758
+      }
+    ],
+    "learner": "xgboost 3.4.1 \u00b7 binary:logistic \u00b7 depth 4 \u00b7 eta 0.03 \u00b7 early-stop logloss (100 rounds) \u00b7 no scale_pos_weight \u00b7 monotone +1 on log_max_t0, roll_max_4w",
+    "n_trees": 141,
+    "n_vitals": 25,
+    "vital_groups": {
+      "counts": 13,
+      "surveillance": 2,
+      "season": 2,
+      "sst": 5,
+      "discharge": 3
+    },
+    "config_hash": "e9dea88254",
+    "data_pins": [
+      {
+        "stream_ref": "atl_stream_fwc_hab_karenia",
+        "artifact": "data/raw/fwc_hab_karenia_1970_2023.parquet",
+        "sha256": "2bde141038e87db37dd682561d47e525dc546189d2ae6fbecfaf1a53bcfecfd9"
+      },
+      {
+        "stream_ref": "atl_stream_oisst_region_daily",
+        "artifact": "data/raw/oisst_region_daily.parquet",
+        "sha256": "c26b97f53854d57e61cdd7b9bbca0507504f82aed63faf716744a4963bbb7ec8"
+      },
+      {
+        "stream_ref": "atl_stream_usgs_discharge_daily",
+        "artifact": "data/raw/usgs_discharge_daily.parquet",
+        "sha256": "66a58af41843b4305afa968dd814854a61e6a4e263f4898b5422d8eb03a789ea"
+      }
+    ],
+    "shap_summary": {
+      "perturbation": "interventional",
+      "background_n": 1000,
+      "additivity_max_gap": 4.3256757686904734e-06,
+      "group_mean_abs_shap": {
+        "counts": 1.15127,
+        "sst": 0.49372,
+        "season": 0.4034,
+        "discharge": 0.27305,
+        "surveillance": 0.16911
+      },
+      "top6": [
+        "roll_max_4w",
+        "woy_sin",
+        "roll_max_8w",
+        "weeks_since_bloom",
+        "discharge_anom_t0",
+        "sst_delta_4w"
+      ],
+      "top_interaction_pair": {
+        "a": "roll_max_8w",
+        "b": "woy_sin",
+        "mean_abs_interaction": 0.030130183324217796
+      }
+    },
+    "claim": "method_demonstration",
+    "limitations_ref": "what/exemplars/gulf_karenia_brevis/site/hab_crash_risk.html#limits (\u00a712 Where the analogy breaks) \u00b7 README.md \u00a7Caveats"
+  },
+  "provenance": {
+    "metrics_file": "what/exemplars/gulf_karenia_brevis/outputs/metrics.json",
+    "shap_file": "what/exemplars/gulf_karenia_brevis/outputs/shap_summary.json",
+    "features_report": "what/exemplars/gulf_karenia_brevis/data/processed/features_report.json",
+    "generated_by": "M-0 sitting script (json.load \u2192 entry); numbers are not retyped"
+  },
+  "notes": [
+    "Doc drift noted at M-0 (README says AUPRC-stopping and 2000 bg rows; config/outputs say logloss and 1000) \u2014 this entry follows the outputs; fix is P1 M-1a.",
+    "shap_test.npz is gitignored; only summary statistics cross to the board."
+  ]
+}

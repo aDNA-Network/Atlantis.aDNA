@@ -1,0 +1,32 @@
+# dataset_NAME.dataset.yaml — machine-readable twin of dataset_NAME.md (lattice-labs standard_dataset.md pair;
+# validated by Archive.aDNA/lattice-labs/what/datasets/dataset_yaml_schema.json). Snapshot rule: storage points
+# at the INSTANCE or the source — Atlantis holds no new bytes.
+dataset:
+  name: NAME
+  version: "0.1.0"
+  description: "<one line>"
+  dataset_class: reference          # reference | benchmark | training_data | target | result
+  category: ocean_observations
+  format:
+    file_type: parquet
+  storage:
+    provider: local                 # local (in the instance) | s3 | gcs | hf | zenodo | figshare | source (fetch on demand)
+    location: "<Instance>.aDNA/what/data/raw/NAME.parquet"
+    sha256: "<hex>"
+  fair:
+    license: "<SPDX>"
+    keywords: [<taxon>, <region>, <variable>]
+  lineage:
+    source_system: "<…>"
+    source_id: "<…>"
+    source_url: "<…>"
+    captured_at: "<ISO>"
+    ingested_at: "<ISO>"
+    pipeline_version: "<…>"
+    derived_from: []                # upstream dataset names, for processed tables
+  class_fields:
+    atl_stream_id: atl_stream_<...>
+    modality: <point_count | gridded_field | gauge_series | buoy_series | edna_profile | acoustic | survey_log | literature>
+    authority: "<CF:… | WoRMS:… | dwc:…>"
+    unit: "<UCUM>"
+    surveillance_channel: false
