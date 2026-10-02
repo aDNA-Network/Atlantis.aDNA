@@ -1,51 +1,43 @@
 ---
 type: directory_index
 created: 2026-02-17
-updated: 2026-03-28
-last_edited_by: agent_aria
-tags: [directory_index, governance]
+updated: 2026-10-02
+last_edited_by: agent_proteus
+tags: [directory_index, governance, adr, atlantis]
 ---
 
 # who/governance/ — Governance (Agent Reference)
 
 ## Purpose
 
-Team governance for this project. Defines roles, decision authority, and operational policies that govern how the project operates.
+Governance for `Atlantis.aDNA`: the identity ADRs and the agent protocol. **ADRs live here** (CLAUDE.md
+§Governance Doctrine), not in `what/decisions/` — the three `what/decisions/adr_00{1,2,3}_*.md` are
+template-inherited boilerplate from `.adna/` and are *not* Atlantis decisions; do not renumber against them.
+Stanley is the sole governance principal (seed ruling, 2026-09-23); every ADR stays `proposed` until it carries
+the operator's 4-field ratification block (§7.7).
 
 ## Key Files
 
-| File | Purpose |
-|------|---------|
-| `governance_roles.md` | Team members, responsibilities, and areas of ownership |
-| `governance_decision_authority.md` | Decision authority matrix — who approves what category of change |
-| `governance_policies.md` | Operational policies — collision prevention, naming, sessions, escalation |
-| `governance_agent_protocol.md` | Agent behavioral contract — partnership model, challenge phase, autonomy framework |
+| File | Status | Purpose |
+|------|--------|---------|
+| `adr_000_project_identity.md` | proposed | Identity, lineage from aDNALabs S329, three-layer naming, SO-3; lineage amendment 2026-10-02 → ADR-002 |
+| `adr_001_persona_and_category.md` | proposed | Persona (Proteus / Nereus to the gate) · **Framework + reference implementation** · code home `what/atlantis_core/` · name-form |
+| `adr_002_remit_mpa_knowledge_system.md` | proposed | The remit widening: MPA as unit kind + audience · five layers · **snapshot rule** · what crosses / never crosses · decentralisation composed not built |
+| `governance_agent_protocol.md` | template | Agent behavioural contract (inherited; CLAUDE.md overrides where they differ) |
+| `VISION.md` | template | aDNA standard vision (inherited; not Atlantis-specific) |
 
-Create governance files as the project matures. Start with roles and policies, add decision authority when the team grows.
+Planned (P4, when a second steward exists): `contribution_guide.md` (P1, public repo), `steward_council.md`,
+`decision_authority.md`, `partner_engagement.md` — RareArchive shape, adapted.
 
 ## Conventions
 
-- **Naming**: `governance_{topic}.md` (underscores only)
-- **Frontmatter**: All files require `type: governance` plus base fields
-- **Updates**: Changes to governance files should be coordinated — read before write, confirm with user if `updated` is recent
-- **Scope**: Governance files define rules that all agents and users must follow. Treat as authoritative.
-
-## Load/Skip Decision
-
-**Load this directory when**:
-- Reviewing or modifying governance policies (roles, decision authority, operational rules)
-- Onboarding a new team member and need to understand team roles and decision-making
-- Proposing changes to governance structure (use a Tier 2 session)
-
-**Skip when**:
-- Performing routine operational work that doesn't touch governance policies
-- Working on domain content (context, lattices, CRM) without governance implications
-- Already familiar with current governance structure and not modifying it
-
-**Token cost**: ~300 tokens (this AGENTS.md). Individual governance files are ~100-200 lines each.
+- **Naming**: `adr_NNN_<topic>.md` (three digits, underscores); `governance_<topic>.md` for policies.
+- **Frontmatter**: `type: adr`, `adr_id`, `status`, and the nested `ratification:` block (decision · ratified_by · date · status).
+- **Ratification**: agents author, operators ratify. Surface a ruling with `AskUserQuestion` (bounded) or an ISS gate (`aDNA.aDNA/how/skills/skill_create_iss.md`); record the ruling verbatim in the ADR.
+- **Archive, never delete** (SO-2): superseded ADRs get `status: superseded` + `superseded_by`.
 
 ## Cross-References
 
-- [CLAUDE.md](../../CLAUDE.md) — Master agent context (references governance rules)
-- [who/coordination/AGENTS](../coordination/AGENTS.md) — Cross-agent ephemeral notes
-- [how/sessions/AGENTS](../../how/sessions/AGENTS.md) — Session protocol
+- [CLAUDE.md](../../CLAUDE.md) — persona, standing orders, hard gates
+- [who/coordination/AGENTS](../coordination/AGENTS.md) — name-form note; future steward memos + `inbox/`
+- [how/campaigns/campaign_atlantis_genesis/](../../how/campaigns/campaign_atlantis_genesis/) — Operation Tidewatch

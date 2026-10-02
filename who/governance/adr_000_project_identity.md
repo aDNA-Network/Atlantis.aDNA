@@ -4,8 +4,8 @@ adr_id: ADR-000
 title: "ADR-000 — Atlantis.aDNA project identity (PROPOSED)"
 status: proposed
 created: 2026-09-23
-updated: 2026-09-23
-last_edited_by: agent_berthier
+updated: 2026-10-02
+last_edited_by: agent_proteus
 ratification:
   decision: ""
   ratified_by: ""
@@ -34,6 +34,12 @@ as patterns and templates, never as data. Every published page from an instance 
 
 **Alternatives considered.** Platform (single data-bearing system): rejected as centralising. Forge: rejected as
 under-serving doctrine and context. Keeping the pilot in aDNALabs: rejected by the operator on 2026-09-23.
+
+**Lineage amendment (2026-10-02, M-0).** The remit was widened by the operator on 2026-10-01 from *method +
+templates* to an **MPA knowledge · data-model · evidence system** — see `adr_002_remit_mpa_knowledge_system.md`.
+The category wording becomes **Framework + reference implementation** with code-as-WHAT at `what/atlantis_core/`
+— see `adr_001_persona_and_category.md`. Nothing above is withdrawn: the three-layer naming, SO-3 and the public
+MIT posture stand; ADR-002 §4 sharpens SO-3 into the snapshot rule.
 
 ## Ratification
 
