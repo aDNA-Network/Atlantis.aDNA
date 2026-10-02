@@ -1,33 +1,41 @@
 ---
 type: federation_contract
 doc_id: federation_atlantis_wrapper
-title: "how/federation/atlantis/ — what a regional instance carries to federate Atlantis (stub, v0)"
-status: proposed
+title: "how/federation/atlantis/ — what a regional instance carries to federate Atlantis (contract v0)"
+status: draft
+version: 0.1.0
 created: 2026-09-23
-updated: 2026-09-23
-last_edited_by: agent_berthier
-tags: [federation, wrapper, atlantis, instance_contract, adr_045]
+updated: 2026-10-02
+last_edited_by: agent_proteus
+contract: how/campaigns/campaign_atlantis_genesis/artifacts/instance_contract_v0.md
+tags: [federation, wrapper, atlantis, instance_contract, adr_045, conformance]
 ---
 
 # Federating Atlantis from an instance graph
 
-Placement per ADR-045: an instance carries `how/federation/atlantis/` with a `federation_ref` block naming this
-graph and the version of the method it instantiates. **The contract itself is M-0's artifact
-(`instance_contract_v0.md`); this stub records the intended shape so P0 has something to edit.**
+An instance carries `how/federation/atlantis/CLAUDE.md` with the `federation_ref` block below (ADR-045 placement).
+**The contract — the twelve-item checklist a reviewer runs from `config.yaml` · `streams.yaml` · `features.yaml` ·
+`mapping.yaml` without seeing the instance's data, what Atlantis promises back, and how knowledge moves between
+stewards — is `instance_contract_v0.md`** (linked in frontmatter). This file is the pin; that file is the terms.
 
 ```yaml
 federation_ref:
-  source: Atlantis.aDNA
-  pattern: pattern_ecosystem_early_warning
-  pattern_version: 0.1
-  template: template_regional_instance      # from P1
+  source_vault: Atlantis.aDNA
+  source_persona: Proteus
+  source_path: what/atlantis_core/                 # P1
+  source_commit: <sha>
+  version: "0.1.0"
+  version_policy: minor
+  patterns_used: [ATL-ONTOLOGY, ATL-STREAM, ATL-VITALS, ATL-LABEL, ATL-EVAL, ATL-EXPLAIN, ATL-BOARD]
+  conformance: atlantis_instance
   instance:
-    patient: "<spatial unit> × <time step>"
-    event: "<variable> >= <threshold> within <horizon>"
-    streams: [<stream ids with fetchers>]
-    data_posture: "<public | partner | human-subject> — ruling: <path to the instance's ADR>"
-    self_test: "src/<pkg>/build_features.py --self-test"   # must be green before real data is fetched
+    patient: {unit_kind: <atl enum>, external_id: "<WDPA:id | none>", time_step: <atl enum>}
+    event:   {variable: "<CURIE>", threshold: <n>, unit: "<UCUM>", direction: above|below, horizon: "<n> weeks"}
+    streams: [<stream ids>]
+    data_posture: {class: public|partner|human_subject, ruling: "<path to the instance's ADR>"}
+    self_test: "python -m atlantis_core.vitals --self-test"
+    board_entry: "what/board/entries/<date>_<instance>_v<n>.json"
 ```
 
-What Atlantis promises back: the pattern and its updates, the templates, the self-test, the mining playbook,
-and review of an instance's Limitations section on request. What Atlantis never takes: the instance's data.
+What Atlantis promises back and never takes: contract §C. Status: v0 (M-0, 2026-10-02); v1 is ratified at P4
+against the first outside steward.
