@@ -1,7 +1,8 @@
 """Train the onset classifier with a leakage-safe temporal split; write metrics + models.
-Run: .venv/bin/python -m hab.train
+Run: .venv/bin/python -m hab.train                      # the reference run → outputs/metrics.json + models
+     .venv/bin/python -m hab.train --negative-control   # T4 control: AUPRC early-stopping → outputs/negative_control_auprc_stop.json
 """
-import json, hashlib
+import json, hashlib, sys
 import numpy as np
 import pandas as pd
 import xgboost as xgb
@@ -103,14 +104,50 @@ def climatology_baseline(train, test, cfg):
             "auprc": float(average_precision_score(test["y"].astype(int), p))}
 
 
+def config_hash():
+    """md5 of config.yaml's bytes, first 10 hex — the join key metrics.json / the board carry. NOTE (M-1a): a comment
+    or a SHAP-only edit changes it; the committed metrics.json hash e9dea88254 is the S329 training-time config
+    (shap.background_n: 2000), the live file hashes differently. atlantis_core (M-1b) hashes the parsed training-relevant
+    sections instead."""
+    return hashlib.md5(open(ROOT / "config.yaml", "rb").read()).hexdigest()[:10]
+
+
+def negative_control():
+    """Thesis T4 negative control: early-stop on validation AUPRC instead of log-loss — the S329 first attempt, which
+    gave a 2-tree model. In-memory override only: config.yaml, metrics.json and the saved models are untouched."""
+    cfg = load_config(); cfg["xgb"]["eval_metric"] = "aucpr"
+    df = pd.read_parquet(DATA_PROC / "features.parquet"); df["y"] = df["y"].astype(int)
+    train, val, test = split(df, cfg)
+    clf, final, best = fit(train, val, cfg, FEATURES)
+    keep = ("auroc", "auprc", "brier", "calibration_slope", "prevalence", "n", "positives")
+    sub = lambda r: {**{k: r[k] for k in keep}, "alert_rate_10pct": r["alert_rates"]["10pct"]}
+    metrics = json.load(open(OUT / "metrics.json")); ref = metrics["full"]
+    out = {"control": "early_stopping_on_val_auprc", "thesis_claim": "T4 — calibration is the work: stop on log-loss, not AUPRC",
+           "eval_metric_override": "aucpr", "live_config_hash": config_hash(), "reference_run_config_hash": metrics["config_hash"],
+           "n_trees": best,
+           "val": sub(evaluate(val["y"].values, clf.predict_proba(val[FEATURES])[:, 1], "val")),
+           "test": sub(evaluate(test["y"].values, final.predict_proba(test[FEATURES])[:, 1], "test")),
+           "reference_full_model": {"n_trees": ref["n_trees"], "test": sub(ref["test"])},
+           "run_at": pd.Timestamp.now("UTC").isoformat(),
+           "note": "Reproduces the S329 observation (2026-09-23): validation AUPRC is flat from the first split while log-loss keeps "
+                   "improving, so AUPRC early-stopping halts almost immediately and the model is badly calibrated. Ranking is easy; "
+                   "calibration is the work. Nothing here is a forecast (SO-4)."}
+    (OUT / "negative_control_auprc_stop.json").write_text(json.dumps(out, indent=1))
+    print(f"negative control: trees={best} test AUROC={out['test']['auroc']:.3f} AUPRC={out['test']['auprc']:.3f} "
+          f"Brier={out['test']['brier']:.4f} cal-slope={out['test']['calibration_slope']:.2f} | reference trees={ref['n_trees']} "
+          f"cal-slope={ref['test']['calibration_slope']:.2f} → outputs/negative_control_auprc_stop.json")
+
+
 def main():
+    if "--negative-control" in sys.argv:
+        negative_control(); return
     cfg = load_config()
     OUT.mkdir(parents=True, exist_ok=True)
     df = pd.read_parquet(DATA_PROC / "features.parquet")
     df["y"] = df["y"].astype(int)
     train, val, test = split(df, cfg)
     rw_all = pd.read_parquet(DATA_PROC / "region_week_all.parquet")[["region", "week", "log_max"]]
-    results = {"config_hash": hashlib.md5(open(ROOT / "config.yaml", "rb").read()).hexdigest()[:10],
+    results = {"config_hash": config_hash(),
                "features": FEATURES, "feature_groups": FEATURE_GROUPS,
                "splits": {k: {"years": [int(v["week"].dt.year.min()), int(v["week"].dt.year.max())], "n": int(len(v)),
                               "positives": int(v["y"].sum())} for k, v in [("train", train), ("val", val), ("test", test)]}}
