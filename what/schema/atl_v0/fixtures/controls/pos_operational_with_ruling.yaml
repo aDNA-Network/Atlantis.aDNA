@@ -1,0 +1,14 @@
+# POSITIVE — SYNTHETIC. An operational claim that cites its owner's ruling (SO-4). Must validate. Pairs with
+# neg_operational_without_ruling: the two differ ONLY in owner_ruling_ref.
+evaluations:
+  - evaluation_id: atl_eval_example
+    event_ref: atl_event_example
+    split: "train 2000-2015 · test 2016-2020, scored once"
+    n_test: 100
+    n_positives: 10
+    base_rate: 0.1
+    alert_budgets: [{rate: 0.1, precision: 0.4, recall: 0.4}]
+    config_hash: "0000000000"
+    claim: operational_by_owner_ruling
+    owner_ruling_ref: who/governance/ruling_example_operational.md
+    limitations_ref: "site/example.html#limits"

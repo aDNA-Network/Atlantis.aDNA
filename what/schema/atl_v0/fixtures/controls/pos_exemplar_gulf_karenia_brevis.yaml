@@ -1,0 +1,119 @@
+# POSITIVE — the exemplar declared as an AtlDocument: every class appears (SpatialUnit ×2 with a parent, ObservationStream ×3,
+# Vital ×4 covering all four tags, EventDefinition, Evaluation with AlertBudget ×3 · LeadTime · Ablation ×2 · DataPin ×3).
+# Sources: _common_header.txt. Must validate.
+spatial_units:
+  - unit_id: atl_unit_fl_gulf_and_keys
+    name: Florida coast, nine alongshore regions
+    unit_kind: coastal_band
+    geometry_ref: "config.yaml -> regions (lat/lon rules)"
+    time_step: iso_week
+  - unit_id: atl_unit_fl_r7_lee_collier
+    name: Lee-Collier
+    unit_kind: coastal_band
+    geometry_ref: "config.yaml -> regions id 7, rule: lat >= 25.9 (first match wins)"
+    time_step: iso_week
+    parent_unit: atl_unit_fl_gulf_and_keys
+observation_streams:
+  - stream_id: atl_stream_fwc_hab_karenia
+    modality: point_count
+    source_system: FWC-FWRI HAB Monitoring Database via ArcGIS Open Data
+    source_id: Historic_Harmful_Algal_Bloom_Events (six decade layers)
+    authority: "WoRMS:233015"
+    variable: Karenia brevis
+    unit: /L
+    ingested_at: "2026-09-23T11:22:13Z"
+    sha256: 2bde141038e87db37dd682561d47e525dc546189d2ae6fbecfaf1a53bcfecfd9
+    row_count: 196024
+    license: "public (Florida public records; credit FWC-FWRI)"
+    surveillance_channel: true
+  - stream_id: atl_stream_oisst_region_daily
+    modality: gridded_field
+    source_system: NOAA CoastWatch ERDDAP
+    source_id: ncdcOisst21Agg_LonPM180
+    authority: "CF:sea_surface_temperature"
+    variable: sea_surface_temperature
+    unit: Cel
+    ingested_at: "2026-09-23T12:10:58Z"
+    sha256: c26b97f53854d57e61cdd7b9bbca0507504f82aed63faf716744a4963bbb7ec8
+    row_count: 127341
+    license: "public (NOAA / USGS)"
+    surveillance_channel: false
+  - stream_id: atl_stream_usgs_discharge_daily
+    modality: gauge_series
+    source_system: USGS NWIS daily values
+    source_id: parameter 00060 at five gauges (config.yaml -> gauges)
+    variable: discharge (USGS parameter 00060)
+    unit: "[cft_i]/s"
+    ingested_at: "2026-09-23T11:20:23Z"
+    sha256: 66a58af41843b4305afa968dd814854a61e6a4e263f4898b5422d8eb03a789ea
+    row_count: 61444
+    license: "public (NOAA / USGS)"
+    surveillance_channel: false
+vitals:
+  - vital_id: atl_vital_log_max_t0
+    stream_ref: atl_stream_fwc_hab_karenia
+    transform: log10(1+cells/L) of the highest sample in the region this week
+    lag: 0
+    group: counts
+    tag: state
+    monotone: 1
+  - vital_id: atl_vital_n_samples_4w
+    stream_ref: atl_stream_fwc_hab_karenia
+    transform: surveillance intensity over a month (samples, rolling 4-week sum)
+    window: 4
+    group: surveillance
+    tag: artifact
+  - vital_id: atl_vital_sst_anom_t0
+    stream_ref: atl_stream_oisst_region_daily
+    transform: this week's SST minus the 1982–2011 week-of-year normal
+    lag: 0
+    group: sst
+    tag: proxy
+  - vital_id: atl_vital_discharge_30d_t0
+    stream_ref: atl_stream_usgs_discharge_daily
+    transform: log10 mean daily discharge of the region's river gauge(s), last 30 days
+    lag: 0
+    group: discharge
+    tag: lever
+    owner: "the release schedulers for the Caloosahatchee at S-79 (gauge 02292900, config.yaml lever: true) — the Army Corps and the South Florida Water Management District, as the exemplar page names them"
+event_definitions:
+  - event_id: atl_event_kbrevis_onset_100k_4w
+    event_variable_stream: atl_stream_fwc_hab_karenia
+    threshold: 100000
+    unit: /L
+    direction: above
+    horizon: 4
+    onset_rule: "drop region-weeks whose last-known weekly max >= threshold (already in bloom); drop region-weeks with no sampled week in t+1..t+4 (unknown outcome)"
+evaluations:
+  - evaluation_id: atl_eval_gulf_karenia_brevis_v0
+    event_ref: atl_event_kbrevis_onset_100k_4w
+    unit_ref: atl_unit_fl_gulf_and_keys
+    split: "train 1994-2016 · val 2017-2019 · test 2020-2023, scored once; rolling origin 2016->2023"
+    n_test: 1640
+    n_positives: 127
+    base_rate: 0.0774
+    auroc: 0.8941
+    auprc: 0.5473
+    brier: 0.0499
+    calibration_slope: 1.17
+    climatology_auroc: 0.5767
+    climatology_auprc: 0.1038
+    alert_budgets:
+      - {rate: 0.05, precision: 0.6463, recall: 0.4173, n_alerts: 82}
+      - {rate: 0.1, precision: 0.4634, recall: 0.5984, n_alerts: 164}
+      - {rate: 0.2, precision: 0.314, recall: 0.811, n_alerts: 328}
+    lead_time: {budget_rate: 0.1, n_onsets: 22, flagged_fraction: 0.6364, median_lead: 4.0}
+    ablations:
+      - {ablation_name: "without surveillance group (n_samples_t0, n_samples_4w)", ablated_auroc: 0.8903, ablated_auprc: 0.5264}
+      - {ablation_name: "surveillance-only single feature (n_samples_4w)", ablated_auroc: 0.6239}
+    learner: "xgboost 3.4.1 · binary:logistic · depth 4 · eta 0.03 · early-stop logloss (100 rounds) · no scale_pos_weight · monotone +1 on log_max_t0, roll_max_4w"
+    config_hash: e9dea88254
+    data_pins:
+      - {stream_ref: atl_stream_fwc_hab_karenia, sha256: 2bde141038e87db37dd682561d47e525dc546189d2ae6fbecfaf1a53bcfecfd9}
+      - {stream_ref: atl_stream_oisst_region_daily, sha256: c26b97f53854d57e61cdd7b9bbca0507504f82aed63faf716744a4963bbb7ec8}
+      - {stream_ref: atl_stream_usgs_discharge_daily, sha256: 66a58af41843b4305afa968dd814854a61e6a4e263f4898b5422d8eb03a789ea}
+    shap_summary_ref: what/exemplars/gulf_karenia_brevis/outputs/shap_summary.json
+    claim: method_demonstration
+    limitations_ref: "what/exemplars/gulf_karenia_brevis/site/hab_crash_risk.html#limits (§12 Where the analogy breaks) · README.md §Caveats"
+    recorded_by: agent_proteus
+    recorded_at: "2026-10-02T00:00:00Z"

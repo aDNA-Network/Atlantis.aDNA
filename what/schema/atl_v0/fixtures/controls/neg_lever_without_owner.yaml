@@ -1,0 +1,8 @@
+# NEGATIVE — M-1c. A lever vital with no owner (AtlVital rule). MUST FAIL, and only on this.
+# REJECTS_ON: 'owner' is a required property
+# REJECTS_AT: ^/vitals/0$
+vitals:
+  - vital_id: atl_vital_example
+    stream_ref: atl_stream_example
+    transform: 30-day mean discharge, log10
+    tag: lever

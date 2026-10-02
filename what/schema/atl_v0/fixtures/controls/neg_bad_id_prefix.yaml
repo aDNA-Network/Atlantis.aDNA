@@ -1,0 +1,10 @@
+# NEGATIVE — M-1c. A stream id without its `atl_stream_` prefix. MUST FAIL, and only on this.
+# REJECTS_ON: does not match '\^atl_stream_
+# REJECTS_AT: ^/observation_streams/0/stream_id$
+observation_streams:
+  - stream_id: stream_example
+    modality: gauge_series
+    source_system: USGS NWIS daily values
+    source_id: parameter 00060 at an example gauge
+    ingested_at: "2026-10-02T00:00:00Z"
+    license: public

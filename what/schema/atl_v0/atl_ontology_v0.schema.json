@@ -1,0 +1,1048 @@
+{
+    "$defs": {
+        "AtlAblation": {
+            "additionalProperties": false,
+            "description": "One ablation result.",
+            "properties": {
+                "ablated_auprc": {
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "ablated_auroc": {
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "ablation_name": {
+                    "description": "What was removed (the surveillance group; a stream; a lever).",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "ablation_name"
+            ],
+            "title": "AtlAblation",
+            "type": "object"
+        },
+        "AtlAlertBudget": {
+            "additionalProperties": false,
+            "description": "Precision and recall at one alert rate.",
+            "properties": {
+                "n_alerts": {
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "precision": {
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": "number"
+                },
+                "rate": {
+                    "description": "Alert rate (fraction of patient-steps flagged).",
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": "number"
+                },
+                "recall": {
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": "number"
+                }
+            },
+            "required": [
+                "rate",
+                "precision",
+                "recall"
+            ],
+            "title": "AtlAlertBudget",
+            "type": "object"
+        },
+        "AtlDataPin": {
+            "additionalProperties": false,
+            "description": "One stream the model saw, pinned by hash.",
+            "properties": {
+                "sha256": {
+                    "description": "Of the cached artifact; lowercase hex64. Required on AtlDataPin; recommended on a stream. Control: neg_sha256_not_hex64 (a 63-char hash on a data pin). Nearest miss NOT caught: a well-formed hash of the wrong bytes \u2014 only re-hashing the cache proves a pin.",
+                    "pattern": "^[a-f0-9]{64}$",
+                    "type": "string"
+                },
+                "stream_ref": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "stream_ref",
+                "sha256"
+            ],
+            "title": "AtlDataPin",
+            "type": "object"
+        },
+        "AtlDeclared": {
+            "additionalProperties": false,
+            "description": "Mixin \u2014 every declared object carries a tier, a version and who/when.",
+            "properties": {
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "Human label. Never a partner site's name when the instance's posture is partner or human_subject.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "recorded_at": {
+                    "format": "date-time",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "recorded_by": {
+                    "description": "Agent or operator id (e.g. agent_proteus, stanley).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "tier": {
+                    "$ref": "#/$defs/EvidenceTier"
+                },
+                "version": {
+                    "description": "Semantic version of the declared object.",
+                    "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "title": "AtlDeclared",
+            "type": "object"
+        },
+        "AtlDocument": {
+            "additionalProperties": false,
+            "description": "Container used to validate instance registry files; any file may carry any subset.",
+            "properties": {
+                "evaluations": {
+                    "items": {
+                        "$ref": "#/$defs/AtlEvaluation"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "event_definitions": {
+                    "items": {
+                        "$ref": "#/$defs/AtlEventDefinition"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "observation_streams": {
+                    "items": {
+                        "$ref": "#/$defs/AtlObservationStream"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "spatial_units": {
+                    "items": {
+                        "$ref": "#/$defs/AtlSpatialUnit"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "vitals": {
+                    "items": {
+                        "$ref": "#/$defs/AtlVital"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                }
+            },
+            "title": "AtlDocument",
+            "type": "object"
+        },
+        "AtlEvaluation": {
+            "additionalProperties": false,
+            "description": "The measurement is the artifact (ADR-057). Always against its base rate, at a budget, with lead time, with its ablations, with its data pins and its limitations. This is what crosses to the board \u2014 metrics only. CLOSED (gen-json-schema --closed; linkml-validate is closed by default): control neg_per_patient_predictions proves a per-patient `predictions` list is rejected AT the evaluation. Nearest miss NOT caught: per-patient values smuggled inside a declared free-text slot (e.g. `split`, `learner`) \u2014 a reviewer's catch, not a shape's.",
+            "if": {
+                "properties": {
+                    "claim": {
+                        "const": "operational_by_owner_ruling"
+                    }
+                },
+                "required": [
+                    "claim"
+                ]
+            },
+            "properties": {
+                "ablations": {
+                    "description": "Surveillance ablation is REQUIRED where a surveillance channel is declared (T5).",
+                    "items": {
+                        "$ref": "#/$defs/AtlAblation"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "alert_budgets": {
+                    "description": "At least one (T6; SO-9 \u2014 operator ruling at M-1c to enforce now, not at M-1b). Controls: neg_evaluation_without_budget (absent) \u00b7 neg_evaluation_empty_budgets (`[]`). Nearest miss NOT caught: a budget whose precision/recall were not measured at that rate.",
+                    "items": {
+                        "$ref": "#/$defs/AtlAlertBudget"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                },
+                "auprc": {
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "auroc": {
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "base_rate": {
+                    "description": "Test prevalence. REQUIRED \u2014 a score without its base rate is not a result (Proteus doctrine 2; SO-9). Control: neg_missing_base_rate. Nearest miss NOT caught: base_rate \u2260 n_positives / n_test (cross-field arithmetic is a validator's job).",
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": "number"
+                },
+                "brier": {
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "calibration_slope": {
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "claim": {
+                    "$ref": "#/$defs/Claim",
+                    "description": "SO-4. REQUIRED and written out: neither validator applies `ifabsent`, so an evaluation without `claim` is rejected rather than defaulted (the default documents intent for generators). Closed enum \u2014 neg_vital_tag_driver proves the enum mechanism."
+                },
+                "climatology_auprc": {
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "climatology_auroc": {
+                    "description": "The cheapest baseline (T11). Required from M-1b on.",
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "config_hash": {
+                    "description": "Hash of the instance's config.yaml at training time.",
+                    "type": "string"
+                },
+                "data_pins": {
+                    "description": "Every stream the model saw, with its sha256.",
+                    "items": {
+                        "$ref": "#/$defs/AtlDataPin"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "evaluation_id": {
+                    "description": "Evaluation id. Pattern-controlled (neg_bad_id_prefix shape).",
+                    "pattern": "^atl_eval_[a-z0-9_]{2,64}$",
+                    "type": "string"
+                },
+                "event_ref": {
+                    "type": "string"
+                },
+                "lead_time": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/AtlLeadTime"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "learner": {
+                    "description": "xgboost 3.4.1 \u00b7 depth 4 \u00b7 eta 0.03 \u00b7 logloss early-stop \u2014 or the swap.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "limitations_ref": {
+                    "description": "Pointer to the published page's Limitations section. REQUIRED and non-blank: no evaluation without its limits (SO-4, SO-9). Controls: neg_missing_limitations_ref (absent) \u00b7 neg_limitations_ref_blank (`'  '`). Nearest miss NOT caught: a pointer to a page with no Limitations section (referential integrity).",
+                    "pattern": "\\S",
+                    "type": "string"
+                },
+                "n_positives": {
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "n_test": {
+                    "minimum": 1,
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "Human label. Never a partner site's name when the instance's posture is partner or human_subject.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "owner_ruling_ref": {
+                    "description": "REQUIRED and non-blank when claim = operational_by_owner_ruling (AtlEvaluation rule).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "recorded_at": {
+                    "format": "date-time",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "recorded_by": {
+                    "description": "Agent or operator id (e.g. agent_proteus, stanley).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "shap_summary_ref": {
+                    "description": "Pointer to the instance's shap_summary (mean |SHAP| per vital and group); never per-patient values.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "split": {
+                    "description": "Temporal split in words: train 1994\u20132016 \u00b7 val 2017\u20132019 \u00b7 test 2020\u20132023, scored once.",
+                    "type": "string"
+                },
+                "tier": {
+                    "$ref": "#/$defs/EvidenceTier"
+                },
+                "unit_ref": {
+                    "description": "The patient population the evaluation covers (the parent unit when many).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "version": {
+                    "description": "Semantic version of the declared object.",
+                    "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "evaluation_id",
+                "event_ref",
+                "split",
+                "n_test",
+                "n_positives",
+                "base_rate",
+                "alert_budgets",
+                "config_hash",
+                "claim",
+                "limitations_ref"
+            ],
+            "then": {
+                "properties": {
+                    "owner_ruling_ref": {
+                        "allOf": [
+                            {
+                                "pattern": "\\S",
+                                "type": "string"
+                            }
+                        ]
+                    }
+                },
+                "required": [
+                    "owner_ruling_ref"
+                ]
+            },
+            "title": "AtlEvaluation",
+            "type": "object"
+        },
+        "AtlEventDefinition": {
+            "additionalProperties": false,
+            "description": "Threshold \u00b7 direction \u00b7 horizon \u00b7 onset rule. A ruling with its own version history; a second event on the same vitals is a second definition and a second model (T12).",
+            "properties": {
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "direction": {
+                    "$ref": "#/$defs/Direction"
+                },
+                "event_id": {
+                    "description": "Event-definition id. Pattern-controlled (neg_bad_id_prefix shape).",
+                    "pattern": "^atl_event_[a-z0-9_]{2,64}$",
+                    "type": "string"
+                },
+                "event_variable_stream": {
+                    "description": "The stream the event variable is read from.",
+                    "type": "string"
+                },
+                "horizon": {
+                    "description": "In time steps: event within t+1 \u2026 t+horizon.",
+                    "minimum": 1,
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "Human label. Never a partner site's name when the instance's posture is partner or human_subject.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "onset_rule": {
+                    "description": "How already-past-threshold patients are excluded (last-known state \u2265 threshold \u2192 dropped) and how unknown outcomes are handled.",
+                    "type": "string"
+                },
+                "recorded_at": {
+                    "format": "date-time",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "recorded_by": {
+                    "description": "Agent or operator id (e.g. agent_proteus, stanley).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "threshold": {
+                    "type": "number"
+                },
+                "tier": {
+                    "$ref": "#/$defs/EvidenceTier"
+                },
+                "unit": {
+                    "description": "UCUM code (Cel; /L; m3/s; 1 for dimensionless).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "version": {
+                    "description": "Semantic version of the declared object.",
+                    "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "event_id",
+                "event_variable_stream",
+                "threshold",
+                "direction",
+                "horizon",
+                "onset_rule"
+            ],
+            "title": "AtlEventDefinition",
+            "type": "object"
+        },
+        "AtlLeadTime": {
+            "additionalProperties": false,
+            "description": "Lead-time summary at one budget. Histogram stays in the instance.",
+            "properties": {
+                "budget_rate": {
+                    "description": "The alert budget the lead time was measured at.",
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": "number"
+                },
+                "flagged_fraction": {
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": "number"
+                },
+                "median_lead": {
+                    "description": "In time steps.",
+                    "minimum": 0,
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "n_onsets": {
+                    "minimum": 0,
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "budget_rate",
+                "n_onsets",
+                "flagged_fraction"
+            ],
+            "title": "AtlLeadTime",
+            "type": "object"
+        },
+        "AtlObservationStream": {
+            "additionalProperties": false,
+            "description": "One source of observations with Ingest-Rule-5 provenance and a content hash. The stream is the unit of fetch, cache, licence and drift detection. Observations themselves are a table shape (observation_long, type-vocabulary proposal) and never enter Atlantis.",
+            "properties": {
+                "authority": {
+                    "description": "The vocabulary the stream's variable is named in: CF standard name, WoRMS AphiaID, Darwin Core term.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "captured_at": {
+                    "description": "Ingest Rule 5: when the source produced/last updated the data.",
+                    "format": "date-time",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "fetcher": {
+                    "description": "The atlantis_core fetcher class or module that realises this stream (P1).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "ingested_at": {
+                    "description": "Ingest Rule 5: when the instance fetched it.",
+                    "format": "date-time",
+                    "type": "string"
+                },
+                "license": {
+                    "description": "SPDX or the agency's terms string.",
+                    "type": "string"
+                },
+                "modality": {
+                    "$ref": "#/$defs/Modality"
+                },
+                "name": {
+                    "description": "Human label. Never a partner site's name when the instance's posture is partner or human_subject.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "pipeline_version": {
+                    "description": "Ingest Rule 5: which fetcher version wrote the cache.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "recorded_at": {
+                    "format": "date-time",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "recorded_by": {
+                    "description": "Agent or operator id (e.g. agent_proteus, stanley).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "row_count": {
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "sha256": {
+                    "description": "Of the cached artifact; lowercase hex64. Required on AtlDataPin; recommended on a stream. Control: neg_sha256_not_hex64 (a 63-char hash on a data pin). Nearest miss NOT caught: a well-formed hash of the wrong bytes \u2014 only re-hashing the cache proves a pin.",
+                    "pattern": "^[a-f0-9]{64}$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "source_id": {
+                    "description": "Ingest Rule 5: the id within that system (layer id, ERDDAP dataset id, NWIS site, BioProject).",
+                    "type": "string"
+                },
+                "source_system": {
+                    "description": "Ingest Rule 5: the system of record (FWC ArcGIS Hub, NOAA CoastWatch ERDDAP, USGS NWIS, NOAA CRW, OBIS, NCBI SRA\u2026).",
+                    "type": "string"
+                },
+                "stream_id": {
+                    "description": "Stream id. Control: neg_bad_id_prefix.",
+                    "pattern": "^atl_stream_[a-z0-9_]{2,64}$",
+                    "type": "string"
+                },
+                "surveillance_channel": {
+                    "description": "True if this stream's sampling intensity is itself endogenous to the event (pattern step 3; T5).",
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "tier": {
+                    "$ref": "#/$defs/EvidenceTier"
+                },
+                "unit": {
+                    "description": "UCUM code (Cel; /L; m3/s; 1 for dimensionless).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "variable": {
+                    "description": "The measured quantity as the authority names it (sea_surface_temperature; Karenia brevis; cells_per_litre).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "version": {
+                    "description": "Semantic version of the declared object.",
+                    "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "stream_id",
+                "modality",
+                "source_system",
+                "source_id",
+                "ingested_at",
+                "license"
+            ],
+            "title": "AtlObservationStream",
+            "type": "object"
+        },
+        "AtlSpatialUnit": {
+            "additionalProperties": false,
+            "description": "The patient's space \u2014 one of these \u00d7 one time step is a patient row. Passes the instance test (an MPA zone is countable), independence (it outlives any model) and lifecycle (boundaries change by ruling, versioned). Geometry is a pointer: Atlantis never holds a polygon.",
+            "properties": {
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "external_id": {
+                    "description": "SHOULD be present when unit_kind = mpa_zone. NOT ENFORCED: LinkML rules have no warning severity, and an error would be wrong (some zones have no WDPA row). A validator's warning (README \u00a7Known limits). Positive: pos_mpa_zone_wdpa.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "geometry_ref": {
+                    "description": "POINTER to the geometry (a file path in the instance, a WDPA id, or a coordinate RULE string such as the exemplar's `lat >= 27.6`). Never inline coordinates. DENYLIST (operator ruling, M-1c): rejects a value that opens as a GeoJSON/array literal (`{` or `[`), opens as WKT/EWKT (POINT \u00b7 LINESTRING \u00b7 POLYGON \u00b7 MULTI* \u00b7 GEOMETRYCOLLECTION, any case, optional SRID=n; and Z/M), contains a decimal lat,lon pair anywhere (comma- or space-separated), or is blank. Controls: neg_inline_geometry_wkt \u00b7 neg_inline_geometry_geojson \u00b7 neg_inline_geometry_bbox (the exemplar's own region_boxes row). Nearest miss NOT caught: integer-only or degrees-minutes-seconds coordinates (`25 -80`, `25\u00b007\u2032N 80\u00b024\u2032W`), and a WKT literal embedded mid-string with integer coordinates. A pointer to a file that itself holds partner coordinates passes by design \u2014 the file lives in the instance, under its own posture.",
+                    "pattern": "^(?!\\s*[\\[{])(?!\\s*(?:[Ss][Rr][Ii][Dd]=\\d+;)?(?:[Mm][Uu][Ll][Tt][Ii])?(?:[Pp][Oo][Ii][Nn][Tt]|[Ll][Ii][Nn][Ee][Ss][Tt][Rr][Ii][Nn][Gg]|[Pp][Oo][Ll][Yy][Gg][Oo][Nn]|[Gg][Ee][Oo][Mm][Ee][Tt][Rr][Yy][Cc][Oo][Ll][Ll][Ee][Cc][Tt][Ii][Oo][Nn])\\s*(?:[Zz][Mm]?|[Mm])?\\s*\\()(?![\\s\\S]*-?\\d{1,3}\\.\\d+(?:\\s*,\\s*|\\s+)-?\\d{1,3}\\.\\d+)[\\s\\S]*\\S[\\s\\S]*$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "Human label. Never a partner site's name when the instance's posture is partner or human_subject.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "parent_unit": {
+                    "description": "Zone \u2192 MPA, reach \u2192 basin. Optional.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "recorded_at": {
+                    "format": "date-time",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "recorded_by": {
+                    "description": "Agent or operator id (e.g. agent_proteus, stanley).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "tier": {
+                    "$ref": "#/$defs/EvidenceTier"
+                },
+                "time_step": {
+                    "$ref": "#/$defs/TimeStep"
+                },
+                "unit_id": {
+                    "description": "Instance-local id; prefix fixed so ids are greppable across instances. Pattern-controlled (neg_bad_id_prefix shape).",
+                    "pattern": "^atl_unit_[a-z0-9_]{2,64}$",
+                    "type": "string"
+                },
+                "unit_kind": {
+                    "$ref": "#/$defs/UnitKind"
+                },
+                "version": {
+                    "description": "Semantic version of the declared object.",
+                    "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "unit_id",
+                "unit_kind",
+                "time_step"
+            ],
+            "title": "AtlSpatialUnit",
+            "type": "object"
+        },
+        "AtlVital": {
+            "additionalProperties": false,
+            "description": "One feature on the patient grid: where it comes from, how it is made, what it is for. Replaces the exemplar's hard-coded FEATURE_GROUPS / FEATURE_DOC (P1 M-1b). The tag is reviewable here instead of buried in code.",
+            "if": {
+                "properties": {
+                    "tag": {
+                        "const": "lever"
+                    }
+                },
+                "required": [
+                    "tag"
+                ]
+            },
+            "properties": {
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "group": {
+                    "description": "Feature group for grouped SHAP and ablation (counts \u00b7 surveillance \u00b7 season \u00b7 sst \u00b7 discharge \u2026).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "hypothesis_ref": {
+                    "description": "Pointer to a hypothesis-ledger row (P3) when the vital exists because the literature asserted it.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "lag": {
+                    "description": "In time steps. 0 = the patient's current step.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "monotone": {
+                    "description": "Monotone constraint passed to the learner, only where physics is unambiguous. 0 = none.",
+                    "maximum": 1,
+                    "minimum": -1,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "name": {
+                    "description": "Human label. Never a partner site's name when the instance's posture is partner or human_subject.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "owner": {
+                    "description": "REQUIRED and non-blank when tag = lever (AtlVital rule): who can move it (for the exemplar's S-79 releases, the Army Corps and the South Florida Water Management District, as the exemplar page names them; for a closure, the body that rules it).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "recorded_at": {
+                    "format": "date-time",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "recorded_by": {
+                    "description": "Agent or operator id (e.g. agent_proteus, stanley).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "stream_ref": {
+                    "type": "string"
+                },
+                "tag": {
+                    "$ref": "#/$defs/VitalTag",
+                    "description": "Closed enum. Control: neg_vital_tag_driver (`driver` \u2014 a causal word \u2014 rejected AT the tag; SHAP is never a cause). Nearest miss NOT caught: a lever/proxy tag that is wrong for the ecosystem (a review question, not a shape)."
+                },
+                "tier": {
+                    "$ref": "#/$defs/EvidenceTier"
+                },
+                "transform": {
+                    "description": "The feature recipe in words or a registry key (log10(1+x) weekly max; anomaly vs training-era climatology; rolling max).",
+                    "type": "string"
+                },
+                "version": {
+                    "description": "Semantic version of the declared object.",
+                    "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "vital_id": {
+                    "description": "Vital id. Pattern-controlled (neg_bad_id_prefix shape).",
+                    "pattern": "^atl_vital_[a-z0-9_]{2,64}$",
+                    "type": "string"
+                },
+                "window": {
+                    "description": "In time steps, for rolling transforms.",
+                    "minimum": 1,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "vital_id",
+                "stream_ref",
+                "transform",
+                "tag"
+            ],
+            "then": {
+                "properties": {
+                    "owner": {
+                        "allOf": [
+                            {
+                                "pattern": "\\S",
+                                "type": "string"
+                            }
+                        ]
+                    }
+                },
+                "required": [
+                    "owner"
+                ]
+            },
+            "title": "AtlVital",
+            "type": "object"
+        },
+        "Claim": {
+            "description": "What an evaluation is allowed to claim (SO-4). local. Default is method_demonstration; the other value needs the instance owner's written ruling naming the agencies that run the real forecast.",
+            "enum": [
+                "method_demonstration",
+                "operational_by_owner_ruling"
+            ],
+            "title": "Claim",
+            "type": "string"
+        },
+        "Direction": {
+            "description": "Which way the threshold crossing goes. local.",
+            "enum": [
+                "above",
+                "below"
+            ],
+            "title": "Direction",
+            "type": "string"
+        },
+        "EvidenceTier": {
+            "description": "Review tier of a declared object. local \u2014 RareArchive's draft\u2192reviewed\u2192validated\u2192published ladder, minus `published` (the board is the publication).",
+            "enum": [
+                "draft",
+                "reviewed",
+                "validated"
+            ],
+            "title": "EvidenceTier",
+            "type": "string"
+        },
+        "Modality": {
+            "description": "How a stream speaks. local, informed by GOOS EOV platform classes (not bound in v0 \u2014 crosswalk row 7).",
+            "enum": [
+                "point_count",
+                "gridded_field",
+                "gauge_series",
+                "buoy_series",
+                "edna_profile",
+                "acoustic",
+                "survey_log",
+                "literature"
+            ],
+            "title": "Modality",
+            "type": "string"
+        },
+        "TimeStep": {
+            "description": "The patient's time step. local \u2014 ISO 8601 durations would over-specify; `cruise` is irregular by design.",
+            "enum": [
+                "day",
+                "iso_week",
+                "fortnight",
+                "month",
+                "cruise"
+            ],
+            "title": "TimeStep",
+            "type": "string"
+        },
+        "UnitKind": {
+            "description": "The kind of spatial unit a patient is. local \u2014 no external vocabulary enumerates \"the unit a steward manages\"; `mpa_zone` is bound to WDPA/MPAtlas ids through AtlSpatialUnit.external_id, not through this enum.",
+            "enum": [
+                "mpa_zone",
+                "coastal_band",
+                "reef",
+                "estuary_segment",
+                "river_reach",
+                "grid_cell"
+            ],
+            "title": "UnitKind",
+            "type": "string"
+        },
+        "VitalTag": {
+            "description": "What a feature is FOR a steward. local \u2014 this is the method's own vocabulary (pattern step 8). A tag is a human bridge to action; it is never a causal claim.",
+            "enum": [
+                "lever",
+                "proxy",
+                "artifact",
+                "state"
+            ],
+            "title": "VitalTag",
+            "type": "string"
+        }
+    },
+    "$id": "https://w3id.org/adna/atlantis/atl_v0",
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "additionalProperties": false,
+    "description": "Container used to validate instance registry files; any file may carry any subset.",
+    "metamodel_version": "1.11.0",
+    "properties": {
+        "evaluations": {
+            "items": {
+                "$ref": "#/$defs/AtlEvaluation"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "event_definitions": {
+            "items": {
+                "$ref": "#/$defs/AtlEventDefinition"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "observation_streams": {
+            "items": {
+                "$ref": "#/$defs/AtlObservationStream"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "spatial_units": {
+            "items": {
+                "$ref": "#/$defs/AtlSpatialUnit"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "vitals": {
+            "items": {
+                "$ref": "#/$defs/AtlVital"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        }
+    },
+    "title": "atl_ontology_v0",
+    "type": "object",
+    "version": "0.2.0"
+}
+

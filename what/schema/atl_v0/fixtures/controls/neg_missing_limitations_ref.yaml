@@ -1,0 +1,13 @@
+# NEGATIVE — M-1c. An evaluation with no limitations_ref (SO-4; SO-9). MUST FAIL, and only on this.
+# REJECTS_ON: 'limitations_ref' is a required property
+# REJECTS_AT: ^/evaluations/0$
+evaluations:
+  - evaluation_id: atl_eval_example
+    event_ref: atl_event_example
+    split: "train 2000-2015 · test 2016-2020, scored once"
+    n_test: 100
+    n_positives: 10
+    base_rate: 0.1
+    alert_budgets: [{rate: 0.1, precision: 0.4, recall: 0.4}]
+    config_hash: "0000000000"
+    claim: method_demonstration

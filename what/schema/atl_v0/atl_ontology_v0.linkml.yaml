@@ -1,10 +1,11 @@
 # atl_ontology_v0.linkml.yaml — Atlantis.aDNA · the `atl_` ontology for ecosystem early warning, v0
 #
-# STATUS: draft — authored at M-0 (2026-10-02, fable sitting). NO VALIDATION CLAIM. No control fixture has been run
-# against this file; no JSON Schema has been generated and committed. Both are P1 M-1c (see README.md). Until then a
-# constraint written here is an INTENTION, not an enforced shape.
+# STATUS: draft (v0.2.0) — authored at M-0 (2026-10-02, fable); CONTROLLED at P1 M-1c (2026-10-02, opus). A constraint
+# is claimed ONLY where a control in fixtures/controls/ proves it under all three worlds of run_controls.sh
+# (linkml-validate · the committed atl_ontology_v0.schema.json, descendants OFF · a scratch JSON Schema, descendants ON).
+# The control count and the known limits are in README.md. A constraint whose docstring names no control is NOT claimed.
 #
-# Rules adopted from ASOAtlas.aDNA/what/schema/aso_v0 (the fleet's worked LinkML precedent), effective from M-1c:
+# Rules adopted from ASOAtlas.aDNA/what/schema/aso_v0 (the fleet's worked LinkML precedent), in force from M-1c:
 #   1. A constraint is claimed ONLY if BOTH validators enforce it — linkml-validate AND the committed JSON Schema.
 #   2. Every enum below is a row in a vocabulary fit matrix (M-1c artifact), sourced to the external authority the
 #      crosswalk names, or marked `local` with the reason.
@@ -30,7 +31,7 @@ description: >-
   (a feature with a tag and a lineage), an event definition (threshold · direction · horizon), and an evaluation
   (the measurement, always against its base rate). Observations, labels and predictions are table shapes, not
   entities, and never cross into Atlantis.
-version: 0.1.0
+version: 0.2.0
 license: https://opensource.org/licenses/MIT
 status: draft
 
@@ -123,11 +124,14 @@ enums:
 slots:
 
   # identifiers ------------------------------------------------------------------------------------------------
-  unit_id:       {identifier: true, range: string, pattern: "^atl_unit_[a-z0-9_]{2,64}$", description: "Instance-local id; prefix fixed so ids are greppable across instances."}
-  stream_id:     {identifier: true, range: string, pattern: "^atl_stream_[a-z0-9_]{2,64}$"}
-  vital_id:      {identifier: true, range: string, pattern: "^atl_vital_[a-z0-9_]{2,64}$"}
-  event_id:      {identifier: true, range: string, pattern: "^atl_event_[a-z0-9_]{2,64}$"}
-  evaluation_id: {identifier: true, range: string, pattern: "^atl_eval_[a-z0-9_]{2,64}$"}
+  # Control (all five): neg_bad_id_prefix proves a stream id without its `atl_stream_` prefix is rejected AT the id; the
+  # same pattern shape guards the other four. Nearest miss NOT caught: a well-formed id that is not unique, or a *_ref
+  # that names no declared object (uniqueness and referential integrity are a validator's job — README §Known limits).
+  unit_id:       {identifier: true, range: string, pattern: "^atl_unit_[a-z0-9_]{2,64}$", description: "Instance-local id; prefix fixed so ids are greppable across instances. Pattern-controlled (neg_bad_id_prefix shape)."}
+  stream_id:     {identifier: true, range: string, pattern: "^atl_stream_[a-z0-9_]{2,64}$", description: "Stream id. Control: neg_bad_id_prefix."}
+  vital_id:      {identifier: true, range: string, pattern: "^atl_vital_[a-z0-9_]{2,64}$", description: "Vital id. Pattern-controlled (neg_bad_id_prefix shape)."}
+  event_id:      {identifier: true, range: string, pattern: "^atl_event_[a-z0-9_]{2,64}$", description: "Event-definition id. Pattern-controlled (neg_bad_id_prefix shape)."}
+  evaluation_id: {identifier: true, range: string, pattern: "^atl_eval_[a-z0-9_]{2,64}$", description: "Evaluation id. Pattern-controlled (neg_bad_id_prefix shape)."}
 
   # common -----------------------------------------------------------------------------------------------------
   name:          {range: string, description: "Human label. Never a partner site's name when the instance's posture is partner or human_subject."}
@@ -140,7 +144,19 @@ slots:
   # AtlSpatialUnit ---------------------------------------------------------------------------------------------
   unit_kind:     {range: UnitKind, required: true}
   external_id:   {range: uriorcurie, description: "WDPA:<id> or MPAtlas:<id> for mpa_zone; optional otherwise. A CURIE, never a polygon."}
-  geometry_ref:  {range: string, description: "POINTER to the geometry (a file path in the instance, a WDPA id, or a coordinate RULE string). Never inline coordinates of partner sites. Control (M-1c): rejects a value that parses as a WKT/GeoJSON literal."}
+  geometry_ref:
+    range: string
+    pattern: '^(?!\s*[\[{])(?!\s*(?:[Ss][Rr][Ii][Dd]=\d+;)?(?:[Mm][Uu][Ll][Tt][Ii])?(?:[Pp][Oo][Ii][Nn][Tt]|[Ll][Ii][Nn][Ee][Ss][Tt][Rr][Ii][Nn][Gg]|[Pp][Oo][Ll][Yy][Gg][Oo][Nn]|[Gg][Ee][Oo][Mm][Ee][Tt][Rr][Yy][Cc][Oo][Ll][Ll][Ee][Cc][Tt][Ii][Oo][Nn])\s*(?:[Zz][Mm]?|[Mm])?\s*\()(?![\s\S]*-?\d{1,3}\.\d+(?:\s*,\s*|\s+)-?\d{1,3}\.\d+)[\s\S]*\S[\s\S]*$'
+    description: >-
+      POINTER to the geometry (a file path in the instance, a WDPA id, or a coordinate RULE string such as the
+      exemplar's `lat >= 27.6`). Never inline coordinates. DENYLIST (operator ruling, M-1c): rejects a value that opens
+      as a GeoJSON/array literal (`{` or `[`), opens as WKT/EWKT (POINT · LINESTRING · POLYGON · MULTI* ·
+      GEOMETRYCOLLECTION, any case, optional SRID=n; and Z/M), contains a decimal lat,lon pair anywhere (comma- or
+      space-separated), or is blank. Controls: neg_inline_geometry_wkt · neg_inline_geometry_geojson ·
+      neg_inline_geometry_bbox (the exemplar's own region_boxes row). Nearest miss NOT caught: integer-only or
+      degrees-minutes-seconds coordinates (`25 -80`, `25°07′N 80°24′W`), and a WKT literal embedded mid-string with
+      integer coordinates. A pointer to a file that itself holds partner coordinates passes by design — the file
+      lives in the instance, under its own posture.
   time_step:     {range: TimeStep, required: true}
   parent_unit:   {range: AtlSpatialUnit, description: "Zone → MPA, reach → basin. Optional."}
 
@@ -155,7 +171,7 @@ slots:
   captured_at:      {range: datetime, description: "Ingest Rule 5: when the source produced/last updated the data."}
   ingested_at:      {range: datetime, required: true, description: "Ingest Rule 5: when the instance fetched it."}
   pipeline_version: {range: string, description: "Ingest Rule 5: which fetcher version wrote the cache."}
-  sha256:           {range: string, pattern: "^[a-f0-9]{64}$", description: "Of the cached artifact. Required from M-1a on; v0 leaves it recommended."}
+  sha256:           {range: string, pattern: "^[a-f0-9]{64}$", description: "Of the cached artifact; lowercase hex64. Required on AtlDataPin; recommended on a stream. Control: neg_sha256_not_hex64 (a 63-char hash on a data pin). Nearest miss NOT caught: a well-formed hash of the wrong bytes — only re-hashing the cache proves a pin."}
   row_count:        {range: integer, minimum_value: 0}
   license:          {range: string, required: true, description: "SPDX or the agency's terms string."}
   surveillance_channel: {range: boolean, description: "True if this stream's sampling intensity is itself endogenous to the event (pattern step 3; T5)."}
@@ -166,8 +182,8 @@ slots:
   lag:            {range: integer, minimum_value: 0, description: "In time steps. 0 = the patient's current step."}
   window:         {range: integer, minimum_value: 1, description: "In time steps, for rolling transforms."}
   group:          {range: string, description: "Feature group for grouped SHAP and ablation (counts · surveillance · season · sst · discharge …)."}
-  tag:            {range: VitalTag, required: true}
-  owner:          {range: string, description: "REQUIRED when tag = lever (rule, M-1c): who can move it (SFWMD for S-79; the sanctuary superintendent for a closure)."}
+  tag:            {range: VitalTag, required: true, description: "Closed enum. Control: neg_vital_tag_driver (`driver` — a causal word — rejected AT the tag; SHAP is never a cause). Nearest miss NOT caught: a lever/proxy tag that is wrong for the ecosystem (a review question, not a shape)."}
+  owner:          {range: string, description: "REQUIRED and non-blank when tag = lever (AtlVital rule): who can move it (for the exemplar's S-79 releases, the Army Corps and the South Florida Water Management District, as the exemplar page names them; for a closure, the body that rules it)."}
   hypothesis_ref: {range: string, description: "Pointer to a hypothesis-ledger row (P3) when the vital exists because the literature asserted it."}
   monotone:       {range: integer, minimum_value: -1, maximum_value: 1, description: "Monotone constraint passed to the learner, only where physics is unambiguous. 0 = none."}
 
@@ -184,23 +200,23 @@ slots:
   split:            {range: string, required: true, description: "Temporal split in words: train 1994–2016 · val 2017–2019 · test 2020–2023, scored once."}
   n_test:           {range: integer, required: true, minimum_value: 1}
   n_positives:      {range: integer, required: true, minimum_value: 0}
-  base_rate:        {range: float, required: true, minimum_value: 0, maximum_value: 1, description: "Test prevalence. REQUIRED — a score without its base rate is not a result (Proteus doctrine 2)."}
+  base_rate:        {range: float, required: true, minimum_value: 0, maximum_value: 1, description: "Test prevalence. REQUIRED — a score without its base rate is not a result (Proteus doctrine 2; SO-9). Control: neg_missing_base_rate. Nearest miss NOT caught: base_rate ≠ n_positives / n_test (cross-field arithmetic is a validator's job)."}
   auroc:            {range: float, minimum_value: 0, maximum_value: 1}
   auprc:            {range: float, minimum_value: 0, maximum_value: 1}
   brier:            {range: float, minimum_value: 0, maximum_value: 1}
   calibration_slope: {range: float}
   climatology_auroc: {range: float, minimum_value: 0, maximum_value: 1, description: "The cheapest baseline (T11). Required from M-1b on."}
   climatology_auprc: {range: float, minimum_value: 0, maximum_value: 1}
-  alert_budgets:    {range: AtlAlertBudget, multivalued: true, inlined_as_list: true, description: "At least one from M-1b on (T6)."}
+  alert_budgets:    {range: AtlAlertBudget, multivalued: true, inlined_as_list: true, required: true, minimum_cardinality: 1, description: "At least one (T6; SO-9 — operator ruling at M-1c to enforce now, not at M-1b). Controls: neg_evaluation_without_budget (absent) · neg_evaluation_empty_budgets (`[]`). Nearest miss NOT caught: a budget whose precision/recall were not measured at that rate."}
   lead_time:        {range: AtlLeadTime, inlined: true}
   ablations:        {range: AtlAblation, multivalued: true, inlined_as_list: true, description: "Surveillance ablation is REQUIRED where a surveillance channel is declared (T5)."}
   learner:          {range: string, description: "xgboost 3.4.1 · depth 4 · eta 0.03 · logloss early-stop — or the swap."}
   config_hash:      {range: string, required: true, description: "Hash of the instance's config.yaml at training time."}
   data_pins:        {range: AtlDataPin, multivalued: true, inlined_as_list: true, description: "Every stream the model saw, with its sha256."}
   shap_summary_ref: {range: string, description: "Pointer to the instance's shap_summary (mean |SHAP| per vital and group); never per-patient values."}
-  claim:            {range: Claim, required: true, ifabsent: "string(method_demonstration)"}
-  owner_ruling_ref: {range: string, description: "REQUIRED when claim = operational_by_owner_ruling (rule, M-1c)."}
-  limitations_ref:  {range: string, required: true, description: "Pointer to the published page's Limitations section. Required: no evaluation without its limits (SO-4)."}
+  claim:            {range: Claim, required: true, ifabsent: "string(method_demonstration)", description: "SO-4. REQUIRED and written out: neither validator applies `ifabsent`, so an evaluation without `claim` is rejected rather than defaulted (the default documents intent for generators). Closed enum — neg_vital_tag_driver proves the enum mechanism."}
+  owner_ruling_ref: {range: string, description: "REQUIRED and non-blank when claim = operational_by_owner_ruling (AtlEvaluation rule)."}
+  limitations_ref:  {range: string, required: true, pattern: '\S', description: "Pointer to the published page's Limitations section. REQUIRED and non-blank: no evaluation without its limits (SO-4, SO-9). Controls: neg_missing_limitations_ref (absent) · neg_limitations_ref_blank (`'  '`). Nearest miss NOT caught: a pointer to a page with no Limitations section (referential integrity)."}
 
   # inlined parts ----------------------------------------------------------------------------------------------
   rate:         {range: float, required: true, minimum_value: 0, maximum_value: 1, description: "Alert rate (fraction of patient-steps flagged)."}
@@ -246,7 +262,7 @@ classes:
     slots: [unit_id, unit_kind, external_id, geometry_ref, time_step, parent_unit]
     slot_usage:
       external_id:
-        description: "SHOULD be present when unit_kind = mpa_zone. Rule (M-1c): `mpa_zone` without external_id is a WARNING, not an error — some zones have no WDPA row."
+        description: "SHOULD be present when unit_kind = mpa_zone. NOT ENFORCED: LinkML rules have no warning severity, and an error would be wrong (some zones have no WDPA row). A validator's warning (README §Known limits). Positive: pos_mpa_zone_wdpa."
 
   AtlObservationStream:
     is_a: AtlDeclared
@@ -268,8 +284,12 @@ classes:
             tag: {equals_string: lever}
         postconditions:
           slot_conditions:
-            owner: {required: true}
-        description: "A lever names its owner. Control (M-1c): neg_lever_without_owner. Nearest miss NOT caught: an owner string that names nobody real."
+            owner: {required: true, all_of: [{range: string, pattern: '\S'}]}
+        description: >-
+          A lever names its owner. The all_of arm is load-bearing: a bare `required` lets `owner: null` / `owner: ''`
+          through BOTH validators (gen-json-schema emits the postcondition untyped), found at M-1c. Controls:
+          neg_lever_without_owner (absent) · neg_lever_owner_null (YAML `owner:` → null). Nearest miss NOT caught: an
+          owner string that names nobody real, or nobody who can move THIS lever on THIS horizon.
 
   AtlEventDefinition:
     is_a: AtlDeclared
@@ -282,7 +302,10 @@ classes:
     is_a: AtlDeclared
     description: >-
       The measurement is the artifact (ADR-057). Always against its base rate, at a budget, with lead time, with its
-      ablations, with its data pins and its limitations. This is what crosses to the board — metrics only.
+      ablations, with its data pins and its limitations. This is what crosses to the board — metrics only. CLOSED
+      (gen-json-schema --closed; linkml-validate is closed by default): control neg_per_patient_predictions proves a
+      per-patient `predictions` list is rejected AT the evaluation. Nearest miss NOT caught: per-patient values
+      smuggled inside a declared free-text slot (e.g. `split`, `learner`) — a reviewer's catch, not a shape's.
     slots: [evaluation_id, event_ref, unit_ref, split, n_test, n_positives, base_rate, auroc, auprc, brier, calibration_slope,
             climatology_auroc, climatology_auprc, alert_budgets, lead_time, ablations, learner, config_hash, data_pins,
             shap_summary_ref, claim, owner_ruling_ref, limitations_ref]
@@ -292,8 +315,12 @@ classes:
             claim: {equals_string: operational_by_owner_ruling}
         postconditions:
           slot_conditions:
-            owner_ruling_ref: {required: true}
-        description: "An operational claim cites the owner's ruling. Control (M-1c): neg_operational_without_ruling. Nearest miss NOT caught: a ruling path that does not exist (referential integrity is a validator's, not a schema's)."
+            owner_ruling_ref: {required: true, all_of: [{range: string, pattern: '\S'}]}
+        description: >-
+          An operational claim cites the owner's ruling (SO-4). Same all_of guard as the lever rule. Control:
+          neg_operational_without_ruling. Positive: pos_operational_with_ruling. Nearest miss NOT caught: a ruling path
+          that does not exist, or a ruling that does not name the agencies that run the real forecast (referential
+          integrity and content are a validator's and a reviewer's, not a schema's).
 
   AtlAlertBudget:
     description: Precision and recall at one alert rate.

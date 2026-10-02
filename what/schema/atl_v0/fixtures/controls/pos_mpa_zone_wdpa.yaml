@@ -1,0 +1,13 @@
+# POSITIVE — SYNTHETIC. An MPA zone with a WDPA CURIE and a FILE-PATH geometry pointer, under its parent MPA. Must validate.
+# WDPA:0000000 is a PLACEHOLDER — pattern-valid only; no real WDPA id is asserted here (P2 owns FKNMS's ids).
+spatial_units:
+  - unit_id: atl_unit_example_mpa
+    unit_kind: mpa_zone
+    external_id: "WDPA:0000000"
+    geometry_ref: instance/what/geometry/example_mpa_boundary.gpkg
+    time_step: iso_week
+  - unit_id: atl_unit_example_mpa_zone_a
+    unit_kind: mpa_zone
+    geometry_ref: instance/what/geometry/example_zones.gpkg#zone_a
+    time_step: iso_week
+    parent_unit: atl_unit_example_mpa

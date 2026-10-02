@@ -1,0 +1,14 @@
+# NEGATIVE — M-1c. An evaluation with alert_budgets: [] — present but empty (minimum_cardinality 1). MUST FAIL, and only on this.
+# REJECTS_ON: \[\] (should be non-empty|is too short)
+# REJECTS_AT: ^/evaluations/0/alert_budgets$
+evaluations:
+  - evaluation_id: atl_eval_example
+    event_ref: atl_event_example
+    split: "train 2000-2015 · test 2016-2020, scored once"
+    n_test: 100
+    n_positives: 10
+    base_rate: 0.1
+    alert_budgets: []
+    config_hash: "0000000000"
+    claim: method_demonstration
+    limitations_ref: "site/example.html#limits"

@@ -1,0 +1,8 @@
+# NEGATIVE — M-1c. The exemplar's own region_boxes row 1 pasted as geometry_ref — the nearest real temptation. MUST FAIL, and only on this.
+# REJECTS_ON: does not match
+# REJECTS_AT: ^/spatial_units/0/geometry_ref$
+spatial_units:
+  - unit_id: atl_unit_example
+    unit_kind: reef
+    geometry_ref: "[29.6, 30.4, -87.6, -84.5]"
+    time_step: iso_week

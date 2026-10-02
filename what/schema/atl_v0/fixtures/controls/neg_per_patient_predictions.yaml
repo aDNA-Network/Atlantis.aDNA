@@ -1,0 +1,15 @@
+# NEGATIVE — M-1c. A per-patient predictions list on an evaluation — the SO-3 'metrics only' line. Rejected by closed-ness, not by a rule. MUST FAIL, and only on this.
+# REJECTS_ON: Additional properties are not allowed \('predictions' was unexpected\)
+# REJECTS_AT: ^/evaluations/0$
+evaluations:
+  - evaluation_id: atl_eval_example
+    event_ref: atl_event_example
+    split: "train 2000-2015 · test 2016-2020, scored once"
+    n_test: 100
+    n_positives: 10
+    base_rate: 0.1
+    alert_budgets: [{rate: 0.1, precision: 0.4, recall: 0.4}]
+    config_hash: "0000000000"
+    claim: method_demonstration
+    predictions: [{unit: atl_unit_example, week: 2020-W01, p: 0.42}]
+    limitations_ref: "site/example.html#limits"

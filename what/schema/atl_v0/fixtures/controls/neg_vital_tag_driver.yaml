@@ -1,0 +1,8 @@
+# NEGATIVE — M-1c. A vital tagged `driver` — a causal word; the tag enum is closed (lever · proxy · artifact · state) and SHAP is never a cause. MUST FAIL, and only on this.
+# REJECTS_ON: 'driver' is not one of
+# REJECTS_AT: ^/vitals/0/tag$
+vitals:
+  - vital_id: atl_vital_example
+    stream_ref: atl_stream_example
+    transform: 30-day mean discharge, log10
+    tag: driver

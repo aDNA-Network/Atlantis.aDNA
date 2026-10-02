@@ -1,0 +1,9 @@
+# NEGATIVE — M-1c. A lever whose owner is a bare YAML `owner:` → null. Found at M-1c: a plain `required` postcondition let this through BOTH validators; the rule's all_of arm closes it. MUST FAIL, and only on this.
+# REJECTS_ON: None is not of type 'string'
+# REJECTS_AT: ^/vitals/0/owner$
+vitals:
+  - vital_id: atl_vital_example
+    stream_ref: atl_stream_example
+    transform: 30-day mean discharge, log10
+    tag: lever
+    owner:
