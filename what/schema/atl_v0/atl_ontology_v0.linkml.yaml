@@ -59,6 +59,7 @@ imports:
 enums:
 
   UnitKind:
+    # Closed. Control: neg_unknown_unit_kind (an unlisted value rejected AT its slot). Nearest miss NOT caught: a listed value that is wrong for the instance.
     description: >-
       The kind of spatial unit a patient is. local — no external vocabulary enumerates "the unit a steward
       manages"; `mpa_zone` is bound to WDPA/MPAtlas ids through AtlSpatialUnit.external_id, not through this enum.
@@ -70,6 +71,7 @@ enums:
       river_reach:     {description: "A river reach between gauges or confluences"}
       grid_cell:       {description: "A regular cell of a gridded product (the patient when vitals are gridded-only)"}
   TimeStep:
+    # Closed. Control: neg_unknown_time_step (an unlisted value rejected AT its slot). Nearest miss NOT caught: a listed value that is wrong for the instance.
     description: The patient's time step. local — ISO 8601 durations would over-specify; `cruise` is irregular by design.
     permissible_values:
       day: {}
@@ -78,6 +80,7 @@ enums:
       month: {}
       cruise: {description: "Irregular — one step per sampling cruise (metagenomic / survey instances)"}
   Modality:
+    # Closed. Control: neg_unknown_modality (an unlisted value rejected AT its slot). Nearest miss NOT caught: a listed value that is wrong for the instance.
     description: >-
       How a stream speaks. local, informed by GOOS EOV platform classes (not bound in v0 — crosswalk row 7).
     permissible_values:
@@ -100,6 +103,7 @@ enums:
       artifact: {description: "A property of the monitoring programme, not the ecosystem (sample counts, time since sampling)"}
       state:    {description: "The patient's own trajectory (recent maxima, growth, time since last event)"}
   Direction:
+    # Closed. Control: neg_unknown_direction (an unlisted value rejected AT its slot). Nearest miss NOT caught: a listed value that is wrong for the instance.
     description: Which way the threshold crossing goes. local.
     permissible_values:
       above: {description: "Event when the variable rises to or past the threshold (bloom, DHW, temperature)"}
@@ -112,6 +116,7 @@ enums:
       method_demonstration: {}
       operational_by_owner_ruling: {description: "Requires AtlEvaluation.owner_ruling_ref"}
   EvidenceTier:
+    # Closed. Control: neg_unknown_tier (an unlisted value rejected AT its slot). Nearest miss NOT caught: a listed value that is wrong for the instance.
     description: Review tier of a declared object. local — RareArchive's draft→reviewed→validated→published ladder, minus `published` (the board is the publication).
     permissible_values:
       draft: {}
@@ -124,20 +129,22 @@ enums:
 slots:
 
   # identifiers ------------------------------------------------------------------------------------------------
-  # Control (all five): neg_bad_id_prefix proves a stream id without its `atl_stream_` prefix is rejected AT the id; the
-  # same pattern shape guards the other four. Nearest miss NOT caught: a well-formed id that is not unique, or a *_ref
+  # Controls (one per id slot): neg_bad_id_prefix (stream) · neg_unit_id_prefix · neg_vital_id_prefix · neg_event_id_prefix ·
+  # neg_eval_id_prefix — each rejected AT its id. `(?!\n)$`: Python `re` lets a bare `$` match before a trailing newline
+  # (a YAML `|` block scalar), which ECMA does not — closed at M-1c III review F-2; control neg_sha256_trailing_newline
+  # exercises the same anchor on sha256. Nearest miss NOT caught: a well-formed id that is not unique, or a *_ref
   # that names no declared object (uniqueness and referential integrity are a validator's job — README §Known limits).
-  unit_id:       {identifier: true, range: string, pattern: "^atl_unit_[a-z0-9_]{2,64}$", description: "Instance-local id; prefix fixed so ids are greppable across instances. Pattern-controlled (neg_bad_id_prefix shape)."}
-  stream_id:     {identifier: true, range: string, pattern: "^atl_stream_[a-z0-9_]{2,64}$", description: "Stream id. Control: neg_bad_id_prefix."}
-  vital_id:      {identifier: true, range: string, pattern: "^atl_vital_[a-z0-9_]{2,64}$", description: "Vital id. Pattern-controlled (neg_bad_id_prefix shape)."}
-  event_id:      {identifier: true, range: string, pattern: "^atl_event_[a-z0-9_]{2,64}$", description: "Event-definition id. Pattern-controlled (neg_bad_id_prefix shape)."}
-  evaluation_id: {identifier: true, range: string, pattern: "^atl_eval_[a-z0-9_]{2,64}$", description: "Evaluation id. Pattern-controlled (neg_bad_id_prefix shape)."}
+  unit_id:       {identifier: true, range: string, pattern: "^atl_unit_[a-z0-9_]{2,64}(?!\\n)$", description: "Instance-local id; prefix fixed so ids are greppable across instances. Control: neg_unit_id_prefix."}
+  stream_id:     {identifier: true, range: string, pattern: "^atl_stream_[a-z0-9_]{2,64}(?!\\n)$", description: "Stream id. Control: neg_bad_id_prefix."}
+  vital_id:      {identifier: true, range: string, pattern: "^atl_vital_[a-z0-9_]{2,64}(?!\\n)$", description: "Vital id. Control: neg_vital_id_prefix."}
+  event_id:      {identifier: true, range: string, pattern: "^atl_event_[a-z0-9_]{2,64}(?!\\n)$", description: "Event-definition id. Control: neg_event_id_prefix."}
+  evaluation_id: {identifier: true, range: string, pattern: "^atl_eval_[a-z0-9_]{2,64}(?!\\n)$", description: "Evaluation id. Control: neg_eval_id_prefix."}
 
   # common -----------------------------------------------------------------------------------------------------
   name:          {range: string, description: "Human label. Never a partner site's name when the instance's posture is partner or human_subject."}
   description:   {range: string}
   tier:          {range: EvidenceTier, ifabsent: "string(draft)"}
-  version:       {range: string, pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+$", description: "Semantic version of the declared object."}
+  version:       {range: string, pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+(?!\\n)$", description: "Semantic version of the declared object."}
   recorded_by:   {range: string, description: "Agent or operator id (e.g. agent_proteus, stanley)."}
   recorded_at:   {range: datetime}
 
@@ -146,17 +153,23 @@ slots:
   external_id:   {range: uriorcurie, description: "WDPA:<id> or MPAtlas:<id> for mpa_zone; optional otherwise. A CURIE, never a polygon."}
   geometry_ref:
     range: string
-    pattern: '^(?!\s*[\[{])(?!\s*(?:[Ss][Rr][Ii][Dd]=\d+;)?(?:[Mm][Uu][Ll][Tt][Ii])?(?:[Pp][Oo][Ii][Nn][Tt]|[Ll][Ii][Nn][Ee][Ss][Tt][Rr][Ii][Nn][Gg]|[Pp][Oo][Ll][Yy][Gg][Oo][Nn]|[Gg][Ee][Oo][Mm][Ee][Tt][Rr][Yy][Cc][Oo][Ll][Ll][Ee][Cc][Tt][Ii][Oo][Nn])\s*(?:[Zz][Mm]?|[Mm])?\s*\()(?![\s\S]*-?\d{1,3}\.\d+(?:\s*,\s*|\s+)-?\d{1,3}\.\d+)[\s\S]*\S[\s\S]*$'
+    pattern: '^(?!\s*[\[{])(?!\s*(?:[Ss][Rr][Ii][Dd]=\d+;)?(?:[Mm][Uu][Ll][Tt][Ii])?(?:[Pp][Oo][Ii][Nn][Tt]|[Ll][Ii][Nn][Ee][Ss][Tt][Rr][Ii][Nn][Gg]|[Pp][Oo][Ll][Yy][Gg][Oo][Nn]|[Gg][Ee][Oo][Mm][Ee][Tt][Rr][Yy][Cc][Oo][Ll][Ll][Ee][Cc][Tt][Ii][Oo][Nn])\s*(?:[Zz][Mm]?|[Mm])?\s*\()(?![\s\S]*-?\d{1,3}\.\d+\s*[NSns]?(?:\s*[,;]\s*|\s+)-?\d{1,3}\.\d+)[\s\S]*\S[\s\S]*$'
     description: >-
       POINTER to the geometry (a file path in the instance, a WDPA id, or a coordinate RULE string such as the
       exemplar's `lat >= 27.6`). Never inline coordinates. DENYLIST (operator ruling, M-1c): rejects a value that opens
       as a GeoJSON/array literal (`{` or `[`), opens as WKT/EWKT (POINT · LINESTRING · POLYGON · MULTI* ·
-      GEOMETRYCOLLECTION, any case, optional SRID=n; and Z/M), contains a decimal lat,lon pair anywhere (comma- or
-      space-separated), or is blank. Controls: neg_inline_geometry_wkt · neg_inline_geometry_geojson ·
-      neg_inline_geometry_bbox (the exemplar's own region_boxes row). Nearest miss NOT caught: integer-only or
-      degrees-minutes-seconds coordinates (`25 -80`, `25°07′N 80°24′W`), and a WKT literal embedded mid-string with
-      integer coordinates. A pointer to a file that itself holds partner coordinates passes by design — the file
-      lives in the instance, under its own posture.
+      GEOMETRYCOLLECTION, any case, optional SRID=n; and Z/M), contains a decimal lat,lon pair anywhere (separated by
+      `,` `;` or whitespace, optional N/S on the first number), or is blank. ONE CONTROL PER ARM, each built to evade
+      every other arm (III review F-1; each arm's removal turns exactly its control red — M-1c AAR):
+      neg_geometry_arm_brace (`{…}` with integer coords) · neg_geometry_arm_wkt (`POINT(-80 25)`, integers) ·
+      neg_geometry_arm_ewkt_case (`srid=4326;point(-80 25)`) · neg_geometry_arm_pair (`see 25.1, -80.4`) ·
+      neg_geometry_arm_blank (`'  '`); realistic composites: neg_inline_geometry_wkt · _geojson · _bbox (the
+      exemplar's own region_boxes row). Nearest misses NOT caught: integer-only or DMS coordinates (`25 -80`,
+      `25°07′N 80°24′W`); query-string pairs (`lat=27.6&lon=-82.5`); projected/UTM metres with one decimal side
+      (`456789 3045678.9`); WKT after a newline with integer coords. FALSE REJECTS (by design, named): any two
+      decimals side by side — an interval rule `lat in [24.5, 27.6)` (write it as the exemplar's grammar does:
+      `lat >= 24.5 and lat < 27.6`), a path like `regions_v1.2 3.4.gpkg`, prose like `release 2.1 3.0`. A pointer to a
+      file that itself holds partner coordinates passes by design — the file lives in the instance.
   time_step:     {range: TimeStep, required: true}
   parent_unit:   {range: AtlSpatialUnit, description: "Zone → MPA, reach → basin. Optional."}
 
@@ -171,7 +184,7 @@ slots:
   captured_at:      {range: datetime, description: "Ingest Rule 5: when the source produced/last updated the data."}
   ingested_at:      {range: datetime, required: true, description: "Ingest Rule 5: when the instance fetched it."}
   pipeline_version: {range: string, description: "Ingest Rule 5: which fetcher version wrote the cache."}
-  sha256:           {range: string, pattern: "^[a-f0-9]{64}$", description: "Of the cached artifact; lowercase hex64. Required on AtlDataPin; recommended on a stream. Control: neg_sha256_not_hex64 (a 63-char hash on a data pin). Nearest miss NOT caught: a well-formed hash of the wrong bytes — only re-hashing the cache proves a pin."}
+  sha256:           {range: string, pattern: "^[a-f0-9]{64}(?!\\n)$", description: "Of the cached artifact; lowercase hex64. Required on AtlDataPin; recommended on a stream. Control: neg_sha256_not_hex64 (a 63-char hash on a data pin). Nearest miss NOT caught: a well-formed hash of the wrong bytes — only re-hashing the cache proves a pin."}
   row_count:        {range: integer, minimum_value: 0}
   license:          {range: string, required: true, description: "SPDX or the agency's terms string."}
   surveillance_channel: {range: boolean, description: "True if this stream's sampling intensity is itself endogenous to the event (pattern step 3; T5)."}
@@ -200,7 +213,7 @@ slots:
   split:            {range: string, required: true, description: "Temporal split in words: train 1994–2016 · val 2017–2019 · test 2020–2023, scored once."}
   n_test:           {range: integer, required: true, minimum_value: 1}
   n_positives:      {range: integer, required: true, minimum_value: 0}
-  base_rate:        {range: float, required: true, minimum_value: 0, maximum_value: 1, description: "Test prevalence. REQUIRED — a score without its base rate is not a result (Proteus doctrine 2; SO-9). Control: neg_missing_base_rate. Nearest miss NOT caught: base_rate ≠ n_positives / n_test (cross-field arithmetic is a validator's job)."}
+  base_rate:        {range: float, required: true, minimum_value: 0, maximum_value: 1, description: "Test prevalence. REQUIRED — a score without its base rate is not a result (Proteus doctrine 2; SO-9). Controls: neg_missing_base_rate · neg_base_rate_gt1 (1.5). Nearest miss NOT caught: base_rate ≠ n_positives / n_test (cross-field arithmetic is a validator's job)."}
   auroc:            {range: float, minimum_value: 0, maximum_value: 1}
   auprc:            {range: float, minimum_value: 0, maximum_value: 1}
   brier:            {range: float, minimum_value: 0, maximum_value: 1}
@@ -214,7 +227,7 @@ slots:
   config_hash:      {range: string, required: true, description: "Hash of the instance's config.yaml at training time."}
   data_pins:        {range: AtlDataPin, multivalued: true, inlined_as_list: true, description: "Every stream the model saw, with its sha256."}
   shap_summary_ref: {range: string, description: "Pointer to the instance's shap_summary (mean |SHAP| per vital and group); never per-patient values."}
-  claim:            {range: Claim, required: true, ifabsent: "string(method_demonstration)", description: "SO-4. REQUIRED and written out: neither validator applies `ifabsent`, so an evaluation without `claim` is rejected rather than defaulted (the default documents intent for generators). Closed enum — neg_vital_tag_driver proves the enum mechanism."}
+  claim:            {range: Claim, required: true, ifabsent: "string(method_demonstration)", description: "SO-4. REQUIRED and written out: neither validator applies `ifabsent`, so an evaluation without `claim` is rejected rather than defaulted (the default documents intent for generators). Controls: neg_missing_claim · neg_unknown_claim."}
   owner_ruling_ref: {range: string, description: "REQUIRED and non-blank when claim = operational_by_owner_ruling (AtlEvaluation rule)."}
   limitations_ref:  {range: string, required: true, pattern: '\S', description: "Pointer to the published page's Limitations section. REQUIRED and non-blank: no evaluation without its limits (SO-4, SO-9). Controls: neg_missing_limitations_ref (absent) · neg_limitations_ref_blank (`'  '`). Nearest miss NOT caught: a pointer to a page with no Limitations section (referential integrity)."}
 
@@ -288,7 +301,8 @@ classes:
         description: >-
           A lever names its owner. The all_of arm is load-bearing: a bare `required` lets `owner: null` / `owner: ''`
           through BOTH validators (gen-json-schema emits the postcondition untyped), found at M-1c. Controls:
-          neg_lever_without_owner (absent) · neg_lever_owner_null (YAML `owner:` → null). Nearest miss NOT caught: an
+          neg_lever_without_owner (absent) · neg_lever_owner_null (YAML `owner:` → null) · neg_lever_owner_blank.
+          Nearest miss NOT caught: an
           owner string that names nobody real, or nobody who can move THIS lever on THIS horizon.
 
   AtlEventDefinition:
@@ -304,7 +318,8 @@ classes:
       The measurement is the artifact (ADR-057). Always against its base rate, at a budget, with lead time, with its
       ablations, with its data pins and its limitations. This is what crosses to the board — metrics only. CLOSED
       (gen-json-schema --closed; linkml-validate is closed by default): control neg_per_patient_predictions proves a
-      per-patient `predictions` list is rejected AT the evaluation. Nearest miss NOT caught: per-patient values
+      per-patient `predictions` list is rejected AT the evaluation; neg_budget_extra_key (a part) and
+      neg_document_extra_key (the root) prove closed-ness at the other two levels. Nearest miss NOT caught: per-patient values
       smuggled inside a declared free-text slot (e.g. `split`, `learner`) — a reviewer's catch, not a shape's.
     slots: [evaluation_id, event_ref, unit_ref, split, n_test, n_positives, base_rate, auroc, auprc, brier, calibration_slope,
             climatology_auroc, climatology_auprc, alert_budgets, lead_time, ablations, learner, config_hash, data_pins,
@@ -318,7 +333,7 @@ classes:
             owner_ruling_ref: {required: true, all_of: [{range: string, pattern: '\S'}]}
         description: >-
           An operational claim cites the owner's ruling (SO-4). Same all_of guard as the lever rule. Controls:
-          neg_operational_without_ruling (absent) · neg_operational_ruling_null (null). Positive: pos_operational_with_ruling. Nearest miss NOT caught: a ruling path
+          neg_operational_without_ruling (absent) · neg_operational_ruling_null (null) · neg_operational_ruling_blank. Positive: pos_operational_with_ruling. Nearest miss NOT caught: a ruling path
           that does not exist, or a ruling that does not name the agencies that run the real forecast (referential
           integrity and content are a validator's and a reviewer's, not a schema's).
 

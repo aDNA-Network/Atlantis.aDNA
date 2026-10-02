@@ -114,6 +114,6 @@ evaluations:
       - {stream_ref: atl_stream_usgs_discharge_daily, sha256: 66a58af41843b4305afa968dd814854a61e6a4e263f4898b5422d8eb03a789ea}
     shap_summary_ref: what/exemplars/gulf_karenia_brevis/outputs/shap_summary.json
     claim: method_demonstration
-    limitations_ref: "what/exemplars/gulf_karenia_brevis/site/hab_crash_risk.html#limits (§12 Where the analogy breaks) · README.md §Caveats"
+    limitations_ref: "what/exemplars/gulf_karenia_brevis/site/hab_crash_risk.html#limits (§11 Where the analogy breaks) · README.md §Caveats"
     recorded_by: agent_proteus
     recorded_at: "2026-10-02T00:00:00Z"

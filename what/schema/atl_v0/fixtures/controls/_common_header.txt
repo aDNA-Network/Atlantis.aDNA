@@ -1,6 +1,8 @@
 # Fixtures for atl_ontology_v0 (M-1c, 2026-10-02). pos_exemplar_gulf_karenia_brevis takes EVERY value from three committed
 # files and NOTHING from memory: what/board/entries/2026-09-23_gulf_karenia_brevis_v0.json (metrics, pins, ids),
-# what/exemplars/gulf_karenia_brevis/{config.yaml, data/raw/*_fetch_summary.json, src/hab/export_site_data.py FEATURE_DOC}
+# what/exemplars/gulf_karenia_brevis/{config.yaml, data/raw/*_fetch_summary.json, src/hab/export_site_data.py FEATURE_DOC,
+# src/hab/build_features.py (the n_samples_4w rolling-4 window, l.75), site/template.html (the S-79 release schedulers)}
 # and what/datasets/dataset_*.md (sources, licences). Where those files give no value (e.g. a CF name for discharge) the
-# slot is OMITTED. Every other fixture is a SYNTHETIC minimal document (`atl_*_example` ids) that is valid except for the
+# slot is OMITTED. CAVEAT: `ingested_at` for the OISST and USGS streams is the cache FILE MTIME (their fetch summaries say
+# `fetched_at_source: file mtime (retro-summarised at M-1a)`), not a fetch-time record; FWC's is a legacy fetch summary. Every other fixture is a SYNTHETIC minimal document (`atl_*_example` ids) that is valid except for the
 # one defect its REJECTS_ON names. Metadata and metrics only — no observation, label or prediction rows (SO-3).

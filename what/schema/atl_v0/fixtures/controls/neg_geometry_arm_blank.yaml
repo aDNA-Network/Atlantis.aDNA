@@ -1,0 +1,8 @@
+# NEGATIVE — M-1c (III review). geometry_ref = whitespace — present, points nowhere; only the non-blank arm catches it. MUST FAIL, and only on this.
+# REJECTS_ON: does not match
+# REJECTS_AT: ^/spatial_units/0/geometry_ref$
+spatial_units:
+  - unit_id: atl_unit_example
+    unit_kind: reef
+    geometry_ref: '   '
+    time_step: iso_week

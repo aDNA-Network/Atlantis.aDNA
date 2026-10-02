@@ -4,8 +4,9 @@
 Runs every control under the COMMITTED JSON Schema (descendants OFF) and under a scratch JSON Schema generated with
 --include-range-class-descendants, each under the draft it declares and WITH that draft's FORMAT_CHECKER (as
 linkml-validate does — ASOAtlas S15 / R46: without it the worlds silently disagree on every `datetime` slot). Same
-contract as run_controls.sh: pos validates; neg rejects and every error matches its REJECTS_ON regex (an allOf/anyOf error
-counts if it or any error beneath it matches) and, when the fixture has `# REJECTS_AT:`, its path too.
+contract as run_controls.sh: pos validates; neg rejects and every error matches its REJECTS_ON regex and, when the fixture
+has `# REJECTS_AT:`, its path too. A nested (anyOf/oneOf) error counts as named only if its OWN message+path match, or if
+EVERY branch beneath it is named — "any branch" would let a wrong-reason rejection through (M-1c III review F-11).
 Also FAILS if (a) the committed file is stale against a fresh `gen-json-schema --closed`, (b) the format checker cannot
 reject a malformed date-time (a missing format package makes jsonschema skip formats silently — an instrument failure),
 or (c) Rule 4 is broken: a class used as a slot range has a concrete descendant (then descendants ON/OFF diverge).
@@ -30,10 +31,10 @@ fresh = gen()
 stale = (not os.path.exists(COMMITTED)) or open(COMMITTED).read() != fresh
 worlds = {'committed(desc-off)': json.load(open(COMMITTED)) if os.path.exists(COMMITTED) else json.loads(fresh),
           'scratch(desc-on)': json.loads(gen('--include-range-class-descendants'))}
-def pairs(e):   # (message, path) for the error and every error beneath it
-    out = [(e.message, '/' + '/'.join(map(str, e.absolute_path)))]
-    for c in e.context or []: out += pairs(c)
-    return out
+def path(e): return '/' + '/'.join(map(str, e.absolute_path))
+def named(e, pat, at):   # own message+path match, or every branch beneath it is named (F-11)
+    if re.search(pat, e.message) and (at is None or re.search(at, path(e))): return True
+    return bool(e.context) and all(named(c, pat, at) for c in e.context)
 for name, S in worlds.items():
     VC = validators.validator_for(S); FC = VC.FORMAT_CHECKER
     if FC.conforms('never', 'date-time') or FC.conforms('2026-13-45T99:00:00Z', 'date-time'):
@@ -48,7 +49,7 @@ for name, S in worlds.items():
             at = next((l.split(':', 1)[1].strip() for l in open(fx) if l.startswith('# REJECTS_AT:')), None)
             if pat is None: ok, why = False, 'no REJECTS_ON line'
             else:
-                unnamed = [e for e in errs if not any(re.search(pat, m) and (at is None or re.search(at, pth)) for m, pth in pairs(e))]
+                unnamed = [e for e in errs if not named(e, pat, at)]
                 ok = bool(errs) and not unnamed
                 why = 'validates' if not errs else ('unnamed: ' + unnamed[0].message[:100] + ' @ /' + '/'.join(map(str, unnamed[0].absolute_path)) if unnamed else '')
         if ok: p += 1

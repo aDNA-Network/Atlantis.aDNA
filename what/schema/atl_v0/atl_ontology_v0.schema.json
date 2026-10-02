@@ -73,7 +73,7 @@
             "properties": {
                 "sha256": {
                     "description": "Of the cached artifact; lowercase hex64. Required on AtlDataPin; recommended on a stream. Control: neg_sha256_not_hex64 (a 63-char hash on a data pin). Nearest miss NOT caught: a well-formed hash of the wrong bytes \u2014 only re-hashing the cache proves a pin.",
-                    "pattern": "^[a-f0-9]{64}$",
+                    "pattern": "^[a-f0-9]{64}(?!\\n)$",
                     "type": "string"
                 },
                 "stream_ref": {
@@ -123,7 +123,7 @@
                 },
                 "version": {
                     "description": "Semantic version of the declared object.",
-                    "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+                    "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?!\\n)$",
                     "type": [
                         "string",
                         "null"
@@ -188,7 +188,7 @@
         },
         "AtlEvaluation": {
             "additionalProperties": false,
-            "description": "The measurement is the artifact (ADR-057). Always against its base rate, at a budget, with lead time, with its ablations, with its data pins and its limitations. This is what crosses to the board \u2014 metrics only. CLOSED (gen-json-schema --closed; linkml-validate is closed by default): control neg_per_patient_predictions proves a per-patient `predictions` list is rejected AT the evaluation. Nearest miss NOT caught: per-patient values smuggled inside a declared free-text slot (e.g. `split`, `learner`) \u2014 a reviewer's catch, not a shape's.",
+            "description": "The measurement is the artifact (ADR-057). Always against its base rate, at a budget, with lead time, with its ablations, with its data pins and its limitations. This is what crosses to the board \u2014 metrics only. CLOSED (gen-json-schema --closed; linkml-validate is closed by default): control neg_per_patient_predictions proves a per-patient `predictions` list is rejected AT the evaluation; neg_budget_extra_key (a part) and neg_document_extra_key (the root) prove closed-ness at the other two levels. Nearest miss NOT caught: per-patient values smuggled inside a declared free-text slot (e.g. `split`, `learner`) \u2014 a reviewer's catch, not a shape's.",
             "if": {
                 "properties": {
                     "claim": {
@@ -235,7 +235,7 @@
                     ]
                 },
                 "base_rate": {
-                    "description": "Test prevalence. REQUIRED \u2014 a score without its base rate is not a result (Proteus doctrine 2; SO-9). Control: neg_missing_base_rate. Nearest miss NOT caught: base_rate \u2260 n_positives / n_test (cross-field arithmetic is a validator's job).",
+                    "description": "Test prevalence. REQUIRED \u2014 a score without its base rate is not a result (Proteus doctrine 2; SO-9). Controls: neg_missing_base_rate \u00b7 neg_base_rate_gt1 (1.5). Nearest miss NOT caught: base_rate \u2260 n_positives / n_test (cross-field arithmetic is a validator's job).",
                     "maximum": 1,
                     "minimum": 0,
                     "type": "number"
@@ -256,7 +256,7 @@
                 },
                 "claim": {
                     "$ref": "#/$defs/Claim",
-                    "description": "SO-4. REQUIRED and written out: neither validator applies `ifabsent`, so an evaluation without `claim` is rejected rather than defaulted (the default documents intent for generators). Closed enum \u2014 neg_vital_tag_driver proves the enum mechanism."
+                    "description": "SO-4. REQUIRED and written out: neither validator applies `ifabsent`, so an evaluation without `claim` is rejected rather than defaulted (the default documents intent for generators). Controls: neg_missing_claim \u00b7 neg_unknown_claim."
                 },
                 "climatology_auprc": {
                     "maximum": 1,
@@ -296,8 +296,8 @@
                     ]
                 },
                 "evaluation_id": {
-                    "description": "Evaluation id. Pattern-controlled (neg_bad_id_prefix shape).",
-                    "pattern": "^atl_eval_[a-z0-9_]{2,64}$",
+                    "description": "Evaluation id. Control: neg_eval_id_prefix.",
+                    "pattern": "^atl_eval_[a-z0-9_]{2,64}(?!\\n)$",
                     "type": "string"
                 },
                 "event_ref": {
@@ -384,7 +384,7 @@
                 },
                 "version": {
                     "description": "Semantic version of the declared object.",
-                    "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+                    "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?!\\n)$",
                     "type": [
                         "string",
                         "null"
@@ -435,8 +435,8 @@
                     "$ref": "#/$defs/Direction"
                 },
                 "event_id": {
-                    "description": "Event-definition id. Pattern-controlled (neg_bad_id_prefix shape).",
-                    "pattern": "^atl_event_[a-z0-9_]{2,64}$",
+                    "description": "Event-definition id. Control: neg_event_id_prefix.",
+                    "pattern": "^atl_event_[a-z0-9_]{2,64}(?!\\n)$",
                     "type": "string"
                 },
                 "event_variable_stream": {
@@ -488,7 +488,7 @@
                 },
                 "version": {
                     "description": "Semantic version of the declared object.",
-                    "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+                    "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?!\\n)$",
                     "type": [
                         "string",
                         "null"
@@ -623,7 +623,7 @@
                 },
                 "sha256": {
                     "description": "Of the cached artifact; lowercase hex64. Required on AtlDataPin; recommended on a stream. Control: neg_sha256_not_hex64 (a 63-char hash on a data pin). Nearest miss NOT caught: a well-formed hash of the wrong bytes \u2014 only re-hashing the cache proves a pin.",
-                    "pattern": "^[a-f0-9]{64}$",
+                    "pattern": "^[a-f0-9]{64}(?!\\n)$",
                     "type": [
                         "string",
                         "null"
@@ -639,7 +639,7 @@
                 },
                 "stream_id": {
                     "description": "Stream id. Control: neg_bad_id_prefix.",
-                    "pattern": "^atl_stream_[a-z0-9_]{2,64}$",
+                    "pattern": "^atl_stream_[a-z0-9_]{2,64}(?!\\n)$",
                     "type": "string"
                 },
                 "surveillance_channel": {
@@ -668,7 +668,7 @@
                 },
                 "version": {
                     "description": "Semantic version of the declared object.",
-                    "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+                    "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?!\\n)$",
                     "type": [
                         "string",
                         "null"
@@ -704,8 +704,8 @@
                     ]
                 },
                 "geometry_ref": {
-                    "description": "POINTER to the geometry (a file path in the instance, a WDPA id, or a coordinate RULE string such as the exemplar's `lat >= 27.6`). Never inline coordinates. DENYLIST (operator ruling, M-1c): rejects a value that opens as a GeoJSON/array literal (`{` or `[`), opens as WKT/EWKT (POINT \u00b7 LINESTRING \u00b7 POLYGON \u00b7 MULTI* \u00b7 GEOMETRYCOLLECTION, any case, optional SRID=n; and Z/M), contains a decimal lat,lon pair anywhere (comma- or space-separated), or is blank. Controls: neg_inline_geometry_wkt \u00b7 neg_inline_geometry_geojson \u00b7 neg_inline_geometry_bbox (the exemplar's own region_boxes row). Nearest miss NOT caught: integer-only or degrees-minutes-seconds coordinates (`25 -80`, `25\u00b007\u2032N 80\u00b024\u2032W`), and a WKT literal embedded mid-string with integer coordinates. A pointer to a file that itself holds partner coordinates passes by design \u2014 the file lives in the instance, under its own posture.",
-                    "pattern": "^(?!\\s*[\\[{])(?!\\s*(?:[Ss][Rr][Ii][Dd]=\\d+;)?(?:[Mm][Uu][Ll][Tt][Ii])?(?:[Pp][Oo][Ii][Nn][Tt]|[Ll][Ii][Nn][Ee][Ss][Tt][Rr][Ii][Nn][Gg]|[Pp][Oo][Ll][Yy][Gg][Oo][Nn]|[Gg][Ee][Oo][Mm][Ee][Tt][Rr][Yy][Cc][Oo][Ll][Ll][Ee][Cc][Tt][Ii][Oo][Nn])\\s*(?:[Zz][Mm]?|[Mm])?\\s*\\()(?![\\s\\S]*-?\\d{1,3}\\.\\d+(?:\\s*,\\s*|\\s+)-?\\d{1,3}\\.\\d+)[\\s\\S]*\\S[\\s\\S]*$",
+                    "description": "POINTER to the geometry (a file path in the instance, a WDPA id, or a coordinate RULE string such as the exemplar's `lat >= 27.6`). Never inline coordinates. DENYLIST (operator ruling, M-1c): rejects a value that opens as a GeoJSON/array literal (`{` or `[`), opens as WKT/EWKT (POINT \u00b7 LINESTRING \u00b7 POLYGON \u00b7 MULTI* \u00b7 GEOMETRYCOLLECTION, any case, optional SRID=n; and Z/M), contains a decimal lat,lon pair anywhere (separated by `,` `;` or whitespace, optional N/S on the first number), or is blank. ONE CONTROL PER ARM, each built to evade every other arm (III review F-1; each arm's removal turns exactly its control red \u2014 M-1c AAR): neg_geometry_arm_brace (`{\u2026}` with integer coords) \u00b7 neg_geometry_arm_wkt (`POINT(-80 25)`, integers) \u00b7 neg_geometry_arm_ewkt_case (`srid=4326;point(-80 25)`) \u00b7 neg_geometry_arm_pair (`see 25.1, -80.4`) \u00b7 neg_geometry_arm_blank (`'  '`); realistic composites: neg_inline_geometry_wkt \u00b7 _geojson \u00b7 _bbox (the exemplar's own region_boxes row). Nearest misses NOT caught: integer-only or DMS coordinates (`25 -80`, `25\u00b007\u2032N 80\u00b024\u2032W`); query-string pairs (`lat=27.6&lon=-82.5`); projected/UTM metres with one decimal side (`456789 3045678.9`); WKT after a newline with integer coords. FALSE REJECTS (by design, named): any two decimals side by side \u2014 an interval rule `lat in [24.5, 27.6)` (write it as the exemplar's grammar does: `lat >= 24.5 and lat < 27.6`), a path like `regions_v1.2 3.4.gpkg`, prose like `release 2.1 3.0`. A pointer to a file that itself holds partner coordinates passes by design \u2014 the file lives in the instance.",
+                    "pattern": "^(?!\\s*[\\[{])(?!\\s*(?:[Ss][Rr][Ii][Dd]=\\d+;)?(?:[Mm][Uu][Ll][Tt][Ii])?(?:[Pp][Oo][Ii][Nn][Tt]|[Ll][Ii][Nn][Ee][Ss][Tt][Rr][Ii][Nn][Gg]|[Pp][Oo][Ll][Yy][Gg][Oo][Nn]|[Gg][Ee][Oo][Mm][Ee][Tt][Rr][Yy][Cc][Oo][Ll][Ll][Ee][Cc][Tt][Ii][Oo][Nn])\\s*(?:[Zz][Mm]?|[Mm])?\\s*\\()(?![\\s\\S]*-?\\d{1,3}\\.\\d+\\s*[NSns]?(?:\\s*[,;]\\s*|\\s+)-?\\d{1,3}\\.\\d+)[\\s\\S]*\\S[\\s\\S]*$",
                     "type": [
                         "string",
                         "null"
@@ -746,8 +746,8 @@
                     "$ref": "#/$defs/TimeStep"
                 },
                 "unit_id": {
-                    "description": "Instance-local id; prefix fixed so ids are greppable across instances. Pattern-controlled (neg_bad_id_prefix shape).",
-                    "pattern": "^atl_unit_[a-z0-9_]{2,64}$",
+                    "description": "Instance-local id; prefix fixed so ids are greppable across instances. Control: neg_unit_id_prefix.",
+                    "pattern": "^atl_unit_[a-z0-9_]{2,64}(?!\\n)$",
                     "type": "string"
                 },
                 "unit_kind": {
@@ -755,7 +755,7 @@
                 },
                 "version": {
                     "description": "Semantic version of the declared object.",
-                    "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+                    "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?!\\n)$",
                     "type": [
                         "string",
                         "null"
@@ -865,15 +865,15 @@
                 },
                 "version": {
                     "description": "Semantic version of the declared object.",
-                    "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+                    "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?!\\n)$",
                     "type": [
                         "string",
                         "null"
                     ]
                 },
                 "vital_id": {
-                    "description": "Vital id. Pattern-controlled (neg_bad_id_prefix shape).",
-                    "pattern": "^atl_vital_[a-z0-9_]{2,64}$",
+                    "description": "Vital id. Control: neg_vital_id_prefix.",
+                    "pattern": "^atl_vital_[a-z0-9_]{2,64}(?!\\n)$",
                     "type": "string"
                 },
                 "window": {

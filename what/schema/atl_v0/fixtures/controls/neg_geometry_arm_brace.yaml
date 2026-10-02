@@ -1,0 +1,8 @@
+# NEGATIVE — M-1c (III review). geometry_ref opening with `{` — GeoJSON with INTEGER coords, so no pair arm, no WKT arm. MUST FAIL, and only on this.
+# REJECTS_ON: does not match
+# REJECTS_AT: ^/spatial_units/0/geometry_ref$
+spatial_units:
+  - unit_id: atl_unit_example
+    unit_kind: reef
+    geometry_ref: '{"type": "Point", "coordinates": [-80, 25]}'
+    time_step: iso_week

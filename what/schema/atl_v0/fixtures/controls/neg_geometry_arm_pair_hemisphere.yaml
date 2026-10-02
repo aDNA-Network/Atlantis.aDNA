@@ -1,0 +1,8 @@
+# NEGATIVE — M-1c (III review). geometry_ref = a hemisphere-suffixed pair (III review F-5) — only the widened pair arm catches it. MUST FAIL, and only on this.
+# REJECTS_ON: does not match
+# REJECTS_AT: ^/spatial_units/0/geometry_ref$
+spatial_units:
+  - unit_id: atl_unit_example
+    unit_kind: reef
+    geometry_ref: "near 27.6N, 82.5W"
+    time_step: iso_week

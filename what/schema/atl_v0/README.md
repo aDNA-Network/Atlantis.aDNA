@@ -1,7 +1,7 @@
 ---
 type: schema_pack
 doc_id: atl_schema_v0_readme
-title: "what/schema/atl_v0/ — the Atlantis `atl_` ontology, v0 (draft · 19 controls under three worlds)"
+title: "what/schema/atl_v0/ — the Atlantis `atl_` ontology, v0 (draft · 42 controls under three worlds)"
 status: draft
 version: 0.2.0
 created: 2026-10-02
@@ -15,8 +15,9 @@ validation:
   toolchain: "scratch uv venv · Python 3.12 · linkml 1.11.1 · jsonschema[format] + rfc3339-validator (nothing installed on the node; LINKML_BIN)"
   linkml_lint: "0 errors · 32 warnings (31 `recommended` — missing description on part/container slots; 1 `canonical_prefixes` — UCUM namespace) — accepted at v0"
   gen_json_schema: "gen-json-schema --closed (tree_root AtlDocument) → atl_ontology_v0.schema.json COMMITTED, draft 2019-09, 18 $defs; byte-equality with a fresh generation is checked every run"
-  controls: "19 — 3 positive · 16 negative; each negative fails ONLY on its REJECTS_ON regex AT its REJECTS_AT path, in all three worlds (linkml-validate · committed JSON desc-OFF · scratch JSON desc-ON), FORMAT_CHECKER on"
-  instrument_proven: "three deliberate sabotages each turned the run red (rule weakened · committed JSON hand-edited · a negative naming the wrong reason) — M-1c AAR"
+  controls: "42 — 3 positive · 39 negative (19 at build + 23 from the III review); each negative fails ONLY on its REJECTS_ON regex AT its REJECTS_AT path, in all three worlds (linkml-validate · committed JSON desc-OFF · scratch JSON desc-ON), FORMAT_CHECKER on"
+  instrument_proven: "three deliberate sabotages each turned the run red (rule weakened · committed JSON hand-edited · a negative naming the wrong reason) + per-arm isolation: removing each of the 7 geometry/anchor arms reddens exactly its own control(s) — M-1c AAR"
+  iii_review: "PASS-WITH-FINDINGS (fresh-context reviewer via iii/ wrapper, III v0.6.0); 12 findings, 11 fixed at M-1c, 1 carried (WI-8) — M-1c AAR §III review"
   flag_proof: "Rule 4 asserted by the runner: 9 range classes, no concrete descendants"
   fit_matrix: "m1c_vocabulary_fit_matrix.md — 30 enum values; 0 bound / 30 local with reasons; Modality re-examined against GOOS EOV (live page, 36 EOVs) → stays local, EOV = v1 stream annotation"
 tags: [schema, ontology, linkml, atl, atlantis, draft, m0]
@@ -24,7 +25,7 @@ tags: [schema, ontology, linkml, atl, atlantis, draft, m0]
 
 # `atl_v0` — the Atlantis ontology
 
-> ✅ **19 controls · three worlds · committed JSON == fresh** (M-1c, 2026-10-02). A constraint is claimed here **only**
+> ✅ **42 controls · three worlds · committed JSON == fresh** (M-1c, 2026-10-02). A constraint is claimed here **only**
 > where a fixture in `fixtures/controls/` proves it under `linkml-validate`, the committed `atl_ontology_v0.schema.json`
 > (descendants OFF) and a scratch JSON Schema (descendants ON) — ASOAtlas rule 1. Everything else the schema *says* is
 > documentation. Status stays `draft`; what the controls do **not** prove is listed under **Known limits** below.
@@ -41,7 +42,7 @@ tags: [schema, ontology, linkml, atl, atlantis, draft, m0]
 | `atl_ontology_v0.linkml.yaml` | Five classes · seven enums · the slots an instance's registries are declared in | draft |
 | `crosswalk_external_vocabularies_v0.yaml` | Which marine authorities an `atl_` slot binds to (6 bound: WDPA · CF · UCUM · WoRMS · Darwin Core · PROV-O), which are deferred and why, and which things are *source protocols*, not vocabularies | draft |
 | `atl_ontology_v0.schema.json` | `gen-json-schema --closed` output, committed; the runner fails if it drifts | controlled |
-| `fixtures/controls/` | 3 `pos_*` · 16 `neg_*` (each with `# REJECTS_ON:` + `# REJECTS_AT:`) · `run_controls.sh` · `check_controls_json.py` · `_common_header.txt` (fixture sourcing) | controlled |
+| `fixtures/controls/` | 3 `pos_*` · 39 `neg_*` (each with `# REJECTS_ON:` + `# REJECTS_AT:`) · `run_controls.sh` · `check_controls_json.py` · `_common_header.txt` (fixture sourcing) | controlled |
 | `m1c_vocabulary_fit_matrix.md` | Every enum value × every crosswalk authority; the GOOS EOV re-examination | draft |
 
 ## The five classes, and why only five
@@ -82,16 +83,17 @@ Chosen by the three tests in `context_adna_core_ontology_workshop` (instance · 
 
 | Constraint | Positive | Negative(s) — rejected only on this, at this path | Nearest miss NOT caught |
 |---|---|---|---|
-| A lever names its owner (rule) | exemplar (S-79 lever) | `neg_lever_without_owner` · `neg_lever_owner_null` | an owner who cannot move this lever |
-| An operational claim cites its ruling (rule; SO-4) | `pos_operational_with_ruling` | `neg_operational_without_ruling` · `neg_operational_ruling_null` | a ruling path that does not exist |
-| `base_rate` required, in [0,1] (SO-9) | exemplar | `neg_missing_base_rate` | base_rate ≠ n_positives / n_test |
+| A lever names its owner (rule) | exemplar (S-79 lever) | `neg_lever_without_owner` · `_owner_null` · `_owner_blank` | an owner who cannot move this lever |
+| An operational claim cites its ruling (rule; SO-4) | `pos_operational_with_ruling` | `neg_operational_without_ruling` · `_ruling_null` · `_ruling_blank` | a ruling path that does not exist |
+| `claim` required (no `ifabsent` default applied) | all evaluations | `neg_missing_claim` · `neg_unknown_claim` | — |
+| `base_rate` required, in [0,1] (SO-9) | exemplar | `neg_missing_base_rate` · `neg_base_rate_gt1` | base_rate ≠ n_positives / n_test |
 | `limitations_ref` required, non-blank (SO-4/9) | exemplar | `neg_missing_limitations_ref` · `neg_limitations_ref_blank` | a page with no Limitations section |
 | ≥ 1 alert budget (SO-9 — operator ruling: now, not M-1b) | exemplar (3 budgets) | `neg_evaluation_without_budget` · `neg_evaluation_empty_budgets` | a budget not measured at its rate |
-| `atl_<kind>_` id prefixes | all | `neg_bad_id_prefix` | duplicate ids; dangling `*_ref`s |
-| `sha256` = lowercase hex64 | exemplar (3 pins) | `neg_sha256_not_hex64` | a well-formed hash of the wrong bytes |
-| `geometry_ref` is a pointer (denylist — operator ruling) | exemplar rule strings · `pos_mpa_zone_wdpa` paths | `neg_inline_geometry_wkt` · `_geojson` · `_bbox` | integer / DMS coordinates; WKT mid-string with integer coords |
-| Closed enums | all | `neg_vital_tag_driver` | a wrong-but-legal tag |
-| Closed classes — metrics only (SO-3) | all | `neg_per_patient_predictions` | per-patient values inside a free-text slot |
+| `atl_<kind>_` id prefixes — **all five** id slots | all | `neg_bad_id_prefix` (stream) · `neg_unit_id_prefix` · `neg_vital_id_prefix` · `neg_event_id_prefix` · `neg_eval_id_prefix` | duplicate ids; dangling `*_ref`s |
+| `sha256` = lowercase hex64, no trailing newline | exemplar (3 pins) | `neg_sha256_not_hex64` · `neg_sha256_trailing_newline` | a well-formed hash of the wrong bytes |
+| `geometry_ref` is a pointer (denylist — operator ruling) — **one control per arm** | exemplar rule strings · `pos_mpa_zone_wdpa` paths | arms: `neg_geometry_arm_{brace,wkt,ewkt_case,pair,pair_hemisphere,blank}`; composites: `neg_inline_geometry_{wkt,geojson,bbox}` | integer / DMS / query-string / UTM coordinates (and named false rejects — schema docstring) |
+| Closed enums — **six of seven** controlled | all | `neg_unknown_{unit_kind,time_step,modality,direction,claim,tier}` · `neg_vital_tag_driver` (VitalTag) | a wrong-but-legal value |
+| Closed classes — metrics only (SO-3) — root, evaluation, part | all | `neg_document_extra_key` (root) · `neg_per_patient_predictions` (evaluation) · `neg_budget_extra_key` (part) | per-patient values inside a free-text slot; extra keys on the other 8 classes (same generator path, **not controlled**) |
 
 **Finding of record (M-1c).** A LinkML rule postcondition written as a bare `{required: true}` is emitted by
 gen-json-schema as `then: {required: [x]}` with no type, while the slot itself is typed `["string","null"]`. So
@@ -121,9 +123,13 @@ Named so that nobody reads them as implied:
    `modelling_*`, `dropped_*`, `n_trees`, `n_vitals`, `vital_groups`, `sensitivity` and a `shap_summary` object, and
    its data pins carry `artifact`. `pos_exemplar_gulf_karenia_brevis` is the *projection* that validates. Reconciling
    the board schema with `AtlEvaluation` (embed the projection, keep the extras beside it) belongs to M-1d's BOARD
-   generator (STATE WI-8).
-8. **Python-regex world only.** Both declared validators use Python `re`; the `geometry_ref` denylist uses lookaheads,
-   which ECMA-262 also supports, but no ECMA validator is run.
+   generator (STATE WI-8, opened at M-1c close).
+8. **Python-regex world only.** Both declared validators use Python `re`; no ECMA-262 validator is run. Known divergence,
+   closed: Python's `$` matches before a trailing newline (ECMA's does not), so every `^…$` pattern now ends `(?!\n)$`
+   (III review F-2; control `neg_sha256_trailing_newline`). The `geometry_ref` lookaheads are valid in both dialects.
+   Free-text slots without a pattern (`split`, `learner`, `owner`…) accept a trailing newline in either dialect.
+9. **Controlled on one class, asserted on its siblings by the generator only:** extra-key rejection on the 8 classes
+   without their own control; `minimum_value`/`maximum_value` on the metric slots other than `base_rate`.
 
 ## Validation history
 

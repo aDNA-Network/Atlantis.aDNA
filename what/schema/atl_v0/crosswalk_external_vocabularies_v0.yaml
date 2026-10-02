@@ -91,7 +91,7 @@ deferred:   # listed so nobody re-discovers them; bound when an instance needs t
   - id: goos_eov
     external_authority: "GOOS Essential Ocean Variables / GEO BON Essential Biodiversity Variables"
     iri_base: https://goosocean.org/what-we-do/framework/essential-ocean-variables/   # M-1c: the M-0 URL (…/essential-ocean-variables-eovs/) returned HTTP 404 on 2026-10-02
-    adoption_verdict: defer   # → annotate (v1 candidate), per m1c_vocabulary_fit_matrix.md §3a
+    adoption_verdict: defer   # stays defer at M-1c (fit matrix §3a); becomes `adopt` when the v1 AtlObservationStream.eov slot lands
     bind_when: "v1: an optional multivalued AtlObservationStream.eov slot (enum of the 36 EOVs on the live page) — first exercised by P2 FKNMS (Coral cover and composition · Sea surface temperature)"
     reason: "RE-EXAMINED at M-1c against the live page (36 EOVs: Physics 13 · Biogeochemistry 8 · Biology and Ecosystems 12 · Cross-disciplinary 3). EOVs are VARIABLES; Modality is how a stream reaches the instance — many-to-many, so Modality stays `local` and EOV annotates the stream, not the enum."
 

@@ -69,7 +69,7 @@ federation_ref:
 ## Local extensions explained
 
 - **`learning_store_local`**: `what/context/atlantis_iii_learning_store.jsonl`, empty at creation. ACCUMULATE rows from
-  Atlantis reviews land here. Graduation to the canonical store goes only by the ADR-003 ceremony, never by an edit from this side.
+  Atlantis reviews land here. Graduation to the canonical store goes only by the ADR-003 ceremony, never by an edit from this side. First rows: C-001…C-004 from the M-1c review (frequency 1 each).
 
 ## Routing notes
 
@@ -83,5 +83,5 @@ federation_ref:
 
 - Upstream: `~/aDNA/III.aDNA/CLAUDE.md` · `how/skills/skill_iii_review.md` · `how/skills/skill_iii_setup.md`
 - ADR-002 / ADR-003: `~/aDNA/III.aDNA/what/decisions/adr_00{2,3}_*.md`
-- Atlantis root governance: `~/aDNA/Atlantis.aDNA/CLAUDE.md` (Hard Gates: III review via wrapper)
+- Atlantis root governance: `~/aDNA/Atlantis.aDNA/CLAUDE.md` (SO-10: III review via this wrapper, fresh context; Hard Gates)
 - Pin-convention precedent: `~/aDNA/aDNALabs.aDNA/how/federation/iii/CLAUDE.md`

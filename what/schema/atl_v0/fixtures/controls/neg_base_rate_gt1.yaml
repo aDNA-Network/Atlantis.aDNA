@@ -1,15 +1,14 @@
-# NEGATIVE — M-1c. A data pin whose sha256 is 63 hex chars (one dropped). MUST FAIL, and only on this.
-# REJECTS_ON: does not match '\^\[a-f0-9\]\{64\}
-# REJECTS_AT: ^/evaluations/0/data_pins/0/sha256$
+# NEGATIVE — M-1c (III review). base_rate 1.5 — present but outside [0,1]. MUST FAIL, and only on this.
+# REJECTS_ON: 1\.5 is greater than the maximum of 1
+# REJECTS_AT: ^/evaluations/0/base_rate$
 evaluations:
   - evaluation_id: atl_eval_example
     event_ref: atl_event_example
     split: "train 2000-2015 · test 2016-2020, scored once"
     n_test: 100
     n_positives: 10
-    base_rate: 0.1
+    base_rate: 1.5
     alert_budgets: [{rate: 0.1, precision: 0.4, recall: 0.4}]
     config_hash: "0000000000"
     claim: method_demonstration
-    data_pins: [{stream_ref: atl_stream_example, sha256: 2bde141038e87db37dd682561d47e525dc546189d2ae6fbecfaf1a53bcfecfd}]
     limitations_ref: "site/example.html#limits"

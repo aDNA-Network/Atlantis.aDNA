@@ -1,0 +1,10 @@
+# NEGATIVE — M-1c (III review). An event id without `atl_event_`. MUST FAIL, and only on this.
+# REJECTS_ON: does not match '\^atl_event_
+# REJECTS_AT: ^/event_definitions/0/event_id$
+event_definitions:
+  - event_id: event_example
+    event_variable_stream: atl_stream_example
+    threshold: 100000
+    direction: above
+    horizon: 4
+    onset_rule: "drop patient-steps already past threshold; drop unknown outcomes"

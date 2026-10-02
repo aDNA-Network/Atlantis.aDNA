@@ -1,0 +1,5 @@
+# NEGATIVE — M-1c (III review). A document carrying an `observations:` list at the root — the SO-3 line at the top level. MUST FAIL, and only on this.
+# REJECTS_ON: Additional properties are not allowed \('observations' was unexpected\)
+# REJECTS_AT: ^/$
+observations:
+  - {unit: atl_unit_example, week: 2020-W01, value: 120000}

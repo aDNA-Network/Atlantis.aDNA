@@ -87,7 +87,8 @@ is confirmed against the authority.
 multivalued slot `AtlObservationStream.eov` (range: an `EOV` enum of the 36 page names, verdict **adopt**), so a board
 reader can ask "which instances watch Phytoplankton biomass and diversity?". **Not added at M-1c.** It is a schema
 addition and would need its own controls; P2 (FKNMS: Coral cover and composition, Sea surface temperature) is the
-first instance that would exercise it. Logged as a v1 candidate; crosswalk verdict `defer` → **`annotate (v1 candidate)`**.
+first instance that would exercise it. Logged as a v1 candidate. The crosswalk's `adoption_verdict` **stays `defer`** (its vocabulary is adopt · adapt · build ·
+defer; "annotate" is not a verdict). The row's `bind_when` now names the v1 slot, and the verdict becomes `adopt` when that slot lands.
 
 **Finding 4 — the exemplar's event variable has an EOV home, its driver does not.** *K. brevis* sits under
 Phytoplankton biomass and diversity (and its toxin under nothing on this page). River discharge, the exemplar's one

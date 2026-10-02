@@ -1,0 +1,8 @@
+# NEGATIVE — M-1c (III review). geometry_ref = prose with a decimal lat,lon pair — no brace, no WKT; only the pair arm can catch it. MUST FAIL, and only on this.
+# REJECTS_ON: does not match
+# REJECTS_AT: ^/spatial_units/0/geometry_ref$
+spatial_units:
+  - unit_id: atl_unit_example
+    unit_kind: reef
+    geometry_ref: "see 25.1, -80.4"
+    time_step: iso_week

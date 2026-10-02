@@ -1,0 +1,8 @@
+# NEGATIVE — M-1c (III review). geometry_ref = lowercase EWKT with SRID and integer coords — only the WKT arm's SRID/case handling can catch it. MUST FAIL, and only on this.
+# REJECTS_ON: does not match
+# REJECTS_AT: ^/spatial_units/0/geometry_ref$
+spatial_units:
+  - unit_id: atl_unit_example
+    unit_kind: reef
+    geometry_ref: "srid=4326;point(-80 25)"
+    time_step: iso_week

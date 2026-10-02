@@ -1,0 +1,10 @@
+# NEGATIVE — M-1c (III review). modality `satellite` — a platform word, not in Modality (gridded_field is). MUST FAIL, and only on this.
+# REJECTS_ON: 'satellite' is not one of
+# REJECTS_AT: ^/observation_streams/0/modality$
+observation_streams:
+  - stream_id: atl_stream_example
+    modality: satellite
+    source_system: USGS NWIS daily values
+    source_id: parameter 00060 at an example gauge
+    ingested_at: "2026-10-02T00:00:00Z"
+    license: public

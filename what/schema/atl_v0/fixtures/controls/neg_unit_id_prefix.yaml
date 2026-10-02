@@ -1,0 +1,8 @@
+# NEGATIVE — M-1c (III review). A unit id without `atl_unit_`. MUST FAIL, and only on this.
+# REJECTS_ON: does not match '\^atl_unit_
+# REJECTS_AT: ^/spatial_units/0/unit_id$
+spatial_units:
+  - unit_id: unit_example
+    unit_kind: reef
+    geometry_ref: instance/what/geometry/example.gpkg
+    time_step: iso_week

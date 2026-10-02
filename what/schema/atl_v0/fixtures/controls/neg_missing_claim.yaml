@@ -1,0 +1,13 @@
+# NEGATIVE — M-1c (III review). An evaluation with no `claim` — `ifabsent` is not applied by either validator, so absence is rejected, not defaulted. MUST FAIL, and only on this.
+# REJECTS_ON: 'claim' is a required property
+# REJECTS_AT: ^/evaluations/0$
+evaluations:
+  - evaluation_id: atl_eval_example
+    event_ref: atl_event_example
+    split: "train 2000-2015 · test 2016-2020, scored once"
+    n_test: 100
+    n_positives: 10
+    base_rate: 0.1
+    alert_budgets: [{rate: 0.1, precision: 0.4, recall: 0.4}]
+    config_hash: "0000000000"
+    limitations_ref: "site/example.html#limits"

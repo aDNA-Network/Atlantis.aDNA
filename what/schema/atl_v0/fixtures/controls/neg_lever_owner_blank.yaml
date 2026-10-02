@@ -1,0 +1,9 @@
+# NEGATIVE — M-1c (III review). A lever whose owner is whitespace. MUST FAIL, and only on this.
+# REJECTS_ON: does not match
+# REJECTS_AT: ^/vitals/0/owner$
+vitals:
+  - vital_id: atl_vital_example
+    stream_ref: atl_stream_example
+    transform: 30-day mean discharge, log10
+    tag: lever
+    owner: '   '

@@ -141,7 +141,7 @@
       }
     },
     "claim": "method_demonstration",
-    "limitations_ref": "what/exemplars/gulf_karenia_brevis/site/hab_crash_risk.html#limits (\u00a712 Where the analogy breaks) \u00b7 README.md \u00a7Caveats"
+    "limitations_ref": "what/exemplars/gulf_karenia_brevis/site/hab_crash_risk.html#limits (\u00a711 Where the analogy breaks) \u00b7 README.md \u00a7Caveats"
   },
   "provenance": {
     "metrics_file": "what/exemplars/gulf_karenia_brevis/outputs/metrics.json",
@@ -151,6 +151,7 @@
   },
   "notes": [
     "Doc drift noted at M-0 (README says AUPRC-stopping and 2000 bg rows; config/outputs say logloss and 1000) \u2014 this entry follows the outputs; fix is P1 M-1a.",
-    "shap_test.npz is gitignored; only summary statistics cross to the board."
+    "shap_test.npz is gitignored; only summary statistics cross to the board.",
+    "M-1c (2026-10-02, III review F-6): limitations_ref section label hand-corrected \u00a712 \u2192 \u00a711 (site/hab_crash_risk.html:341 numbers it 11; the anchor #limits was already right). The generator fix is M-1d's BOARD generator (STATE WI-8)."
   ]
 }

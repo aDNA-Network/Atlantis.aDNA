@@ -1,0 +1,9 @@
+# NEGATIVE — M-1c (III review). A vital id without `atl_vital_`. MUST FAIL, and only on this.
+# REJECTS_ON: does not match '\^atl_vital_
+# REJECTS_AT: ^/vitals/0/vital_id$
+vitals:
+  - vital_id: vital_example
+    stream_ref: atl_stream_example
+    transform: 30-day mean discharge, log10
+    tag: lever
+    owner: "the release scheduler for the example structure"

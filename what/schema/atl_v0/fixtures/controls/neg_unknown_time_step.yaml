@@ -1,0 +1,8 @@
+# NEGATIVE — M-1c (III review). time_step `hour` — not in TimeStep. MUST FAIL, and only on this.
+# REJECTS_ON: 'hour' is not one of
+# REJECTS_AT: ^/spatial_units/0/time_step$
+spatial_units:
+  - unit_id: atl_unit_example
+    unit_kind: reef
+    geometry_ref: instance/what/geometry/example.gpkg
+    time_step: hour
