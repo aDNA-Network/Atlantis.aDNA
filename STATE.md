@@ -1,68 +1,70 @@
 ---
 type: state
-status: genesis_planning
-phase: "P0 queued — M-0 genesis planning (fable, operator-opened)"
+status: p0_complete_awaiting_gate
+phase: "P0 — M-0 complete 2026-10-02; awaiting the operator's P0-exit GO (ratify ADR-000/001/002 · persona · open P1)"
 campaigns: [campaign_atlantis_genesis]
-mission: mission_m0_atlantis_genesis_planning
-persona: proteus   # PROPOSED
-last_session: none (seeded from aDNALabs S329, 2026-09-23)
+mission: mission_m0_atlantis_genesis_planning   # completed; next = M-1a + M-1c (opus) on GO
+persona: proteus   # PROPOSED (Nereus alternative) — ruled at the gate
+last_session: session_stanley_20261002_124712_m0_genesis_expanded (fable, operator-opened)
 created: 2026-09-23
-updated: 2026-09-23
-last_edited_by: agent_berthier
-tags: [state, atlantis, genesis_stub]
+updated: 2026-10-02
+last_edited_by: agent_proteus
+tags: [state, atlantis, tidewatch, p0_complete]
 ---
 
 # STATE — Atlantis.aDNA
 
 ## Resume-Here
 
-1. Read `CLAUDE.md` (identity, persona *proposed*, standing orders).
-2. Read the charter: `how/campaigns/campaign_atlantis_genesis/campaign_atlantis_genesis.md`.
-3. Read the queued card: `how/campaigns/campaign_atlantis_genesis/missions/mission_m0_atlantis_genesis_planning.md`.
-4. The exemplar is real and runs: `what/exemplars/gulf_karenia_brevis/README.md` (results + run order).
+1. `CLAUDE.md` (identity widened per ADR-002; persona *proposed*; standing orders incl. new SO-9).
+2. The charter (re-cut M-0): `how/campaigns/campaign_atlantis_genesis/campaign_atlantis_genesis.md` → the roster
+   `artifacts/mission_roster_p1_p5.md`.
+3. The three ADRs in `who/governance/` (all `proposed`, 4-field blocks empty).
+4. The exemplar still runs and its self-test is green: `what/exemplars/gulf_karenia_brevis/README.md`.
 
 ## ⏭ QUEUED — Next Live Session
 
-**M-0 — genesis planning.** Open-at tier: **fable** (operator-summoned). Estimated 70–110 kT.
+**Gate first.** The P0-exit gate is the operator's: sign ADR-000/001/002 (decision · ratified-by · date · status),
+pick the persona (Proteus / Nereus), and say **GO P1** — or not. Nothing below opens without it (SO-1).
 
-Rules to be taken there (all *proposed* until then): identity ADR-000 · persona (Proteus) · category (Framework
-+ reference platform) · name-form (`Atlantis`, capitalised, ADR-009 §3 exception) · **instance contract v0**
-(what a regional instance must carry to federate: patient definition, event + horizon, data posture ruling,
-`federation_ref`) · the P1–P5 mission roster with tiers and budgets · the P2 second-instance pick.
+**On GO → M-1a + M-1c in parallel (opus), then M-1b, then M-1d.** Cards: `missions/mission_m1a_exemplar_hygiene.md`
+(40–60 kT) · `mission_m1c_linkml_controls.md` (60–90 kT) · `mission_m1b_atlantis_core_extraction.md` (120–180 kT) ·
+`mission_m1d_fork_skill_and_registries.md` (80–120 kT).
 
-**Next Session Prompt (self-contained):**
+**Next Session Prompt (self-contained, M-1a):**
 
-> You are Proteus (proposed) in `~/aDNA/Atlantis.aDNA`, a genesis stub seeded 2026-09-23 from the aDNALabs
-> S329 *Karenia brevis* pilot. Run M-0 of Operation Tidewatch: read STATE → charter → the M-0 card; produce
-> `who/governance/adr_000_project_identity.md` (proposed → surface for ratification), the thesis register,
-> the instance contract v0, and the P1–P5 mission roster; surface the four rulings to the operator with
-> `AskUserQuestion` or an ISS gate. Do not advance past P0. Open a session lease first. The exemplar under
-> `what/exemplars/gulf_karenia_brevis/` is the ground truth for what the method looks like when it works —
-> read its README before writing the contract.
+> You are Proteus in `~/aDNA/Atlantis.aDNA`. P0 closed on the operator's GO (check `who/governance/adr_00*.md` carry
+> signed 4-field blocks; if not, stop and say so). Run **M-1a — exemplar hygiene** at **opus**: read STATE → the card →
+> the charter's P1 exit bar → `what/exemplars/gulf_karenia_brevis/README.md` + `AGENTS.md`. Open a session lease.
+> Fix the README/config drift (log-loss stopping; 1000 SHAP background rows; three streams), add sha256 fetch
+> summaries for all three sources, add `pyproject.toml`, make `gauges.*.lever` read by code or remove it, replace
+> `eval` on region rules with a safe parser (assert the 9 region counts are unchanged), reproduce the AUPRC-stopping
+> run once as a negative control. Run `build_features --self-test` before and after; `outputs/metrics.json` must be
+> byte-stable (config_hash e9dea88254). Path-scoped commits; AAR at `missions/aar/aar_m1a_exemplar_hygiene.md`. Do
+> not touch `what/schema/` (that is M-1c) and do not start extraction (M-1b).
 
-## What's in place (seeded S329)
+## What's in place (M-0, 2026-10-02 — 6 commits on `aec55d4`)
 
-- Governance kit (CLAUDE · MANIFEST · STATE · AGENTS), README, MIT LICENSE, public remote.
-- Thesis (`what/context/concept_atlantis.md`), method (`what/patterns/pattern_ecosystem_early_warning.md`),
-  mining playbook (`what/context/playbook_data_and_literature_mining.md`).
-- The exemplar: trained model, SHAP, what-if, explainer site (Artifact, private link in CLAUDE §References);
-  leakage self-test green from this location; venv rebuilt (`.venv/`, gitignored).
-- Charter with P0–P5 ladder and written exit bars; M-0 card; carded P1/P2 stubs.
-- Federation wrapper contract stub at `how/federation/atlantis/README.md`.
+- **Governance:** ADR-000 (lineage amended) · ADR-001 (persona · Framework + reference implementation · `what/atlantis_core/`) · ADR-002 (remit widening · five layers · snapshot rule · what crosses / never crosses) — all `proposed`.
+- **Planning artifacts:** thesis register (12 claims, 9 supported-by-one-exemplar, 3 untested) · instance contract v0 (12-item checklist, 7 `ATL-*` ids) · roster + 9 cards · P2 ruling (FKNMS coral) · charter re-cut.
+- **L1 ontology:** `what/schema/atl_v0/` — LinkML draft, 5 classes / 7 enums / 2 rules; lint 0 errors / 38 warnings; closed JSON Schema generates (18 defs; not committed); smoke pos/neg validated; **NO VALIDATION CLAIM** until M-1c. Crosswalk 6 bound / 6 deferred.
+- **L4 registries:** evidence board v1 + exemplar entry (script-generated from `metrics.json`, sha256 pins) · model-card template · dataset-pair template · hypothesis-ledger spec · `what/datasets/AGENTS.md`.
+- **L2 / L3 / L5:** specified and carded (M-1b · M-1d/M-3/M-5 · M-4); nothing built — by the sitting-depth ruling.
+- Exemplar untouched; self-test green at open and close.
 
 ## Active blockers
 
-- **`#needs-human` M-0 open** — the operator opens the fable sitting. Nothing else is blocked.
+- **`#needs-human` P0-exit gate** — the operator signs the ADRs, rules the persona, opens P1. Nothing else is blocked.
 
 ## Watch items
 
-- WI-1 — Router row added to `Home.aDNA/what/inventory/workspace_router_CLAUDE.md` at seed time, **left
-  uncommitted for Hestia's sitting** (Home is her graph). Verify it landed in a Home commit.
-- WI-2 — Exemplar raw OISST chunk CSVs (193 MB) are gitignored; `data/raw/oisst_region_daily.parquet` is the
-  committed derivative. A fresh clone regenerates chunks via `fetch_env` (≈30 min against ERDDAP).
-- WI-3 — The Artifact link is private; sharing is the operator's act from the page's Share menu.
+- ~~WI-1~~ **closed 2026-10-02** — the Home router row landed in Hestia's commit `96ae4a2` (Home.aDNA). Its category text still says "ref. platform"; Hestia's row, Hestia's edit — memo after the gate.
+- WI-2 — Exemplar raw OISST chunk CSVs (193 MB) are gitignored; `data/raw/oisst_region_daily.parquet` is the committed derivative. A fresh clone regenerates via `fetch_env` (≈30 min against ERDDAP).
+- WI-3 — The Artifact link is private; sharing is the operator's act.
+- WI-4 — `aDNA.aDNA` ADR-062 (LinkML adoption) is still `proposed`; `atl_v0` cites it as preferred-but-optional. If it is declined, the schema stays conformant as "another language" and the controls still run.
+- WI-5 — `Datasets.aDNA` provenance-contract seam open (ASOAtlas memo 2026-09-25 unanswered); Atlantis co-signs after the gate (`how/backlog/idea_cosign_datasets_provenance_contract.md`).
+- WI-6 — Doc/config drift in the exemplar (README vs `config.yaml`/outputs) is **known and unfixed** until M-1a; the board entry follows the outputs.
 
 ## Next steps
 
-1. Operator opens M-0 (fable). 2. M-0 rules → operator ratifies ADR-000 → **P0 exit GO**. 3. P1 (opus lanes):
-extract `how/templates/template_regional_instance/` + `skill_atlantis_instance_fork.md` from the exemplar.
+1. Operator: P0-exit gate. 2. On GO: M-1a ∥ M-1c → M-1b → M-1d → **P1 gate**. 3. M-2 FKNMS → **P2 gate**.
