@@ -3,7 +3,7 @@ type: claude_md
 status: active
 genesis_stage: genesis_planning
 campaign_open: campaign_atlantis_genesis
-phase: P0_queued
+phase: P1_core_canonisation   # P0 gate MET 2026-10-02
 persona: proteus            # PROPOSED — ratification is M-0's; Berthier acts in the interim
 pattern_category: framework # + reference platform; PROPOSED, ruled at M-0
 display_name: "Atlantis"
