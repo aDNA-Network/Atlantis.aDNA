@@ -18,7 +18,18 @@ def clean(o):
     if isinstance(o, (np.floating,)): return None if np.isnan(o) else float(o)
     if isinstance(o, (np.integer,)): return int(o)
     return o
-FEATURE_DOC = {  # short label · what it is · tag (lever / proxy / artifact / state)
+def discharge_tag(cfg):
+    """Tag for the discharge features: `lever` if any configured gauge carries `lever: true` (a managed release a
+    steward can actually change — S-79 here), else `proxy`. Read from config.yaml → gauges.*.lever; before M-1a that
+    flag was declared in config but never read."""
+    return "lever" if any(g.get("lever") for g in cfg["gauges"].values()) else "proxy"
+
+
+def lever_gauges(cfg):
+    return [f"{site} ({g['name']})" for site, g in cfg["gauges"].items() if g.get("lever")]
+
+
+FEATURE_DOC = {  # short label · what it is · tag (lever / proxy / artifact / state); discharge tags set from config below
     "log_max_t0": ["max count, this week", "log10(1+cells/L) of the highest sample in the region this week", "state"],
     "log_max_t1": ["max count, 1 wk ago", "same, one week earlier", "state"],
     "log_max_t2": ["max count, 2 wk ago", "same, two weeks earlier", "state"],
@@ -41,10 +52,13 @@ FEATURE_DOC = {  # short label · what it is · tag (lever / proxy / artifact / 
     "sst_anom_t2": ["SST anomaly, 2 wk ago", "same, two weeks earlier", "proxy"],
     "sst_anom_t4": ["SST anomaly, 4 wk ago", "same, four weeks earlier", "proxy"],
     "sst_delta_4w": ["4-week SST change", "warming or cooling over the last month, °C", "proxy"],
-    "discharge_30d_t0": ["river discharge, 30 d", "log10 mean daily discharge of the region's river gauge(s), last 30 days", "lever"],
-    "discharge_30d_t3": ["river discharge, 30 d (3 wk ago)", "same window ending three weeks earlier", "lever"],
-    "discharge_anom_t0": ["discharge anomaly", "30-day discharge minus the 1990–2016 day-of-year normal", "lever"],
+    "discharge_30d_t0": ["river discharge, 30 d", "log10 mean daily discharge of the region's river gauge(s), last 30 days", "discharge"],  # tag set from config
+    "discharge_30d_t3": ["river discharge, 30 d (3 wk ago)", "same window ending three weeks earlier", "discharge"],  # tag set from config
+    "discharge_anom_t0": ["discharge anomaly", "30-day discharge minus the 1990–2016 day-of-year normal", "discharge"],  # tag set from config
 }
+_DISCHARGE_TAG = discharge_tag(load_config())
+for _k in ("discharge_30d_t0", "discharge_30d_t3", "discharge_anom_t0"):
+    FEATURE_DOC[_k][2] = _DISCHARGE_TAG
 
 
 def main():

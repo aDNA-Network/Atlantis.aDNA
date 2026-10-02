@@ -1,15 +1,17 @@
-"""Counterfactual re-scoring: the S-79 discharge lever reduced by 30% over one region's strip.
-Correlational, not causal — the site carries the caveat. Writes outputs/whatif.json."""
+"""Counterfactual re-scoring: the discharge lever (the gauge(s) flagged `lever: true` in config.yaml — S-79) reduced by
+30% over one region's strip. Correlational, not causal — the site carries the caveat. Writes outputs/whatif.json."""
 import json
 import numpy as np, pandas as pd, xgboost as xgb
 from hab import load_config, DATA_PROC, OUT
 from hab.build_features import FEATURES
+from hab.export_site_data import lever_gauges
 
 def main():
     cfg = load_config()
     df = pd.read_parquet(DATA_PROC / "all_scored.parquet")
     m = xgb.XGBClassifier(); m.load_model(OUT / "model.json")
-    out = {}
+    out = {"lever_gauges": lever_gauges(cfg)}   # read from config (M-1a); an instance with no lever gets [] and should not run this
+    assert out["lever_gauges"], "no gauge carries lever: true — nothing to counterfactual"
     for region, d0, d1 in [(7, "2022-06-01", "2023-04-30"), (7, "2017-06-01", "2019-03-31"), (4, "2021-01-01", "2021-12-31")]:
         g = df[(df.region == region) & (df.week >= d0) & (df.week <= d1)].sort_values("week").copy()
         y0, y1 = d0[:4], d1[:4]
