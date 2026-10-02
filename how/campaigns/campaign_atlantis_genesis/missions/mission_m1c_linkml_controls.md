@@ -4,7 +4,7 @@ mission_id: M-1c
 plan_id: mission_m1c_linkml_controls
 title: "M-1c — `atl_v0` controls — fixtures, `run_controls.sh`, committed JSON Schema, vocabulary fit matrix"
 owner: stanley
-status: planned
+status: in_progress
 campaign: campaign_atlantis_genesis
 campaign_id: campaign_atlantis_genesis
 phase: P1
@@ -15,7 +15,7 @@ token_budget_estimated: "60-90kT"
 token_budget_actual: ""
 depends_on: ['M-0']
 aar_path: how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m1c_linkml_controls.md
-session: TBD
+session: session_stanley_20261002_162046_m1c_linkml_controls
 created: 2026-10-02
 updated: 2026-10-02
 last_edited_by: agent_proteus
