@@ -1,6 +1,8 @@
 # CHANGELOG — Atlantis.aDNA
 
-## 2026-10-02 — v0.2.0 · M-0 complete with the widened remit (Operation Tidewatch, P0 → gate)
+## 2026-10-02 — v0.2.0 · M-0 complete with the widened remit; P0 gate MET (Operation Tidewatch → P1)
+
+- **P0-exit gate MET 2026-10-02** (operator, `AskUserQuestion`): ADR-000/001/002 **ratified** · persona **Proteus** · **GO P1** · push to the public remote authorised.
 
 - **Remit widened** by the operator (2026-10-01): Atlantis becomes the MPA knowledge · data-model · evidence system around the method — `who/governance/adr_002_remit_mpa_knowledge_system.md` (proposed). Four rulings taken by `AskUserQuestion`; persona and ADR signatures carried to the P0-exit gate.
 - **ADR-001** persona (Proteus / Nereus alt.) · category **Framework + reference implementation** · code home `what/atlantis_core/` · name-form. **ADR-000** lineage amendment. ADRs stay in `who/governance/`.

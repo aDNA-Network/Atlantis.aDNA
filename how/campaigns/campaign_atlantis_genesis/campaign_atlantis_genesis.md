@@ -4,9 +4,9 @@ type: campaign
 title: "Operation Tidewatch — Atlantis genesis: from one exemplar to an MPA knowledge · data-model · evidence system for ocean-ecosystem early warning"
 display_name: "Operation Tidewatch"
 owner: stanley
-persona: proteus            # PROPOSED → ruled at the P0-exit gate (ADR-001)
+persona: proteus            # RULED 2026-10-02 at the P0-exit gate (ADR-001 ratified)
 status: active
-phase: P0                   # M-0 complete 2026-10-02; awaiting the operator's P0-exit GO
+phase: P1                   # P0 gate MET 2026-10-02 (ADR-000/001/002 ratified · Proteus · GO P1)
 phase_count: 6
 mission_count: 10           # M-0 (done) + nine carded: M-1a M-1b M-1c M-1d · M-2 · M-3a M-3b · M-4 · M-5
 estimated_sessions: "12-18"
@@ -89,7 +89,7 @@ Roster with tiers, budgets, dependencies and the critical path: **`artifacts/mis
 `missions/`. Every phase exit is an **operator gate** (SO-1), rendered by `aDNA.aDNA/how/skills/skill_create_iss.md`
 or `AskUserQuestion`; nothing auto-advances.
 
-### P0 — Genesis planning (fable; operator-opened) — **M-0 complete 2026-10-02**
+### P0 — Genesis planning (fable; operator-opened) — **M-0 complete · gate MET 2026-10-02**
 
 | Mission | Title | Tier | Status |
 |---|---|---|---|
@@ -97,7 +97,7 @@ or `AskUserQuestion`; nothing auto-advances.
 
 **Exit bar:** ADR-000/001/002 carry the operator's 4-field block · persona ruled (Proteus / Nereus) · instance
 contract v0 exists as a checklist a stranger could satisfy from four files · P1–P5 carded with tiers and budgets ·
-P2 pick named (FKNMS, ruled 2026-10-01). **Operator GO at the P0-exit gate.**
+P2 pick named (FKNMS, ruled 2026-10-01). **Gate MET 2026-10-02:** ADR-000/001/002 ratified · persona Proteus · **GO P1** (operator, `AskUserQuestion`).
 
 ### P1 — Core canonisation (opus lanes, fable review)
 M-1a exemplar hygiene · M-1b `atlantis_core` extraction (feature registry · direction-aware label · polygon grid ·
@@ -153,8 +153,8 @@ AAR · successor cards. **Exit bar:** AAR in this file; Atlantis joins the fleet
 
 ## Status
 
-**P0 — M-0 complete 2026-10-02 (Proteus, fable, operator-opened).** Awaiting the operator's P0-exit GO: ratify
-ADR-000/001/002, rule the persona, open P1 (M-1a + M-1c may run in parallel; M-1b follows M-1a).
+**P1 open — P0 gate MET 2026-10-02.** ADR-000/001/002 ratified, persona Proteus, GO P1 given by the operator at the
+gate. Next: M-1a ∥ M-1c (opus), then M-1b, then M-1d → P1 gate.
 
 ## AAR (campaign — filled at P5)
 

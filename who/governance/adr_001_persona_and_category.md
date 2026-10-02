@@ -1,20 +1,21 @@
 ---
 type: adr
 adr_id: ADR-001
-title: "ADR-001 — Persona, category wording and code home (PROPOSED)"
-status: proposed
+title: "ADR-001 — Persona, category wording and code home (RATIFIED 2026-10-02)"
+status: ratified
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-02   # ratified at the P0-exit gate
 last_edited_by: agent_proteus
 mission: mission_m0_atlantis_genesis_planning
 campaign_id: campaign_atlantis_genesis
 supersedes: ""
 superseded_by: ""
 ratification:
-  decision: ""
-  ratified_by: ""
-  date: ""
-  status: proposed
+  decision: accepted
+  ratified_by: stanley
+  date: 2026-10-02
+  status: ratified
+  surface: AskUserQuestion (P0-exit gate, M-0 sitting)
 tags: [adr, persona, category, code_home, atlantis, m0]
 ---
 
@@ -22,7 +23,7 @@ tags: [adr, persona, category, code_home, atlantis, m0]
 
 ## Status
 
-**Proposed** at M-0 (2026-10-02, fable sitting, operator-opened). Three of the four fields below were taken as
+**Ratified 2026-10-02** (was proposed at M-0 (2026-10-02, fable sitting, operator-opened). Three of the four fields below were taken as
 bounded choices by the operator during the sitting (`AskUserQuestion`, 2026-10-01); the persona is carried to the
 P0-exit gate. The 4-field block is the operator's to sign.
 
@@ -42,7 +43,7 @@ deployable went to a sibling, `Lighthouse.aDNA`) and **Harness.aDNA** (Platform 
 
 | Field | Ruling | Alternative considered |
 |---|---|---|
-| **Persona** | **Proteus** — the Old Man of the Sea who knows what is coming and answers only when held through every shape he takes. Two doctrines fixed by the myth: *translation is the work* (every modality held and translated onto one grid before the sea says anything true) and *forecast honestly or not at all* (every score read against its base rate; a SHAP value is never called a cause). | **Nereus** — the truthful, gentle sea-elder and father of the Nereids; fits "honest forecast" but not "shape-shifting translation". Carried to the gate for the operator to pick. |
+| **Persona** | **Proteus** — the Old Man of the Sea who knows what is coming and answers only when held through every shape he takes. Two doctrines fixed by the myth: *translation is the work* (every modality held and translated onto one grid before the sea says anything true) and *forecast honestly or not at all* (every score read against its base rate; a SHAP value is never called a cause). | **Nereus** — the truthful, gentle sea-elder and father of the Nereids; fits "honest forecast" but not "shape-shifting translation". **Declined at the gate 2026-10-02.** |
 | **Category** | **Framework + reference implementation.** Atlantis is a Framework (produces no primary artifact, deploys no runtime; consumers federate via `how/federation/atlantis/`). It additionally carries a *reference implementation* — a library + exemplar that instances install and run on their own data. | "Framework + reference *platform*" (seed wording) — rejected: "platform" implies a deployed runtime Atlantis does not run. "Framework only, code to a sibling" — rejected 2026-10-01 by the operator: one more fork + router row before P1 can start, for no consumer class that needs it. |
 | **Code home** | **`what/atlantis_core/`** — code-as-WHAT inside this graph, fleet convention (`Harness.aDNA/what/harness/`, `Context.aDNA/what/contextscope/`). The package holds no data; the exemplar at `what/exemplars/gulf_karenia_brevis/` becomes its first consumer at P1. Split to a sibling **only if** a second consumer class appears (e.g. a Dashboards projection with its own release cadence). | Sibling graph now — rejected (above). |
 | **Name-form** | **`Atlantis`**, capitalised — the fleet's standing ADR-009 §3 exception, recorded at `who/coordination/coord_2026_09_23_name_form_note.md`. | `atlantis` snake_case per `skill_project_fork` step 1 — would make it the only lowercase project of 100+. |
@@ -60,9 +61,11 @@ one-line note to Rosetta when the pattern has a second example (backlog, not now
 
 ## Ratification
 
+**Ruled 2026-10-02 by the operator (stanley) at the P0-exit gate, `AskUserQuestion`:** ratified as written. Persona ruled **Proteus** (Nereus declined). Recorded verbatim; GO P1 given in the same gate.
+
 | Field | Value |
 |---|---|
-| decision | *(operator)* |
-| ratified-by | *(operator)* |
-| date | |
-| status | **proposed** |
+| decision | **accepted** |
+| ratified-by | **stanley** |
+| date | **2026-10-02** |
+| status | **ratified** |

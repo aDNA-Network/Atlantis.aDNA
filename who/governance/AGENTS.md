@@ -20,9 +20,9 @@ the operator's 4-field ratification block (§7.7).
 
 | File | Status | Purpose |
 |------|--------|---------|
-| `adr_000_project_identity.md` | proposed | Identity, lineage from aDNALabs S329, three-layer naming, SO-3; lineage amendment 2026-10-02 → ADR-002 |
-| `adr_001_persona_and_category.md` | proposed | Persona (Proteus / Nereus to the gate) · **Framework + reference implementation** · code home `what/atlantis_core/` · name-form |
-| `adr_002_remit_mpa_knowledge_system.md` | proposed | The remit widening: MPA as unit kind + audience · five layers · **snapshot rule** · what crosses / never crosses · decentralisation composed not built |
+| `adr_000_project_identity.md` | **ratified 2026-10-02** | Identity, lineage from aDNALabs S329, three-layer naming, SO-3; lineage amendment 2026-10-02 → ADR-002 |
+| `adr_001_persona_and_category.md` | **ratified 2026-10-02** | Persona **Proteus** (ruled) · **Framework + reference implementation** · code home `what/atlantis_core/` · name-form |
+| `adr_002_remit_mpa_knowledge_system.md` | **ratified 2026-10-02** | The remit widening: MPA as unit kind + audience · five layers · **snapshot rule** · what crosses / never crosses · decentralisation composed not built |
 | `governance_agent_protocol.md` | template | Agent behavioural contract (inherited; CLAUDE.md overrides where they differ) |
 | `VISION.md` | template | aDNA standard vision (inherited; not Atlantis-specific) |
 

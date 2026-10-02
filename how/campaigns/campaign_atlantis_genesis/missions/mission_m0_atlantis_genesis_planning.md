@@ -73,8 +73,8 @@ The charter's P0 exit bar, verbatim. **Then stop.** P1 opens only on the operato
 
 **Session:** `how/sessions/history/2026-10/session_stanley_20261002_124712_m0_genesis_expanded.md` · tier fable ·
 operator-opened. **Rulings taken** (`AskUserQuestion`, 2026-10-01): widening accepted · Framework + reference
-implementation with code at `what/atlantis_core/` · P2 = FKNMS coral bleaching · stop at the P0 gate. **Carried to
-the gate:** persona (Proteus / Nereus), the three ADR signatures, GO P1.
+implementation with code at `what/atlantis_core/` · P2 = FKNMS coral bleaching · stop at the P0 gate. **Gate (same day,
+`AskUserQuestion`):** ADR-000/001/002 **ratified** · persona **Proteus** · **GO P1** · push after the gate.
 
 **Scope change vs the seed card:** the remit widened (ADR-002), so M-0 also produced the `atl_v0` draft, the evidence
 board, the registry templates and the hypothesis-ledger spec — *specs and templates, no code*, per the sitting-depth

@@ -1,22 +1,23 @@
 ---
 type: adr
 adr_id: ADR-000
-title: "ADR-000 — Atlantis.aDNA project identity (PROPOSED)"
-status: proposed
+title: "ADR-000 — Atlantis.aDNA project identity (RATIFIED 2026-10-02)"
+status: ratified
 created: 2026-09-23
-updated: 2026-10-02
+updated: 2026-10-02   # ratified at the P0-exit gate
 last_edited_by: agent_proteus
 ratification:
-  decision: ""
-  ratified_by: ""
-  date: ""
-  status: proposed
+  decision: accepted
+  ratified_by: stanley
+  date: 2026-10-02
+  status: ratified
+  surface: AskUserQuestion (P0-exit gate, M-0 sitting)
 tags: [adr, identity, atlantis, genesis]
 ---
 
-# ADR-000 — project identity (proposed)
+# ADR-000 — project identity (ratified 2026-10-02)
 
-**Decision (proposed).** `Atlantis.aDNA` is a **Framework + reference platform**: the fleet's home for the
+**Decision (ratified 2026-10-02).** `Atlantis.aDNA` is a **Framework + reference platform**: the fleet's home for the
 sepsis-analog method of ocean/aquatic ecosystem early warning — doctrine, patterns, templates, skills and
 public-data exemplars — consumed by **data-bearing regional instance graphs** that federate it. Atlantis is
 **not data-bearing** (SO-3). Persona **Proteus**. Codename **Operation Tidewatch**. Public, MIT, at
@@ -43,9 +44,11 @@ MIT posture stand; ADR-002 §4 sharpens SO-3 into the snapshot rule.
 
 ## Ratification
 
+**Ruled 2026-10-02 by the operator (stanley) at the P0-exit gate, `AskUserQuestion`:** ratified as written. Recorded verbatim; GO P1 given in the same gate.
+
 | Field | Value |
 |---|---|
-| decision | *(operator)* |
-| ratified-by | *(operator)* |
-| date | |
-| status | **proposed** |
+| decision | **accepted** |
+| ratified-by | **stanley** |
+| date | **2026-10-02** |
+| status | **ratified** |

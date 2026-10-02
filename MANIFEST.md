@@ -3,9 +3,9 @@ type: manifest
 project: Atlantis.aDNA
 display_name: "Atlantis"
 codename: "Operation Tidewatch"
-genesis_stage: p0_complete_awaiting_gate
-pattern_category: framework   # + reference implementation (ADR-001, PROPOSED → P0 gate)
-persona: proteus              # PROPOSED
+genesis_stage: p1_core_canonisation
+pattern_category: framework   # + reference implementation (ADR-001, ratified 2026-10-02)
+persona: proteus              # ratified 2026-10-02 (ADR-001)
 owner: stanley
 visibility: public            # aDNA-Network/Atlantis.aDNA, MIT
 data_bearing: false           # instances are; Atlantis is not
@@ -23,8 +23,8 @@ tags: [manifest, atlantis, framework, oceans, ecosystem_early_warning, genesis_s
 |---|---|
 | Display name | Atlantis |
 | One line | Precision medicine for oceans — the MPA knowledge · data-model · evidence system around a drop-in agentic early-warning method (multi-modal observations → vitals → calibrated onset model → SHAP → intervention tagging): `atl_` ontology · reference implementation · agentic loops · registries + GREEN board · steward contract (ADR-002) |
-| Category | Framework + reference implementation *(ADR-001, proposed)*; code-as-WHAT at `what/atlantis_core/` (P1) |
-| Persona | Proteus *(proposed)*; Berthier interim |
+| Category | Framework + reference implementation *(ADR-001, ratified 2026-10-02)*; code-as-WHAT at `what/atlantis_core/` (P1) |
+| Persona | **Proteus** (ratified 2026-10-02) |
 | Operator | Stanley (Founding Architect, sole governance principal) |
 | Codename | Operation Tidewatch (genesis campaign) |
 | Lineage | Spun out of `aDNALabs.aDNA` S329 (2026-09-23), the *Karenia brevis* pilot `hab_crash_risk` → `what/exemplars/gulf_karenia_brevis/` |
@@ -33,7 +33,7 @@ tags: [manifest, atlantis, framework, oceans, ecosystem_early_warning, genesis_s
 
 ## Genesis status
 
-P0 complete (M-0, 2026-10-02). ADR-000/001/002 proposed; persona + GO P1 at the P0-exit gate. See `STATE.md`.
+P0 gate MET 2026-10-02: ADR-000/001/002 ratified · Proteus · GO P1. P1 (core canonisation) open. See `STATE.md`.
 
 ## Architecture (who / what / how)
 

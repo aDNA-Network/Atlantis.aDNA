@@ -1,40 +1,39 @@
 ---
 type: state
-status: p0_complete_awaiting_gate
-phase: "P0 — M-0 complete 2026-10-02; awaiting the operator's P0-exit GO (ratify ADR-000/001/002 · persona · open P1)"
+status: p1_open
+phase: "P1 — Core canonisation; P0 gate MET 2026-10-02 (ADR-000/001/002 ratified · Proteus · GO P1)"
 campaigns: [campaign_atlantis_genesis]
-mission: mission_m0_atlantis_genesis_planning   # completed; next = M-1a + M-1c (opus) on GO
-persona: proteus   # PROPOSED (Nereus alternative) — ruled at the gate
+mission: mission_m1a_exemplar_hygiene   # queued (∥ mission_m1c_linkml_controls); M-0 completed
+persona: proteus   # RULED 2026-10-02 (ADR-001 ratified)
 last_session: session_stanley_20261002_124712_m0_genesis_expanded (fable, operator-opened)
 created: 2026-09-23
 updated: 2026-10-02
 last_edited_by: agent_proteus
-tags: [state, atlantis, tidewatch, p0_complete]
+tags: [state, atlantis, tidewatch, p1_open]
 ---
 
 # STATE — Atlantis.aDNA
 
 ## Resume-Here
 
-1. `CLAUDE.md` (identity widened per ADR-002; persona *proposed*; standing orders incl. new SO-9).
+1. `CLAUDE.md` (identity widened per ADR-002; persona Proteus ruled; standing orders incl. new SO-9).
 2. The charter (re-cut M-0): `how/campaigns/campaign_atlantis_genesis/campaign_atlantis_genesis.md` → the roster
    `artifacts/mission_roster_p1_p5.md`.
-3. The three ADRs in `who/governance/` (all `proposed`, 4-field blocks empty).
+3. The three ADRs in `who/governance/` (all **ratified 2026-10-02**).
 4. The exemplar still runs and its self-test is green: `what/exemplars/gulf_karenia_brevis/README.md`.
 
 ## ⏭ QUEUED — Next Live Session
 
-**Gate first.** The P0-exit gate is the operator's: sign ADR-000/001/002 (decision · ratified-by · date · status),
-pick the persona (Proteus / Nereus), and say **GO P1** — or not. Nothing below opens without it (SO-1).
+**P0 gate MET 2026-10-02** (ADR-000/001/002 ratified · Proteus · GO P1 — operator, `AskUserQuestion`). **P1 is open.**
 
-**On GO → M-1a + M-1c in parallel (opus), then M-1b, then M-1d.** Cards: `missions/mission_m1a_exemplar_hygiene.md`
+**M-1a + M-1c in parallel (opus), then M-1b, then M-1d.** Cards: `missions/mission_m1a_exemplar_hygiene.md`
 (40–60 kT) · `mission_m1c_linkml_controls.md` (60–90 kT) · `mission_m1b_atlantis_core_extraction.md` (120–180 kT) ·
 `mission_m1d_fork_skill_and_registries.md` (80–120 kT).
 
 **Next Session Prompt (self-contained, M-1a):**
 
-> You are Proteus in `~/aDNA/Atlantis.aDNA`. P0 closed on the operator's GO (check `who/governance/adr_00*.md` carry
-> signed 4-field blocks; if not, stop and say so). Run **M-1a — exemplar hygiene** at **opus**: read STATE → the card →
+> You are Proteus in `~/aDNA/Atlantis.aDNA`. P0 closed on the operator's GO 2026-10-02 (`who/governance/adr_00*.md`
+> carry ratified 4-field blocks). Run **M-1a — exemplar hygiene** at **opus**: read STATE → the card →
 > the charter's P1 exit bar → `what/exemplars/gulf_karenia_brevis/README.md` + `AGENTS.md`. Open a session lease.
 > Fix the README/config drift (log-loss stopping; 1000 SHAP background rows; three streams), add sha256 fetch
 > summaries for all three sources, add `pyproject.toml`, make `gauges.*.lever` read by code or remove it, replace
@@ -54,7 +53,7 @@ pick the persona (Proteus / Nereus), and say **GO P1** — or not. Nothing below
 
 ## Active blockers
 
-- **`#needs-human` P0-exit gate** — the operator signs the ADRs, rules the persona, opens P1. Nothing else is blocked.
+- None. The P0 gate was met 2026-10-02; P1 lanes are operator-summonable at opus.
 
 ## Watch items
 
@@ -67,4 +66,4 @@ pick the persona (Proteus / Nereus), and say **GO P1** — or not. Nothing below
 
 ## Next steps
 
-1. Operator: P0-exit gate. 2. On GO: M-1a ∥ M-1c → M-1b → M-1d → **P1 gate**. 3. M-2 FKNMS → **P2 gate**.
+1. M-1a ∥ M-1c (opus) → M-1b → M-1d → **P1 gate**. 2. M-2 FKNMS → **P2 gate**. 3. Memo to Hestia: router row category text → "reference implementation".

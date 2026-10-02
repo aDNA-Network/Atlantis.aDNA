@@ -1,20 +1,21 @@
 ---
 type: adr
 adr_id: ADR-002
-title: "ADR-002 — Remit widening: Atlantis as an MPA knowledge · data-model · evidence system (PROPOSED)"
-status: proposed
+title: "ADR-002 — Remit widening: Atlantis as an MPA knowledge · data-model · evidence system (RATIFIED 2026-10-02)"
+status: ratified
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-02   # ratified at the P0-exit gate
 last_edited_by: agent_proteus
 mission: mission_m0_atlantis_genesis_planning
 campaign_id: campaign_atlantis_genesis
 supersedes: ""
 superseded_by: ""
 ratification:
-  decision: ""
-  ratified_by: ""
-  date: ""
-  status: proposed
+  decision: accepted
+  ratified_by: stanley
+  date: 2026-10-02
+  status: ratified
+  surface: AskUserQuestion (P0-exit gate, M-0 sitting)
 tags: [adr, remit, mpa, ontology, data_model, evidence_board, decentralisation, atlantis, m0]
 ---
 
@@ -22,7 +23,7 @@ tags: [adr, remit, mpa, ontology, data_model, evidence_board, decentralisation, 
 
 ## Status
 
-**Proposed** at M-0 (2026-10-02). The widening itself was accepted by the operator as a bounded choice
+**Ratified 2026-10-02** (was proposed at M-0 (2026-10-02). The widening itself was accepted by the operator as a bounded choice
 (`AskUserQuestion`, 2026-10-01: *"Accept the widening"*); this ADR is the object that choice creates, and the
 4-field block is the operator's to sign at the P0-exit gate.
 
@@ -105,9 +106,11 @@ be publishable (Git.aDNA ADR-013).
 
 ## Ratification
 
+**Ruled 2026-10-02 by the operator (stanley) at the P0-exit gate, `AskUserQuestion`:** ratified as written. Recorded verbatim; GO P1 given in the same gate.
+
 | Field | Value |
 |---|---|
-| decision | *(operator)* |
-| ratified-by | *(operator)* |
-| date | |
-| status | **proposed** |
+| decision | **accepted** |
+| ratified-by | **stanley** |
+| date | **2026-10-02** |
+| status | **ratified** |
