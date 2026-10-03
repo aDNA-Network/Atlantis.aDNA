@@ -1,15 +1,15 @@
 ---
 type: state
 status: p1_open
-phase: "P1 — Core canonisation; M-1a + M-1c complete 2026-10-02; M-1b queued, then M-1d → P1 gate"
+phase: "P1 — Core canonisation; M-1a + M-1c + M-1b-i complete 2026-10-02; M-1b-ii queued, then M-1d → P1 gate"
 campaigns: [campaign_atlantis_genesis]
-mission: mission_m1b_i_core_vitals_and_selftest   # in progress (M-1b split 2026-10-02); M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
+mission: mission_m1b_ii_core_eval_explain_board   # queued; M-1b split 2026-10-02 → M-1b-i ✅; M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
 persona: proteus   # RULED 2026-10-02 (ADR-001 ratified)
-last_session: session_stanley_20261002_162046_m1c_linkml_controls (opus)
+last_session: session_stanley_20261003_014043_m1b_i_core_vitals_selftest (opus)
 created: 2026-09-23
 updated: 2026-10-02
 last_edited_by: agent_proteus
-tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete]
+tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_complete]
 ---
 
 # STATE — Atlantis.aDNA
@@ -23,41 +23,73 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete]
 4. The exemplar is at hygiene (M-1a): `what/exemplars/gulf_karenia_brevis/README.md` §Provenance · `uv sync && .venv/bin/python -m pytest` · self-test green.
 5. The ontology is controlled (M-1c): `what/schema/atl_v0/README.md` (proof table · known limits) · `LINKML_BIN=<scratch venv>/bin what/schema/atl_v0/fixtures/controls/run_controls.sh` → ALL WORLDS AGREE (42 controls).
 6. III review goes through `iii/` in a fresh context (SO-10).
+7. The core is extracted (M-1b-i): `what/atlantis_core/README.md` · `cd what/atlantis_core && uv sync && .venv/bin/python -m pytest` (89) ·
+   `.venv/bin/python -m atlantis_core.selftest --instance ../exemplars/gulf_karenia_brevis` (all-stream, SO-7).
 
 ## ⏭ QUEUED — Next Live Session
 
-> **In progress 2026-10-02 — M-1b-i** (opus; session `session_stanley_20261003_014043_m1b_i_core_vitals_selftest`). Operator ruled at open:
-> **split M-1b** → `mission_m1b_i_core_vitals_and_selftest.md` (now) + `mission_m1b_ii_core_eval_explain_board.md` (next); fetchers = 3 real + 3 declared.
-> The original M-1b card is `superseded` (kept). The prompt below is the pre-split one, retained until M-1b-i closes.
+**M-1b-i complete 2026-10-02** (opus; AAR `missions/aar/aar_m1b_i_core_vitals_and_selftest.md`). M-1b was split by operator ruling.
+`atlantis_core` now carries registries, fetch (3 built + 3 declared protocols), grid, vitals, a direction-aware label and an
+all-stream self-test (16 planted defects caught). The exemplar's vitals are reproduced exactly except the 3 SST-lag vitals:
+`hab` counted those lags in rows across 20 missing OISST weeks, and the core counts calendar weeks (operator ruling). The III
+review returned 11 findings and all 11 are fixed. **Next: M-1b-ii** (opus). Then **M-1d** → **P1 gate** (fable, operator).
 
-**M-1c complete 2026-10-02** (opus; AAR `missions/aar/aar_m1c_linkml_controls.md`). 42 controls, three worlds agree; `iii/`
-adopted; III review PASS-WITH-FINDINGS (11/12 fixed, WI-8 carried). **Next: M-1b** (opus, carded 120–180 kT). Then **M-1d**
-(M-1b + M-1c ✅) → **P1 gate** (fable, operator).
+> ⚠ **Budget:** M-1b-i ran about +70% on main context (≈240 kT), plus about 172 kT for the reviewer. The SITREP was given at
+> the trip point and the operator ruled to fix everything. M-1b-ii's card says ~140 kT. The AAR's Change suggests carding it
+> at about 1.7× and budgeting the reviewer at the build's size. Re-carding is the operator's call.
 
-> ⚠ **Operator decision before M-1b opens — split it?** M-1c ran ≈5× its card (≈460 kT with the fresh-context reviewer;
-> AAR Finding 4). M-1b is twice M-1c's carded size and also owes an SO-10 review. Suggested split: **M-1b-i** = package
-> skeleton + `fetch/` + `grid/` + `vitals/` + `label/` + `features.yaml`/`streams.yaml`/`events.yaml` + **all-stream
-> self-test**; **M-1b-ii** = `eval/` · `explain/` · `board/` · `site/` + metrics reproduction + learner swap + `mapping.yaml`.
-> Re-carding is the operator's call; the prompt below runs M-1b whole unless told otherwise.
+**Next Session Prompt (self-contained, M-1b-ii):**
 
-**Next Session Prompt (self-contained, M-1b):**
-
-> You are Proteus in `~/aDNA/Atlantis.aDNA`. P1 is open; M-1a and M-1c are closed (2026-10-02). Run **M-1b — extract
-> `what/atlantis_core/`** at **opus** (ask the operator first whether to split it per STATE's ⚠ note). Read STATE →
-> `how/campaigns/campaign_atlantis_genesis/missions/mission_m1b_atlantis_core_extraction.md` → the charter's P1 exit bar
-> → `what/schema/atl_v0/README.md` (what the controls prove; known limits) → the exemplar `README.md` + `AGENTS.md` + `src/hab/`.
-> Open a session lease. The registries (`streams.yaml` · `features.yaml` · `events.yaml`) are `AtlDocument`s: start from
-> `what/schema/atl_v0/fixtures/controls/pos_exemplar_gulf_karenia_brevis.yaml` (already validated, values sourced) and
-> validate every registry with `linkml-validate -C AtlDocument` (scratch venv, `LINKML_BIN`; nothing installed on the node).
-> Schema changes: `run_controls.sh` must say ALL WORLDS AGREE before commit; add a control per new constraint. **SO-7:** the
-> all-stream self-test perturbs *every* stream and runs before any vitals/label commit. The exemplar re-run reproduces
-> `metrics.json` (AUROC/AUPRC to 3 dp; same n, positives, drop counts). Record a **semantic config hash** beside the
-> bytes-md5 (closes WI-7). `src/hab/` is archived in place with a pointer (SO-2); `config.yaml`/`metrics.json` stay
-> byte-stable. The board emitter is the start of WI-8 (emit the closed `AtlEvaluation` projection; keep the extras beside it).
-> Budget honestly: at >50% over, SITREP and stop. Run the III review via `iii/` in a fresh context (SO-10). Path-scoped commits;
-> AAR at `missions/aar/aar_m1b_atlantis_core_extraction.md`; card `completed` only after the AAR. Do not start M-1d.
+> You are Proteus in `~/aDNA/Atlantis.aDNA`. P1 is open; M-1a, M-1c and **M-1b-i** are closed (2026-10-02). Run **M-1b-ii —
+> `atlantis_core` eval · explain · board · site** at **opus**. Read STATE → `how/campaigns/campaign_atlantis_genesis/missions/mission_m1b_ii_core_eval_explain_board.md`
+> → the M-1b-i AAR (Findings 1 and 3) → `what/atlantis_core/README.md` → the exemplar's `src/hab/{train,explain,whatif,export_site_data,build_site}.py`
+> (being replaced) and `outputs/metrics.json`. Open a session lease.
+>
+> Port into `atlantis_core`:
+> - `eval/`: split from `atlantis.yaml`; alert budgets, lead time, calibration and climatology baseline; ablations from vital
+>   groups and the stream's `surveillance_channel`; rolling origin; the sensitivity threshold. The learner is a config field.
+> - `explain/`: interventional SHAP, the additivity check, tags from `features.yaml`. What-if scenarios are config.
+> - `board/`: emits the closed `AtlEvaluation` projection (validate it like `pos_exemplar_gulf_karenia_brevis.yaml`) with the
+>   extras beside it (WI-8).
+> - `site/`: the template with all copy parameterised.
+>
+> **Honour the R7 obligation** (`inst.obligations`): refit the discharge climatology per rolling-origin fold, and assert it in a test.
+>
+> **Reproduction bar (operator ruling):**
+> - `hab` still reproduces `metrics.json` (0.8941 / 0.5473).
+> - The core run uses calendar-correct SST lags. It lands as a **new board version** with the delta named (an in-memory refit
+>   at M-1b-i gave about 0.8938 / 0.5388) and the same n, positives and drop counts.
+> - The 2026-09-23 entry and `metrics.json` stay. Record `semantic_hash` beside the bytes-md5, which closes WI-7.
+>
+> **Also:**
+> - Run one learner swap (LightGBM or logistic) on the core's vitals and record it as T2 evidence.
+> - Write `how/templates/template_mapping_atl.yaml`.
+> - Archive `src/hab/` in place with a pointer (SO-2), keeping `config.yaml` and `metrics.json` byte-stable.
+> - SO-7: run `python -m atlantis_core.selftest` before any vitals or label commit.
+>
+> Budget honestly: at >50% over, SITREP and stop. Run the III review via `iii/` in a fresh context (SO-10). Make path-scoped
+> commits. File the AAR at `missions/aar/aar_m1b_ii_core_eval_explain_board.md`; the card goes `completed` only after it.
+> Do not start M-1d.
 
 ## What's in place
+
+### M-1b-i (2026-10-02 — 5 commits `67c602b`…`767ea73` + close)
+
+- **The package**, `what/atlantis_core/` (89 tests, offline):
+  - `config` (with `semantic_hash`) · `registry` R1–R7, the cross-file checks that linkml-validate can't make;
+  - `grid`: rules, polygons/WDPA, cells;
+  - `fetch`: ArcGIS, ERDDAP and NWIS built; NDBC, OBIS, GBIF and CRW declared;
+  - `vitals`: the whitelisted grammar and its evaluator, with calendar lags;
+  - `label`: above/below with both drop counts;
+  - **`selftest`**: C0–C7, two patients, a gap world, the row filters in the invariance set, and the horizon checked from
+    inside. 16 planted defects are each caught by name.
+- **The exemplar as an instance:** `streams.yaml` · `features.yaml` (25 `AtlVital`s) · `events.yaml` all pass linkml-validate
+  and the committed JSON Schema. `atlantis.yaml` is drift-guarded against `config.yaml`.
+- **Finding of record:** `hab`'s SST lags were counted in rows across 20 missing OISST weeks. That is not leakage; it touches
+  87–133 train rows, and fixing it moves AUPRC 0.547 → 0.539. The operator ruled calendar-correct.
+- **Also found:** a climatology normal is a whole-era statistic (C6 reports it). The exemplar's discharge era overlaps the 2016
+  rolling fold, so R7 records an obligation to refit per fold.
+- **III review:** PASS-WITH-FINDINGS, 11/11 fixed; learning store C-005…C-007.
 
 ### M-1c (2026-10-02 — 6 commits `885b8a7`…)
 
@@ -84,7 +116,7 @@ adopted; III review PASS-WITH-FINDINGS (11/12 fixed, WI-8 carried). **Next: M-1b
 
 ## Active blockers
 
-- None. M-1b is operator-summonable at opus. The split question (⚠ above) is the operator's.
+- None. M-1b-ii is operator-summonable at opus. Re-carding its budget (⚠ above) is the operator's call.
 
 ## Watch items
 
@@ -94,14 +126,17 @@ adopted; III review PASS-WITH-FINDINGS (11/12 fixed, WI-8 carried). **Next: M-1b
 - WI-4 — `aDNA.aDNA` ADR-062 (LinkML adoption) is still `proposed`; `atl_v0` cites it as preferred-but-optional. If it is declined, the schema stays conformant as "another language" and the controls still run.
 - WI-5 — `Datasets.aDNA` provenance-contract seam open (ASOAtlas memo 2026-09-25 unanswered); Atlantis co-signs after the gate (`how/backlog/idea_cosign_datasets_provenance_contract.md`).
 - ~~WI-6~~ **closed 2026-10-02 (M-1a)** — README/config drift fixed; board entry already followed the outputs.
-- WI-7 — `metrics.json → config_hash` is a bytes-md5 and the recorded `e9dea88254` matches no committed `config.yaml` (training-time file had `shap.background_n: 2000`). Explanation of record: exemplar README §Provenance. Closes when M-1b's `atlantis_core` records a semantic hash alongside.
+- WI-7 — `metrics.json → config_hash` is a bytes-md5 and the recorded `e9dea88254` matches no committed `config.yaml` (training-time file had `shap.background_n: 2000`). Explanation of record: exemplar README §Provenance. `atlantis_core.semantic_hash` exists and is tested (M-1b-i); closes when M-1b-ii records it beside the bytes-md5.
 - WI-8 — The board entry's embedded `evaluation` is **not** a closed `AtlEvaluation` (extra keys: `event`, `patient`, `modelling_*`,
   `dropped_*`, `n_trees`, `n_vitals`, `vital_groups`, `sensitivity`, a `shap_summary` object; pins carry `artifact`). The `§11`
   limitations label was hand-fixed at M-1c with a provenance note. Closes when M-1b's board emitter / M-1d's BOARD generator emits the
   validated projection (= `pos_exemplar_gulf_karenia_brevis.yaml`'s evaluation) with the extras beside it.
+- WI-10 — `metrics.json → rolling_origin`: the 2015→2016 fold scores 2016 with a discharge normal (1990–2016) that contains
+  2016 (M-1b-i AAR Finding 3). It is a diagnostic panel, not the headline. Note it on the board when M-1b-ii's new version lands;
+  `atlantis_core` R7 makes the refit an obligation.
 - WI-9 — Memo candidates after the gate (peer vaults read-only): ASOAtlas — greedy `sed` in `run_controls.sh`, untyped-postcondition
   null hole, Python `$` vs trailing newline; Rosetta (`aDNA.aDNA` ADR-062) — the same two as LinkML idiom notes.
 
 ## Next steps
 
-1. ~~M-1a~~ ✅ → ~~M-1c~~ ✅ → M-1b (opus; split?) → M-1d → **P1 gate**. 2. M-2 FKNMS → **P2 gate**. 3. Memo to Hestia: router row category text → "reference implementation".
+1. ~~M-1a~~ ✅ → ~~M-1c~~ ✅ → ~~M-1b-i~~ ✅ → M-1b-ii (opus) → M-1d → **P1 gate**. 2. M-2 FKNMS → **P2 gate**. 3. Memo to Hestia: router row category text → "reference implementation".

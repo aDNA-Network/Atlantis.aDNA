@@ -100,7 +100,7 @@ contract v0 exists as a checklist a stranger could satisfy from four files · P1
 P2 pick named (FKNMS, ruled 2026-10-01). **Gate MET 2026-10-02:** ADR-000/001/002 ratified · persona Proteus · **GO P1** (operator, `AskUserQuestion`).
 
 ### P1 — Core canonisation (opus lanes, fable review)
-M-1a exemplar hygiene · M-1b `atlantis_core` extraction (feature registry · direction-aware label · polygon grid ·
+M-1a exemplar hygiene · M-1b `atlantis_core` extraction (split 2026-10-02: M-1b-i core + self-test ✅ · M-1b-ii eval/explain/board/site) (feature registry · direction-aware label · polygon grid ·
 **all-stream self-test** · board emitter) · M-1c `atl_v0` controls · M-1d fork skill + pipeline lattice + dataset-pair
 migration + contribution guide + BOARD generator.
 **Exit bar:** a fresh instance forks from templates alone, in one sitting, self-test green before any real data is
@@ -155,7 +155,9 @@ AAR · successor cards. **Exit bar:** AAR in this file; Atlantis joins the fleet
 
 **P1 open — P0 gate MET 2026-10-02.** ADR-000/001/002 ratified, persona Proteus, GO P1 given by the operator at the
 gate. **M-1a complete 2026-10-02** (exemplar hygiene; AAR filed). **M-1c complete 2026-10-02** (`atl_v0` controls: 42, three
-worlds agree; `iii/` adopted, III review PASS-WITH-FINDINGS; AAR filed). Next: M-1b (opus), then M-1d → P1 gate.
+worlds agree; `iii/` adopted, III review PASS-WITH-FINDINGS; AAR filed). **M-1b split** (operator, 2026-10-02) → **M-1b-i complete
+2026-10-02** (`atlantis_core` registries · fetch · grid · vitals · label · all-stream self-test; hab's SST row-lag defect found,
+calendar-correct ruled; III 11/11 fixed; AAR filed). Next: M-1b-ii (opus), then M-1d → P1 gate.
 
 ## AAR (campaign — filled at P5)
 

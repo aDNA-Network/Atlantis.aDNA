@@ -1,5 +1,35 @@
 # CHANGELOG — Atlantis.aDNA
 
+## 2026-10-02 — v0.4.0 · M-1b-i `atlantis_core` skeleton + all-stream self-test (P1 lane 3 of 5; M-1b split)
+
+- **M-1b split by operator ruling** (after M-1c Finding 4). The original card is `superseded` and kept.
+  - **M-1b-i** (this) covers registries · fetch · grid · vitals · label · the self-test.
+  - **M-1b-ii** covers eval · explain · board · site · reproduction · learner swap · mapping · archiving `src/hab/`.
+- **M-1b-i complete** (opus): AAR `how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m1b_i_core_vitals_and_selftest.md`.
+  - **`what/atlantis_core/`** (89 tests, offline):
+    - `config` + `semantic_hash` · `registry` R1–R7 (cross-file refs, grammar, windows, lever owner, engine specs, label
+      direction↔signal, climatology eras vs val and rolling folds);
+    - `grid`: rules · polygons/WDPA · cells;
+    - `fetch`: ArcGIS · ERDDAP · NWIS built; NDBC · OBIS · GBIF · CRW declared (operator ruling: 3 + 3);
+    - `vitals`: a whitelisted transform grammar and an evaluator with calendar lags;
+    - `label`: above/below, both drops, refuses unlabelled kept rows.
+  - **All-stream self-test (SO-7)** checks C0–C7 on every registered stream. The synthetic world has two patients (one
+    isolable), gaps, and the real ingest path; the row filters are in the invariance set; the horizon is checked from inside.
+    C6 reports the climatology-era dependence. **16 planted defects are each caught by name.**
+  - **The exemplar as an instance:** `streams.yaml` · `features.yaml` (25 vitals) · `events.yaml`. linkml-validate and the
+    committed JSON Schema PASS, and `run_controls.sh` still reports ALL WORLDS AGREE (42). `atlantis.yaml` is drift-guarded
+    against `config.yaml`.
+  - **Equivalence:** grid, 22/25 vitals, label, drops and report are exact.
+  - **Finding of record:** `hab` counted SST lags in rows across 20 missing OISST weeks (not leakage). The defect touches
+    87–133 train rows, and the in-memory refit moves AUPRC 0.5473 → 0.5388. **Operator: calendar-correct.** M-1b-ii lands it
+    as a new board version, and `metrics.json` stays byte-stable.
+  - **R7 obligation:** the discharge era overlaps the 2016 rolling fold, so the core must refit per fold (WI-10).
+  - **III review** (fresh context via `iii/`): PASS-WITH-FINDINGS, 6 major + 5 minor, **11/11 fixed**. Learning store
+    C-005…C-007 (degenerate synthetic fixture · one-sided window control · invariance on the target but not the filters).
+  - **Budget:** ≈ +70% main context. The SITREP was given at the trip point and the operator ruled to fix everything.
+- Schema README known limits 10–11 (a vital that reads no stream · cross-file refs) · STATE: M-1b-ii queued with a
+  self-contained prompt.
+
 ## 2026-10-02 — v0.3.0 · M-1c `atl_v0` controls complete (P1 lane 2 of 4)
 
 - **M-1c complete** (opus) — AAR `how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m1c_linkml_controls.md`. Operator rulings at open: SO-9's ≥ 1 alert budget enforced now; `geometry_ref` = denylist of literals.
