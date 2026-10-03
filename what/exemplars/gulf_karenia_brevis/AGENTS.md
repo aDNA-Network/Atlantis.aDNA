@@ -27,14 +27,15 @@ pipeline from scratch takes < 1 h on a laptop, most of it waiting on the OISST s
 |---|---|
 | `README.md` | results, run order, design decisions, caveats |
 | `config.yaml` | threshold · horizon · regions (lat/lon rules, `ast`-whitelist parsed) · gauges (`lever:` flag → site tag) · split years · XGBoost + SHAP settings. **Byte-hashed into `metrics.json → config_hash`; see README §Provenance before editing.** |
-| `streams.yaml` · `features.yaml` · `events.yaml` · `atlantis.yaml` | the exemplar **as an atlantis_core instance** (M-1b-i, 2026-10-02): `atl_v0` registries + engine config. `atlantis.yaml` copies values from `config.yaml` (drift-guarded by `what/atlantis_core/tests/test_registry.py`). `src/hab/` stays canonical until M-1b-ii |
+| `streams.yaml` · `features.yaml` · `events.yaml` · `atlantis.yaml` | the exemplar **as an atlantis_core instance** (M-1b-i, 2026-10-02): `atl_v0` registries + engine config. `atlantis.yaml` copies values from `config.yaml` (drift-guarded by `what/atlantis_core/tests/test_registry.py`). `src/hab/` is archived in place since M-1b-ii-b (`src/hab/ARCHIVED.md`) |
 | `pyproject.toml` · `uv.lock` · `.python-version` | the package (`uv sync`); `requirements.txt` retired at M-1a (2026-10-02) |
 | `tests/` | `test_regions.py` — parser whitelist + the 9 frozen region counts (`python -m pytest`) |
-| `src/hab/` | `fetch_fwc` · `fetch_env` · `provenance` (fetch summaries + sha256) · `regions` · `build_features` (with `--self-test` leakage test) · `eda` · `train` (+ `--negative-control`) · `explain` · `whatif` · `export_site_data` · `build_site` |
+| `src/hab/` (**archived in place**, `ARCHIVED.md`; still the fetch path) | `fetch_fwc` · `fetch_env` · `provenance` (fetch summaries + sha256) · `regions` · `build_features` (with `--self-test` leakage test) · `eda` · `train` (+ `--negative-control`) · `explain` · `whatif` · `export_site_data` · `build_site` |
 | `data/raw/` | cached downloads — three committed parquets (FWC · OISST region-daily · USGS discharge) each with a `*_fetch_summary.json` (rows · dates · sha256 · fetched_at); FWC decade layers + OISST chunk CSVs gitignored (regenerate via the fetchers) |
 | `data/processed/` | derived tables — **gitignored**, regenerate with `build_features` |
 | `outputs/` | `metrics.json` · `model.json` · `model_no_surveillance.json` · `shap_summary.json` · `whatif.json` · `eda.json` · `site_data.json` · `negative_control_auprc_stop.json` (T4 control) (`shap_test.npz` gitignored) |
-| `site/template.html` + `site/hab_crash_risk.html` | the explainer page (template + data-injected build); published as a claude.ai Artifact |
+| `site.yaml` + `site_copy.yaml` → `site/gulf_karenia_brevis_v1.html` | the explainer page through `atlantis_core.site` (board v1): what to draw · every word · the build |
+| `site/template.html` + `site/hab_crash_risk.html` | the v0 page (`hab`'s template + data-injected build); published as a claude.ai Artifact; kept byte-stable |
 
 Dataset notes (vault-level, Atlantis): `what/datasets/dataset_fwc_hab_karenia.md` · `what/datasets/dataset_hab_env_covariates.md`.
 

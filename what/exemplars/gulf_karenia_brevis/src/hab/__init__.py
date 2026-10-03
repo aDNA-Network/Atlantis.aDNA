@@ -1,4 +1,6 @@
-"""hab_crash_risk — Karenia brevis bloom-onset early warning (sepsis analog)."""
+"""hab_crash_risk — Karenia brevis bloom-onset early warning (sepsis analog).
+
+ARCHIVED IN PLACE 2026-10-03 (M-1b-ii-b): superseded by what/atlantis_core; see src/hab/ARCHIVED.md for what still runs."""
 from pathlib import Path
 import yaml
 

@@ -6,8 +6,8 @@ and which inputs drove that score?
 
 **Why the sepsis framing.** Clinical early-warning models score a trajectory of vitals against a fixed alert budget and
 report lead time. Both ideas transfer: score the trend, not the level; evaluate precision/recall at the alert rate the
-monitoring programme can absorb. The explainer site (`site/hab_crash_risk.html`) walks the whole thing, including where the
-analogy breaks.
+monitoring programme can absorb. The explainer site walks the whole thing, including where the analogy breaks: `site/gulf_karenia_brevis_v1.html`
+(board v1, built by `atlantis_core.site`) beside the original `site/hab_crash_risk.html` (v0, archived `hab`).
 
 ## Results (S329 run, 2026-09-23)
 
@@ -42,6 +42,21 @@ Explainer site: `site/hab_crash_risk.html` — published 2026-09-23 as a claude.
 
 ## Run order
 
+The exemplar is an `atlantis_core` instance; `src/hab/` is archived in place (`src/hab/ARCHIVED.md`).
+
+```
+cd ../../atlantis_core && uv sync && I=../exemplars/gulf_karenia_brevis
+.venv/bin/python -m atlantis_core.selftest --instance $I   # SO-7: the all-stream leakage test
+.venv/bin/python -m atlantis_core.run --instance $I        # → outputs/atlantis_core/ (+ data/processed/atlantis_core/, gitignored) ~7 min
+.venv/bin/python -m atlantis_core.board --instance $I --version 1 --run-date 2026-10-02 --vs 2026-09-23_gulf_karenia_brevis_v0
+.venv/bin/python -m atlantis_core.site --instance $I       # → site/gulf_karenia_brevis_v1.html (site.yaml + site_copy.yaml)
+```
+
+### Archived — v0 reproduction (`hab`)
+
+Still the **fetch** path (the core has fetcher classes but no CLI yet), and the way to regenerate `hab`'s `data/processed/`
+for the core's port-equivalence tests and the v0 page:
+
 ```
 uv sync                                          # pyproject.toml + uv.lock → .venv (Python 3.12, pinned deps, `hab` editable)
 .venv/bin/python -m pytest                       # region-rule parser: whitelist + the 9 frozen region counts
@@ -56,7 +71,7 @@ uv sync                                          # pyproject.toml + uv.lock → 
 .venv/bin/python -m hab.explain
 .venv/bin/python -m hab.whatif
 .venv/bin/python -m hab.export_site_data
-.venv/bin/python -m hab.build_site
+.venv/bin/python -m hab.build_site               # → site/hab_crash_risk.html (v0)
 ```
 Every `hab.*` module runs from the exemplar root or from `src/`. `requirements.txt` was retired 2026-10-02 (M-1a) in favour
 of the lockfile; matplotlib was in it and never used.

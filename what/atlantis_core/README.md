@@ -126,7 +126,25 @@ it moves every budget number and would give the v0 → v1 delta a second cause.
    vital's tag. Where a stream is structurally absent (units 8 and 9 have no gauge), the flag encodes unit identity. Even
    xgboost gives ungauged units 7–19% of each discharge vital's attribution.
 
-## Not here yet (M-1b-ii-b)
+## Site (M-1b-ii-b, `site/`)
 
-`site/` (the template with all copy parameterised), `how/templates/template_mapping_atl.yaml`, and archiving `src/hab/`.
-Until then `src/hab/` stays canonical **for the site only**.
+`python -m atlantis_core.site --instance <dir>` builds the explainer page. An instance opts in with two files:
+- `site.yaml` says what to draw: the board entry the page must agree with, group colours, vital display rules, strips, the
+  trace, case rules and the map.
+- `site_copy.yaml` holds every word. Sections are HTML fragments with `{{path|fmt}}` value tokens and `{{fig:NAME}}`
+  figure tokens.
+
+`template.html` carries structure, style and generic renderers only, and `tests/test_site.py` holds it free of exemplar
+literals. The build refuses an unknown figure, an unresolved value, a missing copy key, orphaned words, and outputs that
+disagree with the cited board entry. Site data is assembled from `outputs/atlantis_core/`, `data/processed/atlantis_core/`
+and the registries, never from `hab`. The page embeds per-patient rows, so it is an instance artifact under the instance's
+data ruling; nothing it assembles goes on the board.
+
+## Mapping (M-1b-ii-b, `mapping.py`)
+
+`python -m atlantis_core.mapping --check <mapping.yaml>` is contract item 11's machine check. It holds an instance's
+mapping (from `how/templates/template_mapping_atl.yaml`) to the atl_v0 schema: five labels, edges typed by slot ranges,
+fence and stamps. `tests/test_mapping_template.py` feeds it 17 defects.
+
+`src/hab/` is archived in place (`exemplars/gulf_karenia_brevis/src/hab/ARCHIVED.md`). It still runs only to regenerate
+`hab`'s tables for the port-equivalence tests, the v0 page, and, until the core has a fetch CLI, the raw parquets.
