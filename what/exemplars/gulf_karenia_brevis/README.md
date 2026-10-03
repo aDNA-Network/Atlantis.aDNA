@@ -46,7 +46,9 @@ The exemplar is an `atlantis_core` instance; `src/hab/` is archived in place (`s
 
 ```
 cd ../../atlantis_core && uv sync && I=../exemplars/gulf_karenia_brevis
-.venv/bin/python -m atlantis_core.selftest --instance $I   # SO-7: the all-stream leakage test
+.venv/bin/python -m atlantis_core.selftest --instance $I   # SO-7: the all-stream leakage test; writes the fetch gate's receipt (gitignored)
+.venv/bin/python -m atlantis_core.fetch --instance $I --verify    # re-hash the three committed parquets: bytes == summary == streams.yaml
+.venv/bin/python -m atlantis_core.fetch --instance $I --offline   # cache hits only; without --offline a missing artifact is downloaded
 .venv/bin/python -m atlantis_core.run --instance $I        # → outputs/atlantis_core/ (+ data/processed/atlantis_core/, gitignored) ~7 min
 .venv/bin/python -m atlantis_core.board --instance $I --version 1 --run-date 2026-10-02 --vs 2026-09-23_gulf_karenia_brevis_v0
 .venv/bin/python -m atlantis_core.site --instance $I       # → site/gulf_karenia_brevis_v1.html (site.yaml + site_copy.yaml)
@@ -54,8 +56,10 @@ cd ../../atlantis_core && uv sync && I=../exemplars/gulf_karenia_brevis
 
 ### Archived — v0 reproduction (`hab`)
 
-Still the **fetch** path (the core has fetcher classes but no CLI yet), and the way to regenerate `hab`'s `data/processed/`
-for the core's port-equivalence tests and the v0 page:
+The way to regenerate `hab`'s `data/processed/` for the core's port-equivalence tests and the v0 page. Since M-1d-i the
+core's `atlantis_core.fetch` is the fetch path. `hab.fetch_*` stays runnable as the recipe that produced the committed bytes.
+A live core re-fetch has not been run against the endpoints (M-1d-i worked offline). It is not expected to be
+byte-identical, because writer and column order differ, so it would be a new pin and a new board version.
 
 ```
 uv sync                                          # pyproject.toml + uv.lock → .venv (Python 3.12, pinned deps, `hab` editable)

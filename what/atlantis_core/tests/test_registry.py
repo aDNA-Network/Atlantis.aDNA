@@ -134,3 +134,40 @@ def test_atlantis_yaml_matches_config_yaml(exemplar_dir):
     assert (a["explain"]["background_n"], a["explain"]["perturbation"], a["explain"]["interaction_rows"]) == \
            (sh["background_n"], sh["perturbation"], sh["interaction_rows"])
     assert a["streams"]["atl_stream_usgs_discharge_daily"]["lever_stations"] == levers
+
+
+# R8 (M-1d-i, contract item 5): surveillance declared, or declared absent with a reason — each defect fed.
+def _absent(i, reason="gridded-only streams; nobody chooses where to look"):
+    i.cfg["surveillance"] = {"declared": "absent", "reason": reason}
+    i.streams["atl_stream_fwc_hab_karenia"]["surveillance_channel"] = False
+    for v in i.vitals:
+        if v.get("group") == "surveillance":
+            v["group"] = "counts"
+    i.cfg["eval"]["ablations"] = []
+    i.cfg["eval"].pop("surveillance_only", None)
+
+
+def test_r8_declared_absent_is_clean(exemplar_dir):
+    i = load_instance(exemplar_dir); _absent(i); check(i)
+
+
+@pytest.mark.parametrize("fn", [
+    lambda i: i.streams["atl_stream_fwc_hab_karenia"].__setitem__("surveillance_channel", False),   # no channel, nothing declared
+    lambda i: [v.__setitem__("group", "counts") for v in i.vitals if v.get("group") == "surveillance"],  # channel unread
+    lambda i: i.cfg["eval"].__setitem__("ablations", []),                                             # T5 ablation missing
+    lambda i: i.cfg.__setitem__("surveillance", {"declared": "maybe"}),
+    lambda i: (_absent(i), i.cfg["surveillance"].__setitem__("reason", "  ")),                         # absent, blank reason
+    lambda i: (_absent(i), i.cfg["surveillance"].pop("reason")),                                       # absent, no reason
+    lambda i: (_absent(i), i.streams["atl_stream_fwc_hab_karenia"].__setitem__("surveillance_channel", True)),
+    lambda i: (_absent(i), i.vitals[3].__setitem__("group", "surveillance")),
+    lambda i: (_absent(i), i.cfg["eval"].__setitem__("ablations", [{"drop_group": "surveillance"}])),
+    lambda i: (_absent(i), i.cfg["eval"].__setitem__("surveillance_only", "n_samples_4w")),
+])
+def test_r8_bites(exemplar_dir, fn):
+    assert "R8" in _mutate(exemplar_dir, fn)
+
+
+def test_r8_outside_semantic_hash(exemplar_dir):
+    a = load_instance(exemplar_dir); h = semantic_hash(a)
+    a.cfg["surveillance"] = {"declared": "present"}
+    assert semantic_hash(a) == h

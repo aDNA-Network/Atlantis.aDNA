@@ -15,6 +15,10 @@ rule). It cannot see across files or into the transform grammar. This does:
   R7  every climatology era ends before validation starts (a training-era normal must not reach val/test weeks), and
       before the first rolling-origin TEST year — unless `climatology_policy.rolling_origin: refit_per_fold` is declared,
       which is an obligation on eval (M-1b-ii) recorded in `inst.obligations`, not a waiver
+  R8  the surveillance channel is declared or declared absent (contract item 5, T5; M-1d-i). Present: a stream with
+      `surveillance_channel: true`, a vital in `group: surveillance` that reads one, and an `eval.ablations` entry dropping
+      that group. Absent: `atlantis.yaml → surveillance: {declared: absent, reason: <non-blank>}`, and then no stream claims
+      the channel, no vital sits in the group, and eval names no surveillance ablation or surveillance-only comparator
 
 Raises RegistryError listing every failure, not just the first.
 """
@@ -115,5 +119,30 @@ def check(inst) -> None:
             else:
                 errs.append(f"R7 {sid}: era ends {era[1]} but rolling-origin folds test {hit} — declare "
                             f"climatology_policy.rolling_origin: refit_per_fold, or end the era earlier")
+    # R8
+    surv = cfg.get("surveillance") or {}
+    s_streams = sorted(sid for sid, s in inst.streams.items() if s.get("surveillance_channel") is True)
+    s_vitals = [v for v in inst.vitals if v.get("group") == "surveillance"]
+    ev_cfg = cfg.get("eval") or {}
+    s_ablation = any(a.get("drop_group") == "surveillance" for a in ev_cfg.get("ablations", []) or [])
+    if surv.get("declared") not in (None, "absent", "present"):
+        errs.append(f"R8 surveillance.declared {surv.get('declared')!r} is not absent | present")
+    elif surv.get("declared") == "absent":
+        if not (isinstance(surv.get("reason"), str) and surv["reason"].strip()):
+            errs.append("R8 surveillance declared absent without a non-blank reason")
+        if s_streams:
+            errs.append(f"R8 surveillance declared absent, but {s_streams} declare surveillance_channel: true")
+        if s_vitals:
+            errs.append(f"R8 surveillance declared absent, but {[v['vital_id'] for v in s_vitals]} sit in group surveillance")
+        if s_ablation or ev_cfg.get("surveillance_only"):
+            errs.append("R8 surveillance declared absent, but eval names a surveillance ablation or surveillance_only comparator")
+    else:
+        if not s_streams:
+            errs.append("R8 no stream declares surveillance_channel: true — declare one, or set "
+                        "atlantis.yaml → surveillance: {declared: absent, reason: …}")
+        elif not any(v.get("stream_ref") in s_streams for v in s_vitals):
+            errs.append(f"R8 {s_streams} declare the surveillance channel, but no vital in group surveillance reads them")
+        if s_streams and not s_ablation:
+            errs.append("R8 a surveillance channel is declared, so eval.ablations must drop the surveillance group (T5)")
     if errs:
         raise RegistryError("registry check failed:\n  " + "\n  ".join(errs))

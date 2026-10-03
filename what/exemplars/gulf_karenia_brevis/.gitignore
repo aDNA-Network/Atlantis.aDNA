@@ -5,3 +5,5 @@ data/raw/ndbc/
 outputs/*.npz
 __pycache__/
 *.pyc
+# M-1d-i: the fetch gate's local receipt (re-earned by the self-test; no data needed)
+outputs/atlantis_core/selftest_receipt.json

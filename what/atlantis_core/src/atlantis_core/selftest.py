@@ -39,6 +39,7 @@ Equality is exact (NaN == NaN). KNOWN LIMITS — what this test does not prove:
 from __future__ import annotations
 
 import argparse, copy, sys
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -341,14 +342,62 @@ def run(inst: Instance, verbose: bool = True) -> dict:
     return res
 
 
+# -- the receipt (M-1d-i) ---------------------------------------------------------------------------------------------
+# Contract item 6: the self-test is green BEFORE any real data is fetched. A green CLI run writes this receipt; the fetch
+# CLI refuses without one whose semantic_hash equals the current config's (a vitals/label/grid change invalidates it).
+# It is a local gate, not an artifact (gitignored); anyone can re-earn it, because the self-test needs no data.
+RECEIPT = "outputs/atlantis_core/selftest_receipt.json"
+
+
+def write_receipt(inst: Instance, res: dict) -> Path:
+    import json
+    from datetime import datetime, timezone
+    from atlantis_core import __version__
+    from atlantis_core.config import semantic_hash
+    out = inst.root / RECEIPT
+    out.parent.mkdir(parents=True, exist_ok=True)
+    rec = {"receipt": "atlantis_core.selftest", "passed": True, "semantic_hash": semantic_hash(inst),
+           "core_version": __version__, "streams": sorted(inst.streams), "n_vitals": res["vitals"],
+           "patients": res["patients"], "horizon": int(inst.event["horizon"]),
+           "passed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
+    tmp = out.with_suffix(".tmp"); tmp.write_text(json.dumps(rec, indent=1) + "\n"); tmp.rename(out)
+    return out
+
+
+def receipt_problem(inst: Instance) -> str | None:
+    """None if a green receipt for THIS config exists; else why not (the fetch gate's refusal)."""
+    import json
+    from atlantis_core.config import semantic_hash
+    f = inst.root / RECEIPT
+    if not f.exists():
+        return f"no self-test receipt at {RECEIPT} — run `python -m atlantis_core.selftest --instance {inst.root}` first"
+    try:
+        rec = json.loads(f.read_text())
+    except ValueError:
+        return f"{RECEIPT} is not JSON"
+    if rec.get("passed") is not True:
+        return f"{RECEIPT} does not record a pass"
+    h = semantic_hash(inst)
+    if rec.get("semantic_hash") != h:
+        return (f"{RECEIPT} is for config {rec.get('semantic_hash')!r}, the instance is now {h!r} — "
+                f"vitals, label or grid changed since the self-test; re-run it (SO-7)")
+    if sorted(rec.get("streams") or []) != sorted(inst.streams):
+        return f"{RECEIPT} covers streams {rec.get('streams')}, the instance declares {sorted(inst.streams)}"
+    return None
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--instance", required=True)
+    ap.add_argument("--no-receipt", action="store_true", help="run without writing the fetch gate's receipt")
     a = ap.parse_args(argv)
     try:
-        run(load_instance(a.instance))
+        inst = load_instance(a.instance)
+        res = run(inst)
     except LeakError as e:
         print(f"❌ {e}", file=sys.stderr); sys.exit(1)
+    if not a.no_receipt:
+        print(f"   receipt → {write_receipt(inst, res).relative_to(inst.root)} (the fetch CLI's gate, contract item 6)")
 
 
 if __name__ == "__main__":
