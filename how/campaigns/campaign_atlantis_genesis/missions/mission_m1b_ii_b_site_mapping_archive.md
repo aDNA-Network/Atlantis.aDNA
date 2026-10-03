@@ -4,7 +4,7 @@ mission_id: M-1b-ii-b
 plan_id: mission_m1b_ii_b_site_mapping_archive
 title: "M-1b-ii-b — `atlantis_core` site template (all copy parameterised) · template_mapping_atl.yaml · src/hab archived"
 owner: stanley
-status: planned
+status: in_progress
 campaign: campaign_atlantis_genesis
 campaign_id: campaign_atlantis_genesis
 phase: P1
@@ -16,9 +16,9 @@ token_budget_actual: ""
 depends_on: ['M-1b-ii-a']
 split_from: mission_m1b_ii_core_eval_explain_board
 aar_path: how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m1b_ii_b_site_mapping_archive.md
-session: TBD
+session: session_stanley_20261003_191346_m1b_ii_b_site_mapping_archive
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-03
 last_edited_by: agent_proteus
 home_vault: Atlantis.aDNA
 tags: [mission, m1b_ii_b, p1, opus, atlantis_core, site, mapping, atlantis, tidewatch]
