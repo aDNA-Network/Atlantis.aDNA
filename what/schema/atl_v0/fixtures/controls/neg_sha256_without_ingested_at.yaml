@@ -1,0 +1,11 @@
+# NEGATIVE — M-1d-i (atl_v0 0.3.0). A stream that pins cached bytes (sha256) but says nothing of when they landed. A hash names
+# a fetch, so the fetch time is required. MUST FAIL, and only on this.
+# REJECTS_ON: 'ingested_at' is a required property
+# REJECTS_AT: ^/observation_streams/0$
+observation_streams:
+  - stream_id: atl_stream_example
+    modality: gauge_series
+    source_system: USGS NWIS daily values
+    source_id: parameter 00060 at one gauge
+    license: "public (USGS)"
+    sha256: 2bde141038e87db37dd682561d47e525dc546189d2ae6fbecfaf1a53bcfecfd9

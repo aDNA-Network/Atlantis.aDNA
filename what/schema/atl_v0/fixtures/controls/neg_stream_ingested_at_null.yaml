@@ -1,0 +1,12 @@
+# NEGATIVE — M-1d-i (atl_v0 0.3.0). The rule's null twin: a bare YAML `ingested_at:` (→ null) beside a sha256. The optional slot
+# is typed ["string","null"], so only the rule's all_of arm refuses this (M-1c Finding 1 idiom). MUST FAIL, and only on this.
+# REJECTS_ON: None is not of type 'string'
+# REJECTS_AT: ^/observation_streams/0/ingested_at$
+observation_streams:
+  - stream_id: atl_stream_example
+    modality: gauge_series
+    source_system: USGS NWIS daily values
+    source_id: parameter 00060 at one gauge
+    license: "public (USGS)"
+    sha256: 2bde141038e87db37dd682561d47e525dc546189d2ae6fbecfaf1a53bcfecfd9
+    ingested_at:

@@ -545,6 +545,14 @@
         "AtlObservationStream": {
             "additionalProperties": false,
             "description": "One source of observations with Ingest-Rule-5 provenance and a content hash. The stream is the unit of fetch, cache, licence and drift detection. Observations themselves are a table shape (observation_long, type-vocabulary proposal) and never enter Atlantis.",
+            "if": {
+                "properties": {
+                    "sha256": {}
+                },
+                "required": [
+                    "sha256"
+                ]
+            },
             "properties": {
                 "authority": {
                     "description": "The vocabulary the stream's variable is named in: CF standard name, WoRMS AphiaID, Darwin Core term.",
@@ -575,9 +583,12 @@
                     ]
                 },
                 "ingested_at": {
-                    "description": "Ingest Rule 5: when the instance fetched it.",
+                    "description": "Ingest Rule 5: when the instance fetched it. Optional from 0.3.0 (M-1d-i operator ruling): a stream is DECLARED before its first fetch (contract item 6 \u2014 the self-test runs before any real data), and a declared stream has no fetch time to state. Required once the stream carries a sha256 (class rule on AtlObservationStream).",
                     "format": "date-time",
-                    "type": "string"
+                    "type": [
+                        "string",
+                        "null"
+                    ]
                 },
                 "license": {
                     "description": "SPDX or the agency's terms string.",
@@ -680,9 +691,23 @@
                 "modality",
                 "source_system",
                 "source_id",
-                "ingested_at",
                 "license"
             ],
+            "then": {
+                "properties": {
+                    "ingested_at": {
+                        "allOf": [
+                            {
+                                "format": "date-time",
+                                "type": "string"
+                            }
+                        ]
+                    }
+                },
+                "required": [
+                    "ingested_at"
+                ]
+            },
             "title": "AtlObservationStream",
             "type": "object"
         },
@@ -1043,6 +1068,6 @@
     },
     "title": "atl_ontology_v0",
     "type": "object",
-    "version": "0.2.0"
+    "version": "0.3.0"
 }
 

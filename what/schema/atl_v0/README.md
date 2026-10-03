@@ -1,22 +1,22 @@
 ---
 type: schema_pack
 doc_id: atl_schema_v0_readme
-title: "what/schema/atl_v0/ — the Atlantis `atl_` ontology, v0 (draft · 42 controls under three worlds)"
+title: "what/schema/atl_v0/ — the Atlantis `atl_` ontology, v0 (draft · 45 controls under three worlds)"
 status: draft
-version: 0.2.0
+version: 0.3.0
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-03
 last_edited_by: agent_proteus
-mission: mission_m1c_linkml_controls   # authored at mission_m0_atlantis_genesis_planning
+mission: mission_m1d_i_fork_and_conformance   # 0.3.0; controlled at mission_m1c_linkml_controls; authored at mission_m0_atlantis_genesis_planning
 authoring_idiom: "LinkML (aDNA.aDNA ADR-062, proposed — preferred-but-optional)"
 precedent: ASOAtlas.aDNA/what/schema/aso_v0/
 validation:
-  run_at: 2026-10-02   # M-1c
+  run_at: 2026-10-03   # M-1d-i (0.3.0); M-1c 2026-10-02
   toolchain: "scratch uv venv · Python 3.12 · linkml 1.11.1 · jsonschema[format] + rfc3339-validator (nothing installed on the node; LINKML_BIN)"
   linkml_lint: "0 errors · 32 warnings (31 `recommended` — missing description on part/container slots; 1 `canonical_prefixes` — UCUM namespace) — accepted at v0"
   gen_json_schema: "gen-json-schema --closed (tree_root AtlDocument) → atl_ontology_v0.schema.json COMMITTED, draft 2019-09, 18 $defs; byte-equality with a fresh generation is checked every run"
-  controls: "42 — 3 positive · 39 negative (19 at build + 23 from the III review); each negative fails ONLY on its REJECTS_ON regex AT its REJECTS_AT path, in all three worlds (linkml-validate · committed JSON desc-OFF · scratch JSON desc-ON), FORMAT_CHECKER on"
-  instrument_proven: "three deliberate sabotages each turned the run red (rule weakened · committed JSON hand-edited · a negative naming the wrong reason) + per-arm isolation: removing each of the 7 geometry/anchor arms reddens exactly its own control(s) — M-1c AAR"
+  controls: "45 — 4 positive · 41 negative (19 at build + 23 from the M-1c III review + 3 at M-1d-i for the 0.3.0 stream rule); each negative fails ONLY on its REJECTS_ON regex AT its REJECTS_AT path, in all three worlds (linkml-validate · committed JSON desc-OFF · scratch JSON desc-ON), FORMAT_CHECKER on"
+  instrument_proven: "three deliberate sabotages each turned the run red (rule weakened · committed JSON hand-edited · a negative naming the wrong reason) + per-arm isolation: removing each of the 7 geometry/anchor arms reddens exactly its own control(s) — M-1c AAR. 0.3.0 (M-1d-i): rule removed → its 2 negatives red in all three worlds; all_of arm removed → only the null twin red"
   iii_review: "PASS-WITH-FINDINGS (fresh-context reviewer via iii/ wrapper, III v0.6.0); 12 findings, 11 fixed at M-1c, 1 carried (WI-8) — M-1c AAR §III review"
   flag_proof: "Rule 4 asserted by the runner: 9 range classes, no concrete descendants"
   fit_matrix: "m1c_vocabulary_fit_matrix.md — 30 enum values; 0 bound / 30 local with reasons; Modality re-examined against GOOS EOV (live page, 36 EOVs) → stays local, EOV = v1 stream annotation"
@@ -25,7 +25,7 @@ tags: [schema, ontology, linkml, atl, atlantis, draft, m0]
 
 # `atl_v0` — the Atlantis ontology
 
-> ✅ **42 controls · three worlds · committed JSON == fresh** (M-1c, 2026-10-02). A constraint is claimed here **only**
+> ✅ **45 controls · three worlds · committed JSON == fresh** (M-1c 2026-10-02; 0.3.0 at M-1d-i 2026-10-03). A constraint is claimed here **only**
 > where a fixture in `fixtures/controls/` proves it under `linkml-validate`, the committed `atl_ontology_v0.schema.json`
 > (descendants OFF) and a scratch JSON Schema (descendants ON) — ASOAtlas rule 1. Everything else the schema *says* is
 > documentation. Status stays `draft`; what the controls do **not** prove is listed under **Known limits** below.
@@ -42,7 +42,7 @@ tags: [schema, ontology, linkml, atl, atlantis, draft, m0]
 | `atl_ontology_v0.linkml.yaml` | Five classes · seven enums · the slots an instance's registries are declared in | draft |
 | `crosswalk_external_vocabularies_v0.yaml` | Which marine authorities an `atl_` slot binds to (6 bound: WDPA · CF · UCUM · WoRMS · Darwin Core · PROV-O), which are deferred and why, and which things are *source protocols*, not vocabularies | draft |
 | `atl_ontology_v0.schema.json` | `gen-json-schema --closed` output, committed; the runner fails if it drifts | controlled |
-| `fixtures/controls/` | 3 `pos_*` · 39 `neg_*` (each with `# REJECTS_ON:` + `# REJECTS_AT:`) · `run_controls.sh` · `check_controls_json.py` · `_common_header.txt` (fixture sourcing) | controlled |
+| `fixtures/controls/` | 4 `pos_*` · 41 `neg_*` (each with `# REJECTS_ON:` + `# REJECTS_AT:`) · `run_controls.sh` · `check_controls_json.py` · `_common_header.txt` (fixture sourcing) | controlled |
 | `m1c_vocabulary_fit_matrix.md` | Every enum value × every crosswalk authority; the GOOS EOV re-examination | draft |
 
 ## The five classes, and why only five
@@ -79,11 +79,12 @@ Chosen by the three tests in `context_adna_core_ontology_workshop` (instance · 
 5. Referential integrity (does `stream_ref` resolve? does the ruling path exist?), uniqueness and cross-object
    equality are a **validator's** job, not the schema's — named here as known limits, never implied.
 
-## What the controls prove (M-1c)
+## What the controls prove (M-1c · 0.3.0 at M-1d-i)
 
 | Constraint | Positive | Negative(s) — rejected only on this, at this path | Nearest miss NOT caught |
 |---|---|---|---|
 | A lever names its owner (rule) | exemplar (S-79 lever) | `neg_lever_without_owner` · `_owner_null` · `_owner_blank` | an owner who cannot move this lever |
+| A hash names a fetch: `sha256` ⇒ `ingested_at` (rule; 0.3.0 — a stream may be **declared** before it is fetched) | `pos_stream_declared_prefetch` · exemplar (3 fetched streams) | `neg_sha256_without_ingested_at` · `neg_stream_ingested_at_null` (a blank is refused by the slot's date-time range already) | the converse — `ingested_at` without `sha256` (fetched, unpinned); contract item 3's *fetched* stage checks it (`atlantis_core.conform`) |
 | An operational claim cites its ruling (rule; SO-4) | `pos_operational_with_ruling` | `neg_operational_without_ruling` · `_ruling_null` · `_ruling_blank` | a ruling path that does not exist |
 | `claim` required (no `ifabsent` default applied) | all evaluations | `neg_missing_claim` · `neg_unknown_claim` | — |
 | `base_rate` required, in [0,1] (SO-9) | exemplar | `neg_missing_base_rate` · `neg_base_rate_gt1` | base_rate ≠ n_positives / n_test |
@@ -138,6 +139,9 @@ Named so that nobody reads them as implied:
     `stream_ref` in `features.yaml` naming a stream absent from `streams.yaml` passes. `atlantis_core.registry` (R1–R7)
     checks these across files, together with the transform grammar, the window rule and the climatology-era rule. Its
     tests plant each defect.
+12. **Declared vs fetched is a stage, not a type (0.3.0).** A stream with neither `sha256` nor `ingested_at` validates as
+    *declared*; nothing in the schema says whether an instance is past its first fetch. `atlantis_core.conform --stage
+    fetched` requires both on every stream, and that each hash equals the cache summary's.
 
 ## Validation history
 

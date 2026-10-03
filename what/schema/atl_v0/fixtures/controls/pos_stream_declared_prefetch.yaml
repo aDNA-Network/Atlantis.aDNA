@@ -1,0 +1,14 @@
+# POSITIVE — M-1d-i (atl_v0 0.3.0). A stream DECLARED before its first fetch: provenance of the source (system · id · licence ·
+# fetcher) but no sha256 and no ingested_at, because nothing has landed yet. This is the state a freshly forked instance is in
+# when its self-test runs (contract item 6). MUST VALIDATE.
+observation_streams:
+  - stream_id: atl_stream_example
+    fetcher: NDBCStdmet
+    modality: buoy_series
+    source_system: NOAA NDBC
+    source_id: station EXMP1 standard meteorological
+    authority: "CF:sea_water_temperature"
+    variable: sea_water_temperature
+    unit: Cel
+    license: "public (NOAA)"
+    surveillance_channel: false

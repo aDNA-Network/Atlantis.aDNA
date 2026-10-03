@@ -6,7 +6,8 @@
 It reads the mapping and the atl_v0 LinkML schema only — never an instance's data. Refuses: a label per class missing or
 doubled; a canonical_id that is not the class's identifier slot; a property or edge field that is not a slot of its class;
 an edge whose target is not the slot's range; a fence weaker than the required minimum; a source that a deny_path
-matches; a projected property named like a coordinate; a pointer slot projected from anything but itself; missing stamps."""
+matches; a projected property named like a coordinate; a pointer slot projected from anything but itself; missing stamps;
+an `ontology.version` pin that is not the schema's version (M-1d-i)."""
 from __future__ import annotations
 
 import argparse
@@ -52,6 +53,9 @@ def _match(path: str, pat: str) -> bool:
 
 def check(m: dict, schema: dict) -> list[str]:
     errs = []
+    ont = m.get("ontology") or {}
+    if str(ont.get("version")) != str(schema.get("version")):   # M-1d-i: a stale pin claims a schema the check did not read
+        errs.append(f"ontology.version: {ont.get('version')!r} pins a different atl_v0 than the schema checked ({schema.get('version')!r})")
     labels = m.get("labels") or []
     by_label = {}
     for lab in labels:

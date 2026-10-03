@@ -1,6 +1,7 @@
 # atl_ontology_v0.linkml.yaml — Atlantis.aDNA · the `atl_` ontology for ecosystem early warning, v0
 #
-# STATUS: draft (v0.2.0) — authored at M-0 (2026-10-02, fable); CONTROLLED at P1 M-1c (2026-10-02, opus). A constraint
+# STATUS: draft (v0.3.0) — authored at M-0 (2026-10-02, fable); CONTROLLED at P1 M-1c (2026-10-02, opus); 0.3.0 at M-1d-i
+# (2026-10-03, operator ruling): a stream may be DECLARED before it is fetched — `ingested_at` optional, and a hash ⇒ a fetch time. A constraint
 # is claimed ONLY where a control in fixtures/controls/ proves it under all three worlds of run_controls.sh
 # (linkml-validate · the committed atl_ontology_v0.schema.json, descendants OFF · a scratch JSON Schema, descendants ON).
 # The control count and the known limits are in README.md. A constraint whose docstring names no control is NOT claimed.
@@ -31,7 +32,7 @@ description: >-
   (a feature with a tag and a lineage), an event definition (threshold · direction · horizon), and an evaluation
   (the measurement, always against its base rate). Observations, labels and predictions are table shapes, not
   entities, and never cross into Atlantis.
-version: 0.2.0
+version: 0.3.0
 license: https://opensource.org/licenses/MIT
 status: draft
 
@@ -182,7 +183,7 @@ slots:
   unit:             {range: string, description: "UCUM code (Cel; /L; m3/s; 1 for dimensionless)."}
   fetcher:          {range: string, description: "The atlantis_core fetcher class or module that realises this stream (P1)."}
   captured_at:      {range: datetime, description: "Ingest Rule 5: when the source produced/last updated the data."}
-  ingested_at:      {range: datetime, required: true, description: "Ingest Rule 5: when the instance fetched it."}
+  ingested_at:      {range: datetime, description: "Ingest Rule 5: when the instance fetched it. Optional from 0.3.0 (M-1d-i operator ruling): a stream is DECLARED before its first fetch (contract item 6 — the self-test runs before any real data), and a declared stream has no fetch time to state. Required once the stream carries a sha256 (class rule on AtlObservationStream)."}
   pipeline_version: {range: string, description: "Ingest Rule 5: which fetcher version wrote the cache."}
   sha256:           {range: string, pattern: "^[a-f0-9]{64}(?!\\n)$", description: "Of the cached artifact; lowercase hex64. Required on AtlDataPin; recommended on a stream. Control: neg_sha256_not_hex64 (a 63-char hash on a data pin). Nearest miss NOT caught: a well-formed hash of the wrong bytes — only re-hashing the cache proves a pin."}
   row_count:        {range: integer, minimum_value: 0}
@@ -284,6 +285,22 @@ classes:
       fetch, cache, licence and drift detection. Observations themselves are a table shape (observation_long,
       type-vocabulary proposal) and never enter Atlantis.
     slots: [stream_id, modality, source_system, source_id, authority, variable, unit, fetcher, captured_at, ingested_at, pipeline_version, sha256, row_count, license, surveillance_channel]
+    rules:
+      - preconditions:
+          slot_conditions:
+            sha256: {value_presence: PRESENT}
+        postconditions:
+          slot_conditions:
+            ingested_at: {required: true, all_of: [{range: datetime}]}
+        description: >-
+          A hash names a fetch (0.3.0, M-1d-i). A stream that pins cached bytes says when they landed; a stream with no
+          sha256 is DECLARED (not yet fetched) and may omit ingested_at. The all_of arm is load-bearing for the same reason
+          as the lever rule's (M-1c Finding 1): the optional slot is emitted `["string","null"]`, so a bare `required`
+          lets `ingested_at:` (null) through. A blank string is already refused by the slot's own date-time range.
+          Controls: pos_stream_declared_prefetch · neg_sha256_without_ingested_at (absent) · neg_stream_ingested_at_null (null).
+          Nearest miss NOT caught: the converse — a stream with ingested_at but no sha256 (fetched, unpinned) validates;
+          contract item 3's FETCHED stage (atlantis_core.conform) requires both. Also not caught: a fetch time that
+          predates the source's captured_at, or a hash of the wrong bytes.
 
   AtlVital:
     is_a: AtlDeclared
