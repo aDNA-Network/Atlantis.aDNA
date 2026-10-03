@@ -1,0 +1,115 @@
+# atlantis.yaml — atlantis_core engine config for the Gulf K. brevis exemplar. M-1b-i, 2026-10-02.
+#
+# Values marked (= config.yaml) are COPIED from config.yaml, which stays byte-stable (its bytes are the metrics.json
+# join key, WI-7). atlantis_core/tests/test_exemplar_registries.py fails if the two drift. The registries are the
+# AtlDocuments below; this file holds what an AtlDocument cannot (shapes, columns, eras, the machine half of the label).
+registries: {streams: streams.yaml, features: features.yaml, events: events.yaml}
+
+grid:
+  kind: rules
+  unit_column: region
+  unit_dtype: int
+  units_from: atl_stream_fwc_hab_karenia      # as hab.build_features: units and weeks are those the event stream saw
+  weeks_from: atl_stream_fwc_hab_karenia
+  rules:    # (= config.yaml regions) order matters: first matching rule wins. lat/lon only.
+    - {id: 9, name: "Atlantic",                 rule: "lon >= -80.6 or (lat >= 28.0 and lon >= -81.7)"}
+    - {id: 1, name: "Panhandle",                rule: "lat >= 29.6 and lon < -84.5"}
+    - {id: 2, name: "Big Bend",                 rule: "lat >= 29.0"}
+    - {id: 3, name: "Nature Coast",             rule: "lat >= 28.4"}
+    - {id: 4, name: "Tampa Bay",                rule: "lat >= 27.6"}
+    - {id: 5, name: "Sarasota-Venice",          rule: "lat >= 27.0"}
+    - {id: 6, name: "Charlotte Harbor",         rule: "lat >= 26.6"}
+    - {id: 7, name: "Lee-Collier",              rule: "lat >= 25.9"}
+    - {id: 8, name: "Ten Thousand Islands-Keys", rule: "True"}
+
+streams:
+  atl_stream_fwc_hab_karenia:
+    shape: point
+    artifact: data/raw/fwc_hab_karenia_1970_2023.parquet
+    summary: data/raw/fwc_fetch_summary.json
+    columns: {date: sample_date, value: cells_per_l, lat: lat, lon: lon}
+    fetch:
+      url_template: "https://gis.myfwc.com/mapping/rest/services/Open_Data/Historic_Harmful_Algal_Bloom_Events_{name}/MapServer/{layer}/query"
+      fields: "OBJECTID,SAMPLE_DATE,TIME,TIMEZONE,DEPTH,LOCATION,LATITUDE,LONGITUDE,NAME,COUNT_,HAB_ID"
+      page: 2000
+      layers:   # (= config.yaml fwc_layers)
+        - {name: "1970___1979", layer: 2,  expected: 5807}
+        - {name: "1980___1989", layer: 3,  expected: 5414}
+        - {name: "1990___1999", layer: 4,  expected: 16832}
+        - {name: "2000___2006", layer: 5,  expected: 27354}
+        - {name: "2007___2014", layer: 6,  expected: 52744}
+        - {name: "2015___2023", layer: 12, expected: 87873}
+      date_field: SAMPLE_DATE
+      rename: {LATITUDE: lat, LONGITUDE: lon, COUNT_: cells_per_l, DEPTH: depth_m, LOCATION: location, NAME: species, HAB_ID: hab_id, OBJECTID: objectid}
+      filter: {species: "Karenia brevis"}
+      dropna: [date, lat, lon, cells_per_l]
+  atl_stream_oisst_region_daily:
+    shape: unit_daily
+    artifact: data/raw/oisst_region_daily.parquet
+    summary: data/raw/oisst_fetch_summary.json
+    columns: {date: date, value: sst, unit: region}
+    fetch:
+      base: "https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOisst21Agg_LonPM180.csv"
+      variable: sst
+      unit_column: region
+      zlev: 0.0
+      years: [1982, 2023]
+      chunk_years: 5
+      boxes:    # (= config.yaml region_boxes) [lat_min, lat_max, lon_min, lon_max], nearshore Gulf side
+        1: [29.6, 30.4, -87.6, -84.5]
+        2: [29.0, 30.2, -84.5, -83.0]
+        3: [28.4, 29.0, -83.4, -82.5]
+        4: [27.6, 28.4, -83.2, -82.4]
+        5: [27.0, 27.6, -83.0, -82.2]
+        6: [26.6, 27.0, -82.8, -82.0]
+        7: [25.9, 26.6, -82.6, -81.6]
+        8: [24.4, 25.9, -82.2, -80.6]
+        9: [25.0, 30.7, -80.6, -79.8]
+  atl_stream_usgs_discharge_daily:
+    shape: station_daily
+    artifact: data/raw/usgs_discharge_daily.parquet
+    summary: data/raw/usgs_fetch_summary.json
+    columns: {date: date, value: discharge_cfs, station: site}
+    stations:   # (= config.yaml gauges.*.regions) site → units it feeds; a unit's value = mean over its sites
+      "02292900": [7, 6]
+      "02296750": [6, 5]
+      "02304500": [4]
+      "02323500": [2, 3]
+      "02359170": [1]
+    fetch: {parameter: "00060", start: "1990-01-01", end: "2023-12-31", value_name: discharge_cfs, clip_negative: true,
+            sites: ["02292900", "02296750", "02304500", "02323500", "02359170"]}
+
+climatology:   # stream → [first_year, last_year] inclusive; was a literal in hab.build_features. Must end before split.val_start (R7).
+  atl_stream_oisst_region_daily: [1982, 2011]
+  atl_stream_usgs_discharge_daily: [1990, 2016]
+
+constants:
+  detect_threshold: 1000          # (= config.yaml target.detect_threshold) "present" for weeks_since_detect
+  season_period_weeks: 52.18      # was a literal in hab.build_features
+  discharge_window_days: 30       # was a literal
+  discharge_window_min_days: 20   # was a literal
+
+vitals:
+  weeks_since_cap: 104            # was a literal
+
+label:
+  event: atl_event_kbrevis_onset_100k_4w
+  signal: "weekly_max(value)"     # compared in /L against events.yaml threshold (hab compared log10(1+x) — monotone, same order)
+  presence: "weekly_count(value)" # 0 over t+1..t+H → outcome unknown
+  last_known_weeks: 4             # was a literal (ffill limit)
+
+split:   # (= config.yaml split)
+  min_train_year: 1994
+  train_end: 2016
+  val_start: 2017
+  val_end: 2019
+  test_start: 2020
+  test_end: 2023
+  rolling_origin_years: [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]
+
+selftest:   # the synthetic patient the leakage test builds (no network, no real data)
+  unit: 7                         # needs every stream: FWC point, OISST box 7, gauge 02292900
+  lat: 26.2
+  lon: -82.0
+  week: "2019-06-03"              # a Monday after every climatology era ends (R7) — see selftest docstring
+  in_era_week: "2005-06-06"       # inside both eras: the declared climatology dependence is REPORTED here

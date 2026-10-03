@@ -1,0 +1,216 @@
+# features.yaml — the exemplar's 25 vitals as an AtlDocument (atl_v0). M-1b-i, 2026-10-02.
+# Replaces hab.build_features.FEATURE_GROUPS + hab.export_site_data.FEATURE_DOC: name = the site's short label,
+# description = its words, tag/group as the site showed them. `transform` is a registry key in the atlantis_core grammar
+# (atlantis_core/vitals/grammar.py); named constants (detect_threshold, season_period_weeks, discharge_window_*) are
+# atlantis.yaml → constants; `event_threshold` is events.yaml's threshold. `lag` shifts the finished weekly signal;
+# `window` feeds rolling_max / rolling_sum / diff. `monotone` = the learner constraint (was config.yaml xgb.monotone_increasing).
+# Discharge tags: hab.export_site_data.discharge_tag() → `lever` for all three (a gauge carries lever: true); owner from the
+# pos_exemplar fixture (gauges.lever → owner). Order = column order = hab.build_features.FEATURES.
+# Season vitals point at the FWC stream because that stream defines the patient-week grid (no `calendar` modality in
+# atl_v0 — README §Known limits; v1 candidate).
+vitals:
+  - vital_id: atl_vital_log_max_t0
+    name: "max count, this week"
+    description: "log10(1+cells/L) of the highest sample in the region this week"
+    stream_ref: atl_stream_fwc_hab_karenia
+    transform: "weekly_max(log10p1(value))"
+    lag: 0
+    group: counts
+    tag: state
+    monotone: 1
+  - vital_id: atl_vital_log_max_t1
+    name: "max count, 1 wk ago"
+    description: "same, one week earlier"
+    stream_ref: atl_stream_fwc_hab_karenia
+    transform: "weekly_max(log10p1(value))"
+    lag: 1
+    group: counts
+    tag: state
+  - vital_id: atl_vital_log_max_t2
+    name: "max count, 2 wk ago"
+    description: "same, two weeks earlier"
+    stream_ref: atl_stream_fwc_hab_karenia
+    transform: "weekly_max(log10p1(value))"
+    lag: 2
+    group: counts
+    tag: state
+  - vital_id: atl_vital_log_max_t3
+    name: "max count, 3 wk ago"
+    description: "same, three weeks earlier"
+    stream_ref: atl_stream_fwc_hab_karenia
+    transform: "weekly_max(log10p1(value))"
+    lag: 3
+    group: counts
+    tag: state
+  - vital_id: atl_vital_log_med_t0
+    name: "median count, this week"
+    description: "median sample this week — is the region broadly seeded or one hot spot?"
+    stream_ref: atl_stream_fwc_hab_karenia
+    transform: "weekly_median(log10p1(value))"
+    lag: 0
+    group: counts
+    tag: state
+  - vital_id: atl_vital_log_p90_t0
+    name: "90th-pct count, this week"
+    description: "upper tail of this week's samples"
+    stream_ref: atl_stream_fwc_hab_karenia
+    transform: "weekly_p90(log10p1(value))"
+    lag: 0
+    group: counts
+    tag: state
+  - vital_id: atl_vital_roll_max_4w
+    name: "4-week peak"
+    description: "highest weekly max over the last 4 weeks"
+    stream_ref: atl_stream_fwc_hab_karenia
+    transform: "rolling_max(weekly_max(log10p1(value)))"
+    window: 4
+    group: counts
+    tag: state
+    monotone: 1
+  - vital_id: atl_vital_roll_max_8w
+    name: "8-week peak"
+    description: "highest weekly max over the last 8 weeks"
+    stream_ref: atl_stream_fwc_hab_karenia
+    transform: "rolling_max(weekly_max(log10p1(value)))"
+    window: 8
+    group: counts
+    tag: state
+  - vital_id: atl_vital_growth_1w
+    name: "1-week growth"
+    description: "change in log max vs last week (the 'trend in the vitals')"
+    stream_ref: atl_stream_fwc_hab_karenia
+    transform: "diff(weekly_max(log10p1(value)))"
+    window: 1
+    group: counts
+    tag: state
+  - vital_id: atl_vital_growth_2w
+    name: "2-week growth"
+    description: "change in log max vs two weeks ago"
+    stream_ref: atl_stream_fwc_hab_karenia
+    transform: "diff(weekly_max(log10p1(value)))"
+    window: 2
+    group: counts
+    tag: state
+  - vital_id: atl_vital_weeks_since_bloom
+    name: "weeks since last bloom"
+    description: "weeks since the region last exceeded 100k cells/L (cap 104)"
+    stream_ref: atl_stream_fwc_hab_karenia
+    transform: "weeks_since_ge(weekly_max(log10p1(value)), log10p1(event_threshold))"
+    lag: 0
+    group: counts
+    tag: state
+  - vital_id: atl_vital_weeks_since_detect
+    name: "weeks since last detection"
+    description: "weeks since the region last exceeded 1,000 cells/L (cap 104)"
+    stream_ref: atl_stream_fwc_hab_karenia
+    transform: "weeks_since_ge(weekly_max(log10p1(value)), log10p1(detect_threshold))"
+    lag: 0
+    group: counts
+    tag: state
+  - vital_id: atl_vital_weeks_since_sample
+    name: "weeks since last sample"
+    description: "how stale the vitals are"
+    stream_ref: atl_stream_fwc_hab_karenia
+    transform: "weeks_since_gt(weekly_count(value), 0)"
+    lag: 0
+    group: counts
+    tag: artifact
+  - vital_id: atl_vital_n_samples_t0
+    name: "samples this week"
+    description: "surveillance intensity — how hard we looked"
+    stream_ref: atl_stream_fwc_hab_karenia
+    transform: "weekly_count(value)"
+    lag: 0
+    group: surveillance
+    tag: artifact
+  - vital_id: atl_vital_n_samples_4w
+    name: "samples, last 4 wk"
+    description: "surveillance intensity over a month"
+    stream_ref: atl_stream_fwc_hab_karenia
+    transform: "rolling_sum(weekly_count(value))"
+    window: 4
+    group: surveillance
+    tag: artifact
+  - vital_id: atl_vital_woy_sin
+    name: "season (sin)"
+    description: "week-of-year, sine component"
+    stream_ref: atl_stream_fwc_hab_karenia
+    transform: "harmonic_sin(season_period_weeks)"
+    lag: 0
+    group: season
+    tag: proxy
+  - vital_id: atl_vital_woy_cos
+    name: "season (cos)"
+    description: "week-of-year, cosine component"
+    stream_ref: atl_stream_fwc_hab_karenia
+    transform: "harmonic_cos(season_period_weeks)"
+    lag: 0
+    group: season
+    tag: proxy
+  - vital_id: atl_vital_sst_t0
+    name: "sea-surface temp"
+    description: "OISST weekly mean over the region's nearshore box, °C"
+    stream_ref: atl_stream_oisst_region_daily
+    transform: "weekly_mean(value)"
+    lag: 0
+    group: sst
+    tag: proxy
+  - vital_id: atl_vital_sst_anom_t0
+    name: "SST anomaly"
+    description: "this week's SST minus the 1982–2011 week-of-year normal"
+    stream_ref: atl_stream_oisst_region_daily
+    transform: "anomaly(weekly_mean(value))"
+    lag: 0
+    group: sst
+    tag: proxy
+  - vital_id: atl_vital_sst_anom_t2
+    name: "SST anomaly, 2 wk ago"
+    description: "same, two weeks earlier"
+    stream_ref: atl_stream_oisst_region_daily
+    transform: "anomaly(weekly_mean(value))"
+    lag: 2
+    group: sst
+    tag: proxy
+  - vital_id: atl_vital_sst_anom_t4
+    name: "SST anomaly, 4 wk ago"
+    description: "same, four weeks earlier"
+    stream_ref: atl_stream_oisst_region_daily
+    transform: "anomaly(weekly_mean(value))"
+    lag: 4
+    group: sst
+    tag: proxy
+  - vital_id: atl_vital_sst_delta_4w
+    name: "4-week SST change"
+    description: "warming or cooling over the last month, °C"
+    stream_ref: atl_stream_oisst_region_daily
+    transform: "diff(weekly_mean(value))"
+    window: 4
+    group: sst
+    tag: proxy
+  - vital_id: atl_vital_discharge_30d_t0
+    name: "river discharge, 30 d"
+    description: "log10 mean daily discharge of the region's river gauge(s), last 30 days"
+    stream_ref: atl_stream_usgs_discharge_daily
+    transform: "at_week_end(roll_mean_days(log10p1(value), discharge_window_days, discharge_window_min_days))"
+    lag: 0
+    group: discharge
+    tag: lever
+    owner: "the release schedulers for the Caloosahatchee at S-79 (gauge 02292900, config.yaml lever: true) — the Army Corps and the South Florida Water Management District, as the exemplar page names them"
+  - vital_id: atl_vital_discharge_30d_t3
+    name: "river discharge, 30 d (3 wk ago)"
+    description: "same window ending three weeks earlier"
+    stream_ref: atl_stream_usgs_discharge_daily
+    transform: "at_week_end(roll_mean_days(log10p1(value), discharge_window_days, discharge_window_min_days))"
+    lag: 3
+    group: discharge
+    tag: lever
+    owner: "the release schedulers for the Caloosahatchee at S-79 (gauge 02292900, config.yaml lever: true) — the Army Corps and the South Florida Water Management District, as the exemplar page names them"
+  - vital_id: atl_vital_discharge_anom_t0
+    name: "discharge anomaly"
+    description: "30-day discharge minus the 1990–2016 day-of-year normal"
+    stream_ref: atl_stream_usgs_discharge_daily
+    transform: "at_week_end(anomaly(roll_mean_days(log10p1(value), discharge_window_days, discharge_window_min_days)))"
+    lag: 0
+    group: discharge
+    tag: lever
+    owner: "the release schedulers for the Caloosahatchee at S-79 (gauge 02292900, config.yaml lever: true) — the Army Corps and the South Florida Water Management District, as the exemplar page names them"

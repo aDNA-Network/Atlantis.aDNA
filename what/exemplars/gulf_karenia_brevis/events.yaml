@@ -1,0 +1,12 @@
+# events.yaml — the exemplar's event definition as an AtlDocument (atl_v0). M-1b-i, 2026-10-02.
+# Copied from the pos_exemplar fixture. The machine half of the onset rule (which signal, how far the last observation
+# is carried) is atlantis.yaml → label; this file carries the ruling in words.
+event_definitions:
+  - event_id: atl_event_kbrevis_onset_100k_4w
+    name: Karenia brevis bloom onset (≥ 100,000 cells/L within 4 weeks)
+    event_variable_stream: atl_stream_fwc_hab_karenia
+    threshold: 100000
+    unit: /L
+    direction: above
+    horizon: 4
+    onset_rule: "drop region-weeks whose last-known weekly max >= threshold (already in bloom); drop region-weeks with no sampled week in t+1..t+4 (unknown outcome)"

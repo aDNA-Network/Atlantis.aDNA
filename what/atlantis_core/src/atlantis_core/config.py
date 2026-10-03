@@ -1,0 +1,98 @@
+"""Instance loading and the semantic config hash.
+
+`atlantis.yaml` is the engine config: grid, stream shapes, climatology eras, label parameters, split, and the paths
+of the three registries. The registries are `AtlDocument`s (validated by linkml-validate; cross-referenced here).
+"""
+from __future__ import annotations
+
+import hashlib, json
+from dataclasses import dataclass, field
+from pathlib import Path
+
+import yaml
+
+from atlantis_core import registry as _registry
+
+# Sections of atlantis.yaml whose values change a trained model. `semantic_hash` covers these and the registries'
+# machine-relevant fields — never comments, ordering, prose, or SHAP/site settings (WI-7: the exemplar's bytes-md5
+# changed on a SHAP-only edit and stopped matching its metrics).
+TRAINING_SECTIONS = ("grid", "streams", "climatology", "constants", "label", "split", "learner")
+VITAL_MACHINE_FIELDS = ("vital_id", "stream_ref", "transform", "lag", "window", "monotone")
+EVENT_MACHINE_FIELDS = ("event_id", "event_variable_stream", "threshold", "direction", "horizon")
+
+
+@dataclass
+class Instance:
+    root: Path
+    cfg: dict
+    streams: dict = field(default_factory=dict)   # stream_id → AtlObservationStream dict
+    vitals: list = field(default_factory=list)    # AtlVital dicts, registry order
+    events: dict = field(default_factory=dict)    # event_id → AtlEventDefinition dict
+    declared: dict = field(default_factory=dict)  # kind → every id as written (duplicates kept, for registry R1)
+
+    @property
+    def event(self) -> dict:
+        return self.events[self.cfg["label"]["event"]]
+
+    @property
+    def vital_ids(self) -> list[str]:
+        return [v["vital_id"] for v in self.vitals]
+
+    @property
+    def feature_names(self) -> list[str]:
+        """Column names of the vitals table: the vital id without its `atl_vital_` prefix."""
+        return [feature_name(v) for v in self.vitals]
+
+    def path(self, rel: str) -> Path:
+        return (self.root / rel).resolve()
+
+    def stream_spec(self, stream_id: str) -> dict:
+        return self.cfg["streams"][stream_id]
+
+    def climatology(self, stream_id: str) -> tuple[int, int] | None:
+        era = self.cfg.get("climatology", {}).get(stream_id)
+        return (int(era[0]), int(era[1])) if era else None
+
+    def constant(self, name: str) -> float:
+        return float(self.cfg["constants"][name])
+
+
+def feature_name(vital: dict) -> str:
+    vid = vital["vital_id"]
+    return vid[len("atl_vital_"):] if vid.startswith("atl_vital_") else vid
+
+
+def load_yaml(path: Path) -> dict:
+    with open(path) as f:
+        return yaml.safe_load(f) or {}
+
+
+def load_instance(root, config_name: str = "atlantis.yaml", check: bool = True) -> Instance:
+    root = Path(root).resolve()
+    cfg = load_yaml(root / config_name)
+    inst = Instance(root=root, cfg=cfg)
+    reg = cfg["registries"]
+    docs = [load_yaml(root / reg[k]) for k in ("streams", "features", "events")]
+    inst.declared = {"stream": [], "vital": [], "event": []}
+    for d in docs:
+        for s in d.get("observation_streams", []) or []:
+            inst.streams.setdefault(s["stream_id"], s); inst.declared["stream"].append(s["stream_id"])
+        for v in d.get("vitals", []) or []:
+            inst.vitals.append(v); inst.declared["vital"].append(v["vital_id"])
+        for e in d.get("event_definitions", []) or []:
+            inst.events.setdefault(e["event_id"], e); inst.declared["event"].append(e["event_id"])
+    if check:
+        _registry.check(inst)
+    return inst
+
+
+def semantic_hash(inst: Instance) -> str:
+    """md5 (first 10 hex, same width as the exemplar's bytes hash) of a canonical JSON of the training-relevant
+    config sections + the machine fields of every vital and event. Key order, comments and prose do not move it."""
+    payload = {
+        "config": {k: inst.cfg.get(k) for k in TRAINING_SECTIONS if k in inst.cfg},
+        "vitals": [{k: v.get(k) for k in VITAL_MACHINE_FIELDS} for v in inst.vitals],
+        "events": [{k: inst.events[e].get(k) for k in EVENT_MACHINE_FIELDS} for e in sorted(inst.events)],
+    }
+    blob = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str)
+    return hashlib.md5(blob.encode()).hexdigest()[:10]

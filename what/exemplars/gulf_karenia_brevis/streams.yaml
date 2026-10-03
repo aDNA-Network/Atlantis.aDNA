@@ -1,0 +1,44 @@
+# streams.yaml — the exemplar's observation streams as an AtlDocument (atl_v0). M-1b-i, 2026-10-02.
+# Values copied from what/schema/atl_v0/fixtures/controls/pos_exemplar_gulf_karenia_brevis.yaml (sourced there, see its
+# _common_header.txt caveat on ingested_at) + the `fetcher` slot naming the atlantis_core class that realises each stream.
+# Engine shape (columns, artifact path, station→unit map) lives in atlantis.yaml → streams, keyed by stream_id.
+# Validate: linkml-validate -s what/schema/atl_v0/atl_ontology_v0.linkml.yaml -C AtlDocument streams.yaml
+observation_streams:
+  - stream_id: atl_stream_fwc_hab_karenia
+    fetcher: ArcGISMapServer
+    modality: point_count
+    source_system: FWC-FWRI HAB Monitoring Database via ArcGIS Open Data
+    source_id: Historic_Harmful_Algal_Bloom_Events (six decade layers)
+    authority: "WoRMS:233015"
+    variable: Karenia brevis
+    unit: /L
+    ingested_at: "2026-09-23T11:22:13Z"
+    sha256: 2bde141038e87db37dd682561d47e525dc546189d2ae6fbecfaf1a53bcfecfd9
+    row_count: 196024
+    license: "public (Florida public records; credit FWC-FWRI)"
+    surveillance_channel: true
+  - stream_id: atl_stream_oisst_region_daily
+    fetcher: ERDDAPGriddap
+    modality: gridded_field
+    source_system: NOAA CoastWatch ERDDAP
+    source_id: ncdcOisst21Agg_LonPM180
+    authority: "CF:sea_surface_temperature"
+    variable: sea_surface_temperature
+    unit: Cel
+    ingested_at: "2026-09-23T12:10:58Z"
+    sha256: c26b97f53854d57e61cdd7b9bbca0507504f82aed63faf716744a4963bbb7ec8
+    row_count: 127341
+    license: "public (NOAA / USGS)"
+    surveillance_channel: false
+  - stream_id: atl_stream_usgs_discharge_daily
+    fetcher: NWISDailyValues
+    modality: gauge_series
+    source_system: USGS NWIS daily values
+    source_id: parameter 00060 at five gauges (config.yaml -> gauges)
+    variable: discharge (USGS parameter 00060)
+    unit: "[cft_i]/s"
+    ingested_at: "2026-09-23T11:20:23Z"
+    sha256: 66a58af41843b4305afa968dd814854a61e6a4e263f4898b5422d8eb03a789ea
+    row_count: 61444
+    license: "public (NOAA / USGS)"
+    surveillance_channel: false
