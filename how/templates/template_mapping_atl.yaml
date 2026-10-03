@@ -1,0 +1,145 @@
+# ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# template_mapping_atl.yaml — copy to <Instance>.aDNA/mapping.yaml (M-1d's fork skill does this). Atlantis M-1b-ii-b, 2026-10-03.
+#
+# Projects an instance's atl_v0 REGISTRIES (never its data) onto the five `atl_` graph labels, with bi-temporal stamps and a
+# fence that keeps raw observations — and every per-row table shape — out. This is contract item 11
+# (how/campaigns/campaign_atlantis_genesis/artifacts/instance_contract_v0.md): a reviewer conforms an instance by reading
+# config.yaml · streams.yaml · features.yaml · mapping.yaml, never its data.
+#
+# SHAPE: the Organization §2 / Neo4j N4-MODEL `mapping.yaml` (worked reference: Dashboards.aDNA
+# what/surface/examples/battle_station_instance/mapping.yaml; non-base labels: Operations.aDNA's). Two differences, both
+# deliberate: (1) sources are AtlDocument YAML lists, not markdown frontmatter, so `source_type` is the document key and
+# `canonical_id` is the class's identifier slot; (2) the fence excludes SHAPES (tables), not named nodes.
+#
+# MACHINE-CHECKED: `python -m atlantis_core.mapping --check <mapping.yaml>` holds every label, property and edge to the
+# atl_v0 LinkML schema and the fence to its required minimum (tests/test_mapping_template.py; each check fed its defect).
+# ADMISSION: the five labels and six edge types are NOT yet in the Neo4j substrate allow-list (LABEL_KEY / REL_TYPES).
+# Loading fails loudly until a coordination memo to Neo4j.aDNA admits them — after the P1 gate (peer vaults are read-only).
+# ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+version: "0.1"                    # append-only; consumers pin it
+instance: "{{instance_slug}}"     # e.g. florida_keys_coral — stamps every node's `source` (see stamps)
+source_root: "."                  # the instance root, relative to this file
+ontology: {schema: atl_v0, version: "0.2.0", pin: "Atlantis.aDNA/what/schema/atl_v0/atl_ontology_v0.linkml.yaml"}
+
+# The ONLY files the projection may read. Each is an AtlDocument (linkml-validate -C AtlDocument passes on it).
+sources:
+  spatial_units:       [units.yaml]              # AtlSpatialUnit rows (the patients' units; geometry by pointer only)
+  observation_streams: [streams.yaml]
+  vitals:              [features.yaml]
+  event_definitions:   [events.yaml]
+  evaluations:         ["evaluations/*.yaml"]    # AtlEvaluation rows — the closed projection the board carries, metrics only
+
+include_profile:
+  name: atlantis_registries
+  projection_classes: [graph-content]
+
+# ── the fence ─────────────────────────────────────────────────────────────────────────────────────────────────────────
+# SO-3 / ADR-002 §5: observations, labels, per-patient predictions, trained binaries, partner coordinates and credentials
+# never cross. Here they also never project. The check refuses a mapping that drops any entry below.
+fence:
+  never_project:                # table shapes (Tier-3 names), never entities
+    - observation_long          # raw observations, any modality
+    - patient_grid              # the unit × time-step grid
+    - vitals_table              # derived vitals per patient-week
+    - onset_label               # labels and their drop flags
+    - scored_table              # per-patient predictions (all_scored / test_scored)
+    - shap_values               # per-patient SHAP (shap.npz); only the GREEN summary crosses, by ref
+    - model_binary              # trained models
+  deny_paths:                   # no source may match these
+    - "data/**"
+    - "**/*.parquet"
+    - "**/*.npz"
+    - "**/*.csv"
+    - "outputs/**"
+    - "site/**"
+  deny_properties:              # no projected property may carry inline geometry or coordinates
+    - lat
+    - lon
+    - latitude
+    - longitude
+    - coordinates
+    - geometry
+    - geojson
+  pointer_only: [geometry_ref, shap_summary_ref, limitations_ref, owner_ruling_ref, hypothesis_ref]
+  # fenced_ids_file: "_projection/.fenced_ids"   # optional, gitignored: canonical ids an owner withholds (partner sites)
+
+# ── bi-temporal stamps ────────────────────────────────────────────────────────────────────────────────────────────────
+# atl_v0 has no valid_from / valid_to / source slots; the projection engine writes them (N4-MODEL: supersede, never
+# overwrite). Record time and the world's time stay distinct: a stream's captured_at is when the world was observed,
+# its ingested_at when the bytes landed (for caches, the file mtime — atl_v0 fixtures header), recorded_at when the
+# registry row was written.
+stamps:
+  source: "{{instance_slug}}_project"      # engine-written on every node and edge
+  ingested_at: projection_write_time       # engine-written on every write
+  valid_from: recorded_at                  # carried from the row; a carried value wins over the engine clock
+  valid_to: on_supersession                # closed when a newer `version` of the same canonical_id projects; never DELETE
+  world_time: [captured_at]                # kept as properties, never as validity
+
+# ── labels: one per atl_ class ────────────────────────────────────────────────────────────────────────────────────────
+# properties: registry slot → node property. Nested objects (alert_budgets, lead_time, ablations) project as JSON strings.
+labels:
+  - source_type: spatial_units
+    label: AtlSpatialUnit
+    class: AtlSpatialUnit
+    canonical_id: unit_id
+    projection_class: graph-content
+    extension: {tier: 2, ontology_type: atl_spatial_unit, admitted_ref: "pending — Neo4j.aDNA allow-list memo after the P1 gate"}
+    properties: {name: name, unit_kind: unit_kind, external_id: external_id, geometry_ref: geometry_ref, time_step: time_step,
+                 tier: tier, version: version, recorded_by: recorded_by, recorded_at: recorded_at}
+  - source_type: observation_streams
+    label: AtlObservationStream
+    class: AtlObservationStream
+    canonical_id: stream_id
+    projection_class: graph-content
+    extension: {tier: 2, ontology_type: atl_observation_stream, admitted_ref: "pending — Neo4j.aDNA allow-list memo after the P1 gate"}
+    properties: {name: name, modality: modality, source_system: source_system, source_id: source_id, authority: authority,
+                 variable: variable, unit: unit, fetcher: fetcher, captured_at: captured_at, ingested_at_source: ingested_at,
+                 pipeline_version: pipeline_version, sha256: sha256, row_count: row_count, license: license,
+                 surveillance_channel: surveillance_channel, recorded_at: recorded_at}   # the slot ingested_at → ingested_at_source: the engine owns `ingested_at`
+  - source_type: vitals
+    label: AtlVital
+    class: AtlVital
+    canonical_id: vital_id
+    projection_class: graph-content
+    extension: {tier: 2, ontology_type: atl_vital, admitted_ref: "pending — Neo4j.aDNA allow-list memo after the P1 gate"}
+    properties: {name: name, description: description, transform: transform, lag: lag, window: window, group: group, tag: tag,
+                 owner: owner, hypothesis_ref: hypothesis_ref, monotone: monotone, recorded_at: recorded_at}
+  - source_type: event_definitions
+    label: AtlEventDefinition
+    class: AtlEventDefinition
+    canonical_id: event_id
+    projection_class: graph-content
+    extension: {tier: 2, ontology_type: atl_event_definition, admitted_ref: "pending — Neo4j.aDNA allow-list memo after the P1 gate"}
+    properties: {name: name, threshold: threshold, unit: unit, direction: direction, horizon: horizon, onset_rule: onset_rule,
+                 recorded_at: recorded_at}
+  - source_type: evaluations
+    label: AtlEvaluation
+    class: AtlEvaluation
+    canonical_id: evaluation_id
+    projection_class: graph-content
+    extension: {tier: 2, ontology_type: atl_evaluation, admitted_ref: "pending — Neo4j.aDNA allow-list memo after the P1 gate"}
+    properties: {split: split, n_test: n_test, n_positives: n_positives, base_rate: base_rate, auroc: auroc, auprc: auprc,
+                 brier: brier, calibration_slope: calibration_slope, climatology_auroc: climatology_auroc,
+                 climatology_auprc: climatology_auprc, alert_budgets: alert_budgets, lead_time: lead_time, ablations: ablations,
+                 learner: learner, config_hash: config_hash, shap_summary_ref: shap_summary_ref, claim: claim,
+                 owner_ruling_ref: owner_ruling_ref, limitations_ref: limitations_ref, version: version, recorded_at: recorded_at}
+    json_properties: [alert_budgets, lead_time, ablations]
+
+roles: {}
+
+# ── relationships: every ref slot in atl_v0 becomes an edge (declared, never inferred) ──────────────────────────────────
+relationships:
+  - {rel_type: PART_OF,      basis: declared, derivation: {kind: registry_ref, field: parent_unit,           source_label: AtlSpatialUnit,     target_label: AtlSpatialUnit}}
+  - {rel_type: READS,        basis: declared, derivation: {kind: registry_ref, field: stream_ref,            source_label: AtlVital,           target_label: AtlObservationStream}}
+  - {rel_type: SIGNALLED_BY, basis: declared, derivation: {kind: registry_ref, field: event_variable_stream, source_label: AtlEventDefinition, target_label: AtlObservationStream}}
+  - {rel_type: EVALUATES,    basis: declared, derivation: {kind: registry_ref, field: event_ref,             source_label: AtlEvaluation,      target_label: AtlEventDefinition}}
+  - {rel_type: ON_UNIT,      basis: declared, derivation: {kind: registry_ref, field: unit_ref,              source_label: AtlEvaluation,      target_label: AtlSpatialUnit}}
+  - {rel_type: PINS,         basis: declared, derivation: {kind: registry_ref_list, field: data_pins, item_field: stream_ref, edge_properties: [sha256],
+                                                          source_label: AtlEvaluation, target_label: AtlObservationStream}}
+
+extensions:
+  unmapped_types_expected: []
+  note: >-
+    Hypothesis-ledger rows (what/hypotheses/, P3) and feature-registry rows crossing to Atlantis are not instance objects;
+    `hypothesis_ref` stays a pointer until the ledger has a label of its own.
