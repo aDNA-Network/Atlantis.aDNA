@@ -1,0 +1,47 @@
+# site.yaml — presentation config for atlantis_core.site (M-1b-ii-b, 2026-10-03). NOT a registry and NOT in semantic_hash:
+# it changes no model and no number. Kept out of atlantis.yaml on purpose — board v1 pins atlantis.yaml's bytes-md5.
+# Every word the page shows is site_copy.yaml; this file holds only what the core template needs to draw.
+board_entry: ../../board/entries/2026-10-02_gulf_karenia_brevis_v1.json   # the page must say what this entry says (checked)
+copy: site_copy.yaml
+output: site/gulf_karenia_brevis_v1.html   # v0 (hab) stays at site/hab_crash_risk.html
+seed: 42
+beeswarm_rows: 3000           # (= config.yaml shap.site_rows_max)
+
+groups:   # features.yaml groups, in display order; colours light / dark (the v0 page's palette)
+  counts:       {label: "Counts & trajectory", color: ["#2a78d6", "#3987e5"]}
+  surveillance: {label: "Surveillance",        color: ["#eb6834", "#d95926"]}
+  season:       {label: "Season",              color: ["#1baf7a", "#199e70"]}
+  sst:          {label: "Temperature",         color: ["#eda100", "#c98500"]}
+  discharge:    {label: "Rivers",              color: ["#e87ba4", "#d55181"]}
+
+signal_display: {unit: "cells/L", style: compact, log_axis: true}   # the event signal (weekly max, raw units)
+vital_display:   # first match wins. inverse log10p1 → 10^v − 1 before formatting. style: compact | fixed1 | fixed2 | signed2 | int
+  - {match: "^(log_|roll_)", inverse: log10p1, unit: "cells/L", style: compact}
+  - {match: "^discharge_30d", inverse: log10p1, unit: "cfs", style: compact}
+  - {match: "^growth", unit: "log10", style: signed2}
+  - {match: "^sst_delta", style: signed2}
+  - {match: "^sst", unit: "°C", style: fixed1}
+  - {match: "^discharge_anom", style: signed2}
+  - {match: "^(n_samples|weeks)", style: int}
+
+station_labels:   # USGS site → short name (config.yaml gauges.*.name, before " at " / " nr ")
+  "02292900": "Caloosahatchee R"
+  "02296750": "Peace R"
+  "02304500": "Hillsborough R"
+  "02323500": "Suwannee R"
+  "02359170": "Apalachicola R"
+
+per_year_from: 1980
+map: {round_deg: 0.05, min_n: 3, bounds: {lon: [-88, -79.5], lat: [24.3, 31]}, accent_units: [9]}
+
+trace:   # one patient's chart: the event signal, then vitals (inverse-displayed), last panel drawn as bars
+  unit: 7
+  window: ["2017-06-01", "2019-03-31"]
+  panels: [signal, sst_t0, discharge_30d_t0, n_samples_t0]
+
+strips:   # risk decomposed over time; first = default. Words are site_copy.yaml strips.<key>
+  - {key: oos_2022_23,      unit: 7, window: ["2022-06-01", "2023-04-30"]}
+  - {key: oos_2021_tampa,   unit: 4, window: ["2021-01-01", "2021-12-31"]}
+  - {key: insample_2017_19, unit: 7, window: ["2017-06-01", "2019-03-31"]}
+
+cases: {lead_min: 2, p_quantile: 0.9, quiet_month: 7}

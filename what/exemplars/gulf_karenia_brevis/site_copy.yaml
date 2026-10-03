@@ -1,0 +1,344 @@
+# site_copy.yaml — every word of the exemplar's explainer page, as instance data for atlantis_core.site (M-1b-ii-b).
+# Moved verbatim from site/template.html (hab, v0) by a one-shot script; data paths renamed to the core contract.
+# HTML fragments. {{path|fmt}} binds a value from the assembled site data (fmt: 1 2 3 pct0 pct1 comma k sci label);
+# {{fig:NAME}} places a core figure whose words are figures.NAME. The template carries no copy of its own.
+title: Red Tide Early Warning
+hero:
+  pills:
+  - text: Karenia brevis · brevetoxin
+    accent: true
+  - text: XGBoost + SHAP
+  - text: Public data, 1994–2023
+  h1: A sepsis alert for the sea
+  lede: 'Hospitals score a patient''s vitals every hour and raise an alarm hours before septic shock. This page does the same for a stretch of Florida coast: it reads the last few weeks of <em>Karenia brevis</em> cell counts, water temperature, season and river flow, and asks one question — <strong>will this region tip into a fish-killing bloom within four weeks?</strong> Then it uses SHAP values to say <em>why</em>, and what that does and does not tell you about what to do.'
+  stats:
+  - v: '{{metrics.full.test.auprc|2}}'
+    l: AUPRC on 2020–23, held out
+    s: prevalence {{metrics.full.test.prevalence|2}}
+  - v: '{{metrics.full.test.auroc|2}}'
+    l: AUROC, same test years
+    s: climatology {{metrics.climatology_baseline_test.auroc|2}}
+  - v: '{{metrics.full.lead.detected_fraction|pct0}}'
+    l: of onsets flagged ahead of time at a 10% alert rate
+    s: median lead {{metrics.full.lead.median_lead_weeks|1}} wk
+  - v: '{{data.n_obs|k}}'
+    l: water samples, FWC 1970–2023
+    s: '{{metrics.features_report.modelling_rows|comma}} region-weeks modelled'
+sections:
+- id: analogy
+  nav: Analogy
+  eyebrow: The idea
+  title: Borrowing the sepsis playbook
+  body: |
+    <p>A sepsis early-warning system does not diagnose anything. It watches a trajectory — heart rate, temperature, lactate, white count — and estimates the probability that the patient deteriorates within a horizon. Two design choices make those systems work, and both transfer cleanly: <strong>score the trend, not the level</strong> (a rising lactate matters more than a high one), and <strong>evaluate at a fixed alert budget</strong>, because a ward can only chase so many alarms.</p>
+    <div class="analogy">
+      <div class="h">Sepsis model</div><div class="h">Bloom-onset model</div>
+      <div><span class="k">Patient</span>one admitted person</div><div><span class="k">Patient</span>one coastal region (nine along Florida) in one ISO week</div>
+      <div><span class="k">Vitals</span>heart rate, temperature, lactate, WBC, trend over 6–24 h</div><div><span class="k">Vitals</span>cell counts this week and the three before, growth rate, weeks since last bloom, SST anomaly, river discharge</div>
+      <div><span class="k">Event</span>sepsis / shock within 6–48 h</div><div><span class="k">Event</span>first sample ≥ 100,000 cells/L within the next 4 weeks (FWC "medium": fish kills and respiratory irritation become likely)</div>
+      <div><span class="k">Onset rule</span>patients already septic are excluded — you predict deterioration, not persistence</div><div><span class="k">Onset rule</span>regions already at bloom level are excluded for the same reason</div>
+      <div><span class="k">Evaluation</span>AUPRC, precision at an alert rate the ward can absorb, lead time before the event</div><div><span class="k">Evaluation</span>identical — plus a check that "how hard we looked" isn't doing the predicting</div>
+      <div><span class="k">Explanation</span>per-patient SHAP: which vitals pushed this score up</div><div><span class="k">Explanation</span>per-region-week SHAP, grouped into counts / season / temperature / rivers / surveillance</div>
+    </div>
+    <p>Where the analogy strains is worth saying up front, and section 11 does. The short version: patients don't flow into each other, and a hospital knows what to do when the alarm fires. Neither is true of a coastline.</p>
+- id: data
+  nav: Data
+  eyebrow: Ingredients
+  title: Three public data streams, plus the calendar
+  body: |
+    <p>Everything here is downloaded from a public endpoint by a script in the repo; nothing is hand-curated. The cell counts are the Florida Fish and Wildlife Conservation Commission's historic harmful-algal-bloom sample archive, served as ArcGIS layers by decade. Environment comes from NOAA and USGS.</p>
+    <div class="tblwrap"><table class="tbl">
+    <tr><th>Stream</th><th>Source</th><th>What it contributes</th><th class="r">Coverage</th></tr>
+    <tr><td><strong>Cell counts</strong></td><td>FWC HAB monitoring archive (ArcGIS Open Data, six decade layers)</td><td>Date, position, depth, <em>K. brevis</em> cells per litre for every water sample</td><td class="r num">{{data.n_obs|comma}} samples · 1970–2023</td></tr>
+    <tr><td><strong>Sea-surface temperature</strong></td><td>NOAA OISST v2.1 daily, 0.25° (CoastWatch ERDDAP)</td><td>Weekly mean over each region's nearshore box; anomaly against a 1982–2011 normal</td><td class="r num">1982–2023</td></tr>
+    <tr><td><strong>River discharge</strong></td><td>USGS NWIS daily values, five gauges</td><td>30-day mean flow of the river(s) feeding each region; Caloosahatchee at S-79 is the managed one</td><td class="r num">1990–2023</td></tr>
+    <tr><td><strong>Season</strong></td><td>the calendar</td><td>week-of-year as sine and cosine, so week 52 sits next to week 1</td><td class="r num">—</td></tr>
+    </table></div>
+    <div class="grid2">
+    {{fig:peryear}}
+    {{fig:map}}
+    </div>
+    {{fig:cov}}
+- id: patient
+  nav: Patient
+  eyebrow: The unit of prediction
+  title: Defining the patient
+  body: |
+    <div class="two"><div>
+    <p>A sample is a point. A patient has to be something with a history, so samples are pooled into <strong>region × ISO week</strong>: nine coastal regions, every week from 1994 to 2023. That gives <span class="num">{{metrics.features_report.patient_weeks_in_window|comma}}</span> patient-weeks before the onset filters in section 5.</p>
+    <p>Nine is a choice, not a fact. <em>K. brevis</em> blooms are coherent along the shore over roughly 50–100 km and Florida's own weekly status reports are organised by county band, so bands of about half a degree of latitude match how the phenomenon and the surveillance actually behave. Finer units (counties) would mostly be empty weeks; coarser ones (whole coast) would average away the onset.</p>
+    <p><strong>Weeks with no samples are kept, not filled in.</strong> A patient whose vitals were not taken this week is still a patient. The count features are simply missing that week, XGBoost learns a default branch for missing values, and a separate feature records how stale the last reading is. Forward-filling would fabricate "stable vitals" that nobody measured.</p>
+    </div><div>
+    <div class="tblwrap"><table class="tbl" id="t_regions"><tr><th>#</th><th>Region</th><th class="r">Samples</th><th class="r">≥100k share</th><th>River gauge</th></tr></table></div>
+    </div></div>
+- id: vitals
+  nav: Vitals
+  eyebrow: Features
+  title: The vitals
+  body: |
+    <p>Every feature for week <em>t</em> is computed from data dated on or before the end of week <em>t</em>. The repo has a self-test that perturbs week <em>t+1</em> and asserts that nothing at week <em>t</em> moves while the label does, and that a change five weeks out moves nothing at all. Each feature carries one of four tags that section 10 depends on:</p>
+    <div class="legend"><span><span class="tag state">state</span> where the system is now</span><span><span class="tag proxy">proxy</span> a correlate you can forecast but not pull</span><span><span class="tag lever">lever</span> something a manager can actually change</span><span><span class="tag artifact">artifact</span> a property of the surveillance, not the sea</span></div>
+    <div class="tblwrap"><table class="tbl" id="t_features"><tr><th>Feature</th><th>Meaning</th><th>Group</th><th>Tag</th></tr></table></div>
+    {{fig:trace}}
+- id: label
+  nav: Label
+  eyebrow: Outcome
+  title: What counts as a crash
+  body: |
+    <div class="two"><div>
+    <p>The label is <strong>onset</strong>: <code>y = 1</code> if any sample in the region in weeks <em>t+1…t+4</em> reaches 100,000 cells/L, evaluated only for weeks where the region's last known reading is <em>below</em> that level. Region-weeks already in bloom are dropped (<span class="num">{{metrics.features_report.dropped_already_in_event|comma}}</span> of them), exactly as a sepsis model drops patients who are already septic. Predicting that a bloom persists is easy and would inflate every number on this page.</p>
+    <p>Weeks with <em>no</em> samples in the following four weeks have an unknown outcome and are dropped too (<span class="num">{{metrics.features_report.dropped_outcome_unknown|comma}}</span>). That leaves <span class="num">{{metrics.features_report.modelling_rows|comma}}</span> region-weeks with <span class="num">{{metrics.features_report.positives|comma}}</span> onsets: a prevalence of <span class="num">{{metrics.features_report.prevalence|pct1}}</span>. Every metric below is read against that base rate.</p>
+    <div class="note"><div class="t">The alternative</div><p>"Any exceedance in the horizon", without dropping in-bloom weeks, gives a higher AUROC and a less useful model — it mostly learns that blooms last more than a week. A 50,000 cells/L threshold is reported in section 6 as a sensitivity check.</p></div>
+    </div><div>
+    {{fig:label_diagram}}
+    </div></div>
+- id: model
+  nav: Model
+  eyebrow: Learning and checking
+  title: The model, and how it was tested
+  body: |
+    <p>The classifier is gradient-boosted trees (XGBoost), the same family behind most deployed sepsis scores, because it handles missing vitals natively, learns interactions like "cooling water after a warm autumn" without being told, and explains cleanly with tree SHAP.</p>
+    <div class="two"><div>
+    <h4>Configuration choices that matter</h4>
+    <ul class="plain">
+    <li><strong>Temporal split, never random.</strong> Train 1994–2016, tune on 2017–2019, test once on 2020–2023. Adjacent region-weeks share three of four lag features and usually the same bloom; a random split puts twins on both sides and reports a fantasy.</li>
+    <li><strong>No class re-weighting.</strong> <code>scale_pos_weight</code> would lift recall at the cost of calibration, and the alert-rate and lead-time analysis need probabilities that mean what they say. AUPRC is threshold-free anyway.</li>
+    <li><strong>Two monotone constraints.</strong> More cells this week and a higher 4-week peak are not allowed to <em>lower</em> the risk. Everything else is left free.</li>
+    <li><strong>Shallow trees, slow learning, early stopping.</strong> Depth 4, learning rate 0.03, up to 2,000 rounds, early-stopped on validation <em>log-loss</em> (<span class="num">{{metrics.full.n_trees}}</span> trees survived). Stopping on AUPRC instead picks a two-tree model: the ranking is learned by the first split, and every tree after that is buying calibration, not discrimination. The final model is refit on train + validation at that size and touches the test years exactly once.</li>
+    <li><strong>A twin without surveillance features</strong> is trained alongside, so you can see how much of the skill is "we sampled more because something was happening".</li>
+    </ul>
+    </div><div>
+    {{fig:split}}
+    </div></div>
+
+    <h3>Discrimination and calibration on the held-out years</h3>
+    <div class="grid3">
+    {{fig:pr}}
+    {{fig:roc}}
+    {{fig:cal}}
+    </div>
+    <div class="tblwrap"><table class="tbl" id="t_compare">
+    <tr><th>Model</th><th class="r">Test AUROC</th><th class="r">Test AUPRC</th><th class="r">Brier</th><th class="r">Calibration slope</th><th class="r">Trees</th></tr>
+    </table></div>
+    <p>Read the table against the base rate of <span class="num">{{metrics.full.test.prevalence|pct1}}</span>: a model that guessed the base rate for everyone would score that as its AUPRC. The <strong>climatology</strong> row is the honest "no model" comparator: the onset rate for that week of the year, learned from the training years. The <strong>surveillance-only</strong> row is a single feature — samples in the last four weeks — and it is the number to keep in mind while reading section 7.</p>
+
+    <h3>The operational view: alert budgets and lead time</h3>
+    <p>A hospital does not read AUROC; it asks "if we act on the top 10% of scores, how often are we right, and how early?" Same here.</p>
+    <div class="grid2">
+    {{fig:alerts}}
+    {{fig:lead}}
+    </div>
+    {{fig:roll}}
+    <div class="note"><div class="t">Sensitivity: a lower bar</div><p>Relabelling onset at 50,000 cells/L (prevalence <span class="num">{{metrics.sensitivity.test_prevalence|pct1}}</span>) gives test AUROC <span class="num">{{metrics.sensitivity.test_auroc|2}}</span> and AUPRC <span class="num">{{metrics.sensitivity.test_auprc|2}}</span>. The story does not depend on the exact threshold.</p></div>
+- id: shap
+  nav: SHAP
+  eyebrow: Explanation
+  title: SHAP values, globally
+  body: |
+    <div class="two"><div>
+    <p>A SHAP value answers one question per feature per prediction: <strong>how much did this feature's value move this prediction away from the average prediction?</strong> The units are the model's log-odds, so for one region-week the values add up exactly: baseline log-odds + sum of all SHAP values = the log-odds the model output. The repo asserts that identity on every test row (largest gap <span class="num">{{shap.additivity_max_gap|sci}}</span>).</p>
+    <p>The construction comes from cooperative game theory. Treat each feature as a player, the prediction as the payout, and ask how to divide the payout fairly. Shapley's answer: average each player's marginal contribution over every possible order in which players could join the coalition. Tree SHAP computes that exactly for tree ensembles instead of enumerating orders.</p>
+    <h4>One decision you have to make: what "absent" means</h4>
+    <p>To measure a feature's marginal contribution you must evaluate the model <em>without</em> it, and trees can't do that. Two conventions exist. <strong>Path-dependent</strong> follows the tree's own training statistics at each split the missing feature would have decided, which is faithful to the trees but lets correlated features (this week's max and the 4-week peak, say) borrow credit from each other along shared paths. <strong>Interventional</strong>, used here, replaces the missing feature with values drawn from a background sample of <span class="num">{{shap.background_n|comma}}</span> training rows, breaking the correlations and answering "what if this feature were set independently of the rest". That is the semantics a waterfall and an intervention argument need, so it is the one to use when the point is to act — at the price of sometimes crediting a feature the model reaches only through a correlated partner.</p>
+    </div><div>
+    {{fig:bar}}
+    {{fig:gbar}}
+    </div></div>
+    {{fig:bee}}
+    <h3>Dependence: the shape of each effect</h3>
+    <p>Each plot is one column of the beeswarm turned sideways: the feature's value on the x-axis, its SHAP value on the y-axis, and colour from the feature the trees most often interact it with. Vertical spread at a fixed x is interaction; the colour tells you with what. The strongest measured pair is <strong>{{shap.top_interaction.a|label}} × {{shap.top_interaction.b|label}}</strong>.</p>
+    {{fig:dependence}}
+- id: cases
+  nav: Cases
+  eyebrow: Explanation, locally
+  title: Three patients, three waterfalls
+  body: |
+    <p>This is the bedside view. Start at the baseline probability (<span class="num">{{shap.base_p|pct1}}</span>, the average onset rate the model expects with no information), and let each feature push the log-odds up or down until you reach the score. All three are from the held-out years, chosen by rule: the confident true positive with the longest lead; the most confident false alarm; and the quietest July.</p>
+    {{fig:cases}}
+    <p style="margin-top:18px">The false alarm is the most instructive of the three. A model can only be wrong in the ways its features allow; when a high score does not pan out, the waterfall shows which vital misled it — and often the answer is a surveillance feature, which is the artifact tag earning its keep.</p>
+- id: strip
+  nav: Risk over time
+  eyebrow: The dashboard view
+  title: Risk decomposed over time
+  body: |
+    <p>Sepsis dashboards show a score trending over the shift with the contributing vitals stacked beneath it. This is the same picture for one region across one bloom: the weekly onset probability on top, the observed weekly maximum in the middle, and beneath them the SHAP values summed by group — what the counts, the season, the water temperature, the rivers and the surveillance each contributed that week.</p>
+    {{fig:strip}}
+- id: interventions
+  nav: Interventions
+  eyebrow: From explanation to action
+  title: What SHAP can and cannot tell a manager
+  body: |
+    <p>SHAP explains the <em>model</em>. It says which inputs moved this score, under the model's learned associations. It does not say what would happen to the <em>sea</em> if you changed one of them. The bridge from one to the other is the tag on each feature, and it is a human bridge, not a statistical one.</p>
+    <div class="play">
+    <div><div class="h"><span class="tag lever">lever</span>Modifiable</div><ul><li><strong>River discharge</strong> — the Caloosahatchee at S-79 is a managed release from Lake Okeechobee. A high discharge SHAP contribution is the only one on this page that points at a valve someone holds.</li><li>Nutrient loads ride on that flow; the data here carries flow, not nutrients. Treat discharge as a proxy for the real lever.</li></ul></div>
+    <div><div class="h"><span class="tag proxy">proxy</span>Forecastable, not pullable</div><ul><li><strong>SST, season, cooling rate</strong> — nobody cools the Gulf. But these are forecast weeks ahead, so a high contribution here changes <em>when to watch</em>: it justifies pre-positioning sampling and shellfish testing before the counts move.</li></ul></div>
+    <div><div class="h"><span class="tag artifact">artifact</span>Surveillance</div><ul><li><strong>Samples per week</strong> — when this contributes strongly, the model is partly reading the monitoring programme's own reaction. That is a warning label on the score, and an argument for a fixed sampling design so that "how hard we looked" stops correlating with the outcome.</li></ul></div>
+    <div><div class="h"><span class="tag state">state</span>The trajectory</div><ul><li><strong>Counts and growth</strong> — not levers, but the part of the score that tells you how much time you have. A high score built on growth rate is a different situation from one built on a single hot sample.</li></ul></div>
+    </div>
+
+    <h3>A what-if on the only lever</h3>
+    <p>The cheapest way to see what the model thinks a lever does is to move it and re-score. Below, the 30-day discharge features are reduced by 30% for every week of the episode and the model is asked again. Everything else — including the counts that discharge might, in reality, have influenced — is held fixed, which is precisely why this is a model exercise and not an environmental impact statement.</p>
+    {{fig:whatif}}
+    <div class="note warn"><div class="t">Why this is not a causal estimate</div><p>Discharge co-varies with the wet season, with rainfall, with wind and with the very temperature signals the model also reads. XGBoost learned a conditional association, not a mechanism; there is no identification strategy here — no instrument, no natural experiment, no dose-response from managed releases. The what-if measures the model's sensitivity, which is a hypothesis generator. The experiment that would test it belongs to the Army Corps and the South Florida Water Management District, not to this page.</p></div>
+
+    <h3>How a score like this would actually be used</h3>
+    <ol class="plain">
+    <li><strong>Tiered alerts at a fixed budget.</strong> Pick the alert rate the monitoring programme can act on (the 10% row in section 6) and let the threshold follow from it, exactly as a ward sets its alarm rate. Precision and recall at that budget are the numbers to publish, not AUROC.</li>
+    <li><strong>Read the waterfall before acting.</strong> An alert driven by growth and cooling water means "sample here now, warn shellfish harvesters, pre-stage respiratory-irritation advisories". An alert driven by sample count means "you are looking at your own footprint; verify before escalating".</li>
+    <li><strong>Route lever contributions to the lever's owner.</strong> A discharge-driven alert in Lee–Collier is a memo to the people who schedule releases, with the what-if attached as a question, not a finding.</li>
+    <li><strong>Fix the surveillance design.</strong> The single most useful intervention this analysis suggests is to the data, not the ecosystem: fixed-station weekly sampling would remove the artifact channel and make every other SHAP value more trustworthy.</li>
+    <li><strong>Close the loop.</strong> Every alert and its outcome go back into the training set. A sepsis model that is never retrained drifts; so will this.</li>
+    </ol>
+- id: limits
+  nav: Limits
+  eyebrow: Honesty
+  title: Where the analogy breaks, and other limits
+  body: |
+    <ul class="plain">
+    <li><strong>Patients are independent; regions are not.</strong> Blooms advect along the coast. Sarasota's onset is often Lee–Collier's bloom moving north, which the region-wise model treats as two events. Neighbouring-region features would be the obvious next step.</li>
+    <li><strong>Sepsis has a treatment; a bloom has a response.</strong> Antibiotics within the hour change the outcome. Nothing a manager can do in four weeks stops a bloom that has begun; the actions are protective (closures, advisories) and preparatory (sampling), which is why lead time matters more here than in the clinic.</li>
+    <li><strong>Sepsis labels are adjudicated; bloom labels depend on where the bottle was dipped.</strong> An onset that happened between sampling sites is invisible. The 'unknown outcome' filter removes the worst of this and cannot remove all of it.</li>
+    <li><strong>Surveillance is endogenous.</strong> Sampling intensifies when blooms are suspected. The ablation in section 6 bounds the effect; it cannot eliminate it.</li>
+    <li><strong>Discharge is flow, not nutrients;</strong> temperature is a 0.25° box average, not the water a cell lives in; wind and upwelling, which are physically important for <em>K. brevis</em> transport, are not in this version.</li>
+    <li><strong>Interventional SHAP breaks correlations by construction</strong>, so it can assign credit to a feature the model only reaches through a partner. The dependence plots colour that partner for exactly this reason.</li>
+    <li><strong>This is a demonstration of method</strong> on a single public archive, not an operational forecast. FWC and NOAA run real ones.</li>
+    </ul>
+- id: reproduce
+  nav: Reproduce
+  eyebrow: Repeat it
+  title: Reproduce it
+  body: |
+    <p>The pipeline is a folder of small scripts, each writing a cached file the next one reads. On a laptop the whole arc — download, features, two models, SHAP, this page — runs in under an hour, most of it waiting on the SST server.</p>
+    <pre><code>uv sync                                         # pyproject.toml + uv.lock → .venv
+    cd src
+    ../.venv/bin/python -m hab.fetch_fwc            # 196k samples, six ArcGIS layers, paginated
+    ../.venv/bin/python -m hab.fetch_env            # OISST per region box + USGS daily discharge
+    ../.venv/bin/python -m hab.build_features --self-test   # the leakage test
+    ../.venv/bin/python -m hab.build_features       # region-week table, vitals, onset label
+    ../.venv/bin/python -m hab.train                # full + no-surveillance models, metrics.json
+    ../.venv/bin/python -m hab.explain              # interventional TreeExplainer, additivity check
+    ../.venv/bin/python -m hab.whatif               # discharge −30% re-score
+    ../.venv/bin/python -m hab.export_site_data     # site_data.json
+    ../.venv/bin/python -m hab.build_site           # this page</code></pre>
+    <div class="tblwrap"><table class="tbl"><tr><th>Setting</th><th>Value</th></tr>
+    <tr><td>Onset threshold</td><td class="num">{{event.threshold|comma}}</td></tr>
+    <tr><td>Horizon</td><td class="num">{{event.horizon}} weeks</td></tr>
+    <tr><td>XGBoost</td><td class="mono">{{metrics.full.learner}}</td></tr>
+    <tr><td>SHAP</td><td class="mono">{{shap.perturbation}} perturbation, background {{shap.background_n|comma}} training rows</td></tr>
+    <tr><td>Config hash</td><td class="mono">{{metrics.semantic_hash}}</td></tr>
+    <tr><td>Generated</td><td class="mono">{{generated}}</td></tr>
+    </table></div>
+    <p>Data credits: Florida Fish and Wildlife Conservation Commission, Fish and Wildlife Research Institute, HAB Monitoring Database; NOAA/NCEI OISST v2.1 via NOAA CoastWatch ERDDAP; U.S. Geological Survey National Water Information System. SHAP: Lundberg &amp; Lee (2017); Lundberg et al., <em>Nature Machine Intelligence</em> (2020) for tree SHAP and the interventional/path-dependent distinction.</p>
+figures:
+  peryear:
+    title: How hard Florida looked, by year
+    sub: Samples per year, with the share at or above the bloom threshold
+    caption: 'Monitoring was thin before the mid-1990s, which is why the model starts in 1994. The bars also carry the first warning of the whole page: sampling intensifies <em>during</em> blooms, so "how many samples" is partly a symptom of the outcome.'
+  map:
+    title: Where the samples are
+    sub: Sample locations (rounded to 0.05°), coloured by the region they are assigned to
+    caption: Regions are latitude bands along the Gulf coast plus one Atlantic region; assignment uses coordinates only, never the free-text location names, which change convention between decade layers.
+  cov:
+    title: 'Coverage: samples per region per year'
+    sub: Rows are regions north to south (Atlantic last); darker is more samples. Empty cells are exactly that — no bottle was dipped.
+    caption: The Sarasota–Venice and Tampa Bay bands are sampled far more than the Big Bend or the Keys. The model sees that unevenness as a feature (section 4) rather than pretending it away.
+  trace:
+    title: 'One patient''s chart: Lee–Collier, June 2017 to March 2019'
+    sub: The vitals over the region's most destructive recent bloom. Weekly maximum count (log scale), sea-surface temperature, 30-day Caloosahatchee discharge at S-79, and samples per week.
+    caption: Read it like a bedside chart. Counts creep up through autumn 2017, the water cools, discharge spikes after the wet season, and the number of samples explodes once the bloom is obvious — which is the surveillance-intensity problem in one picture.
+  label_diagram:
+    title: Onset labelling, drawn
+    top: 'features: everything dated ≤ end of week t'
+    bottom: 'label: does any sample in t+1…t+4 reach 100k cells/L?'
+    line: 100,000 cells/L
+    below: must be below the line at t
+    crossed: y = 1 (crossed at t+3)
+  split:
+    title: The split, in time
+  pr:
+    title: Precision–recall
+    sub: Test 2020–23; dashed line is the base rate
+  roc:
+    title: ROC
+    sub: Test 2020–23
+  cal:
+    title: Calibration
+    sub: Predicted vs observed onset rate, deciles of risk
+  alerts:
+    title: Precision and recall at fixed alert rates
+    sub: Test years. Alert rate = share of region-weeks flagged.
+    caption: At a 10% alert rate the model flags roughly one region-week in ten; precision says how many of those go on to bloom, recall says how many blooms were caught.
+  lead:
+    title: Lead time before observed onsets
+    sub: 'For each onset in the test years: weeks before the first bloom sample that the score first crossed the 10% threshold'
+    caption: '"Missed" means the score never crossed the threshold inside the four-week window. Lead time here is limited by how often the region was sampled, not only by the model.'
+  roll:
+    title: 'Rolling-origin check: train through year Y, test on Y+1'
+    sub: AUROC and AUPRC per test year, with that year's prevalence
+    caption: One held-out block can be lucky. Retraining each year and testing on the next shows the skill is not a property of one particular split. Years with fewer than five onsets are skipped.
+  bar:
+    title: Which vitals carry the signal
+    sub: Mean |SHAP| over the test years, in log-odds, coloured by feature group
+    caption: 'Mean absolute SHAP is the honest importance measure: it is measured on held-out predictions, not on how often the trees happened to split on a feature.'
+  gbar:
+    title: By group
+  bee:
+    title: 'Beeswarm: every test region-week, every feature'
+    sub: Each dot is one region-week's SHAP value for that feature; colour is the feature's own value (light = low, dark = high). Features ordered by importance; a random {{shap.beeswarm_n|comma}} of the test rows.
+    caption: Read horizontally. A feature whose dark dots sit right and light dots sit left pushes risk up when it is high. Where the colours mix on both sides, the effect depends on other features — that is what the dependence plots below unpack.
+  strip:
+    sub: 'Top: predicted onset probability, with weeks that did go on to bloom marked. Middle: observed weekly maximum. Bottom: SHAP by group, log-odds. Grey bands are weeks excluded from the modelling set (already in bloom, or unknown outcome).'
+  whatif:
+    sub: Predicted onset probability per week, actual features vs. discharge features reduced 30%
+strips:
+  oos_2022_23:
+    label: Lee–Collier 2022–23 (held out)
+    caption: Held-out years. Hurricane Ian made landfall on 28 September 2022; the bloom that followed ran into spring 2023. Watch which groups carry the score in the weeks before the first ≥100k sample, and how much of it is surveillance once the bloom is obvious.
+  oos_2021_tampa:
+    label: Tampa Bay 2021 (held out)
+    caption: Held-out year. The 2021 Tampa Bay bloom followed the Piney Point wastewater release in early April; the region-week model has no feature for that, so any warning it gives is coming from counts, season and temperature alone.
+  insample_2017_19:
+    label: Lee–Collier 2017–19 (in-sample)
+    caption: 'In-sample: these years were in the training or validation set, so the score is flattered. Shown because it is the episode most people remember — the bloom that reached the Panhandle and killed fish for sixteen months.'
+strings:
+  obs_plural: samples
+  event_noun: bloom
+  event_followed: bloom followed
+  event_not_followed: no bloom followed
+  below_threshold: below 100k
+  at_threshold: ≥100k cells/L
+  threshold_short: 100k cells/L
+  trace_panels:
+    signal:
+      title: weekly max count
+      axis: max cells/L
+      name: weekly max cells/L
+    sst_t0:
+      title: sea-surface temperature
+      axis: SST °C
+      name: SST °C
+    discharge_30d_t0:
+      title: Caloosahatchee discharge at S-79
+      axis: S-79 cfs
+      name: S-79 discharge, 30-day mean (cfs)
+    n_samples_t0:
+      title: samples per week
+      axis: samples
+      name: samples / week
+  whatif_scenario: discharge −30%
+  whatif_down: The model associates lower discharge with lower onset risk in this episode
+  whatif_not_down: The model does not associate lower discharge with lower risk in this episode
+  unit_weeks: Region-weeks
+  episode: Episode
+  lever_suffix: ' (managed)'
+  lead_axis: lead time (weeks before first bloom sample)
+  case_this_week: this week's max
+  no_obs: no samples
+  compare_rows:
+    full: Full model
+    ablation_surveillance: Without surveillance features
+    ablation_legend: no surveillance features
+    climatology: Climatology (week-of-year rate)
+    surveillance_only: Surveillance only (samples, last 4 wk)
+    base_rate: Base rate (constant)
+footer: Built for a conversation between a marine ecologist and a freshwater metagenomicist. The method transfers to any monitored system with a trajectory and a threshold; the data credits above are the only part that is Florida-specific.
