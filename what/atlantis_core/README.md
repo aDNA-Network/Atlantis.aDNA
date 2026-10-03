@@ -13,6 +13,23 @@ cd what/atlantis_core && uv sync && .venv/bin/python -m pytest              # of
 .venv/bin/python -m atlantis_core.board --instance ../exemplars/gulf_karenia_brevis --version N --run-date YYYY-MM-DD [--vs <entry>]
 ```
 
+## A new instance (M-1d-i)
+
+```
+.venv/bin/python -m atlantis_core.fork    --answers <answers.yaml> --out <dir>   # templates → declarations (no data)
+.venv/bin/python -m atlantis_core.conform --instance <dir> [--items 1-8,11,12] [--stage declared|fetched]
+```
+
+- **`fork`** renders `how/templates/template_instance/` from a steward's interview answers. The shape is
+  `answers.example.yaml`, and the interview is `how/skills/skill_atlantis_instance_fork.md`. It writes `atlantis.yaml` ·
+  `units.yaml` · `streams.yaml` (declared, atl_v0 0.3.0) · starter `features.yaml` · `events.yaml` · `mapping.yaml` · a
+  posture ADR stub · the federation pin, then runs R1–R8. It is deterministic. Every refusal lists all its reasons and
+  writes nothing.
+- **`conform`** is contract v0.2.0 §B as a machine check. It prints one ✅/✗ per item with the files read. Items 9–10 are
+  n/a before a run. Item 6 re-runs the self-test. Item 12 is gitleaks: absent means not run, which fails the item. It
+  writes nothing. `tests/test_conform.py` feeds each item the defects its contract row names. The exemplar is a reference
+  run inside Atlantis, not a forked instance: it has no `units.yaml`, `mapping.yaml` or posture ADR, and conform says so.
+
 ## An instance is a directory
 
 | File | What | Checked by |
@@ -20,6 +37,8 @@ cd what/atlantis_core && uv sync && .venv/bin/python -m pytest              # of
 | `streams.yaml` | `AtlObservationStream`s with Rule-5 provenance and `fetcher` | `linkml-validate -C AtlDocument` |
 | `features.yaml` | `AtlVital`s: transform · lag · window · group · tag · owner · monotone (replaces `FEATURE_GROUPS`/`FEATURE_DOC`) | idem |
 | `events.yaml` | `AtlEventDefinition`: threshold · `direction: above\|below` · horizon · onset rule in words | idem |
+| `units.yaml` | `AtlSpatialUnit`s: the region row, then every grid unit `PART_OF` it (`atl_unit_<slug>_<code>`); geometry by pointer | idem · `conform` item 1 |
+| `mapping.yaml` | the registries projected to the five `atl_` labels (from `how/templates/template_mapping_atl.yaml`) | `atlantis_core.mapping --check` |
 | `atlantis.yaml` | engine config: grid, stream shapes and columns, station → unit map, climatology eras, constants, the label's machine half, split, self-test anchor, `surveillance` (declared absent + reason, when there is no channel) | `atlantis_core.registry` R1–R8 |
 
 ## Modules
@@ -72,6 +91,19 @@ It also checks, once per run:
   last-known state, a horizon counted in observed weeks, a horizon of H−1, a week-major table scramble, weeks *until* the
   next sample.
 - 1 for the `hab` defect class: a lag counted in rows.
+
+**Any event stream (M-1d-i).** The event stream may be a point stream, a unit-daily stream or a station-keyed daily stream:
+- its synthetic values sit on the safe side of a **positive** threshold (≤ 0 is refused);
+- a spike is one observation per entity past the threshold (for daily streams, one date across every selected entity, so
+  a mean over stations crosses too);
+- C3 runs on the event stream whatever its shape;
+- C5 re-declares the event in the **mirror** direction, so both tails are exercised on every instance;
+- the primary's unobserved past week (`gap_week`) is the shape's default (point 4, daily 1; the exemplar's world,
+  unchanged) unless a vital of that stream lags exactly there. A lag-1 weekly mean of a daily stream was NaN at t, and
+  C4 called it vacuous. That was the first fork's finding.
+
+`tests/test_fork.py` plants three leaks in the forked hypoxia world (horizon overreach, a deaf label, a weekly minimum
+that reads next week) and each is caught by name.
 
 **Known limits.** The self-test does not prove:
 
