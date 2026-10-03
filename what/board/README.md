@@ -60,5 +60,7 @@ it. If a field would carry one of these, the entry is wrong, not the rule.
 | Entry | Source | Event | Base rate | AUROC / AUPRC | Lead (10% budget) | Claim |
 |---|---|---|---|---|---|---|
 | `entries/2026-09-23_gulf_karenia_brevis_v0.json` | exemplar | *K. brevis* ≥ 1e5 cells/L within 4 wk, 9 Florida coastal bands | 0.077 | 0.894 / 0.547 (climatology 0.577 / 0.104) | 64% flagged, median 4 wk | method_demonstration |
+| `entries/2026-10-02_gulf_karenia_brevis_v1.json` | exemplar via `atlantis_core` 0.2.0 | same event and patients; **calendar-correct SST lags** (v0's row-lag defect) · rolling-origin climatology refit per fold (R7) · semantic `config_hash` · closed `AtlEvaluation` | 0.077 | 0.894 / **0.539** (climatology 0.577 / 0.104) | 68% flagged, median 4 wk | method_demonstration |
 
-*(This table is hand-maintained until the generator exists; the JSON is authoritative.)*
+*(This table is hand-maintained until the generator exists; the JSON is authoritative.)* From v1 on, entries are emitted by
+`python -m atlantis_core.board` — the `evaluation` is the closed `AtlEvaluation` and everything else sits in `evaluation_extras`.
