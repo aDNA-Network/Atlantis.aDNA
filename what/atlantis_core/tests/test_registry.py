@@ -48,6 +48,11 @@ def _mutate(exemplar_dir, fn):
     ("R5", lambda i: i.streams["atl_stream_fwc_hab_karenia"].__setitem__("fetcher", "Nope")),
     ("R6", lambda i: i.cfg["label"].__setitem__("event", "atl_event_nope")),
     ("R7", lambda i: i.cfg["climatology"].__setitem__("atl_stream_oisst_region_daily", [1982, 2017])),
+    ("R7", lambda i: i.cfg.pop("climatology_policy")),                 # discharge era overlaps the 2016 rolling fold
+    ("R3", lambda i: i.vitals[1].__setitem__("lag", -1)),
+    ("R3", lambda i: i.vitals[6].__setitem__("window", 0)),
+    ("R3", lambda i: i.vitals[6].__setitem__("window", 4.5)),
+    ("R6", lambda i: next(iter(i.events.values())).__setitem__("direction", "below")),   # below + weekly_max signal
 ])
 def test_registry_rule_bites(exemplar_dir, rule, fn):
     assert rule in _mutate(exemplar_dir, fn)
@@ -61,7 +66,13 @@ def test_semantic_hash_ignores_prose_and_order(exemplar_dir):
         v["description"] = "reworded"; v["name"] = "x"
     b.cfg = dict(reversed(list(b.cfg.items())))
     b.cfg["selftest"] = {"anything": 1}
+    b.cfg["streams"]["atl_stream_fwc_hab_karenia"]["fetch"]["page"] = 1000     # how bytes are fetched is not training
     assert semantic_hash(b) == h
+
+
+def test_rolling_origin_obligation_recorded(exemplar_dir):
+    inst = load_instance(exemplar_dir)
+    assert len(inst.obligations) == 1 and "refit" in inst.obligations[0] and "[2016]" in inst.obligations[0]
 
 
 @pytest.mark.parametrize("fn", [
@@ -69,6 +80,8 @@ def test_semantic_hash_ignores_prose_and_order(exemplar_dir):
     lambda i: i.cfg["climatology"].__setitem__("atl_stream_oisst_region_daily", [1983, 2011]),
     lambda i: next(iter(i.events.values())).__setitem__("threshold", 50000),
     lambda i: i.cfg["split"].__setitem__("train_end", 2015),
+    lambda i: i.cfg["vitals"].__setitem__("weeks_since_cap", 52),           # III F-6
+    lambda i: i.cfg["climatology_policy"].__setitem__("rolling_origin", "fixed"),
 ])
 def test_semantic_hash_moves_on_training_change(exemplar_dir, fn):
     a = load_instance(exemplar_dir); h = semantic_hash(a)

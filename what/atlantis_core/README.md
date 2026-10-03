@@ -6,7 +6,7 @@ leakage-tested patient × week vitals table and a direction-aware onset label. *
 forecast** (SO-4). No data lives here, and nothing is fetched on import or in the tests (SO-3).
 
 ```
-cd what/atlantis_core && uv sync && .venv/bin/python -m pytest              # 73 tests, offline
+cd what/atlantis_core && uv sync && .venv/bin/python -m pytest              # 89 tests, offline (~40 s)
 .venv/bin/python -m atlantis_core.selftest --instance ../exemplars/gulf_karenia_brevis   # SO-7
 ```
 
@@ -24,7 +24,7 @@ cd what/atlantis_core && uv sync && .venv/bin/python -m pytest              # 73
 | Module | Does |
 |---|---|
 | `config` | `load_instance(dir)`; `semantic_hash(inst)`, an md5 over the training-relevant config and the vitals' and events' machine fields, blind to prose and key order (closes WI-7 once M-1b-ii records it) |
-| `registry` | R1 unique ids · R2 refs resolve across files · R3 transforms parse; windowed op ⇔ `window` · R4 lever ⇒ owner · R5 every stream has an engine spec; known fetcher · R6 label event declared · R7 every climatology era ends before `val_start` |
+| `registry` | R1 unique ids · R2 refs resolve across files · R3 transforms parse; windowed op ⇔ `window` · R4 lever ⇒ owner · R5 every stream has an engine spec; known fetcher · R6 label event declared · R7 every climatology era ends before `val_start` and before the first rolling-origin test year, unless `climatology_policy.rolling_origin: refit_per_fold` is declared, which records an **obligation** on eval in `inst.obligations` |
 | `grid` | units from coordinate **rules** (`ast` whitelist) · **polygons** (GeoJSON/WDPA file the instance points at; numpy even-odd, holes, MultiPolygon) · **cells**; ISO weeks (Monday) |
 | `fetch` | `Fetcher` (offline, retry, atomic, Rule-5 summary + sha256) · **built:** `ArcGISMapServer` · `ERDDAPGriddap` · `NWISDailyValues` · **declared:** `NDBCStdmet` · `OBISOccurrence` · `GBIFOccurrence` · `CoralReefWatch` |
 | `vitals.grammar` | the transform language: whitelisted calls, no `eval`. Full table in its docstring |
@@ -35,24 +35,43 @@ cd what/atlantis_core && uv sync && .venv/bin/python -m pytest              # 73
 
 ## The self-test (SO-7)
 
-Each run builds a synthetic patient through the instance's **own** registries. For **every** registered stream it checks:
+The self-test builds a synthetic world through the instance's **own** registries and its real `normalise` path. The world
+has two patients: a primary, and a neighbour that shares no station with it. It has deliberate gaps: the primary's event
+stream is unobserved at t−4 and t+2, the neighbour's at t−1 and t, and the daily streams miss week t−1 plus scattered days.
 
-- **C0:** perturbing week t moves at least one of that stream's vitals. This is the positive control.
-- **C1:** perturbing t+1 moves no vital at **any** week ≤ t. The label moves only if the stream is the event stream.
+For **every** registered stream it checks:
+
+- **C0:** perturbing week t−lag moves **each** vital that reads `value`, one vital at a time. A lag counted in rows instead of
+  calendar weeks fails here.
+- **C1:** perturbing t+1 moves no vital and no `already_in_event` row filter at **any** week ≤ t. The label moves only if
+  the stream is the event stream.
 - **C2:** perturbing t+H+1 moves nothing at or before t.
-- **C3:** deleting a point stream's observations in t+1..t+H flags the outcome unknown and moves no vital.
+- **C3:** deleting t+1..t+H moves nothing in the past, and the event outcome becomes unknown.
+- **C7:** perturbing the primary alone leaves its neighbour unchanged at every week.
 
 It also checks, once per run:
 
-- **C4:** the clean build has no NaN vital at t, so no check above passes vacuously.
-- **C5:** an event with `direction: below` behaves the same way.
-- **C6:** declared climatology dependence is **reported**. Inside an era, a t+1 perturbation moves `anomaly()` vitals for the
-  same calendar week in every earlier era year, because the normal is one statistic over the whole era. Only `anomaly()` may
-  move, and R7 keeps every era before validation.
+- **C2b:** the horizon from inside. A spike at t+H flips y, and a sample at t+H alone keeps the outcome known.
+- **C4:** nothing above passes vacuously.
+- **C5:** a `below` event with a `weekly_min` signal, perturbed at a single observation.
+- **C6:** the declared climatology dependence is **reported**. Only `anomaly()` vitals may move, and every era year is
+  affected because the normal is one statistic over the whole era.
 
-Equality is exact. `tests/test_selftest.py` plants nine defects (peeking rolling window, future diff, late week-end sample,
-next-week mean, future count, horizon overreach, deaf label, NaN build, era statistic outside `anomaly()`) and each one is
-caught by its named check.
+`tests/test_selftest.py` plants **16 defects** and each one is caught by its named check:
+
+- 9 from the first build: future rolling window, future diff, late week-end sample, next-week mean, future count, horizon
+  overreach, deaf label, NaN build, an era statistic outside `anomaly()`.
+- 6 that the M-1b-i III review showed passing the first self-test: a row filter that reads next week, a back-filled
+  last-known state, a horizon counted in observed weeks, a horizon of H−1, a week-major table scramble, weeks *until* the
+  next sample.
+- 1 for the `hab` defect class: a lag counted in rows.
+
+**Known limits.** The self-test does not prove:
+
+- **Coverage beyond the synthetic world:** it exercises two units, one gap pattern and one t.
+- **`future_signal`:** the label is asserted through `y`, `already_in_event` and `outcome_unknown` only.
+- **Correctness:** a wrong but causal vital, such as the wrong backward lag, passes. Correctness against a reference is the
+  equivalence test's job, and a new instance with no reference has only the self-test.
 
 ## Equivalence with the exemplar (`tests/test_equivalence.py`)
 
@@ -60,13 +79,19 @@ The test runs on the three committed raw parquets:
 
 - **Identical:** the patient grid, 22 of 25 vitals, the label, both drop flags, and the report (10,804 modelling rows,
   1,168 positives, 1,481 + 1,800 dropped).
-- **Not identical:** `sst_anom_t2`, `sst_anom_t4` and `sst_delta_4w` differ on 87–133 train rows from 1994–1998. OISST is
-  missing 20 whole weeks, and `hab` shifted the weekly SST table **by row**, so across a gap its "2-week lag" was really 3–4
-  weeks. Every differing row has a missing week inside its lag window, and no val or test row differs.
+- **Not identical:** `sst_anom_t2`, `sst_anom_t4` and `sst_delta_4w` differ. OISST is missing 20 whole weeks, and `hab`
+  shifted the weekly SST table **by row**, so across a gap its "2-week lag" was really 3–4 weeks.
+  - In the modelling rows, the differences are 87–133 train rows from 1994–1998, and no val or test row differs.
+  - In the full table they also fall in 1993 and in 2023, a test year. The 2023 rows are excluded only because the label
+    filters happen to drop every one of them.
+  - The test proves this is the only change: on **every** row, atlantis_core's value equals `hab`'s lag-0 series shifted by
+    calendar weeks.
 - **Operator ruling (2026-10-02):** atlantis_core lags by calendar. M-1b-ii lands the corrected run as a new board version.
   The in-memory refit gives AUROC 0.894 (unchanged to 3 dp) and AUPRC 0.539 (was 0.547); `metrics.json` stays byte-stable.
 
 ## Not here yet (M-1b-ii)
 
 `eval/` · `explain/` · `board/` · `site/`, metrics reproduction, the learner swap, `how/templates/template_mapping_atl.yaml`,
-and archiving `src/hab/`. Until then the exemplar's `src/hab/` stays canonical.
+and archiving `src/hab/`. Until then the exemplar's `src/hab/` stays canonical. **Obligation carried (R7):** eval must refit
+the discharge climatology per rolling-origin fold. Its era ends in 2016, and the 2015→2016 fold tests 2016. `hab`'s
+reported rolling-origin panel did not refit.

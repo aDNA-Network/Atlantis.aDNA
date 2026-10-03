@@ -8,7 +8,8 @@ Needs the exemplar's gitignored `data/processed/` (regenerate: `cd what/exemplar
   * sst_anom_t2 / sst_anom_t4 / sst_delta_4w equal EXCEPT on rows whose lag window contains a week with no OISST data:
     hab shifted the weekly SST table by ROW, so across one of OISST's 20 missing weeks a "2-week lag" was 3–4 weeks.
     atlantis_core shifts by calendar. Every differing row must be predicted by that rule (and they are all 1994–1998,
-    train-only). Operator ruling 2026-10-02: calendar-correct; M-1b-ii lands the corrected run as a new board version.
+    train-only among MODELLING rows; in the full table they also fall in 1993 and 2023 — the 2023 rows are a test year,
+    excluded today only because every one of them is dropped by the label filters). Operator ruling 2026-10-02: calendar-correct; M-1b-ii lands the corrected run as a new board version.
   * label, both drop flags, and the finalize report identical.
 """
 import json
@@ -50,6 +51,9 @@ def test_same_grid(both):
 
 
 def test_vitals_exact_except_gap_rows(both):
+    """22 vitals exact. The 3 gap-sensitive vitals: (a) every differing row has a missing SST week in its lag window,
+    and (b) — the tight rule (III F-9) — atlantis_core's value IS hab's lag-0 series shifted by CALENDAR weeks, on every
+    row: so the only change is the lag definition, and nothing else hides in the excused rows."""
     inst, old, new = both["inst"], both["old"], both["table"]
     s = both["frames"][SST]
     wk = pd.DatetimeIndex(week_start(s["date"]).unique())
@@ -59,11 +63,14 @@ def test_vitals_exact_except_gap_rows(both):
     assert len(exact) == 22
     for f in exact:
         assert not _differ(old[f], new[f]).any(), f
+    cal = lambda col, k: old.groupby("region")[col].shift(k)        # old table is a complete weekly grid per region
+    expect = {"sst_anom_t2": cal("sst_anom_t0", 2), "sst_anom_t4": cal("sst_anom_t0", 4),
+              "sst_delta_4w": old["sst_t0"] - cal("sst_t0", 4)}
     for f, k in GAP_SENSITIVE.items():
         bad = _differ(old[f], new[f])
         predicted = np.array([any(w - pd.Timedelta(weeks=j) in missing for j in range(k + 1)) for w in new["week"]])
-        assert bad.any(), f"{f}: expected the gap rows to differ"
-        assert not (bad & ~predicted).any(), f"{f}: a difference NOT explained by a missing SST week"
+        assert bad.any() and not (bad & ~predicted).any(), f
+        assert not _differ(expect[f], new[f]).any(), f"{f}: not the calendar-shifted hab series"
 
 
 def test_gap_rows_are_train_only(both):

@@ -41,6 +41,12 @@ def weeks_since(flag: np.ndarray, cap: int) -> np.ndarray:
     return np.minimum(out, cap)
 
 
+def as_int(x, what) -> int:
+    if isinstance(x, bool) or float(x) != int(x):
+        raise ValueError(f"{what} must be a whole number, got {x!r}")
+    return int(x)
+
+
 def _log10p1(x):
     return np.log10(1.0 + np.clip(x, 0, None))
 
@@ -62,7 +68,7 @@ class Evaluator:
         out = self.eval(node, window)
         if not isinstance(out, Weekly):
             raise TypeError(f"{self.stream_id}: transform must end weekly, got {type(out).__name__}")
-        return out.df.shift(int(lag or 0))
+        return out.df.shift(as_int(lag or 0, "lag"))
 
     def eval(self, node, window=None):
         key = (ast.dump(node), window)
@@ -133,7 +139,7 @@ class Evaluator:
     def _need_window(self, fn, window):
         if not window:
             raise ValueError(f"{fn} needs the vital's `window` slot")
-        return int(window)
+        return as_int(window, f"{fn} window")
 
     # -- functions ---------------------------------------------------------------------------------------------------
     def f_log10p1(self, x, window=None):
@@ -144,7 +150,7 @@ class Evaluator:
 
     def f_roll_mean_days(self, x, days, min_days, window=None):
         if not isinstance(x, Daily): raise TypeError("roll_mean_days needs daily")
-        return Daily(x.df.rolling(int(days), min_periods=int(min_days)).mean(), x.level)
+        return Daily(x.df.rolling(as_int(days, "roll_mean_days days"), min_periods=as_int(min_days, "roll_mean_days min")).mean(), x.level)
 
     def f_anomaly(self, x, window=None):
         if self.climatology is None:

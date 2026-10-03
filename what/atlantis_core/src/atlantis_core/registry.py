@@ -5,12 +5,16 @@ rule). It cannot see across files or into the transform grammar. This does:
 
   R1  ids unique within their kind (stream · vital · event)
   R2  every vital's stream_ref and every event's event_variable_stream names a declared stream
-  R3  every transform parses under the grammar; windowed ops ⇔ a `window` slot
+  R3  every transform parses under the grammar; windowed ops ⇔ a `window` slot; lag an int ≥ 0, window an int ≥ 1
+      (re-asserted: load_instance does not run linkml-validate)
   R4  a lever vital names a non-blank owner (re-asserted: the schema rule's null hole was M-1c's Finding 1)
   R5  every declared stream has an engine spec in atlantis.yaml (shape · columns · artifact) and a known shape;
       a station-keyed stream maps its stations to units; `fetcher` (if set) names a known fetcher class
-  R6  `label.event` names a declared event; its direction is above | below
-  R7  every climatology era ends before validation starts (a training-era normal must not reach val/test weeks)
+  R6  `label.event` names a declared event; its direction is above | below; the label signal aggregates the right way
+      (`below` with weekly_max, or `above` with weekly_min, means "a week whose max ≤ thr" — rejected)
+  R7  every climatology era ends before validation starts (a training-era normal must not reach val/test weeks), and
+      before the first rolling-origin TEST year — unless `climatology_policy.rolling_origin: refit_per_fold` is declared,
+      which is an obligation on eval (M-1b-ii) recorded in `inst.obligations`, not a waiver
 
 Raises RegistryError listing every failure, not just the first.
 """
@@ -54,6 +58,11 @@ def check(inst) -> None:
             errs.append(f"R3 {v['vital_id']}: windowed transform without a `window` slot")
         if v.get("window") and not windowed:
             errs.append(f"R3 {v['vital_id']}: `window` set but the transform uses no windowed op")
+    for v in inst.vitals:
+        for slot, lo in (("lag", 0), ("window", 1)):
+            x = v.get(slot)
+            if x is not None and (isinstance(x, bool) or not isinstance(x, int) or x < lo):
+                errs.append(f"R3 {v['vital_id']}: {slot} must be an int ≥ {lo}, got {x!r}")
     # R4
     for v in inst.vitals:
         if v.get("tag") == "lever" and not (isinstance(v.get("owner"), str) and v["owner"].strip()):
@@ -80,10 +89,31 @@ def check(inst) -> None:
         errs.append(f"R6 label.event {ev!r} not declared")
     elif inst.events[ev].get("direction") not in ("above", "below"):
         errs.append(f"R6 {ev}: direction {inst.events[ev].get('direction')!r}")
+    else:
+        d = inst.events[ev]["direction"]
+        try:
+            used = grammar.functions_used(grammar.parse(cfg["label"]["signal"], consts, "label.signal"))
+            wrong = "weekly_max" if d == "below" else "weekly_min"
+            if wrong in used:
+                errs.append(f"R6 {ev}: direction {d} with a {wrong} signal — the event would be judged on the wrong tail")
+        except (KeyError, grammar.TransformError) as ex:
+            errs.append(f"R6 label.signal: {ex}")
     # R7
-    val_start = cfg.get("split", {}).get("val_start")
+    split = cfg.get("split", {})
+    val_start = split.get("val_start")
+    ro = split.get("rolling_origin_years") or []
+    refit = (cfg.get("climatology_policy") or {}).get("rolling_origin") == "refit_per_fold"
+    inst.obligations = []
     for sid, era in (cfg.get("climatology") or {}).items():
         if val_start is not None and int(era[1]) >= int(val_start):
             errs.append(f"R7 {sid}: climatology era ends {era[1]} ≥ val_start {val_start}")
+        if ro and int(era[1]) >= min(ro) + 1:
+            hit = [y + 1 for y in ro if y + 1 <= int(era[1])]
+            if refit:
+                inst.obligations.append(f"eval must refit the {sid} climatology per rolling-origin fold "
+                                        f"(era ends {era[1]}; folds testing {hit} would otherwise see their own year)")
+            else:
+                errs.append(f"R7 {sid}: era ends {era[1]} but rolling-origin folds test {hit} — declare "
+                            f"climatology_policy.rolling_origin: refit_per_fold, or end the era earlier")
     if errs:
         raise RegistryError("registry check failed:\n  " + "\n  ".join(errs))

@@ -16,7 +16,8 @@ from atlantis_core import registry as _registry
 # Sections of atlantis.yaml whose values change a trained model. `semantic_hash` covers these and the registries'
 # machine-relevant fields — never comments, ordering, prose, or SHAP/site settings (WI-7: the exemplar's bytes-md5
 # changed on a SHAP-only edit and stopped matching its metrics).
-TRAINING_SECTIONS = ("grid", "streams", "climatology", "constants", "label", "split", "learner")
+TRAINING_SECTIONS = ("grid", "streams", "climatology", "climatology_policy", "constants", "vitals", "label", "split", "learner")
+STREAM_NON_TRAINING = ("fetch", "summary", "artifact")   # where/how bytes are fetched — pinned by sha256, not hashed here
 VITAL_MACHINE_FIELDS = ("vital_id", "stream_ref", "transform", "lag", "window", "monotone")
 EVENT_MACHINE_FIELDS = ("event_id", "event_variable_stream", "threshold", "direction", "horizon")
 
@@ -29,6 +30,7 @@ class Instance:
     vitals: list = field(default_factory=list)    # AtlVital dicts, registry order
     events: dict = field(default_factory=dict)    # event_id → AtlEventDefinition dict
     declared: dict = field(default_factory=dict)  # kind → every id as written (duplicates kept, for registry R1)
+    obligations: list = field(default_factory=list)  # what downstream stages MUST do for this config to be honest (R7)
 
     @property
     def event(self) -> dict:
@@ -86,11 +88,15 @@ def load_instance(root, config_name: str = "atlantis.yaml", check: bool = True) 
     return inst
 
 
+def _strip_streams(streams: dict) -> dict:
+    return {sid: {k: v for k, v in spec.items() if k not in STREAM_NON_TRAINING} for sid, spec in streams.items()}
+
+
 def semantic_hash(inst: Instance) -> str:
     """md5 (first 10 hex, same width as the exemplar's bytes hash) of a canonical JSON of the training-relevant
     config sections + the machine fields of every vital and event. Key order, comments and prose do not move it."""
     payload = {
-        "config": {k: inst.cfg.get(k) for k in TRAINING_SECTIONS if k in inst.cfg},
+        "config": {k: (_strip_streams(inst.cfg[k]) if k == "streams" else inst.cfg[k]) for k in TRAINING_SECTIONS if k in inst.cfg},
         "vitals": [{k: v.get(k) for k in VITAL_MACHINE_FIELDS} for v in inst.vitals],
         "events": [{k: inst.events[e].get(k) for k in EVENT_MACHINE_FIELDS} for e in sorted(inst.events)],
     }

@@ -64,6 +64,9 @@ def finalize(inst, table: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
     report["dropped_already_in_event"] = int(len(base) - len(m))
     m2 = m[~m["outcome_unknown"]]
     report["dropped_outcome_unknown"] = int(len(m) - len(m2))
+    unlabelled = int(m2["y"].isna().sum())
+    if unlabelled:   # presence said "observed" but the signal is NaN: positives and prevalence would use different denominators
+        raise ValueError(f"finalize: {unlabelled} kept rows have no label — label.presence and label.signal disagree")
     report["modelling_rows"] = int(len(m2))
     report["positives"] = int(m2["y"].sum())
     report["prevalence"] = float(m2["y"].mean())

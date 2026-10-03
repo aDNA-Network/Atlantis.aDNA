@@ -82,6 +82,8 @@ streams:
 climatology:   # stream → [first_year, last_year] inclusive; was a literal in hab.build_features. Must end before split.val_start (R7).
   atl_stream_oisst_region_daily: [1982, 2011]
   atl_stream_usgs_discharge_daily: [1990, 2016]
+climatology_policy:   # M-1b-i III F-5: the discharge era (→2016) overlaps the rolling-origin fold testing 2016 (2015→2016).
+  rolling_origin: refit_per_fold   # an OBLIGATION on eval (M-1b-ii), recorded by registry R7 — not a waiver. hab did not refit.
 
 constants:
   detect_threshold: 1000          # (= config.yaml target.detect_threshold) "present" for weeks_since_detect
@@ -107,9 +109,9 @@ split:   # (= config.yaml split)
   test_end: 2023
   rolling_origin_years: [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022]
 
-selftest:   # the synthetic patient the leakage test builds (no network, no real data)
-  unit: 7                         # needs every stream: FWC point, OISST box 7, gauge 02292900
-  lat: 26.2
-  lon: -82.0
-  week: "2019-06-03"              # a Monday after every climatology era ends (R7) — see selftest docstring
-  in_era_week: "2005-06-06"       # inside both eras: the declared climatology dependence is REPORTED here
+selftest:   # the synthetic world the leakage test builds (no network, no real data). First patient = PRIMARY.
+  patients:
+    - {unit: 4, lat: 28.0, lon: -82.7}   # Tampa Bay: FWC point · OISST box 4 · gauge 02304500 (feeds 4 only → C7 isolable)
+    - {unit: 7, lat: 26.2, lon: -82.0}   # Lee-Collier: neighbour (gauge 02292900 feeds 7 and 6, none shared with 4)
+  week: "2019-06-03"              # a Monday after every climatology era ends (R7)
+  in_era_week: "2005-06-06"       # inside both eras: the declared climatology dependence is REPORTED here (C6)

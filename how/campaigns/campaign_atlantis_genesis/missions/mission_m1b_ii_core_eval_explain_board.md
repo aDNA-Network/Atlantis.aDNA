@@ -40,7 +40,8 @@ the exemplar runs end-to-end through it and reproduces `metrics.json`; `src/hab/
 - [ ] `explain/` (interventional SHAP + additivity check + tags from `features.yaml`) · what-if scenarios are config
 - [ ] `board/` emits the closed `AtlEvaluation` projection (validates as `pos_exemplar_gulf_karenia_brevis.yaml`'s evaluation) with the extras beside it — starts closing WI-8
 - [ ] `site/` template with **all copy parameterised**; site cases are config
-- [ ] Exemplar re-run through `atlantis_core` reproduces `metrics.json` (AUROC/AUPRC to 3 dp; same n, positives, drop counts); **semantic config hash** recorded beside the bytes-md5 (closes WI-7)
+- [ ] **Bar re-read by operator ruling (2026-10-02, M-1b-i):** `hab` still reproduces `metrics.json` (proven in memory at M-1b-i: 0.8941 / 0.5473); the exemplar re-run through `atlantis_core` — calendar-correct SST lags — lands as a **new board version** with the delta named (in-memory M-1b-i refit: AUROC 0.8938 · AUPRC 0.5388; same n, positives, drop counts); the 2026-09-23 entry and `metrics.json` stay. **Semantic config hash** recorded beside the bytes-md5 (closes WI-7)
+- [ ] **R7 obligation:** eval refits the discharge climatology per rolling-origin fold (`climatology_policy.rolling_origin: refit_per_fold`; era ends 2016, fold 2015→2016 tests 2016) — `inst.obligations` must be empty-or-honoured, asserted by test; the hab panel's 2016 fold is noted as not refit
 - [ ] One learner swap (LightGBM or logistic) on the exemplar's vitals, recorded — T2 evidence
 - [ ] `how/templates/template_mapping_atl.yaml`: registries → the five `atl_` labels, bi-temporal stamps, fence excluding raw observations
 - [ ] `src/hab/` archived in place with a pointer (SO-2); `config.yaml`/`metrics.json` byte-stable
