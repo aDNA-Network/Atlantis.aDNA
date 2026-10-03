@@ -1,0 +1,49 @@
+---
+type: federation_wrapper
+doc_id: federation_atlantis_{{instance_slug}}
+title: "how/federation/atlantis/ — {{instance_name}} federates Atlantis.aDNA (instance contract v0.2.0)"
+created: {{fork_date}}
+updated: {{fork_date}}
+last_edited_by: agent_init
+tags: [federation, atlantis, instance_contract, {{instance_slug}}]
+---
+
+# Federating Atlantis
+
+This instance follows the Atlantis method (Proteus). Atlantis owns the method, the `atl_v0` ontology, `atlantis_core`,
+the templates and the board. This instance owns its data and its rulings. The terms are
+`Atlantis.aDNA/how/campaigns/campaign_atlantis_genesis/artifacts/instance_contract_v0.md` (v0.2.0).
+
+```yaml
+federation_ref:
+  source_vault: Atlantis.aDNA
+  source_persona: Proteus
+  source_path: what/atlantis_core/
+  source_commit: {{atlantis_commit}}               # pinned at fork; bumped deliberately
+  version: "0.2.0"
+  version_policy: minor
+  patterns_used: [ATL-ONTOLOGY, ATL-STREAM, ATL-VITALS, ATL-LABEL, ATL-EVAL, ATL-EXPLAIN, ATL-BOARD]
+  conformance: atlantis_instance
+  instance:
+    patient: {unit_kind: {{unit_kind}}, external_id: "{{region_external_id}}", time_step: {{time_step}}}
+    event:   {variable: "{{event_variable}}", threshold: {{event_threshold}}, unit: "{{event_unit}}", direction: {{event_direction}}, horizon: "{{event_horizon}} weeks"}
+    streams: [{{stream_list}}]
+    data_posture: {class: {{posture_class}}, ruling: "{{posture_adr_path}}"}
+    self_test: "python -m atlantis_core.selftest --instance ."   # green BEFORE any real data is fetched (the fetch CLI enforces it)
+    board_entry: "what/board/entries/<date>_{{instance_slug}}_v<n>.json"   # metrics only; copied to Atlantis by memo
+```
+
+## The order of work (fork skill, `Atlantis.aDNA/how/skills/skill_atlantis_instance_fork.md`)
+
+```
+A=<Atlantis.aDNA>/what/atlantis_core
+$A/.venv/bin/python -m atlantis_core.mapping --check mapping.yaml
+$A/.venv/bin/python -m atlantis_core.conform  --instance . --stage declared
+$A/.venv/bin/python -m atlantis_core.selftest --instance .          # writes the receipt
+# ratify the posture ADR, then and only then:
+$A/.venv/bin/python -m atlantis_core.fetch    --instance .          # refuses without the receipt
+$A/.venv/bin/python -m atlantis_core.conform  --instance . --stage fetched
+```
+
+**Escalation:** a change that would need `atlantis_core` edited from inside this instance → stop, and send a template change
+to Atlantis as a memo (`Atlantis.aDNA/who/coordination/inbox/`). Do not patch locally.

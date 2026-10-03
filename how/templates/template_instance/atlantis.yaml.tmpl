@@ -1,0 +1,64 @@
+# atlantis.yaml — atlantis_core engine config for {{instance_name}} ({{instance_slug}}).
+# Forked {{fork_date}} from Atlantis.aDNA how/templates/template_instance/ by atlantis_core.fork (answers: {{answers_file}}).
+# This file holds what an atl_v0 registry cannot: shapes, columns, the station → unit map, climatology eras, the label's
+# machine half, the split and the self-test's synthetic patients. Checked by atlantis_core.registry R1–R8 on every load.
+# Every value came from the steward's interview answers or from a template default marked (default). Review the defaults.
+registries: {streams: streams.yaml, features: features.yaml, events: events.yaml}
+
+grid:   # the patient's space. Geometry is a POINTER (contract item 1): the file lives in this instance and is pinned here.
+  {{grid_block}}
+
+streams:   # engine shape per stream_id (streams.yaml carries the provenance). `fetch` is the fetcher's spec, if known yet.
+  {{streams_block}}
+
+climatology:   # stream → [first_year, last_year] inclusive; every era must end before split.val_start (R7)
+  {{climatology_block}}
+
+constants: {}
+
+vitals:
+  weeks_since_cap: 104            # (default)
+
+label:   # the machine half of the event (events.yaml carries the ruling in words)
+  event: {{event_id}}
+  signal: "{{label_signal}}"      # direction {{event_direction}} → the tail the event is judged on (R6)
+  presence: "weekly_count(value)" # 0 over t+1..t+H → outcome unknown
+  last_known_weeks: {{last_known_weeks}}
+
+split:   # temporal; the test window is scored once (contract item 8)
+  {{split_block}}
+
+surveillance:   # contract item 5 (R8): declared present (a stream with surveillance_channel: true), or absent with a reason
+  {{surveillance_block}}
+
+selftest:   # the synthetic world of the leakage test (no network, no real data). First patient = PRIMARY.
+  {{selftest_block}}
+
+learner:   # (default) the exemplar's learner; in semantic_hash
+  kind: xgboost
+  n_estimators: 2000
+  early_stopping_rounds: 100
+  params: {objective: "binary:logistic", eval_metric: logloss, max_depth: 4, learning_rate: 0.03, subsample: 0.8,
+           colsample_bytree: 0.8, min_child_weight: 5, reg_lambda: 1.0, tree_method: hist, random_state: 42}
+
+eval:   # how the trained model is read (default budgets; a steward sets the budget they can staff)
+  alert_rates: [0.05, 0.10, 0.20]
+  lead_budget: 0.10
+  calibration_bins: 10
+  {{eval_block}}
+
+explain:   # (default)
+  background_n: 1000
+  background_seed: 42
+  perturbation: interventional
+  interaction_rows: 1000
+
+board:   # entry metadata (atl_board_entry_v1); the entry is metrics only and travels to Atlantis by memo (contract §A)
+  source: instance
+  instance: {{vault}}
+  entry_stem: {{instance_slug}}
+  evaluation_id_stem: atl_eval_{{instance_slug}}
+  unit_ref: {{region_unit_id}}
+  patient: {unit_kind: {{unit_kind}}, geometry_ref: "{{region_geometry_ref}}"}
+  method_version: "pattern_ecosystem_early_warning 0.1 · atlantis_core {version}"
+  limitations_ref: "site/{{instance_slug}}_v1.html#limits (to be built — no evaluation without its limits, SO-9)"

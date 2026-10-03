@@ -13,20 +13,26 @@ climatology era. For EVERY registered stream:
   C1  perturbing week t+1 (all patients; spike, and delete for point streams) moves NO vital and NO `already_in_event`
       flag at ANY patient-week ≤ t; the label at (primary, t) moves iff the stream is the event stream (spike).
   C2  perturbing week t+H+1 moves no vital / `already_in_event` at weeks ≤ t, and not y / outcome_unknown at (primary, t).
-  C3  (point streams) deleting every observation in t+1..t+H moves no vital / `already_in_event` at weeks ≤ t; for the
-      event stream the outcome at (primary, t) becomes unknown.
+  C3  (point streams, and the event stream whatever its shape) deleting every observation in t+1..t+H moves no vital /
+      `already_in_event` at weeks ≤ t; for the event stream the outcome at (primary, t) becomes unknown.
   C7  perturbing the PRIMARY only at week t, through entities that feed no neighbour, moves nothing at any neighbour, any
       week (no cross-unit mixing). Skipped — and reported — for a stream whose every entity is shared.
 and once:
   C2b the horizon from inside: a spike at t+H flips y at (primary, t); deleting t+1..t+H−1 but keeping t+H does not make
       the outcome unknown.
   C4  the clean build has every vital non-NaN at (primary, t), y = 0, patient kept (nothing above is vacuous).
-  C5  the event re-declared `below` (signal weekly_min): a single low observation at t+1 or t+H flips y, at t+H+1 does
-      not; no vital / `already_in_event` at weeks ≤ t moves.
+  C5  the event re-declared in the MIRROR direction (an `above` event → `below` with weekly_min; a `below` event → `above`
+      with weekly_max): a single observation past the threshold at t+1 or t+H flips y, at t+H+1 does not; no vital /
+      `already_in_event` at weeks ≤ t moves. Both tails are exercised on every instance.
   C6  REPORTED, not hidden: inside a climatology era a t+1 perturbation moves anomaly() vitals at earlier weeks — the era
       normal is one statistic over the whole era, so the same calendar week in EVERY earlier era year depends on it.
       Asserted: only anomaly() vitals move. Reported: cells, max |Δ|, real vs float residue (pandas' running-sum rolling
       mean leaves ~1e-15). Registry R7 keeps eras before validation.
+
+The event stream may have any shape (M-1d-i: a station-keyed `below` event — hypoxia — was the dry run's first finding;
+until then the synthetic world placed event values against the threshold, and spiked them, for point streams only). Its
+synthetic values sit on the safe side of a POSITIVE threshold; a spike is ONE observation per entity past it (for a daily
+stream, one date set across every selected entity, so a mean over stations crosses too). A threshold ≤ 0 is refused here.
 
 Equality is exact (NaN == NaN). KNOWN LIMITS — what this test does not prove:
   * coverage is what the synthetic world exercises: two units, the gap pattern above, one t; a transform whose leak only
@@ -74,23 +80,52 @@ def _span(inst: Instance, t: pd.Timestamp):
     return first, t + W(30)
 
 
+def _event_band(ev) -> tuple[float, float]:
+    thr = float(ev["threshold"])
+    if not thr > 0:
+        raise ValueError(f"selftest synthesises event values against a POSITIVE threshold; {ev['event_id']} has {thr} "
+                         f"(a known limit — shift the variable, or extend the synthetic world in atlantis_core)")
+    return (0.0, 0.05 * thr) if ev["direction"] == "above" else (2.0 * thr, 3.0 * thr)
+
+
+def _event_big(ev) -> float:
+    return 50.0 * float(ev["threshold"]) if ev["direction"] == "above" else 0.0
+
+
+GAP_DEFAULT = {"point": 4, "unit_daily": 1, "station_daily": 1}
+
+
+def gap_week(inst: Instance, sid: str) -> int:
+    """How many weeks before t the PRIMARY's stream is wholly unobserved. A missing week between t−lag and t is what
+    exposes a lag counted in rows (C0); a missing week AT t−lag only blanks that vital (its honest value is NaN) and
+    makes C4 call it vacuous. So: the shape's default (point 4, daily 1 — the exemplar's world, unchanged), unless a
+    vital of this stream lags exactly there; then the smallest free week inside the stream's lag span (still crossed
+    by a longer lag), else one past it (M-1d-i: a lag-1 weekly mean of a daily stream was the first fork's C4)."""
+    lags = {int(v.get("lag") or 0) for v in inst.vitals if v["stream_ref"] == sid}
+    k = GAP_DEFAULT[inst.stream_spec(sid)["shape"]]
+    if k not in lags:
+        return k
+    free = [j for j in range(1, max(lags)) if j not in lags]
+    return free[0] if free else max(lags) + 1
+
+
 def synth(inst: Instance, t: pd.Timestamp, seed: int = 0) -> dict:
     """Raw frames in the instance's own columns, normalised through the real path."""
     rng = np.random.default_rng(seed)
     ps, ev, H = patients(inst), inst.event, int(inst.event["horizon"])
     first, last = _span(inst, t)
     grid = make_grid(inst)
-    gaps_point = {0: {t - W(4), t + W(2)}, 1: {t - W(1), t}}            # primary · neighbour (weeks unobserved)
-    gaps_daily = {0: {t - W(1)}, 1: {t - W(2)}}
     out = {}
     for sid in inst.streams:
         spec, cols = inst.stream_spec(sid), inst.stream_spec(sid)["columns"]
         shape = spec["shape"]
+        k = gap_week(inst, sid)                                          # the primary's unobserved past week
+        gaps_point = {0: {t - W(k), t + W(2)}, 1: {t - W(1), t}}            # primary · neighbour (weeks unobserved)
+        gaps_daily = {0: {t - W(k)}, 1: {t - W(2)}}
         if shape == "point":
             weeks = pd.date_range(week_start([first]).iloc[0], last, freq="7D")
             if sid == ev["event_variable_stream"]:
-                thr = float(ev["threshold"])
-                lo, hi = (0.0, 0.05 * thr) if ev["direction"] == "above" else (2.0 * thr, 3.0 * thr)
+                lo, hi = _event_band(ev)
             else:
                 lo, hi = 0.0, 5000.0
             parts = []
@@ -114,7 +149,11 @@ def synth(inst: Instance, t: pd.Timestamp, seed: int = 0) -> dict:
                 for g in gaps_daily.get(i, set()):
                     gap |= (days >= g) & (days <= g + pd.Timedelta(days=6))
                 m = keep_random & ~gap
-                if shape == "unit_daily":
+                if sid == ev["event_variable_stream"]:
+                    v = rng.uniform(*_event_band(ev), len(days))       # the safe side of the threshold, every day
+                    key = cols["unit"] if shape == "unit_daily" else cols["station"]
+                    parts.append(pd.DataFrame({cols["date"]: days[m], key: ent, cols["value"]: v[m]}))
+                elif shape == "unit_daily":
                     v = 25 + 3 * np.sin(2 * np.pi * doy / 365.25) + rng.normal(0, 1, len(days))
                     parts.append(pd.DataFrame({cols["date"]: days[m], cols["unit"]: ent, cols["value"]: v[m]}))
                 else:
@@ -146,13 +185,16 @@ def perturb(frames, inst, sid, week, how="spike", units=None, exclusive=False):
         f[sid] = d[~sel].reset_index(drop=True); return f
     ev = inst.event
     if inst.stream_spec(sid)["shape"] == "point":
-        if sid == ev["event_variable_stream"]:
-            big = 50.0 * float(ev["threshold"]) if ev["direction"] == "above" else 0.0
-        else:
-            big = 1e7
+        big = _event_big(ev) if sid == ev["event_variable_stream"] else 1e7
         first = d[sel].groupby("unit").head(1).index        # ONE observation per unit: an aggregate must pick it up
         d.loc[first, "value"] = big
         f[sid] = pd.concat([d, d.loc[first]], ignore_index=True)   # and one more sample: presence moves too
+    elif sid == ev["event_variable_stream"]:
+        # ONE date past the threshold, across every selected entity (a unit's value is a mean over its stations)
+        if sel.any():
+            day = d.loc[sel, "date"].min()
+            d.loc[sel & (d["date"] == day), "value"] = _event_big(ev)
+        f[sid] = d
     else:
         scale = 100.0 * (float(d["value"].abs().mean()) + 1.0)
         d.loc[sel, "value"] = d.loc[sel, "value"] + scale
@@ -236,6 +278,7 @@ def run(inst: Instance, verbose: bool = True) -> dict:
     for sid in inst.streams:
         r = {}
         point = inst.stream_spec(sid)["shape"] == "point"
+        hows = ("spike", "delete") if point or sid == ev_sid else ("spike",)   # the event stream: presence matters, any shape
         # C0 — per vital, at t − lag
         mine = [f for f, v in vit.items() if v["stream_ref"] == sid
                 and grammar.uses_value(grammar.parse(v["transform"], consts, f))]
@@ -243,7 +286,7 @@ def run(inst: Instance, verbose: bool = True) -> dict:
         for f in mine:
             wk = t - W(int(vit[f].get("lag") or 0))
             ok = False
-            for how in (("spike", "delete") if point else ("spike",)):
+            for how in hows:
                 key = (wk, how)
                 if key not in cache:
                     cache[key] = at(B(perturb(frames, inst, sid, wk, how, units=[P])), inst, P, t)
@@ -256,7 +299,7 @@ def run(inst: Instance, verbose: bool = True) -> dict:
                             f"cannot fail for them (or their lag is not calendar weeks)")
         r["C0_vitals"] = len(mine)
         # C1 — t+1, whole past, every patient
-        for how in (("spike", "delete") if point else ("spike",)):
+        for how in hows:
             tab1 = B(perturb(frames, inst, sid, t + W(1), how))
             _past_clean(inst, base_tab, tab1, t, feats, f"C1 LEAK {sid} ({how} at t+1)")
             b1 = at(tab1, inst, P, t)
@@ -271,7 +314,7 @@ def run(inst: Instance, verbose: bool = True) -> dict:
         if late:
             raise LeakError(f"C2 {sid}: perturbing t+H+1 moved the label at (primary, t): {late}")
         # C3 — delete t+1..t+H
-        if point:
+        if point or sid == ev_sid:
             f3 = frames
             for k in range(1, H + 1):
                 f3 = perturb(f3, inst, sid, t + W(k), "delete")
@@ -306,21 +349,24 @@ def run(inst: Instance, verbose: bool = True) -> dict:
         raise LeakError("C2b: t+H observed but outcome flagged unknown — presence looks short of its horizon")
     say(f"C2b ✅ horizon from inside: t+{H} flips y; t+{H} alone keeps the outcome known")
 
-    # C5 — a below event on the same streams (signal weekly_min)
-    below = copy.deepcopy(inst)
-    below.event["direction"] = "below"
-    below.cfg["label"]["signal"] = "weekly_min(value)"
-    fb = synth(below, t, seed=1)
-    tb_tab = build(below, fb)[0]; tb = at(tb_tab, below, P, t)
-    t1_tab = build(below, perturb(fb, below, ev_sid, t + W(1)))[0]
-    tH = at(build(below, perturb(fb, below, ev_sid, t + W(H)))[0], below, P, t)
-    tH1 = at(build(below, perturb(fb, below, ev_sid, t + W(H + 1)))[0], below, P, t)
-    t1 = at(t1_tab, below, P, t)
+    # C5 — the event in the MIRROR direction on the same streams (an above instance tests below, and vice versa)
+    mirror = "below" if inst.event["direction"] == "above" else "above"
+    mi = copy.deepcopy(inst)
+    mi.event["direction"] = mirror
+    mi.cfg["label"]["signal"] = "weekly_min(value)" if mirror == "below" else "weekly_max(value)"
+    fb = synth(mi, t, seed=1)
+    tb_tab = build(mi, fb)[0]; tb = at(tb_tab, mi, P, t)
+    t1_tab = build(mi, perturb(fb, mi, ev_sid, t + W(1)))[0]
+    tH = at(build(mi, perturb(fb, mi, ev_sid, t + W(H)))[0], mi, P, t)
+    tH1 = at(build(mi, perturb(fb, mi, ev_sid, t + W(H + 1)))[0], mi, P, t)
+    t1 = at(t1_tab, mi, P, t)
     if not (tb["y"] == 0 and t1["y"] == 1 and tH["y"] == 1 and tH1["y"] == 0) or tb["already_in_event"]:
-        raise LeakError(f"C5 below: y {tb['y']} → t+1 {t1['y']} / t+H {tH['y']} / t+H+1 {tH1['y']}; in_event {tb['already_in_event']}")
-    _past_clean(below, tb_tab, t1_tab, t, feats, "C5 below (t+1 drop)")
-    say("C5 ✅ below-direction event (weekly_min): one low observation at t+1 / t+H flips y, at t+H+1 not; past clean")
+        raise LeakError(f"C5 {mirror}: y {tb['y']} → t+1 {t1['y']} / t+H {tH['y']} / t+H+1 {tH1['y']}; in_event {tb['already_in_event']}")
+    _past_clean(mi, tb_tab, t1_tab, t, feats, f"C5 {mirror} (t+1 crossing)")
+    say(f"C5 ✅ mirror-direction event ({mirror}, {mi.cfg['label']['signal']}): one observation past the threshold at "
+        f"t+1 / t+H flips y, at t+H+1 not; past clean")
     res["C5"] = "ok"
+    res["C5_direction"] = mirror
 
     # C6 — declared climatology dependence, reported
     te = pd.Timestamp(st["in_era_week"]); res["C6"] = {}

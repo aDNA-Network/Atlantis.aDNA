@@ -1,0 +1,7 @@
+# units.yaml — the patients' spatial units as an AtlDocument (atl_v0). Forked {{fork_date}} by atlantis_core.fork.
+# Geometry by pointer only (contract item 1): `geometry_ref` names a file in this instance (and the feature within it),
+# a WDPA id, or a coordinate rule — never coordinates. The first row is the whole instance region (the board's unit_ref);
+# every grid unit is PART_OF it. mapping.yaml projects these rows; atlantis.yaml → grid.units lists the grid codes.
+# Validate: linkml-validate -s <Atlantis>/what/schema/atl_v0/atl_ontology_v0.linkml.yaml -C AtlDocument units.yaml
+spatial_units:
+{{units_rows}}

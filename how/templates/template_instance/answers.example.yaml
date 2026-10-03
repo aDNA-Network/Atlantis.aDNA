@@ -1,0 +1,92 @@
+# answers.example.yaml — the shape of a fork interview's answers (skill_atlantis_instance_fork → atlantis_core.fork).
+# FICTIONAL: "Example Sound" does not exist; every id, station and endpoint below is illustrative. Nothing here is data.
+# atlantis_core/tests/test_fork.py forks this file (with a synthetic polygon file) and holds the result to the contract.
+answers_version: 1
+
+instance:
+  slug: example_sound_hypoxia            # snake_case; prefixes every atl_ id (atl_unit_<slug>_<code> …)
+  name: Example Sound hypoxia
+  vault: ExampleSoundHypoxia.aDNA
+  steward: "the steward's name or role"
+
+interview:   # the five questions, in the steward's own words (copied into events.yaml and the posture ADR)
+  patient: "Each of the Sound's two management segments, week by week."
+  event: "Bottom dissolved oxygen falling to 2 mg/L or below — hypoxia — at a segment's monitoring station."
+  warning: "Two weeks lets us move the shellfish harvest window and stage aeration; less than one week changes nothing."
+  streams: "Moored DO sondes (one per segment), satellite SST, and the volunteer water-quality survey."
+  posture: "Everything we use is public agency or volunteer data, published under open terms."
+
+posture:
+  class: public                          # public | partner | human_subject (Network ADR-016 §8)
+  rationale: "All three streams are public agency or open volunteer data; no partner terms, no human subjects."
+
+patient:
+  unit_kind: estuary_segment             # atl_v0 UnitKind
+  time_step: iso_week                    # atlantis_core builds ISO weeks
+  region: {code: all, name: Example Sound}
+  grid: {kind: polygons, path: geometry/example_sound_segments.geojson, id_property: seg, unit_dtype: int}
+  units:
+    - {code: 1, name: Upper Sound}
+    - {code: 2, name: Lower Sound}
+
+event:
+  name: "Bottom-water hypoxia onset (DO ≤ 2 mg/L within 2 weeks)"
+  stream: atl_stream_example_do_daily
+  threshold: 2.0
+  unit: mg/L
+  direction: below                       # below: y = min(signal[t+1..t+H]) <= threshold
+  horizon: 2                             # weeks — the steward's answer to "how much warning changes what you do"
+  onset_rule: "drop segment-weeks whose last-known weekly minimum is already <= 2 mg/L (already hypoxic); drop segment-weeks with no DO reading in t+1..t+2 (unknown outcome)"
+
+streams:
+  - stream_id: atl_stream_example_do_daily
+    fetcher: NDBCStdmet                  # declared in atlantis_core, not built — fine before the first fetch
+    modality: buoy_series
+    source_system: NOAA NDBC (illustrative)
+    source_id: stations EXS01, EXS02 (illustrative)
+    authority: "CF:mass_concentration_of_oxygen_in_sea_water"
+    variable: mass_concentration_of_oxygen_in_sea_water
+    unit: mg/L
+    license: "public (NOAA)"
+    surveillance_channel: false
+    shape: station_daily
+    columns: {date: date, value: do_mg_l, station: station}
+    stations: {EXS01: [1], EXS02: [2]}
+    vitals: {group: oxygen, tag: state, lags: [0, 1, 2]}
+  - stream_id: atl_stream_example_sst_daily
+    fetcher: ERDDAPGriddap
+    modality: gridded_field
+    source_system: NOAA CoastWatch ERDDAP
+    source_id: ncdcOisst21Agg_LonPM180
+    authority: "CF:sea_surface_temperature"
+    variable: sea_surface_temperature
+    unit: Cel
+    license: "public (NOAA)"
+    surveillance_channel: false
+    shape: unit_daily
+    columns: {date: date, value: sst, unit: seg}
+    vitals: {group: temperature, tag: proxy}
+  - stream_id: atl_stream_example_survey_casts
+    fetcher: ArcGISMapServer
+    modality: point_count
+    source_system: Example Sound volunteer water-quality survey (illustrative)
+    source_id: casts layer (illustrative)
+    variable: bottom dissolved oxygen (volunteer cast)
+    unit: mg/L
+    license: "CC-BY-4.0 (illustrative)"
+    surveillance_channel: true           # where volunteers sample reacts to what they saw last week
+    shape: point
+    columns: {date: cast_date, value: do_mg_l, lat: lat, lon: lon}
+    vitals: {group: survey, tag: proxy, aggregate: weekly_min}
+
+climatology:   # optional — stream → [first_year, last_year]; each era ends before split.val_start (R7)
+  atl_stream_example_sst_daily: [1991, 2010]
+
+split: {min_train_year: 2005, train_end: 2016, val_start: 2017, val_end: 2019, test_start: 2020, test_end: 2023}
+
+surveillance: {}   # a stream declares surveillance_channel: true above; with none, give {declared: absent, reason: …}
+
+selftest:   # ≥ 2 patients every stream reaches; lat/lon needed because a point stream exists (inside each polygon)
+  patients:
+    - {unit: 1, lat: 35.30, lon: -76.40}
+    - {unit: 2, lat: 35.10, lon: -76.40}

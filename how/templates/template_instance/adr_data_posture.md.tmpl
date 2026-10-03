@@ -1,0 +1,36 @@
+---
+type: adr
+adr_id: ADR-{{adr_number}}
+title: "ADR-{{adr_number}} — data posture: {{posture_class}} (Network ADR-016 §8 class)"
+status: proposed
+created: {{fork_date}}
+updated: {{fork_date}}
+last_edited_by: agent_init
+tags: [adr, data_posture, atlantis_instance, {{instance_slug}}]
+---
+
+# ADR-{{adr_number}} — data posture: `{{posture_class}}`
+
+> **Stub written by `atlantis_core.fork`** — Atlantis instance contract v0.2.0 item 7. The steward completes it. The
+> instance's OWNER ratifies it with the 4-field block below. **Nothing is fetched until it is ratified** (fork skill).
+
+## Context
+
+{{instance_name}} federates Atlantis (`how/federation/atlantis/CLAUDE.md`). Atlantis is not data-bearing; this instance is.
+It owns its data posture, credentials, partners and rulings. Steward's answer at the fork interview: *"{{posture_answer}}"*.
+
+## Decision (proposed)
+
+- **Class:** `{{posture_class}}` (public · partner · human_subject — Network ADR-016 §8).
+- **Rationale:** {{posture_rationale}}
+- **Streams covered:** {{stream_list}}.
+- **What never leaves this instance:** observations, labels, per-patient predictions, trained binaries from partner or
+  human-subject data, partner-site coordinates, credentials (contract §C). Only GREEN board metrics travel, by memo.
+- **Licence check before any fetch:** each stream's `license` in `streams.yaml` was given at the interview. A stream whose
+  licence or posture is unclear is NOT fetched; it goes to the owner as a memo (fork skill escalation).
+
+## Ratification
+
+| decision | ratified-by | date | status |
+|---|---|---|---|
+| | | | proposed |

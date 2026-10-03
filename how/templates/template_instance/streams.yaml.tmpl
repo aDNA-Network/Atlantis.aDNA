@@ -1,0 +1,7 @@
+# streams.yaml — observation streams as an AtlDocument (atl_v0). Forked {{fork_date}} by atlantis_core.fork.
+# DECLARED, not fetched: no sha256 / ingested_at until `python -m atlantis_core.fetch` lands the bytes (atl_v0 0.3.0;
+# contract item 3, declared → fetched). The fetch CLI prints the Rule-5 values to record here; it never edits this file.
+# Engine shape (columns, artifact path, station → unit map, fetch spec) lives in atlantis.yaml → streams.
+# Validate: linkml-validate -s <Atlantis>/what/schema/atl_v0/atl_ontology_v0.linkml.yaml -C AtlDocument streams.yaml
+observation_streams:
+{{streams_rows}}
