@@ -1,5 +1,29 @@
 # CHANGELOG — Atlantis.aDNA
 
+## 2026-10-03 — v0.6.0 · M-1b-ii-b `atlantis_core` site · mapping · archive (P1)
+
+- **`atlantis_core.site`** (`python -m atlantis_core.site --instance <dir>`) makes the explainer page a core template whose
+  every word is instance data.
+  - `site.yaml` says what to draw; `site_copy.yaml` holds every word.
+  - The template is free of exemplar literals, enforced by a test.
+  - Site data is assembled from core outputs and registries, never `hab`.
+  - **The build re-projects the run and refuses any field that disagrees with the cited board entry.**
+- **The exemplar's v1 page** is `site/gulf_karenia_brevis_v1.html`.
+  - The copy was moved verbatim, then corrected for board v1: calendar lags, R7, F-8, net beside gross, the T2 panel
+    ("a SHAP reading belongs to one model"), the raw-stream what-if, the reproduce section, the footer.
+  - The v0 page is byte-stable.
+- **`how/templates/template_mapping_atl.yaml`:**
+  - registries → five `atl_` labels and six declared edges;
+  - pinned bi-temporal stamps;
+  - a fence over table shapes, paths and coordinates.
+  
+  `python -m atlantis_core.mapping --check` is contract item 11's machine check.
+- **`src/hab/` archived in place** (`ARCHIVED.md`). It is still the raw-parquet fetch path until the core has a fetch CLI.
+- **III review** (fresh context via `iii/`): PASS-WITH-FINDINGS, 10/10 addressed. Among the fixes: grey bands that had been
+  invisible since v0, a case rule mis-described since v0, and guards narrower than their names. Learning store C-011…C-013.
+- **ADR-002 A-1 PROPOSED** (§4): the exemplar's explainer pages join the capped exception. Awaiting operator ratification.
+- 183 tests (125 → 183). `config.yaml`, `atlantis.yaml`, `outputs/`, board entries and schema are byte-stable.
+
 ## 2026-10-02 — v0.5.0 · M-1b-ii-a `atlantis_core` eval · explain · board (P1; M-1b-ii split)
 
 - **M-1b-ii split by operator ruling** (the parent card is `superseded` and kept). **ii-a** (this release) covers eval ·

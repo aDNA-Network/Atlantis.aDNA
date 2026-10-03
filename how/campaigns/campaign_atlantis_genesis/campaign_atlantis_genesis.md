@@ -157,7 +157,7 @@ AAR · successor cards. **Exit bar:** AAR in this file; Atlantis joins the fleet
 gate. **M-1a complete 2026-10-02** (exemplar hygiene; AAR filed). **M-1c complete 2026-10-02** (`atl_v0` controls: 42, three
 worlds agree; `iii/` adopted, III review PASS-WITH-FINDINGS; AAR filed). **M-1b split** (operator, 2026-10-02) → **M-1b-i complete
 2026-10-02** (`atlantis_core` registries · fetch · grid · vitals · label · all-stream self-test; hab's SST row-lag defect found,
-calendar-correct ruled; III 11/11 fixed; AAR filed). M-1b-ii-a ✅ 2026-10-02 (eval · explain · board; port exact to 1e-12; board v1 0.8938 / 0.5388; T2 swap: ranking survives, explanation does not; III 8/8). Next: M-1b-ii-b (opus) → M-1d → P1 gate.
+calendar-correct ruled; III 11/11 fixed; AAR filed). M-1b-ii-a ✅ 2026-10-02 (eval · explain · board; port exact to 1e-12; board v1 0.8938 / 0.5388; T2 swap: ranking survives, explanation does not; III 8/8). M-1b-ii-b ✅ 2026-10-03 (site template with every word as instance copy; v1 page checked against its board entry field for field; `template_mapping_atl.yaml` + `--check`; `src/hab` archived in place, still the fetch path; III 10/10; ADR-002 A-1 proposed). Next: M-1d (opus) → P1 gate.
 
 ## AAR (campaign — filled at P5)
 

@@ -74,6 +74,19 @@ The acceptance checklist above, each item checked by a command or a file the AAR
 3. `what/schema/atl_v0/README.md` · `what/board/README.md`.
 4. The exemplar `what/exemplars/gulf_karenia_brevis/README.md` + `AGENTS.md`.
 
+## Inputs from M-1b-ii-b (2026-10-03)
+
+- **Mapping.** `how/templates/template_mapping_atl.yaml` is the fork's `mapping.yaml` source, with `{{instance_slug}}` to fill.
+  Contract item 11 is machine-checked by `python -m atlantis_core.mapping --check <mapping.yaml>`, which the dry run should
+  call. Note that `sources.spatial_units` expects a `units.yaml`, which no instance has yet: the exemplar's units live in
+  `atlantis.yaml` `grid.rules`, and the fork skill must emit `units.yaml`.
+- **Site.** `python -m atlantis_core.site --instance <dir>` is the pipeline lattice's last step. An instance opts in with
+  `site.yaml` and `site_copy.yaml`; the exemplar's pair is the worked example. The build refuses outputs that disagree with
+  the cited board entry, so the lattice runs it after `board`.
+- **Fetch has no core entry point** (AAR Finding 2). `hab.fetch_*` is still the exemplar's raw-parquet path, and the
+  lattice's `fetch` step needs a `python -m atlantis_core.fetch` (or the step stays declared-only, said so).
+- **BOARD generator (WI-8).** Board v2 should also repoint `limitations_ref` at the v1 page's `#limits` (III F-6).
+
 ## AAR
 
 *Mandatory before `status: completed` (SO-6).* Worked · Didn't · Finding · Change · Follow-up → `aar_path`.

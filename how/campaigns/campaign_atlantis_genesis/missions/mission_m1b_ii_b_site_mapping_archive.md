@@ -4,7 +4,7 @@ mission_id: M-1b-ii-b
 plan_id: mission_m1b_ii_b_site_mapping_archive
 title: "M-1b-ii-b — `atlantis_core` site template (all copy parameterised) · template_mapping_atl.yaml · src/hab archived"
 owner: stanley
-status: in_progress
+status: completed
 campaign: campaign_atlantis_genesis
 campaign_id: campaign_atlantis_genesis
 phase: P1
@@ -12,7 +12,7 @@ campaign_phase: 1
 mission_class: implementation
 executor_tier: opus
 token_budget_estimated: "~150kT main + fresh-context III reviewer"
-token_budget_actual: ""
+token_budget_actual: "≈165kT main (≈ +10%) + ≈275kT fresh-context III reviewer"
 depends_on: ['M-1b-ii-a']
 split_from: mission_m1b_ii_core_eval_explain_board
 aar_path: how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m1b_ii_b_site_mapping_archive.md
@@ -36,11 +36,11 @@ archived in place once nothing canonical runs through it.
 
 ## Acceptance criteria
 
-- [ ] `site/` template with **all copy parameterised** (the exemplar's 76 KB `site/template.html` prose → instance copy file); site cases and risk strips are config; site data assembled from `outputs/atlantis_core/`
-- [ ] The exemplar's page regenerates through the core from board v1's run; the v0 page (`site/hab_crash_risk.html`) is kept
-- [ ] `how/templates/template_mapping_atl.yaml`: registries → the five `atl_` labels, bi-temporal stamps, fence excluding raw observations
-- [ ] `src/hab/` archived in place with a pointer (SO-2); `config.yaml`/`metrics.json` byte-stable
-- [ ] III review via `iii/` in a fresh context (SO-10)
+- [x] `site/` template with **all copy parameterised** (the exemplar's 76 KB `site/template.html` prose → instance copy file); site cases and risk strips are config; site data assembled from `outputs/atlantis_core/`
+- [x] The exemplar's page regenerates through the core from board v1's run; the v0 page (`site/hab_crash_risk.html`) is kept
+- [x] `how/templates/template_mapping_atl.yaml`: registries → the five `atl_` labels, bi-temporal stamps, fence excluding raw observations
+- [x] `src/hab/` archived in place with a pointer (SO-2); `config.yaml`/`metrics.json` byte-stable
+- [x] III review via `iii/` in a fresh context (SO-10)
 
 ## Inputs from ii-a (2026-10-02)
 
@@ -57,4 +57,4 @@ As M-1b-i. Budget >50% over → SITREP and stop.
 
 ## AAR
 
-*Mandatory before `status: completed` (SO-6).* → `aar_path`.
+*Mandatory before `status: completed` (SO-6).* → `aar_path`. **Filed 2026-10-03** — III PASS-WITH-FINDINGS, 10/10 addressed (F-5 → ADR-002 A-1 proposed; F-6 carried to board v2).
