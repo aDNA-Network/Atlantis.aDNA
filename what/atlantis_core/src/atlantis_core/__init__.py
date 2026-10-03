@@ -12,5 +12,5 @@ Nothing here fetches on import, holds data, or is an operational forecast (SO-3,
 """
 from atlantis_core.config import Instance, load_instance, semantic_hash
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __all__ = ["Instance", "load_instance", "semantic_hash", "__version__"]

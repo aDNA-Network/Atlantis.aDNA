@@ -76,6 +76,7 @@ streams:
       "02304500": [4]
       "02323500": [2, 3]
       "02359170": [1]
+    lever_stations: ["02292900"]   # (= config.yaml gauges.*.lever) a managed release a steward can change (S-79); what-if reports scaling any other
     fetch: {parameter: "00060", start: "1990-01-01", end: "2023-12-31", value_name: discharge_cfs, clip_negative: true,
             sites: ["02292900", "02296750", "02304500", "02323500", "02359170"]}
 
@@ -115,3 +116,48 @@ selftest:   # the synthetic world the leakage test builds (no network, no real d
     - {unit: 7, lat: 26.2, lon: -82.0}   # Lee-Collier: neighbour (gauge 02292900 feeds 7 and 6, none shared with 4)
   week: "2019-06-03"              # a Monday after every climatology era ends (R7)
   in_era_week: "2005-06-06"       # inside both eras: the declared climatology dependence is REPORTED here (C6)
+
+# ── M-1b-ii-a: training, evaluation, explanation, board ─────────────────────────────────────────────────────────────
+learner:   # (= config.yaml xgb, less monotone_increasing — that is features.yaml `monotone`). In semantic_hash.
+  kind: xgboost
+  n_estimators: 2000
+  early_stopping_rounds: 100
+  params: {objective: "binary:logistic", eval_metric: logloss, max_depth: 4, learning_rate: 0.03, subsample: 0.8,
+           colsample_bytree: 0.8, min_child_weight: 5, reg_lambda: 1.0, tree_method: hist, random_state: 42}
+
+learner_swaps:   # T2 (thesis register): the same vitals through a different learner. Reported beside, never the headline.
+  - kind: logistic
+    impute: median            # fitted on train rows only; add_indicator → one missingness flag per vital with NaNs
+    C_grid: [0.001, 0.01, 0.1, 1.0, 10.0]   # chosen on val log-loss, then refit on train+val
+    max_iter: 5000
+
+eval:   # how the trained model is read — not in semantic_hash (it does not change a trained model)
+  alert_rates: [0.05, 0.10, 0.20]
+  lead_budget: 0.10
+  calibration_bins: 10
+  ablations:                  # retrain without each group (T5: a surveillance channel is declared → its ablation is required)
+    - {drop_group: surveillance}
+  surveillance_only: n_samples_4w   # single-vital comparator: how much does "how hard we looked" alone predict?
+  sensitivity_threshold: 50000      # (= config.yaml target.sensitivity_threshold) same vitals, the label re-made at this threshold
+
+explain:   # (= config.yaml shap)
+  background_n: 1000
+  background_seed: 42
+  perturbation: interventional
+  interaction_rows: 1000
+
+whatif:   # counterfactual re-scoring: scale a raw stream over a period, re-derive the vitals, re-score. Correlational, not causal.
+  scenarios:   # (= hab.whatif's three cases) units × period; the stream is scaled for every station feeding the units
+    - {name: r7_2022_2023, units: [7], period: ["2022-06-01", "2023-04-30"], stream: atl_stream_usgs_discharge_daily, op: scale, factor: 0.7}
+    - {name: r7_2017_2019, units: [7], period: ["2017-06-01", "2019-03-31"], stream: atl_stream_usgs_discharge_daily, op: scale, factor: 0.7}
+    - {name: r4_2021_2021, units: [4], period: ["2021-01-01", "2021-12-31"], stream: atl_stream_usgs_discharge_daily, op: scale, factor: 0.7}
+
+board:   # entry metadata (atl_board_entry_v1); not in semantic_hash
+  source: exemplar
+  instance: Atlantis.aDNA/what/exemplars/gulf_karenia_brevis
+  entry_stem: gulf_karenia_brevis
+  evaluation_id_stem: atl_eval_gulf_karenia_brevis
+  unit_ref: atl_unit_fl_gulf_and_keys
+  patient: {unit_kind: coastal_band, geometry_ref: "atlantis.yaml -> grid.rules (lat/lon rules)"}
+  method_version: "pattern_ecosystem_early_warning 0.1 · atlantis_core {version}"
+  limitations_ref: "what/exemplars/gulf_karenia_brevis/site/hab_crash_risk.html#limits (§11 Where the analogy breaks) · README.md §Caveats"

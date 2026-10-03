@@ -107,3 +107,13 @@ def test_atlantis_yaml_matches_config_yaml(exemplar_dir):
     assert mono == set(cfg["xgb"]["monotone_increasing"])
     levers = [s for s, g in cfg["gauges"].items() if g.get("lever")]
     assert levers and all(v.get("owner") for v in inst.vitals if v["tag"] == "lever")
+    # M-1b-ii-a: learner · eval · explain · lever stations
+    x = dict(cfg["xgb"]); x.pop("monotone_increasing")
+    L = a["learner"]
+    assert L["kind"] == "xgboost"
+    assert {**L["params"], "n_estimators": L["n_estimators"], "early_stopping_rounds": L["early_stopping_rounds"]} == x
+    assert a["eval"]["sensitivity_threshold"] == cfg["target"]["sensitivity_threshold"]
+    sh = cfg["shap"]
+    assert (a["explain"]["background_n"], a["explain"]["perturbation"], a["explain"]["interaction_rows"]) == \
+           (sh["background_n"], sh["perturbation"], sh["interaction_rows"])
+    assert a["streams"]["atl_stream_usgs_discharge_daily"]["lever_stations"] == levers

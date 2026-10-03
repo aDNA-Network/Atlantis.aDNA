@@ -6,8 +6,10 @@ leakage-tested patient × week vitals table and a direction-aware onset label. *
 forecast** (SO-4). No data lives here, and nothing is fetched on import or in the tests (SO-3).
 
 ```
-cd what/atlantis_core && uv sync && .venv/bin/python -m pytest              # 89 tests, offline (~40 s)
+cd what/atlantis_core && uv sync && .venv/bin/python -m pytest              # offline; the port checks skip without data/processed
 .venv/bin/python -m atlantis_core.selftest --instance ../exemplars/gulf_karenia_brevis   # SO-7
+.venv/bin/python -m atlantis_core.run --instance ../exemplars/gulf_karenia_brevis        # → outputs/atlantis_core/
+.venv/bin/python -m atlantis_core.board --instance ../exemplars/gulf_karenia_brevis --version N --run-date YYYY-MM-DD [--vs <entry>]
 ```
 
 ## An instance is a directory
@@ -32,6 +34,10 @@ cd what/atlantis_core && uv sync && .venv/bin/python -m pytest              # 89
 | `vitals.build` | registries + frames → table (grid rows, one column per vital in registry order) |
 | `label` | direction-aware label (`above`: future max ≥ thr · `below`: future min ≤ thr), already-in-event and unknown-outcome drops; `finalize` reports both drop counts |
 | `selftest` | the all-stream leakage test (below) |
+| `eval` | the temporal split from `atlantis.yaml`; **the learner is a config field** (`learners`: `xgboost` early-stopped on val then refit on train+val · `logistic` median-impute + missingness flags + standardise, every statistic fitted on training rows); `metrics` (alert budgets, calibration, climatology baseline); `lead` (direction-aware lead time on the full grid); ablations from vital groups; surveillance-only; the sensitivity threshold through `label.make`'s event override; `rolling` — rolling origin with **R7 honoured**: each fold's climatology eras end ≤ its train year and the moved vitals are rebuilt. `run` refuses to start with an unexecuted obligation |
+| `explain` | interventional TreeExplainer over a train-only background, additivity a hard check, interactions; exact linear SHAP for `logistic`; sums by `group` and `tag` from `features.yaml`. `explain.whatif`: scenarios are config — a raw stream scaled over a period, the vitals re-derived through `vitals.build`, refused without a `lever` vital or across a climatology era; scaling a non-lever station is reported |
+| `board` | `project` → the **closed** `AtlEvaluation`, validated against the committed JSON Schema with its format checker; `emit` → a GREEN entry with `evaluation_extras` beside it; refuses unhonoured obligations; `assert_green` rejects per-patient content |
+| `run` | the instance end to end → `outputs/atlantis_core/` (metrics · shap_summary · whatif · model · `learner_swap_<kind>.json`) |
 
 ## The self-test (SO-7)
 
@@ -89,9 +95,20 @@ The test runs on the three committed raw parquets:
 - **Operator ruling (2026-10-02):** atlantis_core lags by calendar. M-1b-ii lands the corrected run as a new board version.
   The in-memory refit gives AUROC 0.894 (unchanged to 3 dp) and AUPRC 0.539 (was 0.547); `metrics.json` stays byte-stable.
 
-## Not here yet (M-1b-ii)
+## Port equivalence (M-1b-ii-a, `tests/test_eval.py` · `test_explain.py` · `test_board.py`)
 
-`eval/` · `explain/` · `board/` · `site/`, metrics reproduction, the learner swap, `how/templates/template_mapping_atl.yaml`,
-and archiving `src/hab/`. Until then the exemplar's `src/hab/` stays canonical. **Obligation carried (R7):** eval must refit
-the discharge climatology per rolling-origin fold. Its era ends in 2016, and the 2015→2016 fold tests 2016. `hab`'s
-reported rolling-origin panel did not refit.
+Fed `hab`'s own `features.parquet`, core eval reproduces **every key** of `outputs/metrics.json` to 1e-12 — `n_trees` 141,
+test AUROC 0.8941 / AUPRC 0.5473, the curves, alert budgets, lead time, climatology, surveillance-only, the no-surveillance
+ablation, all eight rolling folds and the 50k sensitivity run. That run is in *reference* mode (hab did not refit the 2016
+fold), is marked so, and cannot be emitted. SHAP on hab's model reproduces `shap_summary.json` (top 6, partners, top
+interaction pair, group order, base). The projector, fed `metrics.json`, reproduces the M-1c fixture's evaluation field for
+field. **What-if does not reproduce exactly, and the cause is proven:** the discharge vital is a 30-day mean of log10(1 + q), and
+`hab` edited it as if it were log10(1 + mean q). The two readings agree while every day's flow is ≫ 1 cfs (the 2022–23
+Lee-Collier window matches to 4 dp) and part at low flow (2017–19: 4e-4; Tampa 2021: 3e-3). Applying `hab`'s edit to the
+core's own rows reproduces `whatif.json`. The core re-derives from the scaled raw stream, so its Δp is the transform's
+own answer. Tampa's scenario scales gauge 02304500, which is not a lever; `hab` did the same silently, and the core reports it.
+
+## Not here yet (M-1b-ii-b)
+
+`site/` (the template with all copy parameterised), `how/templates/template_mapping_atl.yaml`, and archiving `src/hab/`.
+Until then `src/hab/` stays canonical **for the site only**.

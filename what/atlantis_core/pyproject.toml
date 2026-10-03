@@ -1,7 +1,7 @@
 [project]
 name = "atlantis-core"
-version = "0.1.0"
-description = "Atlantis reference implementation — registries → vitals → direction-aware label, with the all-stream leakage self-test (P1 M-1b-i)"
+version = "0.2.0"
+description = "Atlantis reference implementation — registries → vitals → direction-aware label, with the all-stream leakage self-test (P1 M-1b-i); eval · explain · board (M-1b-ii-a)"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.12"
@@ -11,10 +11,11 @@ dependencies = [   # pinned to the exemplar's lock (M-1a) so the equivalence tes
   "pyarrow==25.0.1",
   "pyyaml==6.0.3",
   "requests==2.34.2",
+  "scikit-learn==1.9.1",   # eval/explain (M-1b-ii-a), same pins as the exemplar
+  "shap==0.52.0",
+  "xgboost==3.4.1",
+  "jsonschema[format]>=4",   # board: the closed AtlEvaluation vs the committed schema, with the format checker
 ]
-
-[project.optional-dependencies]
-validate = ["jsonschema>=4"]
 
 [dependency-groups]
 dev = ["pytest>=8"]
