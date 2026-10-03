@@ -27,6 +27,7 @@ pipeline from scratch takes < 1 h on a laptop, most of it waiting on the OISST s
 |---|---|
 | `README.md` | results, run order, design decisions, caveats |
 | `config.yaml` | threshold · horizon · regions (lat/lon rules, `ast`-whitelist parsed) · gauges (`lever:` flag → site tag) · split years · XGBoost + SHAP settings. **Byte-hashed into `metrics.json → config_hash`; see README §Provenance before editing.** |
+| `streams.yaml` · `features.yaml` · `events.yaml` · `atlantis.yaml` | the exemplar **as an atlantis_core instance** (M-1b-i, 2026-10-02): `atl_v0` registries + engine config. `atlantis.yaml` copies values from `config.yaml` (drift-guarded by `what/atlantis_core/tests/test_registry.py`). `src/hab/` stays canonical until M-1b-ii |
 | `pyproject.toml` · `uv.lock` · `.python-version` | the package (`uv sync`); `requirements.txt` retired at M-1a (2026-10-02) |
 | `tests/` | `test_regions.py` — parser whitelist + the 9 frozen region counts (`python -m pytest`) |
 | `src/hab/` | `fetch_fwc` · `fetch_env` · `provenance` (fetch summaries + sha256) · `regions` · `build_features` (with `--self-test` leakage test) · `eda` · `train` (+ `--negative-control`) · `explain` · `whatif` · `export_site_data` · `build_site` |
@@ -39,7 +40,7 @@ Dataset notes (vault-level, Atlantis): `what/datasets/dataset_fwc_hab_karenia.md
 
 ## Rules for agents touching this folder
 
-- **Never modify a feature without re-running `build_features --self-test`.** The leakage test is the pilot's only hard invariant.
+- **Never modify a feature without re-running `build_features --self-test`** — and, for the registries, `python -m atlantis_core.selftest --instance .` from `what/atlantis_core/` (all-stream). The leakage test is the pilot's only hard invariant.
 - **Test years are scored once.** If you retune, retune on 2017–2019 and leave 2020–2023 alone.
 - Interventional SHAP + the lever/proxy/artifact tags are load-bearing for the site's intervention section; do not switch to
   path-dependent SHAP without rewriting that section.

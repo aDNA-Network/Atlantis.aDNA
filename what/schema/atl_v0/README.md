@@ -130,6 +130,14 @@ Named so that nobody reads them as implied:
    Free-text slots without a pattern (`split`, `learner`, `owner`…) accept a trailing newline in either dialect.
 9. **Controlled on one class, asserted on its siblings by the generator only:** extra-key rejection on the 8 classes
    without their own control; `minimum_value`/`maximum_value` on the metric slots other than `base_rate`.
+10. **A vital that reads no stream must still name one** (M-1b-i). `stream_ref` is required and there is no `calendar`
+    modality, so the exemplar's season harmonics (`woy_sin`, `woy_cos`) point at the stream that defines the patient-week
+    grid (FWC). Honest about the grid, silent about the calendar. v1 candidate: a `calendar` modality or an optional
+    `stream_ref` for grid-only transforms.
+11. **Cross-file references are not checked per file.** `linkml-validate` validates each registry alone, so a
+    `stream_ref` in `features.yaml` naming a stream absent from `streams.yaml` passes. `atlantis_core.registry` (R1–R7)
+    checks these across files, together with the transform grammar, the window rule and the climatology-era rule. Its
+    tests plant each defect.
 
 ## Validation history
 
