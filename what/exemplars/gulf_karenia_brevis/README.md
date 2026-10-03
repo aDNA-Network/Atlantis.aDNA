@@ -48,7 +48,7 @@ The exemplar is an `atlantis_core` instance; `src/hab/` is archived in place (`s
 cd ../../atlantis_core && uv sync && I=../exemplars/gulf_karenia_brevis
 .venv/bin/python -m atlantis_core.selftest --instance $I   # SO-7: the all-stream leakage test; writes the fetch gate's receipt (gitignored)
 .venv/bin/python -m atlantis_core.fetch --instance $I --verify    # re-hash the three committed parquets: bytes == summary == streams.yaml
-.venv/bin/python -m atlantis_core.fetch --instance $I --offline   # cache hits only; without --offline a missing artifact is downloaded
+.venv/bin/python -m atlantis_core.fetch --instance $I --offline   # cache hits only. A network fetch is refused here: no posture pin, no new snapshots (ADR-002 §4)
 .venv/bin/python -m atlantis_core.run --instance $I        # → outputs/atlantis_core/ (+ data/processed/atlantis_core/, gitignored) ~7 min
 .venv/bin/python -m atlantis_core.board --instance $I --version 1 --run-date 2026-10-02 --vs 2026-09-23_gulf_karenia_brevis_v0
 .venv/bin/python -m atlantis_core.site --instance $I       # → site/gulf_karenia_brevis_v1.html (site.yaml + site_copy.yaml)
