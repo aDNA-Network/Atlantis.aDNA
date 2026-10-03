@@ -4,7 +4,7 @@ mission_id: M-1d
 plan_id: mission_m1d_fork_skill_and_registries
 title: "M-1d — `skill_atlantis_instance_fork` + pipeline lattice + dataset-pair migration + contribution guide + BOARD generator"
 owner: stanley
-status: planned
+status: superseded
 campaign: campaign_atlantis_genesis
 campaign_id: campaign_atlantis_genesis
 phase: P1
@@ -17,11 +17,19 @@ depends_on: ['M-1b-ii-b', 'M-1c']
 aar_path: how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m1d_fork_skill_and_registries.md
 session: TBD
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-03
 last_edited_by: agent_proteus
 home_vault: Atlantis.aDNA
+superseded_by: [mission_m1d_i_fork_and_conformance, mission_m1d_ii_lattice_and_registries]
 tags: [mission, m1d, p1, opus, atlantis, tidewatch]
 ---
+
+> ⛩ **Superseded 2026-10-03 — split by operator ruling** (`AskUserQuestion` at M-1d open: closing the exit bar honestly needs a
+> fetch entry point, instance templates, a scaffolder and a conformance checker the card did not list — est. 170–220 kT against
+> 80–120 kT). Scope carried whole into `mission_m1d_i_fork_and_conformance.md` (the exit-bar path: atl_v0 0.3.0 · contract v0.2.0 ·
+> fetch CLI gated on a self-test receipt · instance templates · `atlantis_core.fork` + `conform` · the fork skill · the dry run) and
+> `mission_m1d_ii_lattice_and_registries.md` (pipeline lattice + runspec · BOARD generator · dataset pairs · contribution guide ·
+> `board --entries`). The P1 gate follows ii. Kept, not deleted (SO-2).
 
 # M-1d — `skill_atlantis_instance_fork` + pipeline lattice + dataset-pair migration + contribution guide + BOARD generator
 

@@ -1,11 +1,11 @@
 ---
 type: state
 status: p1_open
-phase: "P1 — Core canonisation; M-1a + M-1c + M-1b-i + M-1b-ii-a complete 2026-10-02, M-1b-ii-b complete 2026-10-03; M-1d queued → P1 gate"
+phase: "P1 — Core canonisation; M-1a + M-1c + M-1b-i + M-1b-ii-a complete 2026-10-02, M-1b-ii-b complete 2026-10-03; M-1d split → M-1d-i in progress → M-1d-ii → P1 gate"
 campaigns: [campaign_atlantis_genesis]
-mission: mission_m1d_fork_skill_and_registries   # queued; M-1b-ii-b ✅ 2026-10-03; M-1b-ii-a ✅ · M-1b-i ✅ · M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
+mission: mission_m1d_i_fork_and_conformance   # in progress 2026-10-03 (M-1d split by operator ruling → i / ii); M-1b-ii-b ✅ 2026-10-03; M-1b-ii-a ✅ · M-1b-i ✅ · M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
 persona: proteus   # RULED 2026-10-02 (ADR-001 ratified)
-last_session: session_stanley_20261003_191346_m1b_ii_b_site_mapping_archive (opus)
+last_session: session_stanley_20261003_210703_m1d_i_fork_and_conformance (opus, active)
 created: 2026-09-23
 updated: 2026-10-03
 last_edited_by: agent_proteus
@@ -29,6 +29,8 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
    `python -m atlantis_core.site --instance …` (→ the instance's page, ~2 s) · `python -m atlantis_core.mapping --check <mapping.yaml>`.
 
 ## ⏭ QUEUED — Next Live Session
+
+> **⚠ In progress 2026-10-03:** M-1d-i (opus) holds the lease `how/sessions/active/session_stanley_20261003_210703_m1d_i_fork_and_conformance.md`. M-1d was split by operator ruling (i = fork from templates alone; ii = lattice · BOARD · dataset pairs · contribution guide). The prompt below is superseded at M-1d-i close.
 
 **M-1b-ii-b complete 2026-10-03** (opus; AAR `missions/aar/aar_m1b_ii_b_site_mapping_archive.md`).
 - **The site is a core template.** Every word is instance copy (`site_copy.yaml`), and what to draw is `site.yaml`. The
