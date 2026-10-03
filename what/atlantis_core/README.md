@@ -108,6 +108,24 @@ Lee-Collier window matches to 4 dp) and part at low flow (2017–19: 4e-4; Tampa
 core's own rows reproduces `whatif.json`. The core re-derives from the scaled raw stream, so its Δp is the transform's
 own answer. Tampa's scenario scales gauge 02304500, which is not a lever; `hab` did the same silently, and the core reports it.
 
+## Known limits of eval and explain (SO-9)
+
+Both inherited from `hab` and kept so that the port reproduces it (M-1b-ii-a III F-8). The fix is carded as a follow-up:
+it moves every budget number and would give the v0 → v1 delta a second cause.
+
+1. **Alert thresholds are quantiles of the test scores.** Each budget alerts on the top r of the test year's own scores,
+   chosen after the fact. A steward would have to fix the threshold beforehand, from validation, and the realised
+   alert rate would drift. Lead time inherits the same threshold.
+2. **The rolling folds testing 2017–2019 reuse a tree count early-stopped on 2017–2019** (the full model's `n_trees`). This
+   is mild selection on the years they score.
+
+**Two limits on reading an explanation:**
+3. **Collinear vitals split attribution.** Read `group_net_mean_abs_shap` (|Σ φ| within a group) beside the abs-sums. Under
+   the logistic swap, season and SST carry large offsetting attributions.
+4. **Absence is not a value.** Missingness flags are `availability:<vital>` pseudo-vitals tagged artifact, and never the
+   vital's tag. Where a stream is structurally absent (units 8 and 9 have no gauge), the flag encodes unit identity. Even
+   xgboost gives ungauged units 7–19% of each discharge vital's attribution.
+
 ## Not here yet (M-1b-ii-b)
 
 `site/` (the template with all copy parameterised), `how/templates/template_mapping_atl.yaml`, and archiving `src/hab/`.

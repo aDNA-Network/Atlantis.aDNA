@@ -5,12 +5,14 @@
 
 `evaluation` carries exactly the `AtlEvaluation` slots (WI-8: the M-0 entry mixed extras in). Everything else goes to
 `evaluation_extras` — summary statistics only. `emit` refuses a result whose R7 obligations were not honoured
-(reference-mode runs), and `assert_green` rejects anything per-patient: predictions, observations, labels, SHAP rows,
-curves. If a field would carry one, the entry is wrong, not the rule.
+(reference-mode runs) — the headline's and every learner swap's — and `assert_green` keeps per-patient content off:
+an allowlist of `evaluation_extras` keys, a denylist of per-row field names, and caps on list length, dict size, numeric
+leaves and numbers inside any string (M-1b-ii-a III F-4: a denylist alone let 1,640 keyed predictions through). If a
+field would carry per-patient content, the entry is wrong, not the rule.
 """
 from __future__ import annotations
 
-import json
+import json, re
 from pathlib import Path
 
 from atlantis_core.eval.metrics import rate_key
@@ -19,7 +21,14 @@ SCHEMA = Path(__file__).resolve().parents[4] / "schema" / "atl_v0" / "atl_ontolo
 ACCURACY_CLAIM = "NONE — method demonstration on public data; not an operational forecast (SO-4)"
 FORBIDDEN = {"p", "p_actual", "p_scenario", "y", "weeks", "shap", "shap_all", "x", "roc", "pr", "calibration",
              "histogram_weeks_before_onset", "importance", "gain_importance", "val_logloss_by_C"}
-MAX_LIST = 32   # no per-patient vector fits under this; the longest legitimate list is the rolling-origin panel
+MAX_LIST = 32          # no per-patient vector fits under this; the longest legitimate list is the rolling-origin panel
+MAX_DICT = 40          # a dict keyed by patient-week would exceed this; the widest legitimate one is a group/tag table
+MAX_NUMERIC = 600      # numeric leaves in a whole entry (v1 carries ~250)
+MAX_STRING_NUMBERS = 40   # numbers inside one string — notes are prose, not a smuggled vector
+EXTRAS_KEYS = {"event", "patient", "modelling_rows", "modelling_positives", "modelling_prevalence",
+               "dropped_already_in_event", "dropped_outcome_unknown", "n_trees", "n_vitals", "vital_groups",
+               "sensitivity", "rolling_origin", "obligations", "shap_summary", "semantic_hash", "config_bytes_md5",
+               "data_pins", "learner_swaps", "delta_vs", "regenerated"}
 
 
 class BoardError(ValueError):
@@ -92,17 +101,35 @@ def validate(ev: dict) -> None:
         raise BoardError("closed AtlEvaluation rejected: " + "; ".join(f"{'/'.join(map(str, x.absolute_path))}: {x.message[:120]}" for x in errs))
 
 
-def assert_green(obj, path="") -> None:
+_NUM = re.compile(r"-?\d+(?:\.\d+)?(?:e-?\d+)?")
+
+
+def assert_green(obj, path="", _count=None) -> None:
+    top = _count is None
+    _count = _count if _count is not None else [0]
+    if top and isinstance(obj, dict) and isinstance(obj.get("evaluation_extras"), dict):
+        extra = set(obj["evaluation_extras"]) - EXTRAS_KEYS
+        if extra:
+            raise BoardError(f"never on the board: evaluation_extras keys outside the allowlist {sorted(extra)}")
     if isinstance(obj, dict):
+        if len(obj) > MAX_DICT:
+            raise BoardError(f"never on the board: {path} is a {len(obj)}-key dict (per-patient tables do not cross)")
         for k, v in obj.items():
             if k in FORBIDDEN:
                 raise BoardError(f"never on the board: {path}/{k} (per-patient or per-row content)")
-            assert_green(v, f"{path}/{k}")
+            assert_green(v, f"{path}/{k}", _count)
     elif isinstance(obj, list):
         if len(obj) > MAX_LIST:
             raise BoardError(f"never on the board: {path} is a {len(obj)}-long list (per-patient vectors do not cross)")
         for i, v in enumerate(obj):
-            assert_green(v, f"{path}[{i}]")
+            assert_green(v, f"{path}[{i}]", _count)
+    elif isinstance(obj, str):
+        if len(_NUM.findall(obj)) > MAX_STRING_NUMBERS:
+            raise BoardError(f"never on the board: {path} carries {len(_NUM.findall(obj))} numbers in one string")
+    elif isinstance(obj, (int, float)) and not isinstance(obj, bool):
+        _count[0] += 1
+        if _count[0] > MAX_NUMERIC:
+            raise BoardError(f"never on the board: more than {MAX_NUMERIC} numbers in one entry (at {path})")
 
 
 def _swap_summary(sw: dict) -> dict:
@@ -114,15 +141,19 @@ def _swap_summary(sw: dict) -> dict:
             "lead_time": {"flagged_fraction": _r(lt["detected_fraction"]), "median_lead": lt["median_lead_weeks"], "n_onsets": lt["n_onsets"]},
             "rolling_origin_auroc_range": [_r(min(ro)), _r(max(ro))],
             "top6": sw.get("shap_summary", {}).get("top6"),
-            "group_mean_abs_shap": sw.get("shap_summary", {}).get("group_mean_abs_shap")}
+            "group_mean_abs_shap": sw.get("shap_summary", {}).get("group_mean_abs_shap"),
+            "group_net_mean_abs_shap": sw.get("shap_summary", {}).get("group_net_mean_abs_shap"),
+            "semantic_hash": sw.get("semantic_hash")}
 
 
 def emit(res: dict, inst, *, version: int, run_date: str, recorded_at: str, shap: dict, swaps: dict | None = None,
          delta_vs: dict | None = None, notes: list | None = None, provenance: dict | None = None,
-         shap_summary_ref: str | None = None) -> dict:
-    bad = [o["obligation"] for o in res.get("obligations", []) if not o["honoured"]]
-    if bad or res.get("mode") != "core":
-        raise BoardError("refusing to emit: unhonoured obligations / reference-mode result —\n  " + "\n  ".join(bad or [str(res.get("mode"))]))
+         shap_summary_ref: str | None = None, regenerated: dict | None = None) -> dict:
+    for name, r in [("headline", res), *[(f"learner swap {k}", v) for k, v in (swaps or {}).items()]]:   # III F-5
+        bad = [o["obligation"] for o in r.get("obligations", []) if not o["honoured"]]
+        if bad or r.get("mode") != "core":
+            raise BoardError(f"refusing to emit ({name}): unhonoured obligations / reference-mode result —\n  "
+                             + "\n  ".join(bad or [str(r.get("mode"))]))
     from atlantis_core import __version__
     b = inst.cfg["board"]
     ev = project(res, inst, version=version, recorded_at=recorded_at, shap_summary_ref=shap_summary_ref)
@@ -141,7 +172,8 @@ def emit(res: dict, inst, *, version: int, run_date: str, recorded_at: str, shap
                          "test_prevalence": _r(res["sensitivity"]["test_prevalence"])}] if "sensitivity" in res else [],
         "rolling_origin": [{k: (_r(v) if k in ("prevalence", "auroc", "auprc") else v) for k, v in r.items()} for r in res["rolling_origin"]],
         "obligations": res.get("obligations", []),
-        "shap_summary": {k: shap[k] for k in ("base_p", "additivity_max_gap", "top6", "group_mean_abs_shap", "tag_mean_abs_shap") if k in shap},
+        "shap_summary": {k: shap[k] for k in ("base_p", "additivity_max_gap", "top6", "group_mean_abs_shap", "group_net_mean_abs_shap",
+                                              "tag_mean_abs_shap") if k in shap},
         "semantic_hash": res["semantic_hash"], "config_bytes_md5": res.get("config_bytes_md5", {}),
         "data_pins": [{"stream_ref": sid, "artifact": inst.stream_spec(sid).get("artifact"), "sha256": s["sha256"]}
                       for sid, s in inst.streams.items() if s.get("sha256")],
@@ -149,6 +181,8 @@ def emit(res: dict, inst, *, version: int, run_date: str, recorded_at: str, shap
     }
     if delta_vs:
         extras["delta_vs"] = delta_vs
+    if regenerated:
+        extras["regenerated"] = regenerated
     entry = {"board_entry_schema": "atl_board_entry_v1", "tier": "GREEN", "accuracy_claim": ACCURACY_CLAIM,
              "entry_id": f"{run_date}_{b['entry_stem']}_v{version}", "source": b["source"], "instance": b["instance"],
              "method_version": b["method_version"].format(version=__version__), "recorded_by": ev["recorded_by"],

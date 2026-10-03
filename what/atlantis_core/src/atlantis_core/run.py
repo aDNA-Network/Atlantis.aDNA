@@ -4,7 +4,8 @@
 
 Writes `<instance>/<out>/`: metrics.json · shap_summary.json · whatif.json · model.json (xgboost) ·
 learner_swap_<kind>.json (one per `learner_swaps` entry, T2). Scored tables go to `<instance>/data/processed/atlantis_core/`
-(per-patient — never committed, never on the board). Every R7 obligation is honoured here (per-fold climatology refit),
+(per-patient, gitignored). `whatif.json` carries per-week scores for its scenarios — committed for the public-data
+exemplar, as hab's was; an instance decides under its own data ruling. Nothing per-patient goes on the board. Every R7 obligation is honoured here (per-fold climatology refit),
 so the results are board-eligible. Method demonstration, not an operational forecast (SO-4).
 """
 from __future__ import annotations
@@ -108,6 +109,7 @@ def main(argv=None) -> int:
             r2, a2 = eval_run(inst, model_df, panel, fold_tables=folds, sensitivity_df=sens_df, learner_spec=spec)
             s2, _ = explain.shap_explain(inst, a2["full"]["learner"], a2["full"]["model"], a2["all_scored"], a2["test_scored"])
             r2.update(provenance); r2["shap_summary"] = s2
+            r2["semantic_hash"] = semantic_hash(inst, learner=spec)   # the swap's own join key (III F-2)
             write(out / f"learner_swap_{spec['kind']}.json", r2)
     print(f"→ {out.relative_to(inst.root)}/ ({time.time() - t0:.0f} s)")
     return 0

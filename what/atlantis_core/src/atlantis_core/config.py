@@ -17,8 +17,9 @@ from atlantis_core import registry as _registry
 # machine-relevant fields — never comments, ordering, prose, or SHAP/site settings (WI-7: the exemplar's bytes-md5
 # changed on a SHAP-only edit and stopped matching its metrics).
 TRAINING_SECTIONS = ("grid", "streams", "climatology", "climatology_policy", "constants", "vitals", "label", "split", "learner")
-STREAM_NON_TRAINING = ("fetch", "summary", "artifact")   # where/how bytes are fetched — pinned by sha256, not hashed here
-VITAL_MACHINE_FIELDS = ("vital_id", "stream_ref", "transform", "lag", "window", "monotone")
+STREAM_NON_TRAINING = ("fetch", "summary", "artifact", "lever_stations")   # fetch details are pinned by sha256; lever_stations is what-if only
+EVAL_TRAINING_KEYS = ("ablations", "sensitivity_threshold", "surveillance_only")   # they choose WHICH models are trained (M-1b-ii-a III F-2)
+VITAL_MACHINE_FIELDS = ("vital_id", "stream_ref", "transform", "lag", "window", "monotone", "group")   # group drives the ablations
 EVENT_MACHINE_FIELDS = ("event_id", "event_variable_stream", "threshold", "direction", "horizon")
 
 
@@ -92,11 +93,16 @@ def _strip_streams(streams: dict) -> dict:
     return {sid: {k: v for k, v in spec.items() if k not in STREAM_NON_TRAINING} for sid, spec in streams.items()}
 
 
-def semantic_hash(inst: Instance) -> str:
+def semantic_hash(inst: Instance, learner: dict | None = None) -> str:
     """md5 (first 10 hex, same width as the exemplar's bytes hash) of a canonical JSON of the training-relevant
-    config sections + the machine fields of every vital and event. Key order, comments and prose do not move it."""
+    config sections + the machine fields of every vital and event. Key order, comments and prose do not move it.
+    `learner` overrides `cfg.learner` — a learner swap's results carry the hash of the learner that produced them."""
+    cfg = dict(inst.cfg)
+    if learner is not None:
+        cfg["learner"] = learner
     payload = {
-        "config": {k: (_strip_streams(inst.cfg[k]) if k == "streams" else inst.cfg[k]) for k in TRAINING_SECTIONS if k in inst.cfg},
+        "config": {k: (_strip_streams(cfg[k]) if k == "streams" else cfg[k]) for k in TRAINING_SECTIONS if k in cfg},
+        "eval": {k: (cfg.get("eval") or {}).get(k) for k in EVAL_TRAINING_KEYS},
         "vitals": [{k: v.get(k) for k in VITAL_MACHINE_FIELDS} for v in inst.vitals],
         "events": [{k: inst.events[e].get(k) for k in EVENT_MACHINE_FIELDS} for e in sorted(inst.events)],
     }

@@ -133,16 +133,59 @@ def test_lead_time_below_event():
 # ── logistic: statistics from training rows only ───────────────────────────────────────────────────────────────────
 
 def test_logistic_fits_on_train_only():
+    """The selection model's imputer/scaler statistics are a function of TRAIN rows alone: wild val rows change
+    nothing it learned (III F-6: the first version of this test could not fail)."""
     rng = np.random.default_rng(0)
-    def frame(n, y0):
+    def frame(n):
         x = rng.normal(size=n); x[::7] = np.nan
         return pd.DataFrame({"a": x, "b": rng.normal(size=n), "y": (rng.random(n) < 0.3).astype(int)})
-    train, val = frame(400, 0), frame(200, 0)
-    L = learner({"kind": "logistic", "C_grid": [0.1, 1.0], "max_iter": 1000}, ["a", "b"])
+    train, val = frame(400), frame(200)
+    L = learner({"kind": "logistic", "C_grid": [1.0], "max_iter": 1000}, ["a", "b"])
     vm, final, info = L.fit(train, val)
-    imp = vm.named_steps["impute"]
-    assert imp.statistics_[0] == pytest.approx(np.nanmedian(train["a"]))
-    val2 = val.copy(); val2["a"] = 1e6   # a wild val/test row moves nothing the val model learned
-    vm2 = L._pipe(info["C"]).fit(train[["a", "b"]], train["y"])
-    assert np.allclose(vm2.named_steps["scale"].mean_, vm.named_steps["scale"].mean_)
-    assert info["C"] in (0.1, 1.0) and set(info["val_logloss_by_C"]) == {0.1, 1.0}
+    wild = val.assign(a=1e6, b=-1e6)
+    vm_w, final_w, _ = L.fit(train, wild)
+    for step in ("impute", "scale"):
+        a, b = vm.named_steps[step], vm_w.named_steps[step]
+        sa, sb = (a.statistics_, b.statistics_) if step == "impute" else (a.mean_, b.mean_)
+        assert np.allclose(sa, sb)
+    assert vm.named_steps["impute"].statistics_[0] == pytest.approx(np.nanmedian(train["a"]))
+    assert not np.allclose(final.named_steps["scale"].mean_, final_w.named_steps["scale"].mean_)   # the final model does see val
+
+
+# ── R7: the obligation is VERIFIED per fold, not presumed from an argument (III F-3) ───────────────────────────────
+
+def test_noop_fold_callable_is_refused(exemplar_built):
+    inst, frames, m = exemplar_built
+    panel = m[["region", "week"]].assign(signal=np.nan)
+    base = {sid: inst.climatology(sid) for sid in inst.cfg["climatology"]}
+    with pytest.raises(ObligationError, match="2015"):
+        run(inst, m, panel, fold_tables=lambda Y: (m, base, False), log=lambda *_: None)
+    with pytest.raises(ObligationError, match="2015"):   # claims a rebuild, with the wrong eras
+        run(inst, m, panel, fold_tables=lambda Y: (m, base, True), log=lambda *_: None)
+
+
+# ── the core's own label paths against hab (III F-6: these were outside the port test) ──────────────────────────
+
+def test_relabel_and_signal_panel_match_hab(exemplar_dir, exemplar_built):
+    proc = exemplar_dir / "data" / "processed"
+    if not (proc / "features.parquet").exists():
+        pytest.skip("exemplar data/processed missing")
+    from atlantis_core.run import relabel, signal_panel
+    from atlantis_core.vitals.build import patient_grid
+    inst, frames, _ = exemplar_built
+    units, weeks = patient_grid(inst, frames)
+    table, _ = build(inst, frames)
+    d2, rep = relabel(inst, frames, table, units, weeks, float(inst.cfg["eval"]["sensitivity_threshold"]))
+    df = pd.read_parquet(proc / "features.parquet")
+    thr2 = np.log10(1 + inst.cfg["eval"]["sensitivity_threshold"])
+    h2 = df.assign(y=(df["future_log_max"] >= thr2).astype(int))
+    h2 = h2[~h2["last_obs_log_max"].ge(thr2).fillna(False)]
+    j = d2[["region", "week", "y"]].merge(h2[["region", "week", "y"]], on=["region", "week"], how="outer", indicator=True)
+    assert (j["_merge"] == "both").all() and len(j) == len(h2) == 10556
+    assert (j["y_x"].astype(int) == j["y_y"].astype(int)).all() and int(d2["y"].sum()) == 1202
+    pan = signal_panel(inst, frames, units, weeks)
+    rw = pd.read_parquet(proc / "region_week_all.parquet")[["region", "week", "log_max"]]
+    k = pan.merge(rw, on=["region", "week"], how="outer", indicator=True)
+    assert (k["_merge"] == "both").all() and len(k) == 25011
+    thr = float(inst.event["threshold"])
+    assert (k["signal"].ge(thr).fillna(False) == k["log_max"].ge(np.log10(1 + thr)).fillna(False)).all()

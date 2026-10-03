@@ -19,6 +19,7 @@ from atlantis_core.config import feature_name
 from atlantis_core.eval.lead import lead_time
 from atlantis_core.eval.learners import learner
 from atlantis_core.eval.metrics import climatology_baseline, evaluate, rate_key
+from atlantis_core.eval.rolling import clipped_eras
 
 __all__ = ["run", "split", "groups", "ObligationError"]
 
@@ -104,11 +105,16 @@ def run(inst, model_df: pd.DataFrame, panel: pd.DataFrame, *, fold_tables=None, 
     # rolling origin: the full feature set, the selection from the full model held fixed (as hab.train)
     L, info = art["full"]["learner"], {k: res["full"][k] for k in ("n_trees", "C") if k in res["full"]}
     panel_ro, refit_years = [], []
+    base = {sid: inst.climatology(sid) for sid in (inst.cfg.get("climatology") or {})}
     for Y in s["rolling_origin_years"]:
         if fold_tables is not None:
             fdf, eras, rebuilt = fold_tables(Y); fdf = fdf.copy(); fdf["y"] = fdf["y"].astype(int)
         else:
-            fdf, eras, rebuilt = df, {sid: inst.climatology(sid) for sid in (inst.cfg.get("climatology") or {})}, False
+            fdf, eras, rebuilt = df, base, False
+        need = clipped_eras(inst, Y)
+        if inst.obligations and not reference and need != base and not (rebuilt and dict(eras) == need):
+            # verified, not presumed: the fold callable must have rebuilt with exactly the clipped eras (III F-3)
+            raise ObligationError(f"R7 fold {Y}→{Y + 1}: needs eras {need}, got {eras} (rebuilt={rebuilt}) — obligation not executed")
         tr, te = fdf[fdf.week.dt.year <= Y], fdf[fdf.week.dt.year == Y + 1]
         if te["y"].sum() < 5:
             continue
@@ -123,9 +129,10 @@ def run(inst, model_df: pd.DataFrame, panel: pd.DataFrame, *, fold_tables=None, 
         log(f"  rolling {Y}→{Y+1}: AUROC {row['auroc']:.3f} AUPRC {row['auprc']:.3f} prev {row['prevalence']:.3f}"
             + ("  [climatology refit]" if rebuilt else ""))
     res["rolling_origin"] = panel_ro
-    res["obligations"] = [{"obligation": o, "honoured": fold_tables is not None and not reference,
-                           "how": (f"eras clipped to ≤ train_through; vitals rebuilt for folds testing {refit_years}"
-                                   if fold_tables is not None and not reference else
+    honoured = fold_tables is not None and not reference   # every fold needing a refit was checked above, or we raised
+    res["obligations"] = [{"obligation": o, "honoured": honoured,
+                           "how": (f"eras clipped to ≤ train_through; vitals rebuilt for folds testing {refit_years} (verified per fold)"
+                                   if honoured else
                                    "NOT honoured — reference mode (port check against hab, which did not refit)")}
                           for o in inst.obligations]
     res["mode"] = "reference" if reference else "core"

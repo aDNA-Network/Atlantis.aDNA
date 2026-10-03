@@ -3686,7 +3686,7 @@
   {
    "obligation": "eval must refit the atl_stream_usgs_discharge_daily climatology per rolling-origin fold (era ends 2016; folds testing [2016] would otherwise see their own year)",
    "honoured": true,
-   "how": "eras clipped to \u2264 train_through; vitals rebuilt for folds testing [2016]"
+   "how": "eras clipped to \u2264 train_through; vitals rebuilt for folds testing [2016] (verified per fold)"
   }
  ],
  "mode": "core",
@@ -3700,7 +3700,7 @@
   "n_trees": 137
  },
  "atlantis_core": "0.2.0",
- "semantic_hash": "ddebb078a4",
+ "semantic_hash": "acfa22c6e4",
  "config_bytes_md5": {
   "atlantis.yaml": "92145f524a",
   "config.yaml": "979d3fdf16"
@@ -3713,5 +3713,5 @@
   "positives": 1168,
   "prevalence": 0.10810810810810811
  },
- "run_at": "2026-10-03T04:09:20.388073+00:00"
+ "run_at": "2026-10-03T04:34:00.388692+00:00"
 }

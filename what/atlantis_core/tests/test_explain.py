@@ -38,23 +38,42 @@ def test_shap_reproduces_hab(hab, exemplar_dir):
     assert set(s["tag_mean_abs_shap"]) == {v["tag"] for v in inst.vitals}
 
 
-def test_linear_shap_is_exact():
+def test_linear_shap_matches_brute_force_and_separates_flags():
+    """Per-column φ equals the interventional definition computed by brute force (replace one model column by each
+    background row, average the logit drop) — so a wrong column→name mapping fails, not just additivity (III F-6).
+    Missingness flags are their own `availability:` pseudo-vitals, tagged artifact (III F-1)."""
     rng = np.random.default_rng(1)
     n = 600
-    df = pd.DataFrame({"a": rng.normal(size=n), "b": rng.normal(size=n)})
+    df = pd.DataFrame({"a": rng.normal(size=n), "b": rng.normal(size=n), "c": rng.normal(size=n)})
     df.loc[::5, "a"] = np.nan
-    df["y"] = (rng.random(n) < 1 / (1 + np.exp(-(df["b"] + df["a"].fillna(0))))).astype(int)
+    df["y"] = (rng.random(n) < 1 / (1 + np.exp(-(2 * df["b"] + df["a"].isna() * 1.5)))).astype(int)
     df["week"] = pd.date_range("2000-01-03", periods=n, freq="7D")
     df["split"] = np.where(np.arange(n) < 400, "train", "test")
     class I:   # the minimum an explainer reads from an instance
-        vitals = [{"vital_id": "atl_vital_a", "group": "g", "tag": "state"}, {"vital_id": "atl_vital_b", "group": "g", "tag": "proxy"}]
+        vitals = [{"vital_id": "atl_vital_a", "group": "g1", "tag": "lever", "owner": "x"},
+                  {"vital_id": "atl_vital_b", "group": "g2", "tag": "proxy"},
+                  {"vital_id": "atl_vital_c", "group": "g2", "tag": "state"}]
         cfg = {"explain": {"background_n": 300, "background_seed": 0, "perturbation": "interventional", "interaction_rows": 10}}
-    L = learner({"kind": "logistic", "C_grid": [1.0]}, ["a", "b"])
+    L = learner({"kind": "logistic", "C_grid": [1.0]}, ["a", "b", "c"])
     _, final, _ = L.fit(df[df.split == "train"], df[df.split == "test"])
     test = df[df.split == "test"].assign(p=L.predict(final, df[df.split == "test"]))
-    s, arr = shap_explain(I, L, final, df.assign(p=L.predict(final, df)), test)
+    alls = df.assign(p=L.predict(final, df))
+    s, arr = shap_explain(I, L, final, alls, test)
+    names = list(arr["columns"])
+    assert names == ["a", "b", "c", "availability:a"]
     assert s["additivity_max_gap"] < 1e-9
-    assert arr["shap_all"].shape == (n, 2)
+    # brute force in model-column space
+    from atlantis_core.explain import _background
+    imp, sc, lr = final.named_steps["impute"], final.named_steps["scale"], final.named_steps["lr"]
+    Z = sc.transform(imp.transform(test[["a", "b", "c"]])); ZB = sc.transform(imp.transform(_background(I, alls, ["a", "b", "c"])))
+    logit = lambda M: M @ lr.coef_[0] + lr.intercept_[0]
+    for k, name in enumerate(names):
+        assert np.allclose(arr["shap"][:, k], logit(Z) - logit(np.where(np.arange(Z.shape[1]) == k, ZB.mean(0), Z)))
+        assert np.allclose(arr["shap"][:, k], np.mean([logit(Z) - logit(np.where(np.arange(Z.shape[1]) == k, zb, Z)) for zb in ZB], 0))
+    assert s["tag_mean_abs_shap"]["artifact"] > 0 and "availability" in s["group_mean_abs_shap"]
+    assert "availability:a" not in s["levers"]                       # a missingness flag never inherits a lever tag
+    assert set(s["group_net_mean_abs_shap"]) == {"g1", "g2", "availability"}
+    assert arr["shap_all"].shape == (n, 4)
 
 
 @pytest.fixture(scope="module")

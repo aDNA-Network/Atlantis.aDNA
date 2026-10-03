@@ -8,7 +8,8 @@
     xgboost   early-stop on val (n_estimators/early_stopping_rounds), refit on train+val at the stopped size — as hab.train.
               Monotone constraints come from features.yaml `monotone` (+1/−1), not a list in config.
     logistic  median impute (+ a missingness flag per vital) → standardise → L2 logistic. Every statistic is fitted on
-              the rows the model trains on — never val or test rows. C is chosen on val log-loss from `C_grid`.
+              the rows that model trains on: train for the selection model, train+val for the final — never test.
+              C is chosen on val log-loss from `C_grid`.
 """
 from __future__ import annotations
 
@@ -98,7 +99,8 @@ class Logistic:
     def describe(self, info: dict) -> str:
         import sklearn
         return (f"scikit-learn {sklearn.__version__} LogisticRegression · L2 · C={info['C']} (val log-loss over "
-                f"{list(self.spec['C_grid'])}) · median impute + missingness flags · standardised · fitted on train only")
+                f"{list(self.spec['C_grid'])}) · median impute + missingness flags · standardised · imputer/scaler fitted on "
+                f"each model's own training rows (train for selection, train+val for the final; never test)")
 
     def importance(self, model) -> dict:
         lr, imp = model.named_steps["lr"], model.named_steps["impute"]

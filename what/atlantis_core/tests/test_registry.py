@@ -67,7 +67,18 @@ def test_semantic_hash_ignores_prose_and_order(exemplar_dir):
     b.cfg = dict(reversed(list(b.cfg.items())))
     b.cfg["selftest"] = {"anything": 1}
     b.cfg["streams"]["atl_stream_fwc_hab_karenia"]["fetch"]["page"] = 1000     # how bytes are fetched is not training
+    b.cfg["streams"]["atl_stream_usgs_discharge_daily"]["lever_stations"] = []  # what-if only (III F-2)
+    b.cfg["eval"] = {**b.cfg["eval"], "alert_rates": [0.5], "lead_budget": 0.5}  # how a trained model is read
+    b.cfg["whatif"] = {}; b.cfg["explain"] = {}; b.cfg["board"] = {}
     assert semantic_hash(b) == h
+
+
+def test_semantic_hash_follows_the_learner(exemplar_dir):
+    """A learner swap's results carry the hash of the learner that produced them (III F-2)."""
+    a = load_instance(exemplar_dir)
+    sw = a.cfg["learner_swaps"][0]
+    assert semantic_hash(a, learner=sw) != semantic_hash(a)
+    assert semantic_hash(a, learner=a.cfg["learner"]) == semantic_hash(a)
 
 
 def test_rolling_origin_obligation_recorded(exemplar_dir):
@@ -82,6 +93,12 @@ def test_rolling_origin_obligation_recorded(exemplar_dir):
     lambda i: i.cfg["split"].__setitem__("train_end", 2015),
     lambda i: i.cfg["vitals"].__setitem__("weeks_since_cap", 52),           # III F-6
     lambda i: i.cfg["climatology_policy"].__setitem__("rolling_origin", "fixed"),
+    # M-1b-ii-a III F-2: fields that choose which models are trained
+    lambda i: i.cfg["eval"].__setitem__("sensitivity_threshold", 40000),
+    lambda i: i.cfg["eval"].__setitem__("ablations", []),
+    lambda i: i.cfg["eval"].__setitem__("surveillance_only", "n_samples_t0"),
+    lambda i: i.vitals[0].__setitem__("group", "other"),
+    lambda i: i.cfg["learner"]["params"].__setitem__("max_depth", 5),
 ])
 def test_semantic_hash_moves_on_training_change(exemplar_dir, fn):
     a = load_instance(exemplar_dir); h = semantic_hash(a)

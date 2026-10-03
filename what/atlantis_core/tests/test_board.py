@@ -39,10 +39,25 @@ def test_projection_is_closed(v0):
         validate({**ev, "recorded_at": "yesterday"})   # the format checker is live
 
 
-@pytest.mark.parametrize("bad", [{"p_actual": [0.1]}, {"x": {"shap": [1.0]}}, {"curve": list(range(100))}])
+_PREDS = {f"r7|2021-{i:04d}": 0.1 for i in range(1640)}
+
+
+@pytest.mark.parametrize("bad", [
+    {"rolling_origin": [{"p_actual": [0.1]}]}, {"shap_summary": {"x": {"shap": [1.0]}}}, {"rolling_origin": list(range(100))},
+    # the reviewer's three (III F-4), each passed the denylist-only guard
+    {"sensitivity": [{"by_patient_week": _PREDS}]},
+    {"rolling_origin": [[0.5] * 32 for _ in range(32)]},
+    {"obligations": [{"how": " ".join(f"{0.1 + i / 1e4:.4f}" for i in range(500))}]},
+    {"predictions": 1},   # outside the extras allowlist
+])
 def test_assert_green_rejects_per_patient_content(bad):
     with pytest.raises(BoardError, match="never on the board"):
         assert_green({"evaluation_extras": bad})
+
+
+def test_assert_green_passes_the_committed_v1():
+    v1 = json.loads((Path(__file__).resolve().parents[2] / "board" / "entries" / "2026-10-02_gulf_karenia_brevis_v1.json").read_text())
+    assert_green(v1)
 
 
 def test_emit_refuses_reference_mode(v0):
@@ -50,3 +65,6 @@ def test_emit_refuses_reference_mode(v0):
     ref = {**m, "mode": "reference", "obligations": [{"obligation": inst.obligations[0], "honoured": False}]}
     with pytest.raises(BoardError, match="unhonoured"):
         emit(ref, inst, version=9, run_date="2026-10-02", recorded_at="2026-10-02T00:00:00Z", shap={})
+    ok = {**m, "mode": "core", "obligations": [{"obligation": inst.obligations[0], "honoured": True}]}
+    with pytest.raises(BoardError, match="learner swap"):   # III F-5: a reference-mode swap cannot ride along
+        emit(ok, inst, version=9, run_date="2026-10-02", recorded_at="2026-10-02T00:00:00Z", shap={}, swaps={"s": ref})

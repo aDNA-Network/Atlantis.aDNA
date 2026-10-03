@@ -7,7 +7,7 @@
  "instance": "Atlantis.aDNA/what/exemplars/gulf_karenia_brevis",
  "method_version": "pattern_ecosystem_early_warning 0.1 · atlantis_core 0.2.0",
  "recorded_by": "agent_proteus",
- "recorded_at": "2026-10-03T04:16:25Z",
+ "recorded_at": "2026-10-03T04:41:27Z",
  "run_date": "2026-10-02",
  "evaluation": {
   "evaluation_id": "atl_eval_gulf_karenia_brevis_v1",
@@ -61,7 +61,7 @@
    }
   ],
   "learner": "xgboost 3.4.1 · binary:logistic · depth 4 · eta 0.03 · early-stop logloss (100 rounds) · 141 trees · no scale_pos_weight · monotone on log_max_t0, roll_max_4w",
-  "config_hash": "ddebb078a4",
+  "config_hash": "acfa22c6e4",
   "data_pins": [
    {
     "stream_ref": "atl_stream_fwc_hab_karenia",
@@ -80,7 +80,7 @@
   "claim": "method_demonstration",
   "limitations_ref": "what/exemplars/gulf_karenia_brevis/site/hab_crash_risk.html#limits (§11 Where the analogy breaks) · README.md §Caveats",
   "recorded_by": "agent_proteus",
-  "recorded_at": "2026-10-03T04:16:25Z"
+  "recorded_at": "2026-10-03T04:41:27Z"
  },
  "evaluation_extras": {
   "event": {
@@ -284,7 +284,7 @@
    {
     "obligation": "eval must refit the atl_stream_usgs_discharge_daily climatology per rolling-origin fold (era ends 2016; folds testing [2016] would otherwise see their own year)",
     "honoured": true,
-    "how": "eras clipped to ≤ train_through; vitals rebuilt for folds testing [2016]"
+    "how": "eras clipped to ≤ train_through; vitals rebuilt for folds testing [2016] (verified per fold)"
    }
   ],
   "shap_summary": {
@@ -305,6 +305,13 @@
     "discharge": 0.26684,
     "surveillance": 0.16376
    },
+   "group_net_mean_abs_shap": {
+    "counts": 0.84039,
+    "season": 0.34877,
+    "sst": 0.24795,
+    "discharge": 0.21125,
+    "surveillance": 0.15962
+   },
    "tag_mean_abs_shap": {
     "state": 1.14891,
     "proxy": 0.89202,
@@ -312,7 +319,7 @@
     "artifact": 0.16595
    }
   },
-  "semantic_hash": "ddebb078a4",
+  "semantic_hash": "acfa22c6e4",
   "config_bytes_md5": {
    "atlantis.yaml": "92145f524a",
    "config.yaml": "979d3fdf16"
@@ -336,7 +343,7 @@
   ],
   "learner_swaps": [
    {
-    "learner": "scikit-learn 1.9.1 LogisticRegression · L2 · C=1.0 (val log-loss over [0.001, 0.01, 0.1, 1.0, 10.0]) · median impute + missingness flags · standardised · fitted on train only",
+    "learner": "scikit-learn 1.9.1 LogisticRegression · L2 · C=1.0 (val log-loss over [0.001, 0.01, 0.1, 1.0, 10.0]) · median impute + missingness flags · standardised · imputer/scaler fitted on each model's own training rows (train for selection, train+val for the final; never test)",
     "test_auroc": 0.8726,
     "test_auprc": 0.5225,
     "brier": 0.0514,
@@ -367,18 +374,28 @@
     "top6": [
      "woy_cos",
      "sst_t0",
-     "discharge_30d_t3",
+     "availability:discharge_30d_t3",
      "sst_anom_t0",
      "sst_delta_4w",
      "n_samples_4w"
     ],
     "group_mean_abs_shap": {
-     "sst": 3.05789,
+     "sst": 3.06356,
+     "availability": 1.74944,
      "season": 1.69001,
-     "counts": 1.57068,
-     "discharge": 1.20073,
-     "surveillance": 0.34837
-    }
+     "counts": 1.32369,
+     "surveillance": 0.34837,
+     "discharge": 0.16971
+    },
+    "group_net_mean_abs_shap": {
+     "sst": 1.66832,
+     "season": 1.57565,
+     "counts": 0.82636,
+     "surveillance": 0.34603,
+     "availability": 0.2051,
+     "discharge": 0.09661
+    },
+    "semantic_hash": "9b36c3e779"
    }
   ],
   "delta_vs": {
@@ -444,6 +461,11 @@
      }
     }
    }
+  },
+  "regenerated": {
+   "replaces_commit": "bf0b36a",
+   "reason": "M-1b-ii-a III review (fresh context, PASS-WITH-FINDINGS): F-1 the T2 note folded missingness flags into a lever vital and misread the logistic explanation; F-2 config_hash was not a valid join key (now covers ablations, sensitivity threshold, surveillance-only, vital group; swaps carry their own). Operator ruling 2026-10-02: regenerate in place — the entry had never left this machine. Model, metrics and every other number are unchanged.",
+   "at": "2026-10-03T04:41:27Z"
   }
  },
  "provenance": {
@@ -456,9 +478,10 @@
  },
  "notes": [
   "Delta vs v0 has one cause (M-1b-i AAR Finding 1, operator ruling 2026-10-02): hab lagged the weekly SST table by ROW across OISST's 20 missing weeks, so sst_anom_t2/sst_anom_t4/sst_delta_4w were 3–4-week lags near a gap (87–133 train rows, 1994–98). atlantis_core lags by calendar. Same n, positives, drops and tree count (141); test AUROC 0.8941→0.8938, AUPRC 0.5473→0.5388. AUPRC moves on ~1% of train rows — read it against its base rate (SO-9).",
-  "WI-10: v0's rolling-origin 2015→2016 fold was scored with a discharge normal (1990–2016) containing 2016. v1 honours registry R7: each fold's eras end ≤ its train year and the anomaly vitals are rebuilt (only the 2016 fold changes; evaluation_extras.obligations).",
-  "WI-7: config_hash is now atlantis_core.semantic_hash (training-relevant config + registry machine fields, blind to prose/order/fetch). Bytes-md5s beside it in evaluation_extras.config_bytes_md5; hab's metrics.json carries e9dea88254, the S329 training-time config.yaml (shap.background_n 2000), explained in the exemplar README §Provenance.",
-  "WI-8: evaluation is the CLOSED AtlEvaluation (validated against the committed atl_ontology_v0.schema.json with its format checker); everything else is in evaluation_extras. v0 is untouched and keeps its open shape.",
-  "T2 (learner swap, logistic regression, same vitals): ranking survives (test AUROC 0.8726 vs 0.8938; precision at the 10% budget 0.457 vs 0.463), well inside the falsifier (rolling-origin spread). The explanation does NOT survive: logistic's top six are season/SST proxies with large offsetting attributions between collinear vitals, and the count vitals leave the top six. A SHAP reading is a reading of one model, not of the sea."
+  "WI-10: v0's rolling-origin 2015→2016 fold was scored with a discharge normal (1990–2016) containing 2016. v1 honours registry R7: each fold's eras end ≤ its train year and the anomaly vitals are rebuilt; eval verifies the rebuild per fold (only the 2016 fold changes; evaluation_extras.obligations).",
+  "WI-7: config_hash is atlantis_core.semantic_hash — training config, the evaluation fields that choose which models are trained, and the registries' machine fields (incl. vital group); blind to prose, order and fetch details. Bytes-md5s beside it in evaluation_extras.config_bytes_md5; hab's metrics.json carries e9dea88254, the S329 training-time config.yaml (shap.background_n 2000), explained in the exemplar README §Provenance.",
+  "WI-8: evaluation is the CLOSED AtlEvaluation (validated against the committed atl_ontology_v0.schema.json with its format checker); everything else is in evaluation_extras, under an allowlist. v0 is untouched and keeps its open shape.",
+  "T2 (learner swap, logistic regression, same vitals): ranking survives (test AUROC 0.8726 vs 0.8938; precision at the 10% budget 0.457 vs 0.463), well inside the falsifier (rolling-origin spread). The explanation does not: by net group attribution xgboost reads counts first, logistic reads SST and season first, and the lever-tagged discharge group's share halves. Logistic's missingness flags (gauge-less units) are reported as availability artifacts, never under the lever tag. A SHAP reading is a reading of one model, not of the sea.",
+  "Limits (SO-9, inherited from hab, follow-up carded): alert-budget and lead-time thresholds are quantiles of the test scores, chosen after the fact; rolling folds testing 2017–2019 reuse a tree count early-stopped on those years. atlantis_core README §Known limits of eval and explain."
  ]
 }
