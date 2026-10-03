@@ -1,5 +1,6 @@
 # site_copy.yaml — every word of the exemplar's explainer page, as instance data for atlantis_core.site (M-1b-ii-b).
-# Moved verbatim from site/template.html (hab, v0) by a one-shot script; data paths renamed to the core contract.
+# Moved verbatim from site/template.html (hab, v0) by a one-shot script, then corrected for board v1 (calendar lags · R7 refit ·
+# F-8 limits · net group attribution · a SHAP reading belongs to one model · the raw-stream what-if · reproduce · footer).
 # HTML fragments. {{path|fmt}} binds a value from the assembled site data (fmt: 1 2 3 pct0 pct1 comma k sci label);
 # {{fig:NAME}} places a core figure whose words are figures.NAME. The template carries no copy of its own.
 title: Red Tide Early Warning
@@ -76,7 +77,7 @@ sections:
   eyebrow: Features
   title: The vitals
   body: |
-    <p>Every feature for week <em>t</em> is computed from data dated on or before the end of week <em>t</em>. The repo has a self-test that perturbs week <em>t+1</em> and asserts that nothing at week <em>t</em> moves while the label does, and that a change five weeks out moves nothing at all. Each feature carries one of four tags that section 10 depends on:</p>
+    <p>Every feature for week <em>t</em> is computed from data dated on or before the end of week <em>t</em>. The repo has a self-test that perturbs week <em>t+1</em> and asserts that nothing at week <em>t</em> moves while the label does, and that a change five weeks out moves nothing at all. It runs over <em>every</em> stream, and it checks that each lag reads its own calendar week. That last check exists because the first version of this page failed it: it shifted the weekly temperature table by row, so across the 20 weeks the satellite record is missing, a "2-week lag" was really 3–4 weeks. Lags are now counted in calendar weeks (section 6 gives what that moved). Each feature carries one of four tags that section 10 depends on:</p>
     <div class="legend"><span><span class="tag state">state</span> where the system is now</span><span><span class="tag proxy">proxy</span> a correlate you can forecast but not pull</span><span><span class="tag lever">lever</span> something a manager can actually change</span><span><span class="tag artifact">artifact</span> a property of the surveillance, not the sea</span></div>
     <div class="tblwrap"><table class="tbl" id="t_features"><tr><th>Feature</th><th>Meaning</th><th>Group</th><th>Tag</th></tr></table></div>
     {{fig:trace}}
@@ -111,6 +112,7 @@ sections:
     {{fig:split}}
     </div></div>
 
+    <div class="note"><div class="t">Which numbers these are</div><p>Every number on this page is board entry <code>{{board.entry_id}}</code> (semantic config hash <code>{{board.config_hash}}</code>): this exemplar run end to end through <code>atlantis_core</code>, the Atlantis reference implementation. It differs from the first run (v0) by one cause, the calendar-correct lags of section 4: test AUROC {{board.delta_vs.fields.auroc.was|3}} → {{board.delta_vs.fields.auroc.now|3}}, AUPRC {{board.delta_vs.fields.auprc.was|3}} → {{board.delta_vs.fields.auprc.now|3}}, onsets flagged ahead at the 10% budget {{board.delta_vs.fields.lead_time.was.flagged_fraction|pct0}} → {{board.delta_vs.fields.lead_time.now.flagged_fraction|pct0}}, on the same {{board.n_test|comma}} test region-weeks.</p></div>
     <h3>Discrimination and calibration on the held-out years</h3>
     <div class="grid3">
     {{fig:pr}}
@@ -144,6 +146,7 @@ sections:
     {{fig:bar}}
     {{fig:gbar}}
     </div></div>
+    {{fig:t2}}
     {{fig:bee}}
     <h3>Dependence: the shape of each effect</h3>
     <p>Each plot is one column of the beeswarm turned sideways: the feature's value on the x-axis, its SHAP value on the y-axis, and colour from the feature the trees most often interact it with. Vertical spread at a fixed x is interaction; the colour tells you with what. The strongest measured pair is <strong>{{shap.top_interaction.a|label}} × {{shap.top_interaction.b|label}}</strong>.</p>
@@ -161,7 +164,7 @@ sections:
   eyebrow: The dashboard view
   title: Risk decomposed over time
   body: |
-    <p>Sepsis dashboards show a score trending over the shift with the contributing vitals stacked beneath it. This is the same picture for one region across one bloom: the weekly onset probability on top, the observed weekly maximum in the middle, and beneath them the SHAP values summed by group — what the counts, the season, the water temperature, the rivers and the surveillance each contributed that week.</p>
+    <p>Sepsis dashboards show a score trending over the shift with the contributing vitals stacked beneath it. This is the same picture for one region across one bloom: the weekly onset probability on top, the observed weekly maximum in the middle, and beneath them the SHAP values summed by group — what the counts, the season, the water temperature, the rivers and the surveillance each contributed that week (the net sum for that week, the same reading as the solid bars in section 7).</p>
     {{fig:strip}}
 - id: interventions
   nav: Interventions
@@ -177,13 +180,13 @@ sections:
     </div>
 
     <h3>A what-if on the only lever</h3>
-    <p>The cheapest way to see what the model thinks a lever does is to move it and re-score. Below, the 30-day discharge features are reduced by 30% for every week of the episode and the model is asked again. Everything else — including the counts that discharge might, in reality, have influenced — is held fixed, which is precisely why this is a model exercise and not an environmental impact statement.</p>
+    <p>The cheapest way to see what the model thinks a lever does is to move it and re-score. Below, the daily river discharge feeding the region is reduced by 30% over the episode, every discharge vital is re-derived from that flow, and the model is asked again. (The first version of this page edited the finished discharge vitals instead, treating a 30-day mean of log-flows as the log of a mean flow; the two agree at high flow and part at low flow.) Everything else — including the counts that discharge might, in reality, have influenced — is held fixed, which is precisely why this is a model exercise and not an environmental impact statement.</p>
     {{fig:whatif}}
     <div class="note warn"><div class="t">Why this is not a causal estimate</div><p>Discharge co-varies with the wet season, with rainfall, with wind and with the very temperature signals the model also reads. XGBoost learned a conditional association, not a mechanism; there is no identification strategy here — no instrument, no natural experiment, no dose-response from managed releases. The what-if measures the model's sensitivity, which is a hypothesis generator. The experiment that would test it belongs to the Army Corps and the South Florida Water Management District, not to this page.</p></div>
 
     <h3>How a score like this would actually be used</h3>
     <ol class="plain">
-    <li><strong>Tiered alerts at a fixed budget.</strong> Pick the alert rate the monitoring programme can act on (the 10% row in section 6) and let the threshold follow from it, exactly as a ward sets its alarm rate. Precision and recall at that budget are the numbers to publish, not AUROC.</li>
+    <li><strong>Tiered alerts at a fixed budget.</strong> Pick the alert rate the monitoring programme can act on (the 10% row in section 6) and let the threshold follow from it, fixed on past years and not on the year being scored, exactly as a ward sets its alarm rate. Precision and recall at that budget are the numbers to publish, not AUROC.</li>
     <li><strong>Read the waterfall before acting.</strong> An alert driven by growth and cooling water means "sample here now, warn shellfish harvesters, pre-stage respiratory-irritation advisories". An alert driven by sample count means "you are looking at your own footprint; verify before escalating".</li>
     <li><strong>Route lever contributions to the lever's owner.</strong> A discharge-driven alert in Lee–Collier is a memo to the people who schedule releases, with the what-if attached as a question, not a finding.</li>
     <li><strong>Fix the surveillance design.</strong> The single most useful intervention this analysis suggests is to the data, not the ecosystem: fixed-station weekly sampling would remove the artifact channel and make every other SHAP value more trustworthy.</li>
@@ -201,6 +204,9 @@ sections:
     <li><strong>Surveillance is endogenous.</strong> Sampling intensifies when blooms are suspected. The ablation in section 6 bounds the effect; it cannot eliminate it.</li>
     <li><strong>Discharge is flow, not nutrients;</strong> temperature is a 0.25° box average, not the water a cell lives in; wind and upwelling, which are physically important for <em>K. brevis</em> transport, are not in this version.</li>
     <li><strong>Interventional SHAP breaks correlations by construction</strong>, so it can assign credit to a feature the model only reaches through a partner. The dependence plots colour that partner for exactly this reason.</li>
+    <li><strong>Alert thresholds are chosen on the years they score.</strong> Each alert budget in section 6 flags the top share of the test years' own scores, and lead time inherits that threshold; a programme would fix it beforehand, from validation. The rolling-origin folds that test 2017–2019 also reuse a tree count early-stopped on those years. Both are disclosed on the board entry, and the fix lands as a new board version before any budget is claimed to a steward.</li>
+    <li><strong>An explanation is a reading of one model.</strong> The logistic swap in section 7 ranks the weeks almost as well and explains them differently. Correlated vitals split credit between them, which is why the group bars show net beside gross.</li>
+    <li><strong>Absence is not a value.</strong> Two regions have no river gauge. A model that sees "discharge missing" learns which region it is looking at, and even the trees give those regions part of their discharge attribution for that reason.</li>
     <li><strong>This is a demonstration of method</strong> on a single public archive, not an operational forecast. FWC and NOAA run real ones.</li>
     </ul>
 - id: reproduce
@@ -208,24 +214,21 @@ sections:
   eyebrow: Repeat it
   title: Reproduce it
   body: |
-    <p>The pipeline is a folder of small scripts, each writing a cached file the next one reads. On a laptop the whole arc — download, features, two models, SHAP, this page — runs in under an hour, most of it waiting on the SST server.</p>
-    <pre><code>uv sync                                         # pyproject.toml + uv.lock → .venv
-    cd src
-    ../.venv/bin/python -m hab.fetch_fwc            # 196k samples, six ArcGIS layers, paginated
-    ../.venv/bin/python -m hab.fetch_env            # OISST per region box + USGS daily discharge
-    ../.venv/bin/python -m hab.build_features --self-test   # the leakage test
-    ../.venv/bin/python -m hab.build_features       # region-week table, vitals, onset label
-    ../.venv/bin/python -m hab.train                # full + no-surveillance models, metrics.json
-    ../.venv/bin/python -m hab.explain              # interventional TreeExplainer, additivity check
-    ../.venv/bin/python -m hab.whatif               # discharge −30% re-score
-    ../.venv/bin/python -m hab.export_site_data     # site_data.json
-    ../.venv/bin/python -m hab.build_site           # this page</code></pre>
+    <p>The pipeline is <code>atlantis_core</code>, the Atlantis reference implementation, run over this instance's registries (<code>streams.yaml</code> · <code>features.yaml</code> · <code>events.yaml</code> · <code>atlantis.yaml</code>). The three raw parquets are committed and pinned by sha256 on the board entry; everything after them runs offline. The full run (vitals, the headline model and its ablation, eight rolling folds, SHAP, the what-ifs and the logistic swap) takes about seven minutes on a laptop.</p>
+    <pre><code>cd what/atlantis_core &amp;&amp; uv sync
+    I=../exemplars/gulf_karenia_brevis
+    .venv/bin/python -m atlantis_core.selftest --instance $I   # the all-stream leakage test
+    .venv/bin/python -m atlantis_core.run --instance $I        # vitals → models → SHAP → what-if → outputs/atlantis_core/
+    .venv/bin/python -m atlantis_core.board --instance $I --version 1 --run-date 2026-10-02   # the GREEN, metrics-only board entry
+    .venv/bin/python -m atlantis_core.site --instance $I       # this page</code></pre>
+    <p>The scripts that built the first version (<code>src/hab/</code>) are archived in place; they still rebuild that page, <code>site/hab_crash_risk.html</code>.</p>
     <div class="tblwrap"><table class="tbl"><tr><th>Setting</th><th>Value</th></tr>
     <tr><td>Onset threshold</td><td class="num">{{event.threshold|comma}}</td></tr>
     <tr><td>Horizon</td><td class="num">{{event.horizon}} weeks</td></tr>
-    <tr><td>XGBoost</td><td class="mono">{{metrics.full.learner}}</td></tr>
+    <tr><td>Learner</td><td class="mono">{{metrics.full.learner}}</td></tr>
     <tr><td>SHAP</td><td class="mono">{{shap.perturbation}} perturbation, background {{shap.background_n|comma}} training rows</td></tr>
-    <tr><td>Config hash</td><td class="mono">{{metrics.semantic_hash}}</td></tr>
+    <tr><td>Semantic config hash</td><td class="mono">{{metrics.semantic_hash}}</td></tr>
+    <tr><td>Board entry</td><td class="mono">{{board.entry_id}}</td></tr>
     <tr><td>Generated</td><td class="mono">{{generated}}</td></tr>
     </table></div>
     <p>Data credits: Florida Fish and Wildlife Conservation Commission, Fish and Wildlife Research Institute, HAB Monitoring Database; NOAA/NCEI OISST v2.1 via NOAA CoastWatch ERDDAP; U.S. Geological Survey National Water Information System. SHAP: Lundberg &amp; Lee (2017); Lundberg et al., <em>Nature Machine Intelligence</em> (2020) for tree SHAP and the interventional/path-dependent distinction.</p>
@@ -267,7 +270,7 @@ figures:
   alerts:
     title: Precision and recall at fixed alert rates
     sub: Test years. Alert rate = share of region-weeks flagged.
-    caption: At a 10% alert rate the model flags roughly one region-week in ten; precision says how many of those go on to bloom, recall says how many blooms were caught.
+    caption: At a 10% alert rate the model flags roughly one region-week in ten; precision says how many of those go on to bloom, recall says how many blooms were caught. <strong>One honest limit:</strong> the threshold column is a quantile of the test years' <em>own</em> scores, chosen after the fact. A programme would have to fix its threshold beforehand, from validation, and the alert rate it actually got would drift; the lead time below inherits the same threshold. The fix is carded and will land as a new board version.
   lead:
     title: Lead time before observed onsets
     sub: 'For each onset in the test years: weeks before the first bloom sample that the score first crossed the 10% threshold'
@@ -275,13 +278,14 @@ figures:
   roll:
     title: 'Rolling-origin check: train through year Y, test on Y+1'
     sub: AUROC and AUPRC per test year, with that year's prevalence
-    caption: One held-out block can be lucky. Retraining each year and testing on the next shows the skill is not a property of one particular split. Years with fewer than five onsets are skipped.
+    caption: One held-out block can be lucky. Retraining each year and testing on the next shows the skill is not a property of one particular split. Years with fewer than five onsets are skipped. Each fold refits its climatology normals on years up to its own training year, so no fold reads a normal built from its test year (the diamond marks the fold where that changed the vitals; here the change is immaterial, by board v1's record). The folds do reuse the tree count early-stopped on 2017–2019, which is mild selection on the three years they test there.
   bar:
     title: Which vitals carry the signal
     sub: Mean |SHAP| over the test years, in log-odds, coloured by feature group
     caption: 'Mean absolute SHAP is the honest importance measure: it is measured on held-out predictions, not on how often the trees happened to split on a feature.'
   gbar:
     title: By group
+    sub: 'Pale: the sum of |SHAP| within a group (gross). Solid: |sum of SHAP| within a group (net), sorted by net. Correlated vitals inside one group, this week''s max and the 4-week peak say, can push against each other, so net is the group''s own effect.'
   bee:
     title: 'Beeswarm: every test region-week, every feature'
     sub: Each dot is one region-week's SHAP value for that feature; colour is the feature's own value (light = low, dark = high). Features ordered by importance; a random {{shap.beeswarm_n|comma}} of the test rows.
@@ -289,7 +293,11 @@ figures:
   strip:
     sub: 'Top: predicted onset probability, with weeks that did go on to bloom marked. Middle: observed weekly maximum. Bottom: SHAP by group, log-odds. Grey bands are weeks excluded from the modelling set (already in bloom, or unknown outcome).'
   whatif:
-    sub: Predicted onset probability per week, actual features vs. discharge features reduced 30%
+    sub: Predicted onset probability per week, actual vitals vs. vitals re-derived from discharge reduced 30%
+  t2:
+    title: Same vitals, another learner
+    sub: 'The headline model beside a logistic regression trained on the same vitals and the same split: test metrics, then each group''s net attribution'
+    caption: <strong>A SHAP reading belongs to one model.</strong> The ranking survives the swap; the explanation does not. Logistic regression reads the sea through temperature and season first, the counts fall back, and the river group's share shrinks. Its <code>availability:</code> columns are the missingness flags a linear model needs and trees do not; they are tagged artifact, never their vital's tag. Where a stream is structurally absent, as for the two regions with no river gauge, such a flag tells the model which region it is looking at, not anything about the water. Before a steward reads an explanation as a fact about the ecosystem, a second model should agree with it.
 strips:
   oos_2022_23:
     label: Lee–Collier 2022–23 (held out)
@@ -341,4 +349,6 @@ strings:
     climatology: Climatology (week-of-year rate)
     surveillance_only: Surveillance only (samples, last 4 wk)
     base_rate: Base rate (constant)
-footer: Built for a conversation between a marine ecologist and a freshwater metagenomicist. The method transfers to any monitored system with a trajectory and a threshold; the data credits above are the only part that is Florida-specific.
+  whatif_non_lever: 'It also scales a gauge that is not tagged lever:'
+  availability_group: availability flags
+footer: 'Built for a conversation between a marine ecologist and a freshwater metagenomicist. The method transfers to any monitored system with a trajectory and a threshold. The page itself is now a template: every word on it, this sentence included, is this instance''s copy file, and the numbers come from its board entry.'
