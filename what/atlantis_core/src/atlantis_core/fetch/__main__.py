@@ -4,9 +4,14 @@ The pipeline's `fetch` step (M-1d-i; closes WI-15 — `hab.fetch_*` stops being 
 declared stream it builds `FETCHERS[streams.yaml → fetcher]` from `atlantis.yaml → streams[id]` (`artifact`, `summary`,
 `fetch` spec) and writes into the INSTANCE's cache — Atlantis itself never fetches (SO-3).
 
-Gate (contract item 6): it refuses to fetch without a green self-test receipt for the current config
-(`atlantis_core.selftest` writes it; a vitals/label/grid change invalidates it). `--verify` alone needs no receipt: it
-reads cached bytes and opens no socket, re-hashing each artifact against its fetch summary and `streams.yaml → sha256`.
+Two gates, both before any byte moves:
+  - contract item 6: a green self-test receipt for the current config (`atlantis_core.selftest` writes it; a
+    vitals/label/grid change invalidates it);
+  - contract item 7 (M-1d-i dry-run finding — the skill said "ratify, then fetch" and nothing enforced it): a NETWORK fetch
+    also needs the federation pin's posture ruling RATIFIED. `--offline` (cache hits only) moves no data and is exempt; the
+    exemplar, which has no pin and may take no new snapshot (ADR-002 §4), can therefore only verify and read its cache.
+`--verify` alone needs neither: it reads cached bytes and opens no socket, re-hashing each artifact against its fetch
+summary and `streams.yaml → sha256`.
 
 It never rewrites `streams.yaml` (comments are part of a registry). It prints the Rule-5 values to record — sha256 ·
 row_count · ingested_at · pipeline_version — and says where they differ from what is recorded.
@@ -49,6 +54,22 @@ def verify(inst, sid: str) -> list[str]:
     return out
 
 
+def posture_problem(root: Path) -> str | None:
+    """None if the instance's federation pin names a posture ruling whose status is ratified; else why not."""
+    from atlantis_core.conform import _fed_ref, _front
+    fr = _fed_ref(root)
+    if fr is None:
+        return "no how/federation/atlantis/CLAUDE.md federation_ref — no data posture is declared for this directory"
+    ruling = ((fr.get("instance") or {}).get("data_posture") or {}).get("ruling")
+    f = root / str(ruling or "")
+    if not ruling or not f.is_file():
+        return f"data_posture.ruling {ruling!r} does not exist"
+    status = str(_front(f).get("status", "")).lower()
+    if status not in ("ratified", "accepted"):
+        return f"{ruling} is {status or 'unstated'!r}; the instance owner ratifies it before any data is fetched"
+    return None
+
+
 def record_values(inst, sid: str) -> dict:
     summ = json.loads(inst.path(inst.stream_spec(sid)["summary"]).read_text())
     return {"sha256": summ["sha256"], "row_count": summ["rows"], "ingested_at": summ["fetched_at"],
@@ -79,6 +100,10 @@ def main(argv=None, session=None) -> int:
     why = receipt_problem(inst)
     if why:
         print(f"✗ refusing to fetch — {why} (contract item 6: self-test green before any real data)"); return 1
+    if not a.offline:
+        why = posture_problem(inst.root)
+        if why:
+            print(f"✗ refusing to fetch over the network — {why} (contract item 7; --offline reads the cache only)"); return 1
     rc = 0
     for sid in sids:
         f = fetcher_for(inst, sid, offline=a.offline, session=session)

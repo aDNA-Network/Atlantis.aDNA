@@ -22,7 +22,8 @@ tags: [artifact, instance_contract, federation, conformance, mapping_yaml, atlan
 > - items 1, 2 and 8 now name the files the core reads;
 > - item 3 is staged *declared → fetched*, because `atl_v0` 0.3.0 lets a stream exist before its first fetch;
 > - item 5 gets a home for "declared absent";
-> - item 6 is enforced by the fetch CLI (no fetch without a green self-test receipt for the current config);
+> - items 6 and 7 are enforced by the fetch CLI: no fetch without a green self-test receipt for the current config, and
+>   no network fetch under an unratified posture ruling;
 > - every item now has a machine check, `python -m atlantis_core.conform` (items 9–10 apply after a run).
 >
 > Still a draft: P4 ratifies v1 against the first outside steward. *v0.1.0 wording is in git history (`999a9fa` and before).*
@@ -94,7 +95,7 @@ Items 9 and 10 apply only after a run.
 | 4 | **Every vital has a tag** (lever · proxy · artifact · state), a `stream_ref`, lag/window; levers name an `owner` | `features.yaml` | T7; the tag is reviewable, not hidden in code |
 | 5 | **Surveillance channel declared** (a stream with `surveillance_channel: true` read by a vital in `group: surveillance`), or declared absent with the reason (e.g. gridded-only) | `streams.yaml` · `features.yaml` · `atlantis.yaml → surveillance` | T5 |
 | 6 | **Self-test green before any real data is fetched**, and re-run on every change to vitals or label (SO-7). The fetch CLI refuses without a green receipt whose `semantic_hash` matches the current config | `outputs/atlantis_core/selftest_receipt.json` + session log | the one hard invariant |
-| 7 | **Data posture ruled** in the instance's own ADR (ADR-016 §8 class: public / partner / human-subject); partner or human-subject data never enters Atlantis | `data_posture.ruling` path exists | SO-3; Hard Gate |
+| 7 | **Data posture ruled** in the instance's own ADR (ADR-016 §8 class: public / partner / human-subject); partner or human-subject data never enters Atlantis. *Declared:* the ruling exists and declares the class the pin cites. *Fetched:* it is ratified; the fetch CLI refuses a network fetch until it is | `data_posture.ruling` path exists | SO-3; Hard Gate |
 | 8 | **Split is temporal**; test window named and scored once; retuning happens on validation only | `atlantis.yaml → split` | T2, T4 |
 | 9 | **Board entry** carries `base_rate`, climatology baseline, ≥1 alert budget, lead-time summary, ablations, `config_hash`, `data_pins[]`; `claim` is `method_demonstration` unless an owner ruling is cited | `what/board/entries/*.json` | T6, T10, T11; SO-4 |
 | 10 | **Published page has the required sections**, including **Limitations** and "where the analogy breaks" | site template sections | SO-4; pattern §"Where the analogy breaks" |

@@ -83,15 +83,37 @@ def test_declared_fetcher_says_so(inst_dir, capsys):
     s = inst_dir / "streams.yaml"; doc = yaml.safe_load(s.read_text())
     next(x for x in doc["observation_streams"] if x["stream_id"] == USGS)["fetcher"] = "NDBCStdmet"
     s.write_text(yaml.safe_dump(doc, sort_keys=False))
-    _receipt(inst_dir)
+    _receipt(inst_dir); _ratified_pin(inst_dir)
     assert fetch_main(["--instance", str(inst_dir), "--stream", USGS], session=Boom()) == 1
     assert "declared, not built" in capsys.readouterr().out
+
+
+def _ratified_pin(d, status="ratified"):
+    (d / "how/federation/atlantis").mkdir(parents=True, exist_ok=True)
+    (d / "how/federation/atlantis/CLAUDE.md").write_text(
+        "```yaml\nfederation_ref:\n  instance:\n    data_posture: {class: public, ruling: who/governance/adr_001_data_posture.md}\n```\n")
+    (d / "who/governance").mkdir(parents=True, exist_ok=True)
+    (d / "who/governance/adr_001_data_posture.md").write_text(f"---\nstatus: {status}\n---\n**Class:** `public`\n")
+
+
+@pytest.mark.parametrize("setup,why", [
+    (lambda d: None, "no how/federation/atlantis/CLAUDE.md"),
+    (lambda d: _ratified_pin(d, "proposed"), "the instance owner ratifies it"),
+    (lambda d: (_ratified_pin(d), (d / "who/governance/adr_001_data_posture.md").unlink()), "does not exist"),
+])
+def test_network_fetch_needs_ratified_posture(inst_dir, capsys, setup, why):
+    """M-1d-i dry-run finding: 'ratify, then fetch' was prose. A network fetch now refuses without it; --offline does not."""
+    _receipt(inst_dir); setup(inst_dir)
+    assert fetch_main(["--instance", str(inst_dir), "--stream", USGS], session=Boom()) == 1
+    assert why in capsys.readouterr().out
+    assert fetch_main(["--instance", str(inst_dir), "--stream", USGS, "--offline"], session=Boom()) == 1
+    assert "offline: would fetch" in capsys.readouterr().out          # past the posture gate, stopped by the cache
 
 
 def test_fetch_then_verify(inst_dir, capsys):
     """End to end through a fake session: artifact + Rule-5 summary written, values to record printed; then --verify
     agrees, and catches a flipped byte and a registry pin that names other bytes."""
-    _receipt(inst_dir)
+    _receipt(inst_dir); _ratified_pin(inst_dir)
     sess = FakeNWIS()
     assert fetch_main(["--instance", str(inst_dir), "--stream", USGS], session=sess) == 0
     out = capsys.readouterr().out

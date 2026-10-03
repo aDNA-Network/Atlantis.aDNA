@@ -126,7 +126,7 @@ CLI refuses until the self-test is re-run. Then review with the steward:
 The instance **owner** signs the posture ADR's 4-field block (status `ratified`). Then:
 
 ```
-$A/.venv/bin/python -m atlantis_core.fetch   --instance <vault>        # refuses without the receipt
+$A/.venv/bin/python -m atlantis_core.fetch   --instance <vault>        # refuses without the receipt, and under an unratified posture
 # record the printed sha256 · row_count · ingested_at · pipeline_version in streams.yaml (the CLI never edits it)
 $A/.venv/bin/python -m atlantis_core.fetch   --instance <vault> --verify
 $A/.venv/bin/python -m atlantis_core.conform --instance <vault> --stage fetched
