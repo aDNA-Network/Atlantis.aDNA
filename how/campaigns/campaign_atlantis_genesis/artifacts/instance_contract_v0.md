@@ -3,17 +3,29 @@ type: artifact
 doc_id: instance_contract_v0
 title: "Instance contract v0 — what a regional instance carries to federate Atlantis, what Atlantis promises back, and how a reviewer conforms it without seeing its data"
 status: draft
-version: 0.1.0
+version: 0.2.0
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-03
 last_edited_by: agent_proteus
-mission: mission_m0_atlantis_genesis_planning
+mission: mission_m0_atlantis_genesis_planning   # v0.2.0 amended in place at mission_m1d_i_fork_and_conformance (operator ruling)
 campaign_id: campaign_atlantis_genesis
 supersedes: how/federation/atlantis/README.md (stub, 2026-09-23)
 tags: [artifact, instance_contract, federation, conformance, mapping_yaml, atlantis, m0]
 ---
 
 # Instance contract v0
+
+> ⛩ **v0.2.0 — amended in place 2026-10-03 (M-1d-i, operator ruling).** v0.1.0 was written at M-0, before the reference
+> implementation existed, and named files and a command the core never adopted: `config.yaml → patient / event / split`
+> and `python -m atlantis_core.vitals --self-test`. The core (M-1b) reads `atlantis.yaml` and the `atl_v0` registries, and
+> its self-test is `python -m atlantis_core.selftest --instance .`. This revision **repoints, it does not re-scope**:
+> - items 1, 2 and 8 now name the files the core reads;
+> - item 3 is staged *declared → fetched*, because `atl_v0` 0.3.0 lets a stream exist before its first fetch;
+> - item 5 gets a home for "declared absent";
+> - item 6 is enforced by the fetch CLI (no fetch without a green self-test receipt for the current config);
+> - every item now has a machine check, `python -m atlantis_core.conform` (items 9–10 apply after a run).
+>
+> Still a draft: P4 ratifies v1 against the first outside steward. *v0.1.0 wording is in git history (`999a9fa` and before).*
 
 An **instance** is one steward's regional graph — `FloridaKeysCoral.aDNA`, `ChesapeakeKarlodinium.aDNA`,
 `<River>Metagenome.aDNA` — that federates Atlantis. Instances are **data-bearing** and own their data posture,
@@ -41,7 +53,7 @@ federation_ref:
     event:   {variable: "<CF standard name or taxon>", threshold: <n>, unit: "<UCUM>", direction: above|below, horizon: "<n> weeks"}
     streams: [<stream_ids — each a row in streams.yaml with provenance>]
     data_posture: {class: public|partner|human_subject, ruling: "who/governance/adr_<nnn>_data_posture.md"}
-    self_test: "python -m atlantis_core.vitals --self-test"   # must be green BEFORE real data is fetched
+    self_test: "python -m atlantis_core.selftest --instance ."   # must be green BEFORE real data is fetched; writes the receipt the fetch CLI requires
     board_entry: "what/board/entries/<date>_<instance>_v<n>.json"   # metrics only; copied to Atlantis by memo
 ```
 
@@ -52,26 +64,38 @@ The seven pattern IDs name the method's steps as a Framework exposes them (appen
 | ATL-ONTOLOGY | the `atl_` schema an instance's registries validate against | `what/schema/atl_v0/` |
 | ATL-STREAM | discover + cache + provenance (steps 1–2) | `pattern_ecosystem_early_warning.md` §1–2 · playbook §A · streams registry (P1) |
 | ATL-VITALS | the feature registry + translation onto the patient grid (step 3) | feature registry schema (P1 M-1b) |
-| ATL-LABEL | direction-aware onset label with both drop counts (step 4) + the self-test (step 5) | `atlantis_core.vitals --self-test` (P1) |
+| ATL-LABEL | direction-aware onset label with both drop counts (step 4) + the self-test (step 5) | `atlantis_core.label` · `atlantis_core.selftest` |
 | ATL-EVAL | temporal split · log-loss stopping · budgets · lead time · ablation · climatology (step 6) | `template_model_card.md` · board schema |
 | ATL-EXPLAIN | interventional SHAP · tags · what-if with the causal caveat (steps 7–8) | pattern §7–8 · feature registry `tag` |
 | ATL-BOARD | the GREEN metrics entry | `what/board/README.md` |
 
 ## B. What the instance carries (the checklist)
 
-A reviewer conforms an instance **by reading four files and never its data**: `config.yaml`, `streams.yaml`,
-`features.yaml`, `mapping.yaml` (plus the posture ADR). Every line below is checkable from those files.
+A reviewer conforms an instance **by reading its declarations and never its data**: the engine config `atlantis.yaml`,
+the four `atl_v0` registries `units.yaml` · `streams.yaml` · `features.yaml` · `events.yaml`, `mapping.yaml`, and the
+posture ADR. Every line below is checkable from those files, and a machine checks each one:
+
+```
+python -m atlantis_core.conform --instance <dir> [--items 1-8,11,12] [--stage declared|fetched]
+```
+
+It prints one ✅/✗ per item with the file it read. It opens nothing under `data/`, `outputs/` (except the self-test
+receipt) or `site/`. **Stage** applies to item 3:
+- **declared** is the state before the first fetch, the one the self-test runs in;
+- **fetched** is every stream pinned.
+
+Items 9 and 10 apply only after a run.
 
 | # | Requirement | Checked in | Why |
 |---|---|---|---|
-| 1 | **Patient defined**: `unit_kind` ∈ atl enum; `time_step` ∈ enum; geometry is a *pointer* (file path / WDPA id), never inline coordinates of partner sites | `config.yaml → patient` | T1; ADR-002 §5 |
-| 2 | **Event defined**: variable with authority CURIE (CF / WoRMS), threshold + UCUM unit, `direction`, horizon; onset rule stated | `config.yaml → event` | T3 |
-| 3 | **Streams registered** with Ingest Rule-5 provenance: `source_system`, `source_id`, `captured_at`, `ingested_at`, `pipeline_version`, plus `sha256` of each cached artifact and `license` | `streams.yaml` | ATL-STREAM; reproducibility |
+| 1 | **Patient defined**: `unit_kind` ∈ atl enum; `time_step` ∈ enum; geometry is a *pointer* (file path / WDPA id), never inline coordinates of partner sites (coordinate `rules` grids only under `public` posture) | `units.yaml` · `atlantis.yaml → grid` | T1; ADR-002 §5 |
+| 2 | **Event defined**: variable with authority CURIE (CF / WoRMS) on its stream, threshold + UCUM unit, `direction`, horizon; onset rule stated; `atlantis.yaml → label.event` names it | `events.yaml` · `streams.yaml` · `atlantis.yaml → label` | T3 |
+| 3 | **Streams registered** with Ingest Rule-5 provenance. *Declared:* `source_system`, `source_id`, `license`, a known `fetcher`. *Fetched:* also `ingested_at`, `pipeline_version` and the `sha256` of each cached artifact, equal to its fetch summary | `streams.yaml` · `atlantis.yaml → streams` | ATL-STREAM; reproducibility |
 | 4 | **Every vital has a tag** (lever · proxy · artifact · state), a `stream_ref`, lag/window; levers name an `owner` | `features.yaml` | T7; the tag is reviewable, not hidden in code |
-| 5 | **Surveillance channel declared** (or declared absent, with the reason — e.g. gridded-only) | `features.yaml → group: surveillance` | T5 |
-| 6 | **Self-test green before any real data is fetched**, and re-run on every change to vitals or label (SO-7) | `self_test` field + session log | the one hard invariant |
+| 5 | **Surveillance channel declared** (a stream with `surveillance_channel: true` read by a vital in `group: surveillance`), or declared absent with the reason (e.g. gridded-only) | `streams.yaml` · `features.yaml` · `atlantis.yaml → surveillance` | T5 |
+| 6 | **Self-test green before any real data is fetched**, and re-run on every change to vitals or label (SO-7). The fetch CLI refuses without a green receipt whose `semantic_hash` matches the current config | `outputs/atlantis_core/selftest_receipt.json` + session log | the one hard invariant |
 | 7 | **Data posture ruled** in the instance's own ADR (ADR-016 §8 class: public / partner / human-subject); partner or human-subject data never enters Atlantis | `data_posture.ruling` path exists | SO-3; Hard Gate |
-| 8 | **Split is temporal**; test window named and scored once; retuning happens on validation only | `config.yaml → split` | T2, T4 |
+| 8 | **Split is temporal**; test window named and scored once; retuning happens on validation only | `atlantis.yaml → split` | T2, T4 |
 | 9 | **Board entry** carries `base_rate`, climatology baseline, ≥1 alert budget, lead-time summary, ablations, `config_hash`, `data_pins[]`; `claim` is `method_demonstration` unless an owner ruling is cited | `what/board/entries/*.json` | T6, T10, T11; SO-4 |
 | 10 | **Published page has the required sections**, including **Limitations** and "where the analogy breaks" | site template sections | SO-4; pattern §"Where the analogy breaks" |
 | 11 | **`mapping.yaml` present**: the instance's objects projected to the `atl_` labels (SpatialUnit · ObservationStream · Vital · EventDefinition · Evaluation) with `canonical_id`, bi-temporal stamps (`source, ingested_at, valid_from, valid_to`), and a `fence` that excludes raw observations | `mapping.yaml` | Organization §2 / Neo4j N4-MODEL — conformance without inspection |

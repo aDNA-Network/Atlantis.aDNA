@@ -3,9 +3,9 @@ type: federation_contract
 doc_id: federation_atlantis_wrapper
 title: "how/federation/atlantis/ — what a regional instance carries to federate Atlantis (contract v0)"
 status: draft
-version: 0.1.0
+version: 0.2.0
 created: 2026-09-23
-updated: 2026-10-02
+updated: 2026-10-03
 last_edited_by: agent_proteus
 contract: how/campaigns/campaign_atlantis_genesis/artifacts/instance_contract_v0.md
 tags: [federation, wrapper, atlantis, instance_contract, adr_045, conformance]
@@ -14,8 +14,9 @@ tags: [federation, wrapper, atlantis, instance_contract, adr_045, conformance]
 # Federating Atlantis from an instance graph
 
 An instance carries `how/federation/atlantis/CLAUDE.md` with the `federation_ref` block below (ADR-045 placement).
-**The contract — the twelve-item checklist a reviewer runs from `config.yaml` · `streams.yaml` · `features.yaml` ·
-`mapping.yaml` without seeing the instance's data, what Atlantis promises back, and how knowledge moves between
+**The contract — the twelve-item checklist a reviewer runs from `atlantis.yaml` · `units.yaml` · `streams.yaml` ·
+`features.yaml` · `events.yaml` · `mapping.yaml` and the posture ADR without seeing the instance's data (machine-checked by
+`python -m atlantis_core.conform`; v0.2.0, 2026-10-03), what Atlantis promises back, and how knowledge moves between
 stewards — is `instance_contract_v0.md`** (linked in frontmatter). This file is the pin; that file is the terms.
 
 ```yaml
@@ -33,7 +34,7 @@ federation_ref:
     event:   {variable: "<CURIE>", threshold: <n>, unit: "<UCUM>", direction: above|below, horizon: "<n> weeks"}
     streams: [<stream ids>]
     data_posture: {class: public|partner|human_subject, ruling: "<path to the instance's ADR>"}
-    self_test: "python -m atlantis_core.vitals --self-test"
+    self_test: "python -m atlantis_core.selftest --instance ."
     board_entry: "what/board/entries/<date>_<instance>_v<n>.json"
 ```
 

@@ -94,8 +94,9 @@ Address the commander as Stanley.
    `who/coordination/`.
 6. **Every mission gets an AAR** (Worked / Didn't / Finding / Change / Follow-up) before `completed`.
 7. **The leakage self-test is the one hard invariant of the method.** Any change to how vitals or labels are
-   built re-runs `build_features --self-test` (from P1: `atlantis_core.vitals --self-test`, which perturbs *every*
-   stream) in the affected exemplar or instance before it is committed.
+   built re-runs `build_features --self-test` (from P1: `python -m atlantis_core.selftest --instance <dir>`, which
+   perturbs *every* stream and writes the receipt the fetch CLI requires) in the affected exemplar or instance before it
+   is committed.
 8. **Context budget is doctrine.** Decompose to fit one sitting; a current 50-line briefing beats a stale 500.
 9. **No accuracy claim without its base rate, its budget and its limits.** Every evaluation, card and board entry
    carries `base_rate`, ≥ 1 alert budget, and a `limitations_ref`; `claim` is `method_demonstration` unless the
