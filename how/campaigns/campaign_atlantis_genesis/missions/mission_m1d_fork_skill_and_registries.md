@@ -13,7 +13,7 @@ mission_class: integration
 executor_tier: opus
 token_budget_estimated: "80-120kT"
 token_budget_actual: ""
-depends_on: ['M-1b', 'M-1c']
+depends_on: ['M-1b-ii', 'M-1c']
 aar_path: how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m1d_fork_skill_and_registries.md
 session: TBD
 created: 2026-10-02
@@ -26,7 +26,7 @@ tags: [mission, m1d, p1, opus, atlantis, tidewatch]
 # M-1d — `skill_atlantis_instance_fork` + pipeline lattice + dataset-pair migration + contribution guide + BOARD generator
 
 **Campaign:** `../campaign_atlantis_genesis.md` (Operation Tidewatch) · **Phase:** P1 — Core canonisation ·
-**Tier:** opus · **Budget:** 80-120kT · **Depends on:** M-1b, M-1c
+**Tier:** opus · **Budget:** 80-120kT · **Depends on:** M-1b-ii (M-1b split 2026-10-02), M-1c
 
 ## Objective
 

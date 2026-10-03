@@ -4,7 +4,7 @@ mission_id: M-1b
 plan_id: mission_m1b_atlantis_core_extraction
 title: "M-1b — `what/atlantis_core/` — extract the reference implementation: stream registry, feature registry, direction-aware label, all-stream self-test, board emitter"
 owner: stanley
-status: planned
+status: superseded
 campaign: campaign_atlantis_genesis
 campaign_id: campaign_atlantis_genesis
 phase: P1
@@ -20,8 +20,14 @@ created: 2026-10-02
 updated: 2026-10-02
 last_edited_by: agent_proteus
 home_vault: Atlantis.aDNA
+superseded_by: [mission_m1b_i_core_vitals_and_selftest, mission_m1b_ii_core_eval_explain_board]
 tags: [mission, m1b, p1, opus, atlantis, tidewatch]
 ---
+
+> ⛩ **Superseded 2026-10-02 — split by operator ruling** (after M-1c AAR Finding 4: ≈5× card). Scope carried whole into
+> `mission_m1b_i_core_vitals_and_selftest.md` (registries · fetch · grid · vitals · label · all-stream self-test) and
+> `mission_m1b_ii_core_eval_explain_board.md` (eval · explain · board · site · metrics reproduction · learner swap · mapping · archive `src/hab/`).
+> Fetch scope ruled: 3 real (ArcGIS · ERDDAP · NWIS) + 3 declared stubs (NDBC · OBIS/GBIF · CRW). Kept, not deleted (SO-2).
 
 # M-1b — `what/atlantis_core/` — extract the reference implementation: stream registry, feature registry, direction-aware label, all-stream self-test, board emitter
 

@@ -3,7 +3,7 @@ type: state
 status: p1_open
 phase: "P1 — Core canonisation; M-1a + M-1c complete 2026-10-02; M-1b queued, then M-1d → P1 gate"
 campaigns: [campaign_atlantis_genesis]
-mission: mission_m1b_atlantis_core_extraction   # queued; M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
+mission: mission_m1b_i_core_vitals_and_selftest   # in progress (M-1b split 2026-10-02); M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
 persona: proteus   # RULED 2026-10-02 (ADR-001 ratified)
 last_session: session_stanley_20261002_162046_m1c_linkml_controls (opus)
 created: 2026-09-23
@@ -25,6 +25,10 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete]
 6. III review goes through `iii/` in a fresh context (SO-10).
 
 ## ⏭ QUEUED — Next Live Session
+
+> **In progress 2026-10-02 — M-1b-i** (opus; session `session_stanley_20261003_014043_m1b_i_core_vitals_selftest`). Operator ruled at open:
+> **split M-1b** → `mission_m1b_i_core_vitals_and_selftest.md` (now) + `mission_m1b_ii_core_eval_explain_board.md` (next); fetchers = 3 real + 3 declared.
+> The original M-1b card is `superseded` (kept). The prompt below is the pre-split one, retained until M-1b-i closes.
 
 **M-1c complete 2026-10-02** (opus; AAR `missions/aar/aar_m1c_linkml_controls.md`). 42 controls, three worlds agree; `iii/`
 adopted; III review PASS-WITH-FINDINGS (11/12 fixed, WI-8 carried). **Next: M-1b** (opus, carded 120–180 kT). Then **M-1d**
