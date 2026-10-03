@@ -23,9 +23,11 @@ go in each card's `token_budget_actual` at close.
 | M-1a | Exemplar hygiene — doc/config drift, provenance hashes, packaging, safe region parser | P1 | opus | 40-60kT | M-0 | `missions/mission_m1a_exemplar_hygiene.md` |
 | ~~M-1b~~ | `what/atlantis_core/` — extract the reference implementation: stream registry, feature registry, direction-aware label, all-stream self-test, board emitter | P1 | opus | 120-180kT | M-1a | `missions/mission_m1b_atlantis_core_extraction.md` — **superseded 2026-10-02, split ↓** |
 | M-1b-i | `atlantis_core` skeleton: registries · fetch (3 real + 3 declared) · grid · vitals · direction-aware label · all-stream self-test | P1 | opus | ~140kT + reviewer | M-1a, M-1c | `missions/mission_m1b_i_core_vitals_and_selftest.md` |
-| M-1b-ii | `atlantis_core` eval · explain · board · site · metrics reproduction · learner swap · mapping · `src/hab/` archived | P1 | opus | ~140kT + reviewer | M-1b-i | `missions/mission_m1b_ii_core_eval_explain_board.md` |
+| ~~M-1b-ii~~ | `atlantis_core` eval · explain · board · site · metrics reproduction · learner swap · mapping · `src/hab/` archived | P1 | opus | ~140kT + reviewer | M-1b-i | `missions/mission_m1b_ii_core_eval_explain_board.md` — **superseded 2026-10-02, split ↓** |
+| M-1b-ii-a | `atlantis_core` eval · explain · board · R7 refit · board v1 · semantic hash · logistic learner swap | P1 | opus | ~160kT + reviewer | M-1b-i | `missions/mission_m1b_ii_a_core_eval_explain_board.md` |
+| M-1b-ii-b | `atlantis_core` site template (all copy parameterised) · `template_mapping_atl.yaml` · `src/hab/` archived | P1 | opus | ~150kT + reviewer | M-1b-ii-a | `missions/mission_m1b_ii_b_site_mapping_archive.md` |
 | M-1c | `atl_v0` controls — fixtures, `run_controls.sh`, committed JSON Schema, vocabulary fit matrix | P1 | opus | 60-90kT | M-0 | `missions/mission_m1c_linkml_controls.md` |
-| M-1d | `skill_atlantis_instance_fork` + pipeline lattice + dataset-pair migration + contribution guide + BOARD generator | P1 | opus | 80-120kT | M-1b-ii, M-1c | `missions/mission_m1d_fork_skill_and_registries.md` |
+| M-1d | `skill_atlantis_instance_fork` + pipeline lattice + dataset-pair migration + contribution guide + BOARD generator | P1 | opus | 80-120kT | M-1b-ii-b, M-1c | `missions/mission_m1d_fork_skill_and_registries.md` |
 | M-2 | First MPA instance — `FloridaKeysCoral.aDNA`: FKNMS zones × week, degree-heating-weeks onset, gridded-only vitals, no Atlantis code edits | P2 | opus | 150-220kT | M-1d | `missions/mission_m2_fknms_coral_instance.md` |
 | M-3a | `skill_stream_discovery` — playbook §A as a runnable skill with the traps as checks | P3 | opus | 40-60kT | M-1d | `missions/mission_m3a_stream_discovery_skill.md` |
 | M-3b | Hypothesis ledger populated + `skill_feature_hypothesis_mining` + one literature-asserted driver tested by SHAP | P3 | opus | 100-150kT | M-2, M-3a | `missions/mission_m3b_hypothesis_ledger_and_mining.md` |
@@ -45,5 +47,5 @@ Calibrated campaign estimate: **12–18 sessions** (seed said 8–14 for the nar
 
 ## Critical path
 
-M-0 ✅ → M-1a → M-1b-i → M-1b-ii → M-1d → **P1 gate** → M-2 → **P2 gate** → M-3b → **P3 gate** → M-4 → **P4 gate** → M-5.
+M-0 ✅ → M-1a → M-1b-i → M-1b-ii-a → M-1b-ii-b → M-1d → **P1 gate** → M-2 → **P2 gate** → M-3b → **P3 gate** → M-4 → **P4 gate** → M-5.
 M-1c runs beside M-1a/M-1b; M-3a beside M-2.

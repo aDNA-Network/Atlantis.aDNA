@@ -1,9 +1,9 @@
 ---
 type: state
 status: p1_open
-phase: "P1 — Core canonisation; M-1a + M-1c + M-1b-i complete 2026-10-02; M-1b-ii queued, then M-1d → P1 gate"
+phase: "P1 — Core canonisation; M-1a + M-1c + M-1b-i complete 2026-10-02; M-1b-ii split → ii-a ACTIVE, ii-b queued, then M-1d → P1 gate"
 campaigns: [campaign_atlantis_genesis]
-mission: mission_m1b_ii_core_eval_explain_board   # queued; M-1b split 2026-10-02 → M-1b-i ✅; M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
+mission: mission_m1b_ii_a_core_eval_explain_board   # ACTIVE (session_stanley_20261003_033855); M-1b-ii split 2026-10-02 → ii-a + ii-b; M-1b split 2026-10-02 → M-1b-i ✅; M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
 persona: proteus   # RULED 2026-10-02 (ADR-001 ratified)
 last_session: session_stanley_20261003_014043_m1b_i_core_vitals_selftest (opus)
 created: 2026-09-23
@@ -27,6 +27,10 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
    `.venv/bin/python -m atlantis_core.selftest --instance ../exemplars/gulf_karenia_brevis` (all-stream, SO-7).
 
 ## ⏭ QUEUED — Next Live Session
+
+> ⛩ **2026-10-02 — M-1b-ii-a ACTIVE** (lease `session_stanley_20261003_033855`). Operator ruled: split M-1b-ii → **ii-a** (eval · explain ·
+> board · R7 refit · board v1 · semantic hash · logistic learner swap) + **ii-b** (site · mapping · archive `src/hab/`). The prompt below is
+> the pre-split one, kept until ii-a closes.
 
 **M-1b-i complete 2026-10-02** (opus; AAR `missions/aar/aar_m1b_i_core_vitals_and_selftest.md`). M-1b was split by operator ruling.
 `atlantis_core` now carries registries, fetch (3 built + 3 declared protocols), grid, vitals, a direction-aware label and an

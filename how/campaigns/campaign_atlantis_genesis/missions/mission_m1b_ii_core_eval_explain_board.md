@@ -4,7 +4,7 @@ mission_id: M-1b-ii
 plan_id: mission_m1b_ii_core_eval_explain_board
 title: "M-1b-ii — `atlantis_core` eval · explain · board · site: metrics reproduction, learner swap, mapping.yaml, semantic hash, src/hab archived"
 owner: stanley
-status: planned
+status: superseded
 campaign: campaign_atlantis_genesis
 campaign_id: campaign_atlantis_genesis
 phase: P1
@@ -21,8 +21,14 @@ created: 2026-10-02
 updated: 2026-10-02
 last_edited_by: agent_proteus
 home_vault: Atlantis.aDNA
+superseded_by: [mission_m1b_ii_a_core_eval_explain_board, mission_m1b_ii_b_site_mapping_archive]
 tags: [mission, m1b_ii, p1, opus, atlantis_core, eval, board, atlantis, tidewatch]
 ---
+
+> ⛩ **Superseded 2026-10-02 — split by operator ruling** (M-1b-i AAR Change: card at ≈1.7×; the site template alone is 76 KB of
+> exemplar prose). Scope carried whole into `mission_m1b_ii_a_core_eval_explain_board.md` (eval · explain · board · R7 refit ·
+> board v1 · semantic hash · learner swap — ruled **logistic regression**) and `mission_m1b_ii_b_site_mapping_archive.md` (site
+> template with all copy parameterised · `template_mapping_atl.yaml` · archive `src/hab/`). Kept, not deleted (SO-2).
 
 # M-1b-ii — `atlantis_core` eval · explain · board · site
 
