@@ -1,5 +1,38 @@
 # CHANGELOG — Atlantis.aDNA
 
+## 2026-10-02 — v0.5.0 · M-1b-ii-a `atlantis_core` eval · explain · board (P1; M-1b-ii split)
+
+- **M-1b-ii split by operator ruling** (the parent card is `superseded` and kept). **ii-a** (this release) covers eval ·
+  explain · board · the R7 refit · board v1 · the semantic hash · the learner swap. **ii-b** covers the site · mapping ·
+  archiving `src/hab/`.
+- **`what/atlantis_core/` 0.2.0** (125 tests, offline):
+  - `eval`: the learner is a config field (`xgboost` | `logistic`); metrics; direction-aware lead time; ablations from
+    vital groups; sensitivity via the label's event override; **R7 refit per rolling fold, verified per fold**.
+  - `explain`: interventional SHAP over a train-only background with additivity as a hard check; exact linear SHAP with
+    missingness flags as `availability:` artifacts; net group attribution; **what-if as config**, re-derived from the raw
+    stream, lever-gated and era-guarded.
+  - `board`: the **closed `AtlEvaluation`** validated against the committed schema, allowlisted extras, per-patient caps,
+    and refusal of unhonoured obligations.
+  - `run`: the instance end to end.
+- **Port equivalence:** on `hab`'s vitals the core reproduces every `metrics.json` key to 1e-12, and SHAP exactly. The
+  projector reproduces the M-1c fixture field for field.
+- **Board v1** (`what/board/entries/2026-10-02_gulf_karenia_brevis_v1.json`):
+  - calendar-correct SST lags: **AUROC 0.8941 → 0.8938, AUPRC 0.5473 → 0.5388**; n, drops and trees unchanged; lead flagged 0.636 → 0.682;
+  - semantic `config_hash` (closes WI-7);
+  - 2016 fold refit (closes WI-10).
+  
+  v0 and `metrics.json` are byte-stable.
+- **T2 (logistic swap):** test 0.8726 / 0.5225, so the falsifier is not met. **The explanation is learner-dependent:**
+  xgboost reads counts first, logistic reads SST and season first. Recorded in the thesis register.
+- **Findings of record:**
+  - `hab`'s what-if edited a mean of logs as a log of the mean (proven in a test);
+  - Tampa's what-if scaled a non-lever gauge;
+  - missingness of a structurally absent stream encodes unit identity.
+- **III review** (fresh context via `iii/`): PASS-WITH-FINDINGS, 4 major + 4 minor, **8/8 addressed**. v1 was regenerated
+  in place by ruling, since it had never left the node. F-8 (test-quantile thresholds) is disclosed and its fix carded
+  (`how/backlog/idea_eval_thresholds_fixed_on_validation.md`). Learning store C-008…C-010.
+- STATE: M-1b-ii-b queued; WI-7 and WI-10 closed; WI-8 updated; WI-11 and WI-12 opened.
+
 ## 2026-10-02 — v0.4.0 · M-1b-i `atlantis_core` skeleton + all-stream self-test (P1 lane 3 of 5; M-1b split)
 
 - **M-1b split by operator ruling** (after M-1c Finding 4). The original card is `superseded` and kept.

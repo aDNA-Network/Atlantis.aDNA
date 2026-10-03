@@ -42,6 +42,15 @@ archived in place once nothing canonical runs through it.
 - [ ] `src/hab/` archived in place with a pointer (SO-2); `config.yaml`/`metrics.json` byte-stable
 - [ ] III review via `iii/` in a fresh context (SO-10)
 
+## Inputs from ii-a (2026-10-02)
+
+- Site data comes from `outputs/atlantis_core/` (metrics · shap_summary · whatif · model.json) and the gitignored
+  `data/processed/atlantis_core/{all_scored,test_scored}.parquet` + `shap.npz` (`shap_all` for the risk strips; regenerate with
+  `python -m atlantis_core.run`). The vitals' labels and descriptions are `features.yaml` `name`/`description`.
+- The page must say what board v1 says: calendar-correct lags (0.8938 / 0.5388), the R7 refit, the F-8 limits (thresholds
+  are test quantiles), and that a SHAP reading belongs to one model (T2 qualifier). Explanations show `group_net_mean_abs_shap`
+  beside the abs-sums; `availability:` columns appear only for a learner that has them.
+
 ## Guardrails
 
 As M-1b-i. Budget >50% over → SITREP and stop.

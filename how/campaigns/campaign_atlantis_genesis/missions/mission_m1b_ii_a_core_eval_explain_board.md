@@ -4,7 +4,7 @@ mission_id: M-1b-ii-a
 plan_id: mission_m1b_ii_a_core_eval_explain_board
 title: "M-1b-ii-a — `atlantis_core` eval · explain · board: learner as config, R7 refit-per-fold, board v1 (calendar SST lags), semantic hash, logistic learner swap"
 owner: stanley
-status: active
+status: completed
 campaign: campaign_atlantis_genesis
 campaign_id: campaign_atlantis_genesis
 phase: P1
@@ -12,7 +12,7 @@ campaign_phase: 1
 mission_class: implementation
 executor_tier: opus
 token_budget_estimated: "~160kT main + fresh-context III reviewer (same size)"
-token_budget_actual: ""
+token_budget_actual: "≈215kT main (≈ +35%) + ≈205kT fresh-context III reviewer"
 depends_on: ['M-1b-i']
 split_from: mission_m1b_ii_core_eval_explain_board
 aar_path: how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m1b_ii_a_core_eval_explain_board.md
@@ -37,21 +37,23 @@ Training, evaluation, explanation and board emission move into `atlantis_core`. 
 
 ## Acceptance criteria
 
-- [ ] `eval/`: split from config · alert budgets · lead time (direction-aware) · calibration · ablations from vital groups · surveillance-only · climatology baseline · rolling origin · sensitivity threshold via the label's event override. **The learner is a config field** (`xgboost` | `logistic`)
-- [ ] **Port equivalence:** core eval on `hab`'s `features.parquet` reproduces `metrics.json` (n_trees 141 · test 0.8941 / 0.5473 · budgets · lead · climatology · surveillance-only · no-surveillance ablation · rolling folds) — asserted by test
-- [ ] **R7 obligation:** eval refits every climatology era per rolling-origin fold (era clipped to ≤ train_through, affected vitals rebuilt); eval refuses to run with an unexecuted obligation; asserted by test. The exemplar's 2015→2016 fold is the one that changes
-- [ ] `explain/`: interventional SHAP · additivity hard check · group/tag sums from `features.yaml` · what-if scenarios are config, applied to the raw stream and re-derived through `vitals.build`; refused on a stream with no `lever` vital
-- [ ] `board/` emits the closed `AtlEvaluation` projection (validates against the committed JSON Schema) with the extras beside it — starts closing WI-8
-- [ ] Core run on the exemplar → `outputs/atlantis_core/`; **board v1** entry with the delta vs v0 named (expected ≈0.8938 / 0.5388; same n, positives, drop counts); WI-10 noted; v0 untouched
-- [ ] **Semantic hash** recorded beside the bytes-md5s (closes WI-7)
-- [ ] **Logistic learner swap** on the core's vitals, recorded as T2 evidence against the falsifier (rolling spread 0.79–0.99) in the thesis register
-- [ ] `config.yaml` / `outputs/metrics.json` byte-stable; SO-7 self-tests green; controls ALL WORLDS AGREE (42)
-- [ ] III review via `iii/` in a fresh context (SO-10)
+- [x] `eval/`: split from config · alert budgets · lead time (direction-aware) · calibration · ablations from vital groups · surveillance-only · climatology baseline · rolling origin · sensitivity threshold via the label's event override. **The learner is a config field** (`xgboost` | `logistic`)
+- [x] **Port equivalence:** core eval on `hab`'s `features.parquet` reproduces `metrics.json` (n_trees 141 · test 0.8941 / 0.5473 · budgets · lead · climatology · surveillance-only · no-surveillance ablation · rolling folds) — asserted by test
+- [x] **R7 obligation:** eval refits every climatology era per rolling-origin fold (era clipped to ≤ train_through, affected vitals rebuilt); eval refuses to run with an unexecuted obligation; asserted by test. The exemplar's 2015→2016 fold is the one that changes
+- [x] `explain/`: interventional SHAP · additivity hard check · group/tag sums from `features.yaml` · what-if scenarios are config, applied to the raw stream and re-derived through `vitals.build`; refused on a stream with no `lever` vital
+- [x] `board/` emits the closed `AtlEvaluation` projection (validates against the committed JSON Schema) with the extras beside it — starts closing WI-8
+- [x] Core run on the exemplar → `outputs/atlantis_core/`; **board v1** entry with the delta vs v0 named (expected ≈0.8938 / 0.5388; same n, positives, drop counts); WI-10 noted; v0 untouched
+- [x] **Semantic hash** recorded beside the bytes-md5s (closes WI-7)
+- [x] **Logistic learner swap** on the core's vitals, recorded as T2 evidence against the falsifier (rolling spread 0.79–0.99) in the thesis register
+- [x] `config.yaml` / `outputs/metrics.json` byte-stable; SO-7 self-tests green; controls ALL WORLDS AGREE (42)
+- [x] III review via `iii/` in a fresh context (SO-10)
 
 ## Guardrails
 
 As M-1b-i. Budget >50% over (≈240 kT) → SITREP and stop. No site work, no `src/hab/` archive (ii-b).
 
 ## AAR
+
+✅ Filed 2026-10-02: `missions/aar/aar_m1b_ii_a_core_eval_explain_board.md` (commits `e8751e5` · `b10ec48` · `bf0b36a` · `8edfc87` + close). F-8 disclosed; its fix is carded at `how/backlog/idea_eval_thresholds_fixed_on_validation.md` (operator ruling).
 
 *Mandatory before `status: completed` (SO-6).* → `aar_path`.
