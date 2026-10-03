@@ -5,12 +5,14 @@ import copy as _copy
 import json
 import re
 
+import numpy as np
+import pandas as pd
 import pytest
 import yaml
 
 from atlantis_core import load_instance
 from atlantis_core.site import STRINGS, TEMPLATE, check_copy, render, template_figures
-from atlantis_core.site.assemble import SiteError, assemble, board_check, load_site
+from atlantis_core.site.assemble import SiteError, assemble, bands, board_check, load_site, resolve, shap_check
 
 # Words that belong to the Gulf K. brevis exemplar and must never be typed into the core template.
 EXEMPLAR_LITERALS = [r"Florida", r"Lee", r"Collier", r"Caloosahatchee", r"S-79", r"Karenia", r"brevis", r"cells/L", r"\b1e5\b",
@@ -63,6 +65,12 @@ def test_good_copy_passes():
     (lambda c: c["strips"].update(s2={"label": "x"}), "no such strip"),
     (lambda c: c["strips"].pop("s1"), "no words in copy.strips"),
     (lambda c: c["strings"]["trace_panels"].pop("signal"), "no words for trace panel"),
+    # III F-3b: what the validator accepted and the page could not render
+    (lambda c: c["sections"][0].update(body="{{fig:pr}} {{fig:pr}}"), "placed 2 times"),
+    (lambda c: c["hero"].update(lede="{{metrics.full.test.auroc|pct}}"), "unknown format 'pct'"),
+    (lambda c: c["sections"][0].update(nav="{{board.entry_id}}"), "tokens are not expanded here"),
+    (lambda c: c["strings"].update(no_obs="{{board.entry_id}}"), "tokens are not expanded here"),
+    (lambda c: c["strips"]["s1"].update(label="{{board.entry_id}}"), "tokens are not expanded here"),
 ])
 def test_check_copy_refuses_each_defect(defect, match):
     c = good_copy(); defect(c)
@@ -79,14 +87,19 @@ def test_render_refuses_a_broken_template():
         render(TEMPLATE.read_text().replace("__SITE_COPY__", ""), DATA, good_copy(), site)
 
 
-def test_board_check_refuses_disagreement():
-    m = {"full": {"test": {"auroc": 0.89384, "auprc": 0.53881, "n": 10, "prevalence": 0.07743}}, "semantic_hash": "h"}
-    entry = {"entry_id": "e", "evaluation": {"auroc": 0.8938, "auprc": 0.5388, "n_test": 10, "base_rate": 0.0774, "config_hash": "h"}}
-    assert board_check(m, entry)["auroc"] == 0.8938
-    for k, v in (("auroc", 0.8941), ("config_hash", "other"), ("n_test", 11)):
-        bad = _copy.deepcopy(entry); bad["evaluation"][k] = v
-        with pytest.raises(SiteError, match="disagree"):
-            board_check(m, bad)
+def test_resolve_refuses_what_the_page_cannot_read():
+    d = {"a": [{"b": 1}]}
+    assert resolve(d, "a.0.b") == 1
+    with pytest.raises(KeyError):
+        resolve(d, "a.-1.b")             # Python would index from the end; the page's get() cannot (III F-3b)
+
+
+def test_bands_are_a_week_wide():
+    w = pd.to_datetime(["2022-06-06", "2022-06-13", "2022-06-20"])
+    out = bands(w, [None, "test", None])
+    assert len(out) == 2
+    for a, b in out:
+        assert (pd.Timestamp(b) - pd.Timestamp(a)) == pd.Timedelta(days=7)   # III F-1: x0 == x1 drew nothing
 
 
 # ── the exemplar, end to end (skips without the gitignored data/processed/atlantis_core) ─────────────────────────────────
@@ -141,3 +154,50 @@ def test_page_refuses_an_outdated_entry(built):
     inst, site, _, _ = built
     with pytest.raises(SiteError, match="disagree"):
         assemble(inst, {**site, "board_entry": "../../board/entries/2026-09-23_gulf_karenia_brevis_v0.json"})
+
+
+def test_board_check_compares_every_evaluated_field(built, exemplar_dir):
+    inst, site, _, _ = built
+    m = json.loads((exemplar_dir / "outputs" / "atlantis_core" / "metrics.json").read_text())
+    entry = json.loads((exemplar_dir / site["board_entry"]).read_text())
+    assert board_check(m, entry, inst)["fields_checked"] >= 12
+    for path, v in ((("brier",), 0.9), (("alert_budgets", 1, "precision"), 0.1), (("lead_time", "flagged_fraction"), 0.5),
+                    (("ablations", 0, "ablated_auprc"), 0.1), (("data_pins", 0, "sha256"), "0" * 64), (("auroc",), 0.8941)):
+        bad = _copy.deepcopy(entry); o = bad["evaluation"]
+        for k in path[:-1]: o = o[k]
+        o[path[-1]] = v
+        with pytest.raises(SiteError, match="disagree"):
+            board_check(m, bad, inst)
+
+
+def test_shap_arrays_must_belong_to_the_run(built, exemplar_dir):
+    proc, out = exemplar_dir / "data" / "processed" / "atlantis_core", exemplar_dir / "outputs" / "atlantis_core"
+    z = dict(np.load(proc / "shap.npz")); ss = json.loads((out / "shap_summary.json").read_text())
+    test, allr = pd.read_parquet(proc / "test_scored.parquet"), pd.read_parquet(proc / "all_scored.parquet")
+    shap_check(z, ss, test, allr)
+    for k, f in (("shap_all", lambda a: a[:-1]), ("base", lambda a: a + 0.1), ("shap", lambda a: a * 1.01)):
+        with pytest.raises(SiteError, match="not the run"):
+            shap_check({**z, k: f(z[k])}, ss, test, allr)
+
+
+def test_strip_groups_are_net_sums(built, exemplar_dir):
+    """Recomputed independently from shap.npz: the signed sum, and it must differ from the gross sum somewhere, or the test
+    could not tell them apart (III F-3a: the first version passed with np.abs)."""
+    inst, _, data, _ = built
+    proc = exemplar_dir / "data" / "processed" / "atlantis_core"
+    sv_all = np.load(proc / "shap.npz")["shap_all"]
+    allr = pd.read_parquet(proc / "all_scored.parquet").reset_index(drop=True)
+    feats = inst.feature_names
+    s = data["shap"]["strips"]["oos_2022_23"]
+    differs = 0
+    for g in data["groups"]:
+        ix = [feats.index(f["name"]) for f in data["features"] if f["group"] == g["id"]]
+        for w, v in zip(s["weeks"], s["groups"][g["id"]]):
+            r = allr.index[(allr.region == s["unit"]) & (allr.week == pd.Timestamp(w))]
+            if not len(r):
+                assert v is None; continue
+            row = sv_all[r[0], ix]
+            assert v == pytest.approx(row.sum(), abs=1e-3)
+            differs += abs(row.sum() - np.abs(row).sum()) > 1e-2
+    assert differs > 0
+    assert all(len(b) == 2 for b in s["bands"]) and len(s["bands"]) == sum(p is None for p in s["p"])

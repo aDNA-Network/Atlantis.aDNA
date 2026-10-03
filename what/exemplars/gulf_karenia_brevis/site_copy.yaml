@@ -112,7 +112,7 @@ sections:
     {{fig:split}}
     </div></div>
 
-    <div class="note"><div class="t">Which numbers these are</div><p>Every number on this page is board entry <code>{{board.entry_id}}</code> (semantic config hash <code>{{board.config_hash}}</code>): this exemplar run end to end through <code>atlantis_core</code>, the Atlantis reference implementation. It differs from the first run (v0) by one cause, the calendar-correct lags of section 4: test AUROC {{board.delta_vs.fields.auroc.was|3}} → {{board.delta_vs.fields.auroc.now|3}}, AUPRC {{board.delta_vs.fields.auprc.was|3}} → {{board.delta_vs.fields.auprc.now|3}}, onsets flagged ahead at the 10% budget {{board.delta_vs.fields.lead_time.was.flagged_fraction|pct0}} → {{board.delta_vs.fields.lead_time.now.flagged_fraction|pct0}}, on the same {{board.n_test|comma}} test region-weeks.</p></div>
+    <div class="note"><div class="t">Which numbers these are</div><p>Every number on this page comes from the run that board entry <code>{{board.entry_id}}</code> records (semantic config hash <code>{{board.config_hash}}</code>; the build re-projects the run and checks it against the entry, field for field, before it writes a page): this exemplar run end to end through <code>atlantis_core</code>, the Atlantis reference implementation. It differs from the first run (v0) by one cause, the calendar-correct lags of section 4: test AUROC {{board.delta_vs.fields.auroc.was|4}} → {{board.delta_vs.fields.auroc.now|4}}, AUPRC {{board.delta_vs.fields.auprc.was|4}} → {{board.delta_vs.fields.auprc.now|4}}, onsets flagged ahead at the 10% budget {{board.delta_vs.fields.lead_time.was.flagged_fraction|pct0}} → {{board.delta_vs.fields.lead_time.now.flagged_fraction|pct0}}, on the same {{board.n_test|comma}} test region-weeks. The per-region sample counts in section 3 also differ from the first version's: its summary predated the region rules that are now frozen in a test. The patient grid the model reads is identical.</p></div>
     <h3>Discrimination and calibration on the held-out years</h3>
     <div class="grid3">
     {{fig:pr}}
@@ -156,7 +156,7 @@ sections:
   eyebrow: Explanation, locally
   title: Three patients, three waterfalls
   body: |
-    <p>This is the bedside view. Start at the baseline probability (<span class="num">{{shap.base_p|pct1}}</span>, the average onset rate the model expects with no information), and let each feature push the log-odds up or down until you reach the score. All three are from the held-out years, chosen by rule: the confident true positive with the longest lead; the most confident false alarm; and the quietest July.</p>
+    <p>This is the bedside view. Start at the baseline probability (<span class="num">{{shap.base_p|pct1}}</span>, the average onset rate the model expects with no information), and let each feature push the log-odds up or down until you reach the score. All three are from the held-out years, chosen by rule: the most confident true positive whose first bloom sample came two or more weeks later; the most confident false alarm; and the quietest July.</p>
     {{fig:cases}}
     <p style="margin-top:18px">The false alarm is the most instructive of the three. A model can only be wrong in the ways its features allow; when a high score does not pan out, the waterfall shows which vital misled it — and often the answer is a surveillance feature, which is the artifact tag earning its keep.</p>
 - id: strip
@@ -219,7 +219,7 @@ sections:
     I=../exemplars/gulf_karenia_brevis
     .venv/bin/python -m atlantis_core.selftest --instance $I   # the all-stream leakage test
     .venv/bin/python -m atlantis_core.run --instance $I        # vitals → models → SHAP → what-if → outputs/atlantis_core/
-    .venv/bin/python -m atlantis_core.board --instance $I --version 1 --run-date 2026-10-02   # the GREEN, metrics-only board entry
+    .venv/bin/python -m atlantis_core.board --instance $I --version 1 --run-date 2026-10-02 --vs 2026-09-23_gulf_karenia_brevis_v0   # the GREEN, metrics-only entry
     .venv/bin/python -m atlantis_core.site --instance $I       # this page</code></pre>
     <p>The scripts that built the first version (<code>src/hab/</code>) are archived in place; they still rebuild that page, <code>site/hab_crash_risk.html</code>.</p>
     <div class="tblwrap"><table class="tbl"><tr><th>Setting</th><th>Value</th></tr>
@@ -351,4 +351,5 @@ strings:
     base_rate: Base rate (constant)
   whatif_non_lever: 'It also scales a gauge that is not tagged lever:'
   availability_group: availability flags
-footer: 'Built for a conversation between a marine ecologist and a freshwater metagenomicist. The method transfers to any monitored system with a trajectory and a threshold. The page itself is now a template: every word on it, this sentence included, is this instance''s copy file, and the numbers come from its board entry.'
+  whatif_only_non_lever: 'This scenario scales only a gauge that is not tagged lever:'
+footer: 'Built for a conversation between a marine ecologist and a freshwater metagenomicist. The method transfers to any monitored system with a trajectory and a threshold. The page itself is now a template: every word on it, this sentence included, is this instance''s copy file, and the numbers come from the run its board entry records.'

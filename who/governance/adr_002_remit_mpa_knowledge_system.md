@@ -4,7 +4,7 @@ adr_id: ADR-002
 title: "ADR-002 — Remit widening: Atlantis as an MPA knowledge · data-model · evidence system (RATIFIED 2026-10-02)"
 status: ratified
 created: 2026-10-02
-updated: 2026-10-02   # ratified at the P0-exit gate
+updated: 2026-10-03   # A-1 proposed (§4); the ratified text above it is unchanged
 last_edited_by: agent_proteus
 mission: mission_m0_atlantis_genesis_planning
 campaign_id: campaign_atlantis_genesis
@@ -16,6 +16,8 @@ ratification:
   date: 2026-10-02
   status: ratified
   surface: AskUserQuestion (P0-exit gate, M-0 sitting)
+amendments:
+  - {id: A-1, section: "§4 snapshot rule", status: proposed, proposed: 2026-10-03, mission: mission_m1b_ii_b_site_mapping_archive}
 tags: [adr, remit, mpa, ontology, data_model, evidence_board, decentralisation, atlantis, m0]
 ---
 
@@ -114,3 +116,32 @@ be publishable (Git.aDNA ADR-013).
 | ratified-by | **stanley** |
 | date | **2026-10-02** |
 | status | **ratified** |
+
+## Amendment A-1 — the exemplar's explainer pages (PROPOSED 2026-10-03, awaiting ratification)
+
+**Trigger.** M-1b-ii-b III review F-5. §4 names the exemplar's three parquets as "the only bytes this graph carries".
+The exemplar's explainer pages are also committed, and they carry *derived* per-patient content:
+- `site/hab_crash_risk.html` (v0, committed 2026-09-23, before this ADR);
+- `site/gulf_karenia_brevis_v1.html` (v1, committed 2026-10-03 by operator ruling in the M-1b-ii-b sitting).
+
+That content is weekly scores, SHAP values, labels, sample locations rounded to 0.05°, and the vitals trace, all computed
+from those same public parquets. The ruling and the rule disagree; this amendment reconciles them on the record.
+
+**Proposed text, appended to §4.** *The exemplar's explainer pages (`what/exemplars/gulf_karenia_brevis/site/*.html`) join the capped,
+grandfathered exception. They are derived only from the three public parquets. They are rebuildable from committed code,
+config and copy (`atlantis_core.site`). They are exemplar-only.*
+- **No instance page is ever committed to Atlantis.** An instance's page is that instance's artifact, under its own
+  data ruling (ADR-016 §8 class).
+- **The evidence board stays metrics-only.**
+- **A new exemplar page version is a new file beside the old one**, never an overwrite, and each one cites the board
+  entry whose run it renders.
+
+**Not changed.** §5 (what crosses from an instance), the board's GREEN rule, and SO-3 for every instance.
+
+| Field | Value |
+|---|---|
+| decision | *pending* |
+| ratified-by | *pending (operator)* |
+| date | *pending* |
+| status | **proposed** |
+

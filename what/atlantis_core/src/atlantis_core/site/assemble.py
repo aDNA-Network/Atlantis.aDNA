@@ -51,18 +51,41 @@ def unit_names(inst: Instance) -> dict:
     return {r["id"]: r["name"] for r in inst.cfg["grid"].get("rules", []) or []}
 
 
-def board_check(metrics: dict, entry: dict) -> dict:
-    """The page must say what its board entry says: the headline the page binds equals the entry's evaluation."""
-    ev, t = entry["evaluation"], metrics["full"]["test"]
-    pairs = {"auroc": (round(t["auroc"], 4), ev["auroc"]), "auprc": (round(t["auprc"], 4), ev["auprc"]),
-             "n_test": (t["n"], ev["n_test"]), "base_rate": (round(t["prevalence"], 4), ev["base_rate"]),
-             "semantic_hash": (metrics["semantic_hash"], ev["config_hash"])}
-    bad = {k: v for k, v in pairs.items() if v[0] != v[1]}
+BOARD_META = {"recorded_at", "recorded_by", "learner", "limitations_ref", "split", "shap_summary_ref", "evaluation_id",
+              "event_ref", "unit_ref", "claim", "owner_ruling_ref", "name", "description", "tier", "version"}
+
+
+def board_check(metrics: dict, entry: dict, inst) -> dict:
+    """The page must say what its board entry says. The run's metrics are re-projected through the board's own projector
+    and EVERY evaluated field (metrics, budgets, lead time, ablations, hash, data pins) must equal the entry's; only
+    record metadata may differ (III F-3c — a five-field check passed a doctored Brier)."""
+    from atlantis_core.board import project
+    ev = entry["evaluation"]
+    mine = project(metrics, inst, version=0, recorded_at=ev.get("recorded_at") or "1970-01-01T00:00:00Z", config_hash=metrics["semantic_hash"])
+    keys = (set(ev) | set(mine)) - BOARD_META
+    bad = {k: (mine.get(k), ev.get(k)) for k in sorted(keys) if mine.get(k) != ev.get(k)}
     if bad:
         raise SiteError(f"outputs disagree with board entry {entry['entry_id']}: {bad} — rerun atlantis_core.run, or point site.yaml at the right entry")
     return {"entry_id": entry["entry_id"], "auroc": ev["auroc"], "auprc": ev["auprc"], "base_rate": ev["base_rate"],
             "n_test": ev["n_test"], "config_hash": ev["config_hash"], "run_date": entry.get("run_date"),
-            "delta_vs": (entry.get("evaluation_extras") or {}).get("delta_vs")}
+            "fields_checked": len(keys), "delta_vs": (entry.get("evaluation_extras") or {}).get("delta_vs")}
+
+
+def shap_check(z, ss: dict, test: pd.DataFrame, allr: pd.DataFrame) -> None:
+    """The gitignored per-patient arrays must belong to the run whose summary is committed (III F-3c): row counts match the
+    scored tables, the base matches, and each column's mean |SHAP| on the test rows reproduces shap_summary.json."""
+    sv, sv_all = z["shap"], z["shap_all"]
+    errs = []
+    if sv.shape[0] != len(test): errs.append(f"shap rows {sv.shape[0]} != test_scored rows {len(test)}")
+    if sv_all.shape[0] != len(allr): errs.append(f"shap_all rows {sv_all.shape[0]} != all_scored rows {len(allr)}")
+    if abs(float(z["base"]) - float(ss["base_logit"])) > 1e-6: errs.append(f"base {float(z['base'])} != summary {ss['base_logit']}")
+    cols = [str(c) for c in z["columns"]]
+    ma = np.abs(sv).mean(0)
+    off = [c for k, c in enumerate(cols) if c in ss["mean_abs_shap"] and abs(ma[k] - ss["mean_abs_shap"][c]) > 1e-4]
+    if off: errs.append(f"mean |SHAP| disagrees with shap_summary.json for {off[:4]}")
+    if errs:
+        raise SiteError("data/processed/atlantis_core is not the run outputs/atlantis_core records: " + "; ".join(errs) +
+                        " — rerun atlantis_core.run")
 
 
 def _lead_key(full: dict) -> str:
@@ -74,7 +97,9 @@ def _lead_key(full: dict) -> str:
 
 def _metrics(inst, m: dict) -> dict:
     full = dict(m["full"]); lk = _lead_key(full)
-    full["lead"] = {**full.pop(lk), "budget": float(inst.cfg["eval"]["lead_budget"])}
+    from atlantis_core.eval.metrics import rate_key
+    budget = float(inst.cfg["eval"]["lead_budget"])
+    full["lead"] = {**full.pop(lk), "budget": budget, "budget_key": rate_key(budget)}
     full.pop("gain_importance", None)
     abl = [{"group": a["drop_group"], **{k: m[f"no_{a['drop_group']}"][k] for k in ("n_trees", "test")}}
            for a in inst.cfg["eval"].get("ablations", []) or []]
@@ -186,13 +211,25 @@ def strips(inst, site, table, panel, all_scored, shap_all, groups, names) -> dic
                          "p": R(g.p, 4), "y": [None if pd.isna(v) else int(v) for v in g.y],
                          "split": [None if pd.isna(v) else str(v) for v in g.split],
                          "signal": [None if pd.isna(v) else float(v) for v in g.signal],
-                         "groups": {k: R(v) for k, v in S.items()}}
+                         "groups": {k: R(v) for k, v in S.items()},
+                         "bands": bands(g.week, g.split)}
+    return out
+
+
+def bands(weeks, split) -> list:
+    """Weeks outside the modelling rows (already in event, unknown outcome) as half-open intervals one week wide, centred on
+    the ISO week's Monday ± 3.5 days (III F-1: a zero-width rect on a date axis draws nothing)."""
+    out = []
+    for w, sp in zip(pd.to_datetime(weeks), split):
+        if pd.isna(sp):
+            out.append([(w - pd.Timedelta(hours=84)).isoformat(), (w + pd.Timedelta(hours=84)).isoformat()])
     return out
 
 
 def cases(inst, site, test, sv, panel, feats, names) -> list:
-    """Three out-of-sample patients by rule (was hab.export_site_data): the confident true positive with the longest
-    lead, the most confident false alarm, and the quietest week of a configured month."""
+    """Three out-of-sample patients by rule (was hab.export_site_data): the most confident true positive whose onset came
+    ≥ `lead_min` weeks out (among the top `p_quantile` of scores, if any are), the most confident false alarm, and the
+    quietest week of a configured month. NOT "the longest lead" — the v0 page said so and the rule never did (III F-2)."""
     c = site.get("cases") or {}
     ucol = inst.cfg["grid"].get("unit_column", "unit")
     thr, H, direction = float(inst.event["threshold"]), int(inst.event["horizon"]), inst.event["direction"]
@@ -228,8 +265,11 @@ def cases(inst, site, test, sv, panel, feats, names) -> list:
     return out
 
 
-def whatif(inst, wi: dict, names) -> dict:
+def whatif(inst, wi: dict, names, labels: dict) -> dict:
     sp = inst.cfg["split"]
+    group_of = {}
+    for v in inst.vitals:
+        group_of.setdefault(v["stream_ref"], v["group"])
     out = {}
     for k, w in wi.items():
         if not isinstance(w, dict):
@@ -238,7 +278,11 @@ def whatif(inst, wi: dict, names) -> dict:
         split = ["test" if y >= int(sp["test_start"]) else "val" if y >= int(sp["val_start"]) else "train" for y in yrs]
         out[k] = {**{f: w[f] for f in ("weeks", "p_actual", "p_scenario", "y", "mean_delta", "mean_abs_delta", "max_abs_delta",
                                         "factor", "stream", "stations_scaled", "non_lever_stations_scaled")},
-                  "units": w["units"], "unit_name": ", ".join(names.get(u, str(u)) for u in w["units"]), "split": split}
+                  "units": w["units"], "unit_name": ", ".join(names.get(u, str(u)) for u in w["units"]), "split": split,
+                  "group": group_of.get(w["stream"]),
+                  "stations_scaled_labels": [labels.get(s, s) for s in w["stations_scaled"]],
+                  "non_lever_labels": [labels.get(s, s) for s in w["non_lever_stations_scaled"]],
+                  "only_non_lever": bool(w["stations_scaled"]) and set(w["stations_scaled"]) <= set(w["non_lever_stations_scaled"])}
     return out
 
 
@@ -256,7 +300,7 @@ def assemble(inst: Instance, site: dict | None = None) -> dict:
     ss = json.loads((out_dir / "shap_summary.json").read_text())
     wi = json.loads((out_dir / "whatif.json").read_text())
     entry = json.loads((root / site["board_entry"]).read_text())
-    board = board_check(m, entry)
+    board = board_check(m, entry, inst)
 
     names = unit_names(inst)
     feats = [feature_name(v) for v in inst.vitals]
@@ -267,6 +311,7 @@ def assemble(inst: Instance, site: dict | None = None) -> dict:
     sv, base, sv_all = z["shap"], float(z["base"]), z["shap_all"]
     test = pd.read_parquet(proc / "test_scored.parquet").reset_index(drop=True)
     allr = pd.read_parquet(proc / "all_scored.parquet")
+    shap_check(z, ss, test, allr)
     gorder = list(site["groups"])
     reg_groups = {v["group"] for v in inst.vitals}
     if set(gorder) != reg_groups:
@@ -320,7 +365,7 @@ def assemble(inst: Instance, site: dict | None = None) -> dict:
                  "dependence": dep, "cases": cases(inst, site, test, sv, panel, feats, names),
                  "strips": strips(inst, site, table, panel, allr, sv_all, gidx, names)},
         "swaps": _swaps(root, inst),
-        "whatif": whatif(inst, wi, names), "whatif_caveat": wi.get("caveat"),
+        "whatif": whatif(inst, wi, names, site.get("station_labels") or {}), "whatif_caveat": wi.get("caveat"),
     }
     site_data["shap"]["beeswarm_n"] = len(keep)
     return clean(site_data)
@@ -334,7 +379,7 @@ def resolve(data: dict, path: str):
     for k in path.split("."):
         if isinstance(cur, dict) and k in cur:
             cur = cur[k]
-        elif isinstance(cur, list) and k.lstrip("-").isdigit() and -len(cur) <= int(k) < len(cur):
+        elif isinstance(cur, list) and k.isdigit() and int(k) < len(cur):
             cur = cur[int(k)]
         else:
             raise KeyError(path)

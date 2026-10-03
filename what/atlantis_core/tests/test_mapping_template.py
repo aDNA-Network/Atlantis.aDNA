@@ -50,7 +50,19 @@ DEFECTS = [
     ("fence property dropped", lambda m: m["fence"]["deny_properties"].remove("lat"), "missing 'lat'"),
     ("data as a source", lambda m: m["sources"]["vitals"].append("data/processed/features.parquet"), "is fenced by"),
     ("scored table as a source", lambda m: m["sources"]["evaluations"].append("outputs/atlantis_core/metrics.json"), "is fenced by"),
-    ("stamp missing", lambda m: m["stamps"].pop("valid_to"), "missing 'valid_to'"),
+    ("stamp missing", lambda m: m["stamps"].pop("valid_to"), "stamps.valid_to"),
+    # III F-4: holes the first checker passed
+    ("./ path past the fence", lambda m: m["sources"]["vitals"].append("./data/processed/vitals.yaml"), "is fenced by"),
+    (".. path out of the instance", lambda m: m["sources"]["vitals"].append("../other/streams.yaml"), "is fenced by"),
+    ("site output as a source", lambda m: m["sources"]["evaluations"].append("site/site_data.json"), "is fenced by"),
+    ("template's csv fence deleted", lambda m: m["fence"]["deny_paths"].remove("**/*.csv"), "missing '\\*\\*/\\*.csv'"),
+    ("template's site fence deleted", lambda m: m["fence"]["deny_paths"].remove("site/**"), "missing 'site/"),
+    ("geojson unfenced", lambda m: m["fence"]["deny_properties"].remove("geojson"), "missing 'geojson'"),
+    ("edge carries a coordinate", lambda m: rel(m, "PINS")["derivation"]["edge_properties"].append("lat"), "edge property 'lat'"),
+    ("edge carries a non-slot", lambda m: rel(m, "PINS")["derivation"]["edge_properties"].append("p_actual"), "not a slot of AtlDataPin"),
+    ("json property not projected", lambda m: lab(m, "AtlEvaluation")["json_properties"].append("predictions"), "not a projected property"),
+    ("world time as validity", lambda m: m["stamps"].update(valid_from="captured_at"), "record time is not world time"),
+    ("source not the projection", lambda m: m["stamps"].update(source="fwc"), "must name the projection"),
 ]
 
 

@@ -172,7 +172,7 @@ const tok = () => ({bg:css('--surface'),ink:css('--ink'),ink2:css('--ink-2'),ink
   seq:[1,2,3,4,5,6,7].map(i=>css('--seq-'+i))});
 const get = (o,p)=>p.split('.').reduce((a,k)=>a==null?a:a[k],o);
 const fmt = (v,f)=>{ if(v==null||Number.isNaN(v)) return '—';
-  switch(f){case '2':return v.toFixed(2);case '3':return v.toFixed(3);case '1':return v.toFixed(1);case 'pct0':return Math.round(v*100)+'%';case 'pct1':return (v*100).toFixed(1)+'%';
+  switch(f){case '4':return v.toFixed(4);case '2':return v.toFixed(2);case '3':return v.toFixed(3);case '1':return v.toFixed(1);case 'pct0':return Math.round(v*100)+'%';case 'pct1':return (v*100).toFixed(1)+'%';
   case 'comma':return Math.round(v).toLocaleString('en-US');case 'k':return (v/1000).toFixed(0)+'k';case 'sci':return v.toExponential(1);case 'label':return FEAT[v]?FEAT[v].label:v;default:return String(v);}};
 const compact = v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'k':String(Math.round(v));
 const STYLE = {compact, fixed1:v=>v.toFixed(1), fixed2:v=>v.toFixed(2), signed2:v=>(v>=0?'+':'')+v.toFixed(2), int:v=>String(Math.round(v))};
@@ -213,13 +213,14 @@ function X(s){ return String(s).replace(/\{\{fig:(\w+)\}\}/g,(m,n)=>figure(n))
 // ---------- page: nav · hero · sections · footer, all from the copy ----------
 document.getElementById('nav').innerHTML = C.sections.map((s,i)=>`<a href="#${s.id}"><span>${i+1}</span>${s.nav}</a>`).join('');
 const hero = C.hero;
-document.getElementById('hero').innerHTML = `<div class="kicker">${hero.pills.map(p=>`<span class="pill${p.accent?' bloom':''}">${p.text}</span>`).join('')}</div>
-  <h1>${hero.h1}</h1><p class="lede">${X(hero.lede)}</p>
+document.getElementById('hero').innerHTML = `<div class="kicker">${hero.pills.map(p=>`<span class="pill${p.accent?' bloom':''}">${X(p.text)}</span>`).join('')}</div>
+  <h1>${X(hero.h1)}</h1><p class="lede">${X(hero.lede)}</p>
   <div class="stats">${hero.stats.map(s=>`<div class="stat"><div class="v num">${X(s.v)}</div><div class="l">${X(s.l)}</div><div class="s">${X(s.s)}</div></div>`).join('')}</div>`;
-document.getElementById('sections').innerHTML = C.sections.map((s,i)=>`<section id="${s.id}"><div class="head"><div class="n">${String(i+1).padStart(2,'0')}</div><div><div class="eyebrow">${s.eyebrow}</div><h2>${s.title}</h2></div></div>\n${X(s.body)}</section>`).join('\n');
+document.getElementById('sections').innerHTML = C.sections.map((s,i)=>`<section id="${s.id}"><div class="head"><div class="n">${String(i+1).padStart(2,'0')}</div><div><div class="eyebrow">${X(s.eyebrow)}</div><h2>${X(s.title)}</h2></div></div>\n${X(s.body)}</section>`).join('\n');
 document.getElementById('footer').innerHTML = X(C.footer);
 D.metrics.full.learner_kind = D.shap.learner_kind;
-document.querySelectorAll('[data-v]').forEach(el=>{el.textContent=fmt(get(D,el.dataset.v),el.dataset.f);});
+function bindValues(root){ root.querySelectorAll('[data-v]').forEach(el=>{el.textContent=fmt(get(D,el.dataset.v),el.dataset.f);}); }
+bindValues(document);
 
 // ---------- Plotly base layout ----------
 function L(extra){ const t=tok(); return Object.assign({paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{family:'"Bricolage Grotesque",sans-serif',size:12,color:t.ink2},
@@ -267,7 +268,7 @@ reg(()=>{ const tr=D.data.trace; if(!tr||!has('c_trace')) return; const t=tok(),
   const traces=[], lay=L({grid:{rows:n,columns:1,pattern:'independent',roworder:'top to bottom'},margin:{l:56,r:14,t:10,b:40},showlegend:false,shapes:[],annotations:[]});
   tr.panels.forEach((p,i)=>{ const ya=i?'y'+(i+1):'y', top=1-i*(h+gap), dom=[Math.max(0,top-h),top], last=i===n-1, w=P[p.key]||{};
     let vals=p.values, color, hv;
-    if(p.key==='signal'){ vals=vals.map(v=>v==null?null:Math.max(v,1)); color=t.bloom; hv=v=>fsig(v); }
+    if(p.key==='signal'){ vals=vals.map(v=>v==null?null:(D.signal_display.log_axis?Math.max(v,1):v)); color=t.bloom; }
     else { const r=rule(p.key); vals=vals.map(v=>v==null?null:inv(r,v)); color=t.g[FEAT[p.key].group]; }
     const base={x:tr.weeks,y:vals,name:w.name,yaxis:ya,hovertemplate:'%{x}<br>%{y:,.2f}<extra>'+esc(w.name||p.key)+'</extra>'};
     traces.push(last&&p.key!=='signal'?Object.assign(base,{type:'bar',marker:{color}}):Object.assign(base,{type:'scatter',mode:p.key==='signal'?'lines+markers':'lines',line:{color,width:2},marker:{size:5},connectgaps:false}));
@@ -285,9 +286,9 @@ reg(()=>{ const tr=D.data.trace; if(!tr||!has('c_trace')) return; const t=tok(),
 (function(){ const el=document.getElementById('c_label'); if(!el) return; const w=C.figures.label_diagram||{}, back=Math.min(4,H+1), cols=back+H, W=420;
   const xw=(W-24-8)/cols, xs=i=>12+xw*i+xw/2-8, past=i=>i<back;
   const lab=i=>i===back-1?'t':(i<back?'t-'+(back-1-i):'t+'+(i-back+1));
-  const ys=[120,116,104,92].slice(-back), fut=[80,66,52,58,62,64,66,68].slice(0,H);
+  const cI=Math.min(H-1,2), ys=[120,116,104,92].slice(-back), fut=Array.from({length:H},(_,i)=>i<cI?80-14*i:52+(i===cI?0:Math.min(6*(i-cI),30)));
   const pts=ys.concat(fut).map((y,i)=>[xs(i)+8,y]);
-  const cross=Math.min(H-1,2)+back;
+  const cross=cI+back;
   el.innerHTML=`<svg viewBox="0 0 ${W} 190" width="100%" role="img" aria-label="${esc(w.top||'')} ${esc(w.bottom||'')}">
 <style>.lbl{font:600 11px "Bricolage Grotesque",sans-serif;fill:var(--ink-2)} .sm{font:10px "JetBrains Mono",monospace;fill:var(--ink-3)}</style>
 <text x="12" y="20" class="lbl">${w.top||''}</text><text x="12" y="176" class="lbl">${w.bottom||''}</text>
@@ -305,15 +306,15 @@ ${pts.slice(back).map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="var(--bl
 
 // ---------- model ----------
 (function(){ const tb=document.getElementById('t_splits'); if(!tb) return; ['train','val','test'].forEach(k=>{const s=D.metrics.splits[k]; const tr=document.createElement('tr'); tr.innerHTML=`<td>${k}</td><td class="num">${s.years[0]}–${s.years[1]}</td><td class="r num">${s.n.toLocaleString('en-US')}</td><td class="r num">${s.positives.toLocaleString('en-US')}</td><td class="r num">${(100*s.positives/s.n).toFixed(1)}%</td>`; tb.appendChild(tr);}); })();
-const AB = D.metrics.ablations[0];
-reg(()=>{ const t=tok(); const s=D.metrics.splits; const col={train:t.water,val:t.g[GROUPS[2]]||t.ink3,test:t.bloom};
+reg(()=>{ const t=tok(); const s=D.metrics.splits; const col={train:t.water,val:t.seq[2],test:t.bloom};
   plot('c_split',['train','val','test'].map(k=>({type:'bar',orientation:'h',y:['years'],x:[s[k].years[1]-s[k].years[0]+1],base:[s[k].years[0]],name:k,marker:{color:col[k]},text:k+' '+s[k].years[0]+'–'+s[k].years[1],textposition:'inside',insidetextanchor:'middle',textfont:{color:'#fff',size:11},hovertemplate:k+': %{base}–'+s[k].years[1]+'<extra></extra>'})),
     L({barmode:'stack',margin:{l:10,r:10,t:6,b:30},height:110,yaxis:{visible:false},xaxis:{range:[y0,sp.test_end+1],gridcolor:t.line,tickfont:{color:t.ink3},dtick:5}}));
-  const full=D.metrics.full.test, ns=AB?AB.test:null, abl=S.compare_rows.ablation_legend;
+  const full=D.metrics.full.test, R=S.compare_rows, DASH=['dot','dashdot','longdash'];
   const pr=[{type:'scatter',mode:'lines',x:full.pr.recall,y:full.pr.precision,name:'full model',line:{color:t.bloom,width:2},hovertemplate:'recall %{x:.2f} · precision %{y:.2f}<extra>full</extra>'}];
   const roc=[{type:'scatter',mode:'lines',x:full.roc.fpr,y:full.roc.tpr,name:'full',line:{color:t.bloom,width:2},hovertemplate:'FPR %{x:.2f} · TPR %{y:.2f}<extra>full</extra>'}];
-  if(ns){ pr.push({type:'scatter',mode:'lines',x:ns.pr.recall,y:ns.pr.precision,name:abl,line:{color:t.water,width:2,dash:'dot'},hovertemplate:'recall %{x:.2f} · precision %{y:.2f}<extra>'+esc(abl)+'</extra>'});
-    roc.push({type:'scatter',mode:'lines',x:ns.roc.fpr,y:ns.roc.tpr,name:abl,line:{color:t.water,width:2,dash:'dot'},hovertemplate:'FPR %{x:.2f} · TPR %{y:.2f}<extra>'+esc(abl)+'</extra>'}); }
+  D.metrics.ablations.forEach((a,i)=>{ const ns=a.test, abl=R['legend_'+a.group]||R['ablation_'+a.group]||a.group, ln={color:i?t.ink3:t.water,width:2,dash:DASH[i%3]};
+    pr.push({type:'scatter',mode:'lines',x:ns.pr.recall,y:ns.pr.precision,name:abl,line:ln,hovertemplate:'recall %{x:.2f} · precision %{y:.2f}<extra>'+esc(abl)+'</extra>'});
+    roc.push({type:'scatter',mode:'lines',x:ns.roc.fpr,y:ns.roc.tpr,name:abl,line:ln,hovertemplate:'FPR %{x:.2f} · TPR %{y:.2f}<extra>'+esc(abl)+'</extra>'}); });
   roc.push({type:'scatter',mode:'lines',x:[0,1],y:[0,1],line:{color:t.ink3,dash:'dash',width:1},hoverinfo:'skip'});
   plot('c_pr',pr,L({showlegend:true,legend:{orientation:'h',y:1.18,x:0,font:{size:10}},xaxis:{title:{text:'recall'},range:[0,1],gridcolor:t.line,tickfont:{color:t.ink3}},yaxis:{title:{text:'precision'},range:[0,1],gridcolor:t.line,tickfont:{color:t.ink3}},
       shapes:[{type:'line',x0:0,x1:1,y0:full.prevalence,y1:full.prevalence,line:{color:t.ink3,dash:'dash',width:1}}]}));
@@ -322,8 +323,8 @@ reg(()=>{ const t=tok(); const s=D.metrics.splits; const col={train:t.water,val:
   plot('c_cal',[{type:'scatter',mode:'lines',x:[0,cm],y:[0,cm],line:{color:t.ink3,dash:'dash',width:1},hoverinfo:'skip'},
     {type:'scatter',mode:'lines+markers',x:cal.map(c=>c.pred),y:cal.map(c=>c.obs),marker:{size:cal.map(c=>Math.max(6,Math.sqrt(c.n)/3)),color:t.bloom},line:{color:t.bloom,width:2},text:cal.map(c=>c.n),hovertemplate:'predicted %{x:.3f}<br>observed %{y:.3f}<br>n=%{text}<extra></extra>'}],
     L({xaxis:{title:{text:'mean predicted probability'},gridcolor:t.line,tickfont:{color:t.ink3},rangemode:'tozero'},yaxis:{title:{text:'observed onset rate'},gridcolor:t.line,tickfont:{color:t.ink3},rangemode:'tozero'}}));
-  const lt=D.metrics.full.lead.histogram_weeks_before_onset; const ks=Array.from({length:H},(_,i)=>String(i+1)).concat(['-1']).filter(k=>k in lt);
-  plot('c_lead',[{type:'bar',x:ks.map(k=>k==='-1'?'missed':k+' wk'),y:ks.map(k=>lt[k]),marker:{color:ks.map(k=>k==='-1'?t.ink3:t.water)},text:ks.map(k=>lt[k]),textposition:'outside',textfont:{color:t.ink2},hovertemplate:'%{x}: %{y} onsets<extra></extra>'}],
+  const lt=D.metrics.full.lead.histogram_weeks_before_onset; const ks=Array.from({length:H},(_,i)=>String(i+1)).concat(['-1']);
+  plot('c_lead',[{type:'bar',x:ks.map(k=>k==='-1'?'missed':k+' wk'),y:ks.map(k=>lt[k]||0),marker:{color:ks.map(k=>k==='-1'?t.ink3:t.water)},text:ks.map(k=>lt[k]||0),textposition:'outside',textfont:{color:t.ink2},hovertemplate:'%{x}: %{y} onsets<extra></extra>'}],
     L({bargap:.35,yaxis:{title:{text:'onsets'},gridcolor:t.line,tickfont:{color:t.ink3}},xaxis:{title:{text:S.lead_axis},gridcolor:t.line,tickfont:{color:t.ink3}}}));
   const ro=D.metrics.rolling_origin;
   plot('c_roll',[{type:'bar',x:ro.map(r=>r.test_year),y:ro.map(r=>r.prevalence),name:'prevalence',marker:{color:t.line},hovertemplate:'%{x}: prevalence %{y:.3f}<extra></extra>'},
@@ -348,7 +349,7 @@ reg(()=>{ const t=tok(); const ma=D.shap.mean_abs; const order=Object.keys(ma).s
     {type:'bar',orientation:'h',y:go.map(g=>GLABEL[g]),x:go.map(g=>gn[g]),name:'|sum of SHAP| (net)',marker:{color:go.map(g=>t.g[g])},text:go.map(g=>gn[g].toFixed(2)),textposition:'outside',textfont:{color:t.ink2},hovertemplate:'%{y}: net %{x:.3f}<extra></extra>'}],
     L({barmode:'group',showlegend:true,legend:{orientation:'h',y:1.02,yanchor:'bottom',x:0,font:{size:10}},margin:{l:120,r:40,t:34,b:30},height:250,bargap:.25,xaxis:{gridcolor:t.line,tickfont:{color:t.ink3}},yaxis:{tickfont:{size:11,color:t.ink2}}}));
 });
-reg(()=>{ const tb=document.getElementById('t_t2'); if(!tb) return; const t=tok(); const lb=D.metrics.full.lead.budget, bk=Math.round(lb*100)+'pct';
+reg(()=>{ const tb=document.getElementById('t_t2'); if(!tb) return; const t=tok(); const bk=D.metrics.full.lead.budget_key;
   const L0={kind:D.shap.learner_kind,learner:D.metrics.full.learner,test:D.metrics.full.test,group_net_mean_abs:D.shap.group_net_mean_abs,n_availability:0};
   const all=[L0].concat(D.swaps);
   while(tb.rows.length>1) tb.deleteRow(1);
@@ -381,7 +382,7 @@ reg(()=>{ const t=tok(); const wrap=document.getElementById('cases_wrap'); if(!w
   D.shap.cases.forEach((c,ci)=>{ const card=document.createElement('div'); card.className='case';
     const ent=Object.entries(c.shap).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])); const top=ent.slice(0,9), rest=ent.slice(9).reduce((s,e)=>s+e[1],0);
     const items=top.map(([f,v])=>({l:FEAT[f].label+' = '+(c.x[f]==null?'missing':fmtx(f,c.x[f])),v})); items.push({l:`other ${ent.length-9} features`,v:rest});
-    const outcome=c.tag==='quiet'?S.event_not_followed:(c.y?`${S.event_followed} (${fsig(c.future_signal)} within ${H} wk${c.lead_weeks?', first crossed '+c.lead_weeks+' wk later':''})`:`${S.event_not_followed} (max ${c.future_signal==null?'unknown':fsig(c.future_signal)})`);
+    const outcome=c.tag==='quiet'?S.event_not_followed:(c.y?`${S.event_followed} (${fsig(c.future_signal)} within ${H} wk${c.lead_weeks?', first crossed '+c.lead_weeks+' wk later':''})`:`${S.event_not_followed} (${EV.direction==='below'?'min':'max'} ${c.future_signal==null?'unknown':fsig(c.future_signal)})`);
     card.innerHTML=`<div class="hd"><b>${TT[c.tag]}</b><span class="p num" style="color:${c.y?'var(--bloom)':'var(--ink-2)'}">${(c.p*100).toFixed(0)}%</span></div><div class="meta">${c.unit_name} · week of ${c.week}<br>${S.case_this_week}: ${c.signal_this_week==null?S.no_obs:fsig(c.signal_this_week)}<br>outcome: ${outcome}</div><div id="c_case_${ci}" class="chart" style="min-height:340px"></div>`;
     wrap.appendChild(card);
     let cum=D.shap.base_logit; const xs=[],bases=[],cols=[],labels=[],hover=[];
@@ -397,14 +398,14 @@ reg(()=>{ const t=tok(); const wrap=document.getElementById('cases_wrap'); if(!w
 // ---------- risk strip ----------
 const SK = Object.keys(D.shap.strips); const stripSeg=document.getElementById('strip_seg');
 if(stripSeg) SK.forEach((k,i)=>{const b=document.createElement('button'); b.dataset.k=k; b.setAttribute('aria-pressed',i===0); b.textContent=(C.strips[k]||{}).label||k; stripSeg.appendChild(b);});
-function drawStrip(k){ if(!has('c_strip')) return; const t=tok(); const s=D.shap.strips[k]; document.getElementById('strip_title').textContent=s.unit_name+' — '+s.weeks[0].slice(0,7)+' to '+s.weeks[s.weeks.length-1].slice(0,7); document.getElementById('strip_cap').innerHTML=(C.strips[k]||{}).caption||'';
-  const tr=[]; const onset=s.weeks.map((w,i)=>s.y[i]===1?s.p[i]:null); const sigv=s.signal.map(v=>v==null?null:Math.max(v,1));
+function drawStrip(k){ if(!has('c_strip')) return; const t=tok(); const s=D.shap.strips[k]; document.getElementById('strip_title').textContent=s.unit_name+' — '+s.weeks[0].slice(0,7)+' to '+s.weeks[s.weeks.length-1].slice(0,7); document.getElementById('strip_cap').innerHTML=X((C.strips[k]||{}).caption||''); bindValues(document.getElementById('strip_cap'));
+  const tr=[]; const onset=s.weeks.map((w,i)=>s.y[i]===1?s.p[i]:null); const sigv=s.signal.map(v=>v==null?null:(D.signal_display.log_axis?Math.max(v,1):v));
   tr.push({type:'scatter',mode:'lines',x:s.weeks,y:s.p,name:`P(onset within ${H} wk)`,line:{color:t.ink,width:2},fill:'tozeroy',fillcolor:t.bloom+'1f',hovertemplate:'%{x}<br>P = %{y:.2f}<extra></extra>'});
   tr.push({type:'scatter',mode:'markers',x:s.weeks,y:onset,name:S.event_followed,marker:{color:t.bloom,size:8,symbol:'diamond'},hovertemplate:'%{x}<br>'+esc(S.event_followed)+' · P = %{y:.2f}<extra></extra>'});
   tr.push({type:'scatter',mode:'lines+markers',x:s.weeks,y:sigv,yaxis:'y2',name:S.trace_panels.signal.name,line:{color:t.bloom,width:1.5},marker:{size:4},connectgaps:false,hovertemplate:'%{x}<br>%{y:,.0f}<extra></extra>'});
   GROUPS.forEach(g=>tr.push({type:'bar',x:s.weeks,y:s.groups[g],yaxis:'y3',name:GLABEL[g],marker:{color:t.g[g]},hovertemplate:'%{x}<br>'+esc(GLABEL[g])+' %{y:+.2f}<extra></extra>'}));
   const shapes=[{type:'line',xref:'paper',x0:0,x1:1,yref:'y2',y0:EV.threshold,y1:EV.threshold,line:{color:t.ink3,dash:'dot',width:1}}];
-  s.weeks.forEach((w,i)=>{ if(s.split[i]==null) shapes.push({type:'rect',xref:'x',x0:w,x1:w,yref:'paper',y0:0,y1:1,fillcolor:t.ink3,opacity:.08,line:{width:0}}); });
+  (s.bands||[]).forEach(([a,b])=>shapes.push({type:'rect',xref:'x',x0:a,x1:b,yref:'paper',y0:0,y1:1,fillcolor:t.ink3,opacity:.12,line:{width:0},layer:'below'}));
   plot('c_strip',tr,L({barmode:'relative',bargap:.15,showlegend:true,legend:{orientation:'h',y:-.08,x:0,font:{size:10}},margin:{l:56,r:14,t:10,b:70},height:620,
     yaxis:{title:{text:'P(onset)'},domain:[.72,1],range:[0,1],gridcolor:t.line,tickfont:{color:t.ink3}},
     yaxis2:Object.assign({title:{text:S.trace_panels.signal.axis},domain:[.46,.68],gridcolor:t.line,tickfont:{color:t.ink3}},D.signal_display.log_axis?{type:'log',range:logRange(sigv)}:{}),
@@ -418,10 +419,10 @@ if(stripSeg) stripSeg.addEventListener('click',e=>{const b=e.target.closest('but
 const wiKeys=Object.keys(D.whatif); const wiSeg=document.getElementById('wi_seg');
 if(wiSeg) wiKeys.forEach((k,i)=>{const b=document.createElement('button'); b.dataset.k=k; b.setAttribute('aria-pressed',i===0); const w=D.whatif[k]; b.textContent=w.unit_name+' '+w.weeks[0].slice(0,4)+'–'+w.weeks[w.weeks.length-1].slice(2,4)+(w.split.every(s=>s==='test')?' (held out)':' (in-sample)'); wiSeg.appendChild(b);});
 function drawWI(k){ if(!has('c_whatif')) return; const t=tok(); const w=D.whatif[k]; document.getElementById('wi_title').textContent=w.unit_name+' — '+w.weeks[0].slice(0,7)+' to '+w.weeks[w.weeks.length-1].slice(0,7);
-  const nl=w.non_lever_stations_scaled||[];
-  document.getElementById('wi_cap').textContent=`Mean change in predicted probability across the episode: ${(w.mean_delta*100).toFixed(1)} percentage points (mean absolute change ${(w.mean_abs_delta*100).toFixed(1)} pp). ${w.mean_delta<0?S.whatif_down:S.whatif_not_down} — under the caveats below.`+(nl.length?` ${S.whatif_non_lever} ${nl.join(', ')}.`:'');
+  const nl=w.non_lever_labels||[];
+  document.getElementById('wi_cap').textContent=`Mean change in predicted probability across the episode: ${(w.mean_delta*100).toFixed(1)} percentage points (mean absolute change ${(w.mean_abs_delta*100).toFixed(1)} pp). ${w.mean_delta<0?S.whatif_down:S.whatif_not_down} — under the caveats below.`+(w.only_non_lever?` ${S.whatif_only_non_lever} ${nl.join(', ')}.`:(nl.length?` ${S.whatif_non_lever} ${nl.join(', ')}.`:''));
   plot('c_whatif',[{type:'scatter',mode:'lines',x:w.weeks,y:w.p_actual,name:'actual',line:{color:t.ink,width:2},hovertemplate:'%{x}<br>actual P = %{y:.2f}<extra></extra>'},
-    {type:'scatter',mode:'lines',x:w.weeks,y:w.p_scenario,name:S.whatif_scenario,line:{color:t.g[GROUPS[GROUPS.length-1]],width:2,dash:'dot'},hovertemplate:'%{x}<br>'+esc(S.whatif_scenario)+' P = %{y:.2f}<extra></extra>'},
+    {type:'scatter',mode:'lines',x:w.weeks,y:w.p_scenario,name:S.whatif_scenario,line:{color:t.g[w.group]||t.water,width:2,dash:'dot'},hovertemplate:'%{x}<br>'+esc(S.whatif_scenario)+' P = %{y:.2f}<extra></extra>'},
     {type:'scatter',mode:'markers',x:w.weeks,y:w.weeks.map((x,i)=>w.y[i]===1?w.p_actual[i]:null),name:S.event_followed,marker:{color:t.bloom,size:8,symbol:'diamond'},hovertemplate:'%{x}<br>'+esc(S.event_followed)+'<extra></extra>'}],
     L({showlegend:true,legend:{orientation:'h',y:1.15,x:0},yaxis:{title:{text:`P(onset within ${H} wk)`},range:[0,1],gridcolor:t.line,tickfont:{color:t.ink3}},xaxis:{gridcolor:t.line,tickfont:{color:t.ink3},showgrid:false}}));
 }

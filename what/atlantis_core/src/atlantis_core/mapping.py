@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import fnmatch
+import posixpath
 import sys
 from pathlib import Path
 
@@ -19,9 +20,10 @@ import yaml
 SCHEMA = Path(__file__).resolve().parents[3] / "schema" / "atl_v0" / "atl_ontology_v0.linkml.yaml"
 CLASSES = ("AtlSpatialUnit", "AtlObservationStream", "AtlVital", "AtlEventDefinition", "AtlEvaluation")
 NEVER = {"observation_long", "patient_grid", "vitals_table", "onset_label", "scored_table", "shap_values", "model_binary"}
-DENY_PATHS = {"data/**", "**/*.parquet", "**/*.npz", "outputs/**"}
-DENY_PROPS = {"lat", "lon", "latitude", "longitude", "coordinates", "geometry"}
-STAMPS = ("source", "ingested_at", "valid_from", "valid_to")
+# The required minimum IS the template's fence (III F-4: a minimum weaker than the template let its own lines be deleted).
+DENY_PATHS = {"data/**", "**/*.parquet", "**/*.npz", "**/*.csv", "outputs/**", "site/**"}
+DENY_PROPS = {"lat", "lon", "latitude", "longitude", "coordinates", "geometry", "geojson"}
+STAMPS = {"ingested_at": "projection_write_time", "valid_from": "recorded_at", "valid_to": "on_supersession"}  # pinned values
 
 
 def class_slots(schema: dict, cls: str) -> list:
@@ -37,8 +39,15 @@ def identifier(schema: dict, cls: str) -> str | None:
     return ids[0] if len(ids) == 1 else None
 
 
+def norm(path: str) -> str:
+    """'./data/x', 'a/../data/x' → 'data/x' (III F-4: unnormalised paths walked past the globs)."""
+    return posixpath.normpath(path.replace("\\", "/")).lstrip("/")
+
+
 def _match(path: str, pat: str) -> bool:
-    return fnmatch.fnmatch(path, pat) or (pat.startswith("**/") and fnmatch.fnmatch(path, pat[3:]))
+    path = norm(path)
+    return fnmatch.fnmatch(path, pat) or (pat.startswith("**/") and fnmatch.fnmatch(path, pat[3:])) \
+        or path.startswith("../")
 
 
 def check(m: dict, schema: dict) -> list[str]:
@@ -62,6 +71,9 @@ def check(m: dict, schema: dict) -> list[str]:
                 errs.append(f"{cls}.properties.{prop}: a coordinate-shaped property (fence.deny_properties)")
             if slot in ((m.get("fence") or {}).get("pointer_only") or []) and prop != slot:
                 errs.append(f"{cls}.properties.{prop}: pointer slot {slot!r} must project under its own name")
+        for j in lab.get("json_properties") or []:
+            if j not in (lab.get("properties") or {}):
+                errs.append(f"{cls}.json_properties: {j!r} is not a projected property")
         if lab.get("source_type") not in (m.get("sources") or {}):
             errs.append(f"{cls}: source_type {lab.get('source_type')!r} has no entry in sources")
     missing = [c for c in CLASSES if c not in [l.get("class") for l in labels]]
@@ -78,7 +90,14 @@ def check(m: dict, schema: dict) -> list[str]:
         if d.get("kind") == "registry_ref_list":
             if d.get("item_field") not in class_slots(schema, rng):
                 errs.append(f"{r.get('rel_type')}: item_field {d.get('item_field')!r} is not a slot of {rng}"); continue
+            for ep in d.get("edge_properties") or []:
+                if ep not in class_slots(schema, rng):
+                    errs.append(f"{r.get('rel_type')}: edge property {ep!r} is not a slot of {rng}")
+                if ep.lower() in DENY_PROPS | set((m.get("fence") or {}).get("deny_properties") or []):
+                    errs.append(f"{r.get('rel_type')}: edge property {ep!r} is coordinate-shaped (fence.deny_properties)")
             rng = (schema["slots"].get(d["item_field"]) or {}).get("range")
+        elif d.get("edge_properties"):
+            errs.append(f"{r.get('rel_type')}: edge_properties on a single-ref edge (no item to read them from)")
         if rng != tgt["class"]:
             errs.append(f"{r.get('rel_type')}: {field} ranges over {rng}, not {tgt['class']}")
     fence = m.get("fence") or {}
@@ -91,7 +110,9 @@ def check(m: dict, schema: dict) -> list[str]:
             if hit:
                 errs.append(f"sources.{kind}: {p!r} is fenced by {hit}")
     st = m.get("stamps") or {}
-    errs += [f"stamps: missing {s!r}" for s in STAMPS if not st.get(s)]
+    errs += [f"stamps.{k}: {st.get(k)!r}, must be {v!r} (record time is not world time)" for k, v in STAMPS.items() if st.get(k) != v]
+    if not str(st.get("source", "")).endswith("_project"):
+        errs.append(f"stamps.source: {st.get('source')!r} must name the projection (`<instance>_project`)")
     return errs
 
 

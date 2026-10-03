@@ -140,6 +140,17 @@ disagree with the cited board entry. Site data is assembled from `outputs/atlant
 and the registries, never from `hab`. The page embeds per-patient rows, so it is an instance artifact under the instance's
 data ruling; nothing it assembles goes on the board.
 
+**What the build checks.** It re-projects the run through the board's projector and compares every evaluated field with
+the cited entry; `metrics.json` that disagrees in any field is refused. It ties the gitignored `shap.npz` to the run by row
+counts, base and per-column mean |SHAP|. The copy grammar is enforced the same way at build and render: no negative index,
+known formats only, one placement per figure, and no tokens in fields the page inserts verbatim.
+
+**Known limits of the template (M-1b-ii-b III F-10, disclosed).**
+- Method vocabulary is English and stays in the template: split/metric table headers, case titles ("True positive,
+  early", "False alarm", "Quiet week"), "(held out)", "model starts", the what-if caption frame. Instance words are all copy.
+- The label diagram draws up to four look-back weeks.
+- The beeswarm and waterfalls show at most 14 and 9 vitals.
+
 ## Mapping (M-1b-ii-b, `mapping.py`)
 
 `python -m atlantis_core.mapping --check <mapping.yaml>` is contract item 11's machine check. It holds an instance's
