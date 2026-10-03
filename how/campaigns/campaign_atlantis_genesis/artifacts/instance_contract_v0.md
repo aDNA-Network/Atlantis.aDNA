@@ -45,7 +45,7 @@ federation_ref:
   source_persona: Proteus
   source_path: what/atlantis_core/                 # the reference implementation the instance installs (P1)
   source_commit: <sha>                             # pinned at fork; bumped deliberately
-  version: "0.1.0"                                 # pattern + schema version (atl_v0 ↔ 0.x)
+  version: "0.2.0"                                 # THIS contract's version; the atl_v0 schema version is pinned by mapping.yaml → ontology
   version_policy: minor                            # minor (auto patch/minor) | locked
   patterns_used: [ATL-ONTOLOGY, ATL-STREAM, ATL-VITALS, ATL-LABEL, ATL-EVAL, ATL-EXPLAIN, ATL-BOARD]
   conformance: atlantis_instance
@@ -80,8 +80,13 @@ posture ADR. Every line below is checkable from those files, and a machine check
 python -m atlantis_core.conform --instance <dir> [--items 1-8,11,12] [--stage declared|fetched]
 ```
 
-It prints one ✅/✗ per item with the file it read. It opens nothing under `data/`, `outputs/` (except the self-test
-receipt) or `site/`. **Stage** applies to item 3:
+It prints one ✅/✗ per item with the files it read. It never parses observations. Besides the declarations it opens:
+- the polygon file the grid points at (item 1);
+- each cached artifact, only to **hash** it, at the fetched stage (item 3);
+- the self-test receipt, with `--no-selftest` (item 6);
+- board entries and pages, once they exist (items 9–10).
+
+It writes nothing. **Stage** applies to item 3:
 - **declared** is the state before the first fetch, the one the self-test runs in;
 - **fetched** is every stream pinned.
 
@@ -89,18 +94,18 @@ Items 9 and 10 apply only after a run.
 
 | # | Requirement | Checked in | Why |
 |---|---|---|---|
-| 1 | **Patient defined**: `unit_kind` ∈ atl enum; `time_step` ∈ enum; geometry is a *pointer* (file path / WDPA id), never inline coordinates of partner sites (coordinate `rules` grids only under `public` posture) | `units.yaml` · `atlantis.yaml → grid` | T1; ADR-002 §5 |
-| 2 | **Event defined**: variable with authority CURIE (CF / WoRMS) on its stream, threshold + UCUM unit, `direction`, horizon; onset rule stated; `atlantis.yaml → label.event` names it | `events.yaml` · `streams.yaml` · `atlantis.yaml → label` | T3 |
+| 1 | **Patient defined**: `unit_kind` ∈ atl enum; `time_step` ∈ enum; geometry is a *pointer* (file path / WDPA id), never inline coordinates of partner sites (coordinate `rules` grids and `cells` bboxes only under `public` posture; every path relative and inside the instance). *Not counted as site geometry, stated:* a public gridded product's query `boxes` in a fetch spec, and the self-test's synthetic points | `units.yaml` · `atlantis.yaml → grid` | T1; ADR-002 §5 |
+| 2 | **Event defined**: variable with an authority CURIE on its stream (`CF:` · `WoRMS:` · `dwc:`, an allowlist), threshold + UCUM unit, `direction`, horizon; onset rule stated; `atlantis.yaml → label.event` names it | `events.yaml` · `streams.yaml` · `atlantis.yaml → label` | T3 |
 | 3 | **Streams registered** with Ingest Rule-5 provenance. *Declared:* `source_system`, `source_id`, `license`, a known `fetcher`. *Fetched:* also `ingested_at`, `pipeline_version` and the `sha256` of each cached artifact, equal to its fetch summary | `streams.yaml` · `atlantis.yaml → streams` | ATL-STREAM; reproducibility |
 | 4 | **Every vital has a tag** (lever · proxy · artifact · state), a `stream_ref`, lag/window; levers name an `owner` | `features.yaml` | T7; the tag is reviewable, not hidden in code |
 | 5 | **Surveillance channel declared** (a stream with `surveillance_channel: true` read by a vital in `group: surveillance`), or declared absent with the reason (e.g. gridded-only) | `streams.yaml` · `features.yaml` · `atlantis.yaml → surveillance` | T5 |
 | 6 | **Self-test green before any real data is fetched**, and re-run on every change to vitals or label (SO-7). The fetch CLI refuses without a green receipt whose `semantic_hash` matches the current config | `outputs/atlantis_core/selftest_receipt.json` + session log | the one hard invariant |
-| 7 | **Data posture ruled** in the instance's own ADR (ADR-016 §8 class: public / partner / human-subject); partner or human-subject data never enters Atlantis. *Declared:* the ruling exists and declares the class the pin cites. *Fetched:* it is ratified; the fetch CLI refuses a network fetch until it is | `data_posture.ruling` path exists | SO-3; Hard Gate |
+| 7 | **Data posture ruled** in the instance's own ADR (ADR-016 §8 class: public / partner / human-subject); partner or human-subject data never enters Atlantis. *Declared:* the ruling exists and declares the class the pin cites. *Fetched:* it is ratified, meaning its 4-field Ratification row is signed (decision · ratified-by · ISO date · ratified) and the frontmatter agrees. The ruling must be a relative path **inside** the instance. The fetch CLI refuses a network fetch until all of this holds | `data_posture.ruling` path exists | SO-3; Hard Gate |
 | 8 | **Split is temporal**; test window named and scored once; retuning happens on validation only | `atlantis.yaml → split` | T2, T4 |
 | 9 | **Board entry** carries `base_rate`, climatology baseline, ≥1 alert budget, lead-time summary, ablations, `config_hash`, `data_pins[]`; `claim` is `method_demonstration` unless an owner ruling is cited | `what/board/entries/*.json` | T6, T10, T11; SO-4 |
 | 10 | **Published page has the required sections**, including **Limitations** and "where the analogy breaks" | site template sections | SO-4; pattern §"Where the analogy breaks" |
 | 11 | **`mapping.yaml` present**: the instance's objects projected to the `atl_` labels (SpatialUnit · ObservationStream · Vital · EventDefinition · Evaluation) with `canonical_id`, bi-temporal stamps (`source, ingested_at, valid_from, valid_to`), and a `fence` that excludes raw observations | `mapping.yaml` | Organization §2 / Neo4j N4-MODEL — conformance without inspection |
-| 12 | **Credentials by name only** (Home broker pattern); no value in any committed file | `gitleaks` on push | fleet doctrine |
+| 12 | **Credentials by name only** (Home broker pattern); no value in any committed file | `gitleaks` on push; `conform` runs it with Atlantis's own config (an instance `.gitleaks.toml`/`.gitleaksignore` is ignored; inline `gitleaks:allow` is a known limit) | fleet doctrine |
 
 ## C. What Atlantis promises back
 

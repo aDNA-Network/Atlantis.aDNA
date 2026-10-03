@@ -13,6 +13,7 @@ from atlantis_core.fetch.base import Fetcher
 
 class ArcGISMapServer(Fetcher):
     protocol = "arcgis_mapserver"
+    spec_required = ("url_template", "layers", "fields")   # fork refuses a fetch spec without these (M-1d-i III F-8)
     endpoint = "https://<host>/<...>/MapServer/<layer>/query"
 
     def _query(self, url, params):

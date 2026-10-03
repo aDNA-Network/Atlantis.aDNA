@@ -1,0 +1,3 @@
+# Atlantis conform item 12 (M-1d-i III F-5): gitleaks defaults, no allowlist an instance can widen.
+[extend]
+useDefault = true

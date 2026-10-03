@@ -12,6 +12,7 @@ from atlantis_core.fetch.base import Fetcher
 
 class NWISDailyValues(Fetcher):
     protocol = "usgs_nwis_dv"
+    spec_required = ("sites", "parameter", "start", "end")   # fork refuses a fetch spec without these (M-1d-i III F-8)
     endpoint = "https://waterservices.usgs.gov/nwis/dv/"
 
     def _download(self, spec):

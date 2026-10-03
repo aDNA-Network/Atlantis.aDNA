@@ -50,3 +50,20 @@ def forked(forked_master, tmp_path):
     d = tmp_path / "inst"
     shutil.copytree(forked_master, d)
     return d
+
+
+def variant_answers() -> dict:
+    """The dry run's shape (M-1d-i III F-1): no point stream, surveillance declared absent, a two-station mean at the primary."""
+    a = example_answers()
+    a["streams"] = [s for s in a["streams"] if s["shape"] != "point"]
+    a["streams"][0]["stations"] = {"EXS01": [1], "EXS02": [1], "EXS03": [2]}
+    a["streams"][0]["vitals"]["lags"] = [0, 1]
+    a["surveillance"] = {"declared": "absent", "reason": "fixed sondes and gridded SST only; no stream's sampling reacts to what was seen"}
+    return a
+
+
+@pytest.fixture(scope="session")
+def variant_master(tmp_path_factory):
+    d = tmp_path_factory.mktemp("variant") / "inst"
+    assert fork_into(d, variant_answers()) == 0
+    return d

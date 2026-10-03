@@ -95,7 +95,7 @@ Writes:
 - `how/federation/atlantis/CLAUDE.md` (the `federation_ref`, `source_commit` pinned to Atlantis HEAD);
 - a `.gitignore` block.
 
-It runs registry R1–R8 on the result. A refusal lists every reason and writes nothing. Fix the answers and re-run. **Do
+It runs registry R1–R8 on a temporary render first. A refusal lists every reason and writes nothing. Fix the answers and re-run. **Do
 not** hand-edit around a refusal, and never patch `atlantis_core` from the instance: a template change is a memo to
 Atlantis (contract §D).
 
@@ -131,6 +131,11 @@ $A/.venv/bin/python -m atlantis_core.fetch   --instance <vault>        # refuses
 $A/.venv/bin/python -m atlantis_core.fetch   --instance <vault> --verify
 $A/.venv/bin/python -m atlantis_core.conform --instance <vault> --stage fetched
 ```
+
+**Ratified** means the ADR's Ratification row is signed (decision · ratified-by · ISO date · `ratified`), and the
+frontmatter agrees. Flipping the status word alone does not open the gate. Each stream's `fetch` spec carries its
+fetcher's keys (the fetcher's docstring and `spec_required`). The interview does not derive them: they come from the
+source's documentation and the steward, and fork checks only that the keys are present.
 
 A stream whose fetcher is **declared, not built** (NDBC · OBIS · GBIF · CRW today) stops here with that message. Building
 it is an Atlantis template change (P2 rule), done there, never inside the instance.

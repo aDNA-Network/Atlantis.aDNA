@@ -17,6 +17,7 @@ def _empty(r) -> bool:   # ERDDAP answers an empty subset with 404 "No data"
 
 class ERDDAPGriddap(Fetcher):
     protocol = "erddap_griddap"
+    spec_required = ("base", "variable", "boxes", "years")   # fork refuses a fetch spec without these (M-1d-i III F-8)
     endpoint = "https://<erddap>/erddap/griddap/<dataset>.csv"
 
     def query(self, spec, y0, y1, box) -> str:

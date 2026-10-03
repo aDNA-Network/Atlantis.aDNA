@@ -17,6 +17,8 @@ climatology era. For EVERY registered stream:
       `already_in_event` at weeks ≤ t; for the event stream the outcome at (primary, t) becomes unknown.
   C7  perturbing the PRIMARY only at week t, through entities that feed no neighbour, moves nothing at any neighbour, any
       week (no cross-unit mixing). Skipped — and reported — for a stream whose every entity is shared.
+  C8  calendar-lag invariance: for every vital with lag L ≥ 1, deleting the primary's weeks (t−L, t] does not move it at t
+      (a lag counted in observed rows does). Needs no gap in the synthetic world (M-1d-i III F-2).
 and once:
   C2b the horizon from inside: a spike at t+H flips y at (primary, t); deleting t+1..t+H−1 but keeping t+H does not make
       the outcome unknown.
@@ -95,6 +97,18 @@ def _event_big(ev) -> float:
 GAP_DEFAULT = {"point": 4, "unit_daily": 1, "station_daily": 1}
 
 
+def _eq(x, v) -> bool:
+    """NA-safe equality for label fields: an unknown y is not 0 and not 1 (a horizon defect that blanks y is a named
+    failure, not a TypeError — M-1d-i III, short_horizon at H = 2)."""
+    return bool(pd.notna(x) and x == v)
+
+
+def future_gap(H: int) -> int | None:
+    """The primary event stream's unobserved week inside the horizon: t+2 (the exemplar's world), t+1 when H = 2 (t+H
+    must stay observed for C2b), none when H = 1 (no room inside the horizon; reported by C2b's own check)."""
+    return 2 if H >= 3 else (1 if H == 2 else None)
+
+
 def gap_week(inst: Instance, sid: str) -> int:
     """How many weeks before t the PRIMARY's stream is wholly unobserved. A missing week between t−lag and t is what
     exposes a lag counted in rows (C0); a missing week AT t−lag only blanks that vital (its honest value is NaN) and
@@ -120,8 +134,14 @@ def synth(inst: Instance, t: pd.Timestamp, seed: int = 0) -> dict:
         spec, cols = inst.stream_spec(sid), inst.stream_spec(sid)["columns"]
         shape = spec["shape"]
         k = gap_week(inst, sid)                                          # the primary's unobserved past week
-        gaps_point = {0: {t - W(k), t + W(2)}, 1: {t - W(1), t}}            # primary · neighbour (weeks unobserved)
-        gaps_daily = {0: {t - W(k)}, 1: {t - W(2)}}
+        f = future_gap(H)                                                # the primary's unobserved week inside the horizon
+        gaps_point = {0: {t - W(k)} | ({t + W(f)} if f else set()), 1: {t - W(1), t}}   # primary · neighbour (unobserved)
+        gaps_daily = {0: {t - W(k)}, 1: {t - W(1), t}}   # III F-1: neighbour unobserved at t−1 AND t, so a back-fill from t+1 shows
+        if sid == ev["event_variable_stream"]:
+            # M-1d-i III F-1: the event stream carries the gaps that expose label defects WHATEVER its shape — a back-filled
+            # last-known state needs the neighbour unobserved at t; a horizon counted in observed weeks needs a hole
+            # inside (t, t+H]. Daily event streams had only the point-free pattern and both defects passed.
+            gaps_daily = gaps_point
         if shape == "point":
             weeks = pd.date_range(week_start([first]).iloc[0], last, freq="7D")
             if sid == ev["event_variable_stream"]:
@@ -176,6 +196,14 @@ def _entity_mask(inst, sid, d, units, exclusive=False):
     return d["station"].isin(ok)
 
 
+def _entities(inst, sid, units, exclusive=False) -> list:
+    if inst.stream_spec(sid)["shape"] != "station_daily":
+        return list(units)
+    pu = {p["unit"] for p in patients(inst)}
+    return [s for s, us in inst.stream_spec(sid)["stations"].items()
+            if set(us) & set(units) and (not exclusive or not (set(us) & pu) - set(units))]
+
+
 def perturb(frames, inst, sid, week, how="spike", units=None, exclusive=False):
     units = units if units is not None else [p["unit"] for p in patients(inst)]
     f = {k: v.copy() for k, v in frames.items()}
@@ -190,10 +218,16 @@ def perturb(frames, inst, sid, week, how="spike", units=None, exclusive=False):
         d.loc[first, "value"] = big
         f[sid] = pd.concat([d, d.loc[first]], ignore_index=True)   # and one more sample: presence moves too
     elif sid == ev["event_variable_stream"]:
-        # ONE date past the threshold, across every selected entity (a unit's value is a mean over its stations)
-        if sel.any():
-            day = d.loc[sel, "date"].min()
-            d.loc[sel & (d["date"] == day), "value"] = _event_big(ev)
+        # ONE date (the week's Monday) past the threshold, across every selected entity — a unit's value is a mean over its
+        # stations, so all must cross. An entity unobserved that day (a declared gap) gets the observation inserted:
+        # the event happens whether or not last week's sampling did.
+        key = "station" if inst.stream_spec(sid)["shape"] == "station_daily" else "unit"
+        big = _event_big(ev)
+        at_day = d["date"].eq(week) & _entity_mask(inst, sid, d, units, exclusive)
+        d.loc[at_day, "value"] = big
+        missing = [e for e in _entities(inst, sid, units, exclusive) if e not in set(d.loc[at_day, key])]
+        if missing:
+            d = pd.concat([d, pd.DataFrame({"date": week, key: missing, "value": big})], ignore_index=True)
         f[sid] = d
     else:
         scale = 100.0 * (float(d["value"].abs().mean()) + 1.0)
@@ -270,7 +304,7 @@ def run(inst: Instance, verbose: bool = True) -> dict:
     nan_at_t = [f for f in feats if pd.isna(base[f])]
     if nan_at_t:
         raise LeakError(f"C4 vacuous: vitals NaN at (primary, t) on the clean synthetic build: {nan_at_t}")
-    if base["y"] != 0 or base["already_in_event"] or base["outcome_unknown"]:
+    if not _eq(base["y"], 0) or _eq(base["already_in_event"], True) or _eq(base["outcome_unknown"], True):
         raise LeakError(f"C4 baseline primary is not a clean negative: y={base['y']} in_event={base['already_in_event']} "
                         f"unknown={base['outcome_unknown']}")
     say(f"C4 ✅ clean build: {len(feats)} vitals non-NaN at (unit {P}, {t.date()}), y=0, kept · patients {res['patients']} · gaps in")
@@ -298,14 +332,34 @@ def run(inst: Instance, verbose: bool = True) -> dict:
             raise LeakError(f"C0 {sid}: perturbing week t−lag does not move {dead} at (primary, t) — the instrument "
                             f"cannot fail for them (or their lag is not calendar weeks)")
         r["C0_vitals"] = len(mine)
+        # C8 — calendar-lag invariance (M-1d-i III F-2): a lag-L vital at t reads week t−L only, so deleting the primary's
+        # weeks (t−L, t] must not move it. A lag counted in observed ROWS moves. Unlike C0 this needs no gap between t−L and
+        # t, so it holds whatever weeks the synthetic world leaves out.
+        by_lag = {}
+        for fn in mine:
+            L = int(vit[fn].get("lag") or 0)
+            if L >= 1:
+                by_lag.setdefault(L, []).append(fn)
+        for L, fns in sorted(by_lag.items()):
+            f8 = frames
+            for j in range(L):
+                f8 = perturb(f8, inst, sid, t - W(j), "delete", units=[P])
+            mv8 = moved(base, at(B(f8), inst, P, t), fns)
+            if mv8:
+                raise LeakError(f"C8 {sid}: deleting the primary's weeks (t−{L}, t] moved lag-{L} vitals at t: {mv8} — "
+                                f"the lag is not counted in calendar weeks")
+        r["C8_vitals"] = sum(len(v) for v in by_lag.values())
+        k = gap_week(inst, sid)
+        r["gap_week"] = k
+        r["C0_crosses_gap"] = any(int(vit[fn].get("lag") or 0) > k for fn in mine)
         # C1 — t+1, whole past, every patient
         for how in hows:
             tab1 = B(perturb(frames, inst, sid, t + W(1), how))
             _past_clean(inst, base_tab, tab1, t, feats, f"C1 LEAK {sid} ({how} at t+1)")
             b1 = at(tab1, inst, P, t)
-            if how == "spike" and sid == ev_sid and not (base["y"] == 0 and b1["y"] == 1):
+            if how == "spike" and sid == ev_sid and not (_eq(base["y"], 0) and _eq(b1["y"], 1)):
                 raise LeakError(f"C1 {sid}: label did not respond to a t+1 event ({base['y']} → {b1['y']})")
-            if sid != ev_sid and b1["y"] != base["y"]:
+            if sid != ev_sid and moved(base, b1, ["y"]):
                 raise LeakError(f"C1 {sid}: label moved on a non-event stream ({base['y']} → {b1['y']})")
         # C2 — t+H+1
         tab2 = B(perturb(frames, inst, sid, t + W(H + 1)))
@@ -334,13 +388,15 @@ def run(inst: Instance, verbose: bool = True) -> dict:
         else:
             r["C7"] = "skipped: every entity of this stream also feeds a neighbour"
         res["streams"][sid] = r
-        say(f"   ✅ {sid}: C0 {r['C0_vitals']} vitals bite at t−lag · C1 no leak (whole past, filters) · C2 horizon"
+        say(f"   ✅ {sid}: C0 {r['C0_vitals']} vitals bite at t−lag · C8 {r['C8_vitals']} lags calendar"
+            + ("" if r["C0_crosses_gap"] or not r["C8_vitals"] else f" (gap t−{r['gap_week']} crossed by no lag: C8 alone guards it)")
+            + " · C1 no leak (whole past, filters) · C2 horizon"
             + (" · C3 presence" if "C3" in r else "") + (" · C7 units isolated" if r["C7"] == "ok" else f" · C7 {r['C7']}")
             + (" · label responds" if sid == ev_sid else " · label still"))
 
     # C2b — the horizon from inside
     bH = at(B(perturb(frames, inst, ev_sid, t + W(H))), inst, P, t)
-    if bH["y"] != 1:
+    if not _eq(bH["y"], 1):
         raise LeakError(f"C2b: a t+H event did not flip y at (primary, t) — the label looks short of its horizon")
     fk = frames
     for k in range(1, H):
@@ -360,7 +416,7 @@ def run(inst: Instance, verbose: bool = True) -> dict:
     tH = at(build(mi, perturb(fb, mi, ev_sid, t + W(H)))[0], mi, P, t)
     tH1 = at(build(mi, perturb(fb, mi, ev_sid, t + W(H + 1)))[0], mi, P, t)
     t1 = at(t1_tab, mi, P, t)
-    if not (tb["y"] == 0 and t1["y"] == 1 and tH["y"] == 1 and tH1["y"] == 0) or tb["already_in_event"]:
+    if not (_eq(tb["y"], 0) and _eq(t1["y"], 1) and _eq(tH["y"], 1) and _eq(tH1["y"], 0)) or _eq(tb["already_in_event"], True):
         raise LeakError(f"C5 {mirror}: y {tb['y']} → t+1 {t1['y']} / t+H {tH['y']} / t+H+1 {tH1['y']}; in_event {tb['already_in_event']}")
     _past_clean(mi, tb_tab, t1_tab, t, feats, f"C5 {mirror} (t+1 crossing)")
     say(f"C5 ✅ mirror-direction event ({mirror}, {mi.cfg['label']['signal']}): one observation past the threshold at "
@@ -403,11 +459,22 @@ def write_receipt(inst: Instance, res: dict) -> Path:
     out = inst.root / RECEIPT
     out.parent.mkdir(parents=True, exist_ok=True)
     rec = {"receipt": "atlantis_core.selftest", "passed": True, "semantic_hash": semantic_hash(inst),
-           "core_version": __version__, "streams": sorted(inst.streams), "n_vitals": res["vitals"],
+           "core_version": __version__, "selftest_code": selftest_code_hash(), "streams": sorted(inst.streams), "n_vitals": res["vitals"],
            "patients": res["patients"], "horizon": int(inst.event["horizon"]),
            "passed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
     tmp = out.with_suffix(".tmp"); tmp.write_text(json.dumps(rec, indent=1) + "\n"); tmp.rename(out)
     return out
+
+
+def selftest_code_hash() -> str:
+    """sha256 (12 hex) over the code a receipt vouches for: this file, the label and the vitals evaluator. A receipt
+    earned under a weaker self-test is not a receipt for the current one (M-1d-i III F-1)."""
+    import hashlib
+    here = Path(__file__).resolve().parent
+    h = hashlib.sha256()
+    for f in ("selftest.py", "label/__init__.py", "vitals/ops.py", "vitals/build.py", "vitals/grammar.py"):
+        h.update((here / f).read_bytes())
+    return h.hexdigest()[:12]
 
 
 def receipt_problem(inst: Instance) -> str | None:
@@ -427,6 +494,9 @@ def receipt_problem(inst: Instance) -> str | None:
     if rec.get("semantic_hash") != h:
         return (f"{RECEIPT} is for config {rec.get('semantic_hash')!r}, the instance is now {h!r} — "
                 f"vitals, label or grid changed since the self-test; re-run it (SO-7)")
+    if rec.get("selftest_code") != selftest_code_hash():
+        return (f"{RECEIPT} was earned under different self-test code ({rec.get('selftest_code')!r}, now "
+                f"{selftest_code_hash()!r}) — re-run it")
     if sorted(rec.get("streams") or []) != sorted(inst.streams):
         return f"{RECEIPT} covers streams {rec.get('streams')}, the instance declares {sorted(inst.streams)}"
     return None

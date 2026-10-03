@@ -66,6 +66,8 @@ streams:
     shape: unit_daily
     columns: {date: date, value: sst, unit: seg}
     vitals: {group: temperature, tag: proxy}
+    # fetch:   # optional at fork; needed by the fetch step. Its keys are the fetcher's (see its docstring and `spec_required`),
+    #          # e.g. ERDDAPGriddap: {base, variable, boxes: {unit: [lat0, lat1, lon0, lon1]}, years: [y0, y1], chunk_years, zlev}
   - stream_id: atl_stream_example_survey_casts
     fetcher: ArcGISMapServer
     modality: point_count

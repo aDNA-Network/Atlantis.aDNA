@@ -55,19 +55,10 @@ def verify(inst, sid: str) -> list[str]:
 
 
 def posture_problem(root: Path) -> str | None:
-    """None if the instance's federation pin names a posture ruling whose status is ratified; else why not."""
-    from atlantis_core.conform import _fed_ref, _front
-    fr = _fed_ref(root)
-    if fr is None:
-        return "no how/federation/atlantis/CLAUDE.md federation_ref — no data posture is declared for this directory"
-    ruling = ((fr.get("instance") or {}).get("data_posture") or {}).get("ruling")
-    f = root / str(ruling or "")
-    if not ruling or not f.is_file():
-        return f"data_posture.ruling {ruling!r} does not exist"
-    status = str(_front(f).get("status", "")).lower()
-    if status not in ("ratified", "accepted"):
-        return f"{ruling} is {status or 'unstated'!r}; the instance owner ratifies it before any data is fetched"
-    return None
+    """None if the instance's OWN posture ruling (inside it, declaring the pin's class) carries a signed Ratification row
+    and a frontmatter that agrees; else why not. One reading, shared with conform item 7 (M-1d-i III F-3)."""
+    from atlantis_core.conform import posture
+    return None if posture(root)["ratified"] else posture(root)["why_not_ratified"]
 
 
 def record_values(inst, sid: str) -> dict:

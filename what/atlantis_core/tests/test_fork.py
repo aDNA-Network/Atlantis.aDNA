@@ -63,36 +63,65 @@ def test_forked_selftest_passes(forked):
     assert all(v["C7"] == "ok" for v in r["streams"].values())
 
 
-# -- the instrument must be seen to fail in the forked world (M-1c lesson) ---------------------------------------------
-def test_forked_selftest_catches_horizon_overreach(forked, monkeypatch):
-    orig = label.make
-    def overreach(inst_, table, evs, units, weeks, event=None, lcfg=None):
-        ev = dict(event or inst_.event); ev["horizon"] = int(ev["horizon"]) + 1
-        return orig(inst_, table, evs, units, weeks, event=ev, lcfg=lcfg)
-    monkeypatch.setattr(label, "make", overreach)
-    with pytest.raises(st.LeakError, match="C2"):
-        st.run(load_instance(forked), verbose=False)
+# -- the instrument must be seen to fail in the forked worlds (M-1c lesson; M-1d-i III F-1: the WHOLE catalogue) ----------
+import test_selftest as T
+
+_orig_make = label.make
+_orig_weekly = ops.Evaluator.weekly
 
 
-def test_forked_selftest_catches_deaf_label(forked, monkeypatch):
-    orig = label.make
-    def deaf(inst_, table, evs, units, weeks, event=None, lcfg=None):
-        t = orig(inst_, table, evs, units, weeks, event=event, lcfg=lcfg); t["y"] = 0; return t
-    monkeypatch.setattr(label, "make", deaf)
-    with pytest.raises(st.LeakError, match="C1"):
-        st.run(load_instance(forked), verbose=False)
+def _overreach(i, table, evs, units, weeks, event=None, lcfg=None):
+    ev = dict(event or i.event); ev["horizon"] = int(ev["horizon"]) + 1
+    return _orig_make(i, table, evs, units, weeks, event=ev, lcfg=lcfg)
 
 
-def test_forked_selftest_catches_future_weekly_min(forked, monkeypatch):
-    """A weekly minimum that also reads next week — the below event's own aggregate, leaking."""
-    monkeypatch.setattr(ops.Evaluator, "f_weekly_min",
-                        lambda self, x, window=None: ops.Weekly((lambda w: np.fmin(w, w.shift(-1)))(self._aggregate(x, "min").df)))
-    with pytest.raises(st.LeakError, match="C1 LEAK atl_stream_example_do_daily"):
-        st.run(load_instance(forked), verbose=False)
+def _deaf(i, *a, **k):
+    t = _orig_make(i, *a, **k); t["y"] = 0; return t
+
+
+def _rowlag(self, node, window=None, lag=0):
+    df = _orig_weekly(self, node, window, 0)
+    return df.apply(lambda c: c.dropna().shift(int(lag or 0)).reindex(c.index))
+
+
+CATALOGUE = [   # (name, object, attribute, sabotage factory, check that must name it)
+    ("in_event_next_week", label, "make", lambda: T._label_variant("in_event_next_week"), "C1 LEAK"),
+    ("in_event_bfill", label, "make", lambda: T._label_variant("in_event_bfill"), "C1 LEAK"),       # III F-1: passed before
+    ("label_rowshift", label, "make", lambda: T._label_variant("label_rowshift"), "C2 "),            # III F-1: passed before
+    ("short_horizon", label, "make", lambda: T._label_variant("short_horizon"), "C4|C2b"),           # was a TypeError at H = 2
+    ("overreach", label, "make", lambda: _overreach, "C2 "),
+    ("deaf_label", label, "make", lambda: _deaf, "C1 "),
+    ("weekmajor", st, "build", lambda: T._build_weekmajor, "C0|C1"),
+    ("row_lag", ops.Evaluator, "weekly", lambda: _rowlag, "C8"),                                     # III F-2: passed before
+    ("weekly_min_next", ops.Evaluator, "f_weekly_min",
+     lambda: (lambda self, x, window=None: ops.Weekly((lambda w: np.fmin(w, w.shift(-1)))(self._aggregate(x, "min").df))), "C1 LEAK|C8"),
+    ("weekly_mean_next", ops.Evaluator, "f_weekly_mean",
+     lambda: (lambda self, x, window=None: ops.Weekly((lambda w: (w + w.shift(-1)) / 2)(self._aggregate(x, "mean").df))), "C8|C1"),
+    ("weekly_mean_bfill", ops.Evaluator, "f_weekly_mean",
+     lambda: (lambda self, x, window=None: ops.Weekly(self._aggregate(x, "mean").df.bfill(limit=2))), "C1 LEAK"),
+    ("weekly_count_future", ops.Evaluator, "f_weekly_count",
+     lambda: (lambda self, x, window=None: ops.Weekly(self._aggregate(x, "count", fill=0).df.iloc[::-1].cumsum().iloc[::-1])), "C3|C1|C0"),
+]
+
+
+@pytest.mark.parametrize("world", ["forked_master", "variant_master"])
+@pytest.mark.parametrize("name,obj,attr,factory,check", CATALOGUE, ids=[c[0] for c in CATALOGUE])
+def test_forked_selftest_catches_catalogue(request, monkeypatch, world, name, obj, attr, factory, check):
+    inst = load_instance(request.getfixturevalue(world))
+    monkeypatch.setattr(obj, attr, factory())
+    with pytest.raises(st.LeakError, match=check):
+        st.run(inst, verbose=False)
+
+
+def test_variant_selftest_passes(variant_master):
+    r = st.run(load_instance(variant_master), verbose=False)
+    assert r["streams"]["atl_stream_example_do_daily"].get("C3") == "ok" and r["C5_direction"] == "above"
+    assert all(v["C8_vitals"] >= 1 for v in r["streams"].values())
 
 
 def test_forked_lag1_daily_vital_not_vacuous(forked):
-    """M-1d-i finding: the primary's daily gap week avoids the stream's own lags (a lag-1 mean was NaN at t → C4)."""
+    """M-1d-i: the primary's gap week avoids the stream's own lags (a lag-1 mean was NaN at t → C4). III F-2: that leaves no
+    gap for C0 to cross, so C8 (calendar-lag invariance) guards those lags; the catalogue's row_lag case proves it."""
     inst = load_instance(forked)
     assert st.gap_week(inst, "atl_stream_example_do_daily") == 3        # lags {0,1,2} → one past the span
     assert st.gap_week(inst, "atl_stream_example_sst_daily") == 2       # lags {0,1} → one past the span
@@ -173,3 +202,23 @@ def test_template_tokens_all_resolved_by_fork():
         (Path(d) / "geometry" / "example_sound_segments.geojson").write_text("{}")
         vals, errs = _values(example_answers(), yaml.safe_load(FS.read_text()), Path(d), "c", "2026-10-03", "a.yaml", "001")
     assert not errs and toks <= set(vals), sorted(toks - set(vals))
+
+
+# -- M-1d-i III F-4 / F-6 / F-8 ---------------------------------------------------------------------------------------
+@pytest.mark.parametrize("fn,why", [
+    (lambda a, d: a["patient"]["grid"].__setitem__("path", str(d / "geometry" / "example_sound_segments.geojson")), "must be a relative path"),
+    (lambda a, d: a["patient"]["grid"].__setitem__("path", "../elsewhere.geojson"), "must be a relative path"),
+    (lambda a, d: (a["patient"].__setitem__("grid", {"kind": "cells", "res": 0.25, "bbox": [-77, 35, -76, 36]}),
+                   a["posture"].__setitem__("class", "partner")), "public posture only"),
+    (lambda a, d: a["patient"]["units"][0].__setitem__("geometry_ref", "/tmp/zones.geojson#1"), "points outside the instance"),
+    (lambda a, d: a["streams"][1].__setitem__("fetch", {"base": "https://x"}), "lacks ['variable', 'boxes', 'years']"),
+    (lambda a, d: a.__setitem__("surveillance", {"declared": "absent"}) or [s.__setitem__("surveillance_channel", False) for s in a["streams"]],
+     "fail the registry check"),                                             # F-6: R8 refused BEFORE writing
+    (lambda a, d: a.__setitem__("vitals", [{"vital_id": "atl_vital_x", "stream_ref": "atl_stream_example_sst_daily",
+                                            "transform": "weekly_mean(value)", "lag": 0, "group": "g", "tag": "lever"}]), "R4"),
+])
+def test_fork_refuses_iii(tmp_path, capsys, fn, why):
+    a = example_answers(); fn(a, tmp_path / "x")
+    assert fork_into(tmp_path / "x", a) == 1
+    assert why in capsys.readouterr().err
+    assert not (tmp_path / "x" / "atlantis.yaml").exists() and not (tmp_path / "x" / ".gitignore").exists()

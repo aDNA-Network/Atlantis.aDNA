@@ -22,6 +22,7 @@ class Fetcher:
     protocol: str = "abstract"
     endpoint: str = ""
     date_col: str = "date"
+    spec_required: tuple = ()   # keys an `atlantis.yaml → streams[…].fetch` spec must carry (documented per subclass)
 
     def __init__(self, cache_dir, artifact: str, summary: str, offline: bool = False, retries: int = 5,
                  backoff: float = 2.0, timeout: int = 300, session=None):

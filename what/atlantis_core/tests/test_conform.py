@@ -109,17 +109,47 @@ def test_item3_fetched_stage(forked):
     assert any("no cached artifact" in x for x in r["reasons"])
 
 
-def test_item7_fetched_needs_ratified(forked):
+ADR = "who/governance/adr_001_data_posture.md"
+SIGNED = "| public posture for all three streams | the steward | 2026-10-03 | ratified |"
+
+
+def sign(d, row=SIGNED, front="ratified"):
+    p = d / ADR; t = p.read_text().replace("| | | | proposed |", row)
+    p.write_text(t.replace("status: proposed", f"status: {front}", 1))
+
+
+def test_item7_fetched_needs_signed_ratification(forked):
+    """III F-3b: 'ratified' is the signed 4-field row AND an agreeing frontmatter — not a one-word flip."""
     assert check(forked, [7], stage="declared", selftest=False)[7]["status"] == "pass"
+    assert check(forked, [7], stage="fetched", selftest=False)[7]["status"] == "fail"
+    p = forked / ADR; orig = p.read_text()
+    p.write_text(orig.replace("status: proposed", "status: ratified", 1))                       # the dry run's word flip
     r = check(forked, [7], stage="fetched", selftest=False)[7]
-    assert r["status"] == "fail" and any("RATIFIED" in x for x in r["reasons"])
-    p = forked / "who/governance/adr_001_data_posture.md"; p.write_text(p.read_text().replace("status: proposed", "status: ratified", 1))
+    assert r["status"] == "fail" and any("not signed" in x for x in r["reasons"])
+    p.write_text(orig); sign(forked, front="proposed")                                          # signed row, stale frontmatter
+    assert any("must agree" in x for x in check(forked, [7], stage="fetched", selftest=False)[7]["reasons"])
+    p.write_text(orig); sign(forked, row="| public | the steward | Oct 3rd | ratified |")       # no ISO date
+    assert check(forked, [7], stage="fetched", selftest=False)[7]["status"] == "fail"
+    p.write_text(orig); sign(forked, row="| public |  | 2026-10-03 | ratified |")               # nobody signed
+    assert check(forked, [7], stage="fetched", selftest=False)[7]["status"] == "fail"
+    p.write_text(orig); sign(forked)
     assert check(forked, [7], stage="fetched", selftest=False)[7]["status"] == "pass"
+
+
+@pytest.mark.parametrize("ruling", ["../other/who/governance/adr_001_data_posture.md", "/etc/hosts",
+                                    "who/../../elsewhere/adr.md"])
+def test_item7_ruling_must_be_the_instances_own(forked, tmp_path, ruling):
+    """III F-3a: the gate opened on Atlantis's ADR-000 and on a sibling instance's ratified ADR."""
+    other = tmp_path / "other"; (other / "who/governance").mkdir(parents=True)
+    (other / ADR).write_text((forked / ADR).read_text()); sign(other)
+    _set_fed(forked, lambda t: t.replace('ruling: "who/governance/adr_001_data_posture.md"', f'ruling: "{ruling}"'))
+    r = check(forked, [7], stage="fetched", selftest=False)[7]
+    assert r["status"] == "fail" and any("inside the instance" in x for x in r["reasons"])
 
 
 def test_item7_partner_posture_needs_gitignore(forked):
     _set_fed(forked, lambda t: t.replace("class: public", "class: partner"))
-    p = forked / "who/governance/adr_001_data_posture.md"; p.write_text(p.read_text().replace("**Class:** `public`", "**Class:** `partner`"))
+    p = forked / ADR; p.write_text(p.read_text().replace("**Class:** `public`", "**Class:** `partner`"))
     r = check(forked, [7], selftest=False)[7]
     assert r["status"] == "fail" and any(".gitignore does not exclude" in x for x in r["reasons"])
 
@@ -144,9 +174,11 @@ def test_item6_receipt_mode(forked):
 
 
 def test_item6_not_run_on_broken_registries(forked):
-    edit("features.yaml", lambda f: f["vitals"][0].pop("lag"))(forked)
-    r = check(forked, [4, 6])[6]
-    assert r["status"] == "fail" and any("not run" in x for x in r["reasons"])
+    """III F-5: the verdict no longer depends on which items were requested."""
+    edit("features.yaml", lambda f: [v.__setitem__("group", "survey") for v in f["vitals"] if v["group"] == "surveillance"])(forked)
+    for items in ([6], [5, 6]):
+        r = check(forked, items)[6]
+        assert r["status"] == "fail" and any("not run" in x for x in r["reasons"]), items
 
 
 def test_items_9_10_after_a_run(forked, exemplar_dir):
@@ -154,16 +186,41 @@ def test_items_9_10_after_a_run(forked, exemplar_dir):
     assert R[9]["status"] == R[10]["status"] == "n/a"
     (forked / "what/board/entries").mkdir(parents=True)
     ent = json.loads((exemplar_dir.parents[1] / "board/entries/2026-10-02_gulf_karenia_brevis_v1.json").read_text())
-    (forked / "what/board/entries/ok.json").write_text(json.dumps(ent))
+    (forked / "what/board/entries/foreign.json").write_text(json.dumps(ent))
+    r = check(forked, [9], selftest=False)[9]                       # III F-5: another instance's entry is not this one's
+    assert r["status"] == "fail" and any("unit_ref" in x for x in r["reasons"]) and any("semantic_hash" in x for x in r["reasons"])
+    from atlantis_core.config import semantic_hash
+    inst = load_instance(forked)
+    ent["evaluation"]["unit_ref"] = inst.cfg["board"]["unit_ref"]; ent["evaluation"]["config_hash"] = semantic_hash(inst)
+    ent["evaluation_extras"]["semantic_hash"] = semantic_hash(inst)
+    (forked / "what/board/entries/foreign.json").write_text(json.dumps(ent))
     assert check(forked, [9], selftest=False)[9]["status"] == "pass"
     ent["evaluation_extras"]["predictions"] = [0.1] * 3
     (forked / "what/board/entries/bad.json").write_text(json.dumps(ent))
     assert check(forked, [9], selftest=False)[9]["status"] == "fail"
+
+
+LIMITS = ("<section id=\"limits\"><h2>Limitations</h2><p>Method demonstration on public data; the alert thresholds are "
+          "test quantiles; where the analogy breaks: an estuary is not a patient.</p></section>")
+
+
+@pytest.mark.parametrize("page,ok", [
+    ('<section id="method"></section>', False),
+    ('<!-- id="limits" --><p>where the analogy breaks</p>', False),          # III F-5: a comment is not a section
+    ('<section id="limits"></section><p>analogy</p>', False),                 # empty
+    (LIMITS.replace("where the analogy breaks", "and so on"), False),         # no analogy discussion
+    (LIMITS, True),
+])
+def test_item10_limits_section(forked, page, ok):
     (forked / "site").mkdir()
-    (forked / "site/p.html").write_text('<section id="method"></section>')
-    assert check(forked, [10], selftest=False)[10]["status"] == "fail"
-    (forked / "site/p.html").write_text('<section id="limits"></section>')
-    assert check(forked, [10], selftest=False)[10]["status"] == "pass"
+    (forked / "site/p.html").write_text(page)
+    assert (check(forked, [10], selftest=False)[10]["status"] == "pass") is ok
+
+
+def test_item2_authority_allowlist(forked):
+    edit("streams.yaml", lambda s: s["observation_streams"][0].__setitem__("authority", "x:y"))(forked)
+    r = check(forked, [2], selftest=False)[2]
+    assert r["status"] == "fail" and any("CF/WoRMS/dwc" in x for x in r["reasons"])
 
 
 @pytest.mark.skipif(shutil.which("gitleaks") is None, reason="gitleaks not installed")
@@ -173,6 +230,10 @@ def test_item12_gitleaks_catches_a_planted_key(forked):
                                      "AKIA" + "Z" * 4 + "QWERTYUIOPAS\n")
     r = check(forked, [12], selftest=False)[12]
     assert r["status"] == "fail", r
+    (forked / ".gitleaks.toml").write_text('[allowlist]\npaths = [".*"]\n')   # III F-5: the instance cannot allowlist itself
+    (forked / ".gitleaksignore").write_text("*\n")
+    r = check(forked, [12], selftest=False)[12]
+    assert r["status"] == "fail" and any("IGNORED" in x for x in r["reasons"]), r
 
 
 def test_item12_without_gitleaks_is_not_a_pass(forked, monkeypatch, capsys):

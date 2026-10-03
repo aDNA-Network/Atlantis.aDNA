@@ -8,10 +8,12 @@ interview). Writes the instance's declarations — `atlantis.yaml` · `units.yam
 `events.yaml` · `mapping.yaml` · the posture ADR stub · the federation pin · a `.gitignore` block — and NO data. Then it
 loads the result through `atlantis_core.registry` (R1–R8), so what it wrote is at least internally consistent.
 
-Refuses (every reason listed, nothing written): an unresolved `{{token}}`; a target file that exists; an `atl_v0` enum
-value it does not know; a lever without an owner; a coordinate `rules` grid under a partner / human_subject posture; a
-polygon file absent from the instance; < 2 self-test patients; a stream that reaches no self-test patient; ids that would
-break the `atl_` prefixes. It never touches the network and never fetches (contract item 6).
+Refuses (every reason listed, nothing written — the registry check R1–R8 runs on a temporary render first): an unresolved
+`{{token}}`; a target file that exists; an `atl_v0` enum value it does not know; a lever without an owner (interview
+vitals and steward-supplied `vitals` alike, via R4); a coordinate `rules` grid or a `cells` bbox under a partner /
+human_subject posture; a polygon path that is absolute, leaves the instance, or does not exist; a unit geometry_ref outside
+the instance; a fetch spec missing a built fetcher's `spec_required` keys; < 2 self-test patients; a stream that reaches no
+self-test patient; ids that would break the `atl_` prefixes. It never touches the network and never fetches (contract item 6).
 """
 from __future__ import annotations
 
@@ -128,10 +130,20 @@ def _values(a: dict, schema: dict, out: Path, commit: str, today: str, answers_f
     kind = grid.get("kind")
     if kind not in ("polygons", "rules", "cells"):
         errs.append(f"patient.grid.kind {kind!r} not in polygons | rules | cells")
-    if kind == "rules" and post.get("class") != "public":
-        errs.append("patient.grid.kind rules writes coordinates into atlantis.yaml — allowed under public posture only (contract item 1)")
-    if kind == "polygons" and not (out / str(grid.get("path", ""))).is_file():
-        errs.append(f"patient.grid.path {grid.get('path')!r} not found inside the instance ({out}) — the pointer must resolve there")
+    if kind in ("rules", "cells") and post.get("class") != "public":
+        errs.append(f"patient.grid.kind {kind} writes coordinates (rules / a bbox) into atlantis.yaml — allowed under public "
+                    f"posture only (contract item 1)")
+    if kind == "polygons":
+        gp = str(grid.get("path", ""))
+        r = (out / gp).resolve()
+        if Path(gp).is_absolute() or not r.is_relative_to(out.resolve()):
+            errs.append(f"patient.grid.path {gp!r} must be a relative path inside the instance (III F-4)")
+        elif not r.is_file():
+            errs.append(f"patient.grid.path {gp!r} not found inside the instance ({out}) — the pointer must resolve there")
+    for u in units:
+        ref = str(u.get("geometry_ref") or "")
+        if ref.startswith(("/", "~")) or "/../" in f"/{ref}":
+            errs.append(f"patient.units[{u.get('code')}].geometry_ref {ref!r} points outside the instance")
     if not units:
         errs.append("patient.units: at least one unit")
     codes = [u.get("code") for u in units]
@@ -153,6 +165,12 @@ def _values(a: dict, schema: dict, out: Path, commit: str, today: str, answers_f
             errs.append(f"{sid}: shape {s.get('shape')!r} not in {sorted(SHAPE_COLUMNS)}")
         if s.get("shape") == "station_daily" and not s.get("stations"):
             errs.append(f"{sid}: station_daily needs stations → [unit codes]")
+        from atlantis_core.fetch import FETCHERS
+        req = getattr(FETCHERS.get(s.get("fetcher")), "spec_required", ())
+        if s.get("fetch") is not None and req:
+            miss = [k for k in req if k not in (s.get("fetch") or {})]
+            if miss:
+                errs.append(f"{sid}: fetch spec for {s.get('fetcher')} lacks {miss} (its docstring documents the spec)")
         v = s.get("vitals") or {}
         if v.get("tag") == "lever" and not (isinstance(v.get("owner"), str) and v["owner"].strip()):
             errs.append(f"{sid}: vitals.tag lever without an owner — who can move it? (R4)")
@@ -308,6 +326,17 @@ def plan(a: dict, out: Path, commit: str, today: str, answers_file: str) -> dict
                 yaml.safe_load(txt)
             except yaml.YAMLError as e:
                 raise ForkError(f"{p.name}: rendered YAML does not parse — template defect: {e}")
+    import tempfile
+    from atlantis_core.config import load_instance
+    from atlantis_core.registry import RegistryError
+    with tempfile.TemporaryDirectory() as tmp:          # R1–R8 BEFORE anything is written (III F-6)
+        for p, txt in files.items():
+            if p.parent == out and p.suffix == ".yaml":
+                (Path(tmp) / p.name).write_text(txt)
+        try:
+            load_instance(tmp)
+        except RegistryError as e:
+            raise ForkError("fork refused — the rendered registries fail the registry check:\n" + str(e))
     clash = [str(p.relative_to(out)) for p in files if p.exists()]
     if clash:
         raise ForkError(f"fork refused: would overwrite {clash} (an instance is forked once; edit it, or fork elsewhere)")
@@ -339,11 +368,7 @@ def main(argv=None) -> int:
             p.write_text(txt)
         print(f"  + {p.relative_to(out)}")
     from atlantis_core.config import load_instance
-    from atlantis_core.registry import RegistryError
-    try:
-        inst = load_instance(out)
-    except RegistryError as e:
-        print(f"✗ forked, but the registry check fails — a template or answers defect:\n{e}", file=sys.stderr); return 1
+    inst = load_instance(out)                            # checked before writing; re-read as written
     print(f"✅ forked {answers['instance']['slug']}: {len(inst.streams)} streams (declared, not fetched) · {len(inst.vitals)} "
           f"starter vitals · event {inst.cfg['label']['event']} · registry R1–R8 clean\n"
           f"   next: mapping --check · conform --stage declared · selftest (the receipt) · ratify the posture ADR · fetch")

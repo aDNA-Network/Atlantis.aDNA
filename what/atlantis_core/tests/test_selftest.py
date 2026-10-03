@@ -37,7 +37,7 @@ def _sabotage(monkeypatch, cls_or_mod, name, fn):
     # diff against the FUTURE instead of the past
     ("f_diff", lambda self, x, window=None: ops.Weekly(self._weekly(x, "d") - self._weekly(x, "d").shift(-int(window))), "C4"),   # reads t+2, unobserved → NaN at t
     # sampling the week's daily stream one day late (Monday of t+1 instead of Sunday of t)
-    ("f_at_week_end", lambda self, x, window=None: ops.Weekly(pd.DataFrame(self._to_units(x).reindex(self.weekly_index + pd.Timedelta(days=7)).values, index=self.weekly_index, columns=self.units)), "C1"),
+    ("f_at_week_end", lambda self, x, window=None: ops.Weekly(pd.DataFrame(self._to_units(x).reindex(self.weekly_index + pd.Timedelta(days=7)).values, index=self.weekly_index, columns=self.units)), "C1|C8"),   # M-1d-i: C8 now sees it first (the late sample reads a deleted week)
     # a weekly mean that includes next week
     ("f_weekly_mean", lambda self, x, window=None: ops.Weekly((lambda w: (w + w.shift(-1)) / 2)(self._aggregate(x, "mean").df)), "C4"),   # t−2 mean reads t−1, a daily gap
     # a count that sees the whole future
@@ -162,13 +162,14 @@ def test_review_weeks_until_next_sample_caught(inst, monkeypatch):   # F-3
 
 
 def test_row_lag_instead_of_calendar_caught(inst, monkeypatch):
-    """The hab SST defect class: lag counted in OBSERVED rows. With a daily gap at t−1, C0 must see the lag is wrong."""
+    """The hab SST defect class: lag counted in OBSERVED rows. Since M-1d-i, C8 (calendar-lag invariance) catches it on the
+    first stream with a lag ≥ 1, before C0 reaches the daily gap; either name is a catch."""
     orig = ops.Evaluator.weekly
     def rowlag(self, node, window=None, lag=0):
         df = orig(self, node, window, 0)
         return df.apply(lambda c: c.dropna().shift(int(lag or 0)).reindex(c.index))
     monkeypatch.setattr(ops.Evaluator, "weekly", rowlag)
-    with pytest.raises(st.LeakError, match="C0"):
+    with pytest.raises(st.LeakError, match="C8|C0"):
         st.run(inst, verbose=False)
 
 
@@ -177,3 +178,12 @@ def test_finalize_refuses_unlabelled_rows(inst):
                       "outcome_unknown": [False, False], "y": pd.array([1, pd.NA], dtype="Int64")})
     with pytest.raises(ValueError, match="no label"):
         label.finalize(inst, t)
+
+
+def test_backfilled_weekly_mean_caught(inst, monkeypatch):
+    """M-1d-i III F-1 (pre-existing): a weekly mean back-filled from next week passed while no daily stream left the
+    neighbour unobserved at t. The neighbour's daily gaps are now t−1 and t."""
+    monkeypatch.setattr(ops.Evaluator, "f_weekly_mean",
+                        lambda self, x, window=None: ops.Weekly(self._aggregate(x, "mean").df.bfill(limit=2)))
+    with pytest.raises(st.LeakError, match="C1 LEAK"):
+        st.run(inst, verbose=False)

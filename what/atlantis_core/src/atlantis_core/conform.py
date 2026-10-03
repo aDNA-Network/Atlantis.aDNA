@@ -84,6 +84,68 @@ def _front(path: Path) -> dict:
     return (yaml.safe_load(m.group(1)) or {}) if m else {}
 
 
+def inside(root: Path, rel) -> Path | None:
+    """The path `rel` names, if it is RELATIVE and resolves inside `root` (M-1d-i III F-3a/F-4: an absolute or ../ path
+    satisfied 'resolves inside the instance' when the check was only (root / p).is_file())."""
+    if not rel or Path(str(rel)).is_absolute():
+        return None
+    r = (root / str(rel)).resolve()
+    return r if r.is_relative_to(root.resolve()) else None
+
+
+AUTHORITIES = ("CF", "WoRMS", "dwc")   # contract item 2: the variable's vocabulary — CF standard name · WoRMS AphiaID · Darwin Core
+RATIFIED = ("ratified", "accepted")
+
+
+def posture(root: Path) -> dict:
+    """The instance's data posture as declared and as ruled — ONE reading for conform item 7 and the fetch gate.
+    {class, ruling, problems: [declared-stage failures], ratified: bool, why_not_ratified: str|None}.
+    Ratified means the ADR's 4-field Ratification row is signed — decision, ratified-by, an ISO date, status ratified —
+    AND the frontmatter agrees (III F-3b: a one-word frontmatter flip, table blank, had opened the gate)."""
+    out = {"class": None, "ruling": None, "problems": [], "ratified": False, "why_not_ratified": None}
+    fr = _fed_ref(root)
+    if fr is None:
+        out["problems"].append("how/federation/atlantis/CLAUDE.md has no federation_ref block — no data posture is declared")
+        out["why_not_ratified"] = out["problems"][0]; return out
+    dp = ((fr.get("instance") or {}).get("data_posture") or {})
+    out["class"], out["ruling"] = dp.get("class"), dp.get("ruling")
+    if dp.get("class") not in POSTURES:
+        out["problems"].append(f"data_posture.class {dp.get('class')!r} not in {POSTURES}")
+    f = inside(root, dp.get("ruling"))
+    if f is None:
+        out["problems"].append(f"data_posture.ruling {dp.get('ruling')!r} is not a relative path inside the instance — "
+                               f"the instance's OWN ruling, not another's")
+    elif not f.is_file():
+        out["problems"].append(f"data_posture.ruling {dp.get('ruling')!r} does not exist")
+    else:
+        txt = f.read_text()
+        m = re.search(r"\*\*Class:\*\*\s*`([a-z_]+)`", txt)   # the DECLARED class, not any mention
+        if not m:
+            out["problems"].append(f"{dp['ruling']} declares no **Class:** line (the class it is cited for)")
+        elif m.group(1) != dp.get("class"):
+            out["problems"].append(f"{dp['ruling']} declares class {m.group(1)!r}, the federation pin says {dp.get('class')!r} — "
+                                   f"never names the class it is cited for")
+        fm = str(_front(f).get("status", "")).lower()
+        sec = txt.split("## Ratification", 1)
+        rows = [[c.strip() for c in ln.strip().strip("|").split("|")] for ln in (sec[1].splitlines() if len(sec) > 1 else [])
+                if ln.strip().startswith("|") and not set(ln.replace("|", "").strip()) <= set("-: ")]
+        rows = [r for r in rows if len(r) >= 4 and r[0].lower() != "decision"]
+        last = rows[-1] if rows else None
+        signed = bool(last and last[0] and last[1] and re.fullmatch(r"\d{4}-\d{2}-\d{2}", last[2]) and last[3].lower() in RATIFIED)
+        if out["problems"]:
+            out["why_not_ratified"] = out["problems"][0]
+        elif not signed:
+            out["why_not_ratified"] = (f"{dp['ruling']}: its Ratification row is not signed (decision · ratified-by · ISO date · "
+                                       f"status ratified); the instance owner ratifies it before any data is fetched")
+        elif fm not in RATIFIED:
+            out["why_not_ratified"] = f"{dp['ruling']}: the Ratification row is signed but the frontmatter says {fm!r} — they must agree"
+        else:
+            out["ratified"] = True
+    if out["problems"] and not out["why_not_ratified"]:
+        out["why_not_ratified"] = out["problems"][0]
+    return out
+
+
 def check(root, items=None, stage: str = "declared", selftest: bool = True) -> dict:
     """{item: {"status": pass|fail|n/a|not_run, "reasons": [...], "read": [...]}} for each requested item."""
     root = Path(root).resolve()
@@ -122,9 +184,11 @@ def check(root, items=None, stage: str = "declared", selftest: bool = True) -> d
             fail(i, f"instance does not load: {e}")
         return R
     from atlantis_core.registry import RegistryError, check as reg_check
+    registry_clean = True
     try:
         reg_check(inst)
     except RegistryError as e:
+        registry_clean = False
         for line in str(e).splitlines()[1:]:
             line = line.strip(); rule = line.split(" ", 1)[0]
             fail(RULE_ITEM.get(rule, 3), f"registry {line}")
@@ -154,16 +218,20 @@ def check(root, items=None, stage: str = "declared", selftest: bool = True) -> d
         b = cfg.get("board") or {}
         if b.get("unit_ref") and b["unit_ref"] not in ids:
             fail(1, f"atlantis.yaml → board.unit_ref {b['unit_ref']!r} is not a units.yaml row")
-        fr = _fed_ref(root) or {}
-        posture = ((fr.get("instance") or {}).get("data_posture") or {}).get("class")
-        if g.get("kind") == "rules" and posture != "public":
-            fail(1, f"grid.kind rules puts coordinates in atlantis.yaml — public posture only (posture: {posture!r})")
+        pclass = posture(root)["class"]
+        if g.get("kind") in ("rules", "cells") and pclass != "public":
+            fail(1, f"grid.kind {g.get('kind')} puts coordinates (rules / a bbox) in atlantis.yaml — public posture only "
+                    f"(posture: {pclass!r})")
+        for u in units:
+            ref = str(u.get("geometry_ref", ""))
+            if ref.startswith("/") or ref.startswith("~") or "/../" in f"/{ref}":
+                fail(1, f"units.yaml: {u.get('unit_id')} geometry_ref {ref!r} points outside the instance")
         if g.get("kind") == "polygons":
-            gp = root / str(g.get("path", ""))
+            gp = inside(root, g.get("path"))
             read(1, str(g.get("path")))
-            if not gp.is_file():
-                fail(1, f"grid.path {g.get('path')!r} does not resolve inside the instance")
-            else:
+            if gp is None or not gp.is_file():
+                fail(1, f"grid.path {g.get('path')!r} does not resolve inside the instance (relative, under its root)")
+            if gp is not None and gp.is_file():
                 try:
                     feats = json.loads(gp.read_text()).get("features") or []
                     have = {str((f.get("properties") or {}).get(g["id_property"])) for f in feats}
@@ -185,8 +253,10 @@ def check(root, items=None, stage: str = "declared", selftest: bool = True) -> d
                 if ev.get(k) in (None, "") or (isinstance(ev.get(k), str) and not ev[k].strip()):
                     fail(2, f"{ev_id}: {k} missing")
             s = inst.streams.get(ev.get("event_variable_stream")) or {}
-            if not re.match(r"^[A-Za-z][\w.-]*:\S+$", str(s.get("authority", ""))):
-                fail(2, f"{ev_id}: its stream {ev.get('event_variable_stream')!r} names no authority CURIE (CF:/WoRMS:/…) for the variable")
+            auth = str(s.get("authority", ""))
+            if not re.match(r"^(%s):\S+$" % "|".join(AUTHORITIES), auth):
+                fail(2, f"{ev_id}: its stream {ev.get('event_variable_stream')!r} names no authority CURIE from "
+                        f"{'/'.join(AUTHORITIES)} for the variable (got {auth!r})")
 
     # -- 3 streams ------------------------------------------------------------------------------------------------
     if 3 in R:
@@ -226,7 +296,7 @@ def check(root, items=None, stage: str = "declared", selftest: bool = True) -> d
     # -- 6 self-test ----------------------------------------------------------------------------------------------
     if 6 in R:
         from atlantis_core import selftest as st
-        if R.get(4, {}).get("status") == "fail" or any("registry" in r for i in R for r in R[i]["reasons"]):
+        if not registry_clean:
             fail(6, "not run — the registries do not check clean (items above)")
         elif selftest:
             try:
@@ -245,35 +315,22 @@ def check(root, items=None, stage: str = "declared", selftest: bool = True) -> d
     # -- 7 posture -------------------------------------------------------------------------------------------------
     if 7 in R:
         read(7, "how/federation/atlantis/CLAUDE.md")
-        fr = _fed_ref(root)
-        if fr is None:
-            fail(7, "how/federation/atlantis/CLAUDE.md has no federation_ref block")
-        else:
-            dp = ((fr.get("instance") or {}).get("data_posture") or {})
-            if dp.get("class") not in POSTURES:
-                fail(7, f"data_posture.class {dp.get('class')!r} not in {POSTURES}")
-            ruling = root / str(dp.get("ruling", ""))
-            read(7, str(dp.get("ruling")))
-            if not dp.get("ruling") or not ruling.is_file():
-                fail(7, f"data_posture.ruling {dp.get('ruling')!r} does not exist")
-            else:
-                fm = _front(ruling)
-                m = re.search(r"\*\*Class:\*\*\s*`([a-z_]+)`", ruling.read_text())   # the DECLARED class, not any mention
-                if not m:
-                    fail(7, f"{dp['ruling']} declares no **Class:** line (the class it is cited for)")
-                elif m.group(1) != dp.get("class"):
-                    fail(7, f"{dp['ruling']} declares class {m.group(1)!r}, the federation pin says {dp.get('class')!r} — never names the class it is cited for")
-                ratified = str(fm.get("status", "")).lower() in ("ratified", "accepted")
-                if stage == "fetched" and not ratified:
-                    fail(7, f"{dp['ruling']} is {fm.get('status')!r} — data is fetched only under a RATIFIED posture")
-                elif not ratified:
-                    R[7]["reasons"].append(f"ruling present, status {fm.get('status')!r} (ratify before the fetch)")
-            if dp.get("class") in ("partner", "human_subject"):
-                gi = (root / ".gitignore").read_text() if (root / ".gitignore").exists() else ""
-                lines = {ln.strip() for ln in gi.splitlines()}
-                miss = [p for p in ("data/", "outputs/", "site/") if p not in lines]
-                if miss:
-                    fail(7, f"{dp['class']} posture but .gitignore does not exclude {miss}")
+        P = posture(root)
+        if P["ruling"]:
+            read(7, str(P["ruling"]))
+        for why in P["problems"]:
+            fail(7, why)
+        if not P["problems"]:
+            if stage == "fetched" and not P["ratified"]:
+                fail(7, f"{P['why_not_ratified']} — data is fetched only under a RATIFIED posture")
+            elif not P["ratified"]:
+                R[7]["reasons"].append(f"ruling present, not yet ratified (ratify before the fetch)")
+        if P["class"] in ("partner", "human_subject"):
+            gi = (root / ".gitignore").read_text() if (root / ".gitignore").exists() else ""
+            lines = {ln.strip() for ln in gi.splitlines()}
+            miss = [x for x in ("data/", "outputs/", "site/") if x not in lines]
+            if miss:
+                fail(7, f"{P['class']} posture but .gitignore does not exclude {miss}")
 
     # -- 8 split --------------------------------------------------------------------------------------------------
     if 8 in R:
@@ -299,6 +356,14 @@ def check(root, items=None, stage: str = "declared", selftest: bool = True) -> d
             from atlantis_core.board import BoardError, assert_green, validate
             try:
                 ent = json.loads(e.read_text()); validate(ent["evaluation"]); assert_green(ent)
+                from atlantis_core.config import semantic_hash
+                ev9 = ent["evaluation"]
+                if ev9.get("unit_ref") != (cfg.get("board") or {}).get("unit_ref"):
+                    fail(9, f"{e.name}: unit_ref {ev9.get('unit_ref')!r} is not this instance's board.unit_ref")
+                xh = (ent.get("evaluation_extras") or {}).get("semantic_hash") or ev9.get("config_hash")
+                if xh != semantic_hash(inst):
+                    fail(9, f"{e.name}: config_hash {xh!r} ≠ this instance's semantic_hash {semantic_hash(inst)!r} — "
+                            f"an entry for another config (or another instance)")
                 if ent["evaluation"].get("claim") != "method_demonstration" and not ent["evaluation"].get("owner_ruling_ref"):
                     fail(9, f"{e.name}: a non-demonstration claim without owner_ruling_ref (SO-4)")
             except (BoardError, KeyError, ValueError) as x:
@@ -309,8 +374,15 @@ def check(root, items=None, stage: str = "declared", selftest: bool = True) -> d
             R[10]["status"] = "n/a"; R[10]["reasons"].append("no published page yet (after a run)")
         for p in pages:
             read(10, str(p.relative_to(root)))
-            if not re.search(r"""id=["']limits["']""", p.read_text(errors="replace")):
-                fail(10, f"{p.name}: no #limits section")
+            html = re.sub(r"<!--.*?-->", "", p.read_text(errors="replace"), flags=re.S)        # a comment is not a section
+            m = re.search(r"""<(section|div|article)\b[^>]*\bid=["']limits["'][^>]*>(.*?)</\1>""", html, re.S)
+            text = re.sub(r"<[^>]+>|\s+", " ", m.group(2)).strip() if m else ""
+            if not m:
+                fail(10, f"{p.name}: no #limits section element")
+            elif len(text) < 80:
+                fail(10, f"{p.name}: #limits section has {len(text)} characters of text — limitations are written, not implied")
+            if not re.search(r"analogy", re.sub(r"<[^>]+>", " ", html), re.I):
+                fail(10, f"{p.name}: no 'where the analogy breaks' discussion (contract item 10)")
 
     # -- 11 mapping -----------------------------------------------------------------------------------------------
     if 11 in R:
@@ -337,8 +409,16 @@ def check(root, items=None, stage: str = "declared", selftest: bool = True) -> d
         if not gl:
             R[12]["status"] = "not_run"; R[12]["reasons"].append("gitleaks not installed — item 12 NOT checked (never a silent pass)")
         else:
-            r = subprocess.run([gl, "detect", "--no-git", "--source", str(root), "--no-banner", "--redact", "--exit-code", "3"],
+            # Atlantis's config and an empty ignore file: an instance-supplied .gitleaks.toml / .gitleaksignore cannot
+            # allowlist its own secrets past the contract (III F-5). Inline `gitleaks:allow` comments still apply (limit).
+            here = Path(__file__).resolve().parent
+            r = subprocess.run([gl, "detect", "--no-git", "--source", str(root), "--no-banner", "--redact", "--exit-code", "3",
+                                "--config", str(here / "gitleaks_atlantis.toml"),
+                                "--gitleaks-ignore-path", str(here / "gitleaks_atlantis.ignore")],
                                capture_output=True, text=True)
+            for own in (".gitleaks.toml", ".gitleaksignore"):
+                if (root / own).exists():
+                    R[12]["reasons"].append(f"instance {own} present and IGNORED (Atlantis's rules apply)")
             read(12, f"gitleaks detect --no-git {root.name}")
             if r.returncode == 3:
                 fail(12, "gitleaks found candidate secrets:\n" + (r.stdout + r.stderr)[-800:])

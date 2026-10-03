@@ -93,12 +93,16 @@ def _ratified_pin(d, status="ratified"):
     (d / "how/federation/atlantis/CLAUDE.md").write_text(
         "```yaml\nfederation_ref:\n  instance:\n    data_posture: {class: public, ruling: who/governance/adr_001_data_posture.md}\n```\n")
     (d / "who/governance").mkdir(parents=True, exist_ok=True)
-    (d / "who/governance/adr_001_data_posture.md").write_text(f"---\nstatus: {status}\n---\n**Class:** `public`\n")
+    row = "| public | the steward | 2026-10-03 | ratified |" if status == "ratified" else "| | | | proposed |"
+    (d / "who/governance/adr_001_data_posture.md").write_text(
+        f"---\nstatus: {status}\n---\n**Class:** `public`\n\n## Ratification\n\n| decision | ratified-by | date | status |\n|---|---|---|---|\n{row}\n")
 
 
 @pytest.mark.parametrize("setup,why", [
-    (lambda d: None, "no how/federation/atlantis/CLAUDE.md"),
+    (lambda d: None, "has no federation_ref block"),
     (lambda d: _ratified_pin(d, "proposed"), "the instance owner ratifies it"),
+    (lambda d: (_ratified_pin(d), (d / "how/federation/atlantis/CLAUDE.md").write_text((d / "how/federation/atlantis/CLAUDE.md").read_text()
+                .replace("ruling: who/", "ruling: ../x/who/"))), "inside the instance"),
     (lambda d: (_ratified_pin(d), (d / "who/governance/adr_001_data_posture.md").unlink()), "does not exist"),
 ])
 def test_network_fetch_needs_ratified_posture(inst_dir, capsys, setup, why):

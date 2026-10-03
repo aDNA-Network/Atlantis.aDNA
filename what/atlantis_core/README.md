@@ -48,12 +48,12 @@ cd what/atlantis_core && uv sync && .venv/bin/python -m pytest              # of
 | `config` | `load_instance(dir)`; `semantic_hash(inst)`, an md5 over the training-relevant config and the vitals' and events' machine fields, blind to prose and key order (closes WI-7 once M-1b-ii records it) |
 | `registry` | R1 unique ids · R2 refs resolve across files · R3 transforms parse; windowed op ⇔ `window` · R4 lever ⇒ owner · R5 every stream has an engine spec; known fetcher · R6 label event declared · R7 every climatology era ends before `val_start` and before the first rolling-origin test year, unless `climatology_policy.rolling_origin: refit_per_fold` is declared, which records an **obligation** on eval in `inst.obligations` · R8 (M-1d-i, contract item 5) the surveillance channel is declared (a `surveillance_channel` stream read by a `group: surveillance` vital, with its ablation in `eval.ablations`) or declared absent with a reason, and then nothing claims it |
 | `grid` | units from coordinate **rules** (`ast` whitelist) · **polygons** (GeoJSON/WDPA file the instance points at; numpy even-odd, holes, MultiPolygon) · **cells**; ISO weeks (Monday) |
-| `fetch` | `Fetcher` (offline, retry, atomic, Rule-5 summary + sha256) · **built:** `ArcGISMapServer` · `ERDDAPGriddap` · `NWISDailyValues` · **declared:** `NDBCStdmet` · `OBISOccurrence` · `GBIFOccurrence` · `CoralReefWatch`. **CLI (M-1d-i):** `python -m atlantis_core.fetch --instance <dir> [--stream ID] [--offline] [--verify]` — refuses to fetch without a green self-test receipt for the current `semantic_hash` (contract item 6); `--verify` re-hashes each cache against its summary and `streams.yaml`; prints the Rule-5 values to record, never rewrites a registry |
+| `fetch` | `Fetcher` (offline, retry, atomic, Rule-5 summary + sha256) · **built:** `ArcGISMapServer` · `ERDDAPGriddap` · `NWISDailyValues` · **declared:** `NDBCStdmet` · `OBISOccurrence` · `GBIFOccurrence` · `CoralReefWatch`. **CLI (M-1d-i):** `python -m atlantis_core.fetch --instance <dir> [--stream ID] [--offline] [--verify]` — refuses to fetch without a green self-test receipt for the current `semantic_hash` and self-test code (contract item 6), and refuses a NETWORK fetch unless the instance's own posture ruling carries a signed Ratification row (item 7; `--offline` exempt). Built fetchers declare `spec_required`; `--verify` re-hashes each cache against its summary and `streams.yaml`; prints the Rule-5 values to record, never rewrites a registry |
 | `vitals.grammar` | the transform language: whitelisted calls, no `eval`. Full table in its docstring |
 | `vitals.ops` | the evaluator, with explicit kinds `Obs → Daily → Weekly`. Lags are **calendar** shifts on a complete weekly index |
 | `vitals.build` | registries + frames → table (grid rows, one column per vital in registry order) |
 | `label` | direction-aware label (`above`: future max ≥ thr · `below`: future min ≤ thr), already-in-event and unknown-outcome drops; `finalize` reports both drop counts |
-| `selftest` | the all-stream leakage test (below); a green CLI run writes `outputs/atlantis_core/selftest_receipt.json` (semantic hash · streams · counts), the fetch gate — local and gitignored, re-earned by anyone because it needs no data |
+| `selftest` | the all-stream leakage test (below); a green CLI run writes `outputs/atlantis_core/selftest_receipt.json` (semantic hash · streams · counts), the fetch gate — local and gitignored, re-earned by anyone because it needs no data; bound to the self-test's own code (a receipt from a weaker self-test is stale) |
 | `eval` | the temporal split from `atlantis.yaml`; **the learner is a config field** (`learners`: `xgboost` early-stopped on val then refit on train+val · `logistic` median-impute + missingness flags + standardise, every statistic fitted on training rows); `metrics` (alert budgets, calibration, climatology baseline); `lead` (direction-aware lead time on the full grid); ablations from vital groups; surveillance-only; the sensitivity threshold through `label.make`'s event override; `rolling` — rolling origin with **R7 honoured**: each fold's climatology eras end ≤ its train year and the moved vitals are rebuilt. `run` refuses to start with an unexecuted obligation |
 | `explain` | interventional TreeExplainer over a train-only background, additivity a hard check, interactions; exact linear SHAP for `logistic`; sums by `group` and `tag` from `features.yaml`. `explain.whatif`: scenarios are config — a raw stream scaled over a period, the vitals re-derived through `vitals.build`, refused without a `lever` vital or across a climatology era; scaling a non-lever station is reported |
 | `board` | `project` → the **closed** `AtlEvaluation`, validated against the committed JSON Schema with its format checker; `emit` → a GREEN entry with `evaluation_extras` beside it; refuses unhonoured obligations; `assert_green` rejects per-patient content |
@@ -102,8 +102,18 @@ It also checks, once per run:
   unchanged) unless a vital of that stream lags exactly there. A lag-1 weekly mean of a daily stream was NaN at t, and
   C4 called it vacuous. That was the first fork's finding.
 
-`tests/test_fork.py` plants three leaks in the forked hypoxia world (horizon overreach, a deaf label, a weekly minimum
-that reads next week) and each is caught by name.
+**After the M-1d-i III review (F-1, F-2):**
+- the **event stream carries the label-exposing gaps whatever its shape**: the primary is unobserved at t+2 (t+1 when
+  H = 2) and the neighbour at t−1 and t;
+- every daily stream's neighbour is unobserved at t−1 and t;
+- spikes insert an observation into an unobserved day;
+- **C8 calendar-lag invariance** (deleting the primary's weeks (t−L, t] must not move a lag-L vital) guards the lags no gap
+  crosses. The run says when C8 alone guards a stream;
+- label comparisons are NA-safe, so a horizon defect that blanks y is a named C4, not a TypeError.
+
+`tests/test_fork.py` runs the whole planted-defect catalogue (12 defects) against two forked worlds: the example, and a
+variant with no point stream, a two-station mean and no surveillance. Each defect is caught by a named check. The
+exemplar suite gains a back-filled weekly mean, a pre-existing blind spot.
 
 **Known limits.** The self-test does not prove:
 

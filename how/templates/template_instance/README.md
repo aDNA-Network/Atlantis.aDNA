@@ -30,11 +30,12 @@ answers. The skill that runs the interview is `how/skills/skill_atlantis_instanc
 **What fork refuses:**
 - an unresolved token, or a target file that already exists;
 - an enum value outside `atl_v0`;
-- a lever without an owner;
-- coordinate `rules` under a `partner` or `human_subject` posture;
-- a polygon file that does not exist in the instance;
+- a lever without an owner (via R4, for steward-supplied `vitals` too);
+- coordinate `rules`, or a `cells` bbox, under a `partner` or `human_subject` posture;
+- a polygon path that is absolute, leaves the instance, or does not exist;
+- a unit `geometry_ref` outside the instance;
+- a fetch spec missing a built fetcher's `spec_required` keys;
 - fewer than two self-test patients;
-- a stream the self-test patients do not reach.
-
-Then it runs the registry check (R1–R8) on what it wrote. Check the result with `atlantis_core.mapping --check` and
+- a stream the self-test patients do not reach;
+- anything the registry check (R1–R8) rejects. That check runs on a temporary render **before** a file is written. Check the result with `atlantis_core.mapping --check` and
 `atlantis_core.conform --stage declared`, and earn the fetch with `atlantis_core.selftest`.
