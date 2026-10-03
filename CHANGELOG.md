@@ -1,5 +1,27 @@
 # CHANGELOG — Atlantis.aDNA
 
+## 2026-10-03 — v0.7.0 · M-1d-i fork from templates alone (P1; M-1d split)
+
+- **M-1d split by operator ruling.** i (this release) is the exit-bar path; ii covers the lattice, runspec, BOARD, dataset
+  pairs and the contribution guide. The parent card is `superseded` and kept.
+- **atl_v0 0.3.0:** a stream may be *declared* before it is fetched (`ingested_at` optional; `sha256` ⇒ `ingested_at`).
+  45 controls, ALL WORLDS AGREE; two sabotages show the rule is load-bearing.
+- **Instance contract v0.2.0, amended in place:** the real files and the real self-test command; item 3 staged
+  declared → fetched; items 6–7 enforced by code; every item machine-checked.
+- **`python -m atlantis_core.fetch`** (closes WI-15) is gated on a self-test receipt (config + self-test code) and, for a
+  network fetch, on a signed posture Ratification row inside the instance.
+- **Registry R8:** a surveillance channel, or a reasoned absence.
+- **`how/templates/template_instance/` + `python -m atlantis_core.fork`:** declarations from interview answers;
+  deterministic; 27 refusals, each writing nothing.
+- **`python -m atlantis_core.conform`:** contract items 1–12 as ✅/✗ with the files read; it writes nothing.
+- **`how/skills/skill_atlantis_instance_fork.md`.**
+- **The self-test is shape-general:** any event-stream shape, a mirror-direction C5, and **C8 calendar-lag invariance**.
+  The full defect catalogue runs in two forked worlds as well as the exemplar.
+- **Dry run:** a fictional hypoxia instance forked from templates alone; contract items 1–8 and 11–12 green; no network.
+- **III review** (fresh context): PASS-WITH-FINDINGS, 3 major and 6 minor, all addressed. Learning store: C-004 and C-009
+  reach 3 (graduation candidates); C-005 and C-013 reach 2; C-014…C-017 new.
+- 330 tests (183 → 330). The byte-stable set is unchanged.
+
 ## 2026-10-03 — v0.6.0 · M-1b-ii-b `atlantis_core` site · mapping · archive (P1)
 
 - **`atlantis_core.site`** (`python -m atlantis_core.site --instance <dir>`) makes the explainer page a core template whose

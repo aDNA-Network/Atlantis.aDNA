@@ -49,6 +49,21 @@ Close the registry loose ends the public repo needs, and write the method down a
 
 STATE · this card · the M-1d-i AAR · `what/atlantis_core/README.md` · `what/board/README.md` · `what/datasets/AGENTS.md`.
 
+## Inputs from M-1d-i (2026-10-03)
+
+- **The lattice's nodes have commands now.**
+  - `fetch` = `python -m atlantis_core.fetch --instance <dir>`, with **two gates**: a self-test receipt for the current
+    config and self-test code, and, for a network fetch, a signed posture Ratification row inside the instance.
+  - `self-test` = `python -m atlantis_core.selftest`.
+  - Conformance = `python -m atlantis_core.conform`.
+  - `discover` stays declared-only until M-3a.
+  - Order: the receipt is earned *before* `fetch`. The lattice draws self-test → fetch, unlike the card's original list.
+- **`board --entries`**: `conform` item 9 already ties an entry to the instance's `unit_ref` and `semantic_hash`. The
+  instance-side board path is `what/board/entries/` (federation pin).
+- **The runspec's closed vocabulary** should name streams by id and stages from the lattice. Like DDX, no field carries a
+  path.
+- **Test time** is ~8.5 min (the two-world catalogue). Budget the reviewer's runs accordingly.
+
 ## AAR
 
 *Mandatory before `status: completed` (SO-6).* → `aar_path`.
