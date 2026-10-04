@@ -1,0 +1,55 @@
+# dataset_fwc_hab_karenia.dataset.yaml — twin of dataset_fwc_hab_karenia.md (M-1d-ii, 2026-10-03; pair standard,
+# how/templates/template_dataset_pair/). Check: python -m atlantis_core.datasets --check what/datasets
+# One of the exemplar's three grandfathered snapshots (ADR-002 §4) — the only bytes Atlantis carries.
+dataset:
+  name: dataset_fwc_hab_karenia
+  version: "1.0.0"
+  description: "FWC-FWRI HAB monitoring archive — Karenia brevis cells per litre in Florida water samples, 1970–2023 (six decade layers)."
+  dataset_class: reference
+  category: ocean_observations
+  domain: ecosystem_early_warning
+  format:
+    file_type: parquet
+    compression: snappy
+    record_count: 196024
+    checksum: "sha256:2bde141038e87db37dd682561d47e525dc546189d2ae6fbecfaf1a53bcfecfd9"
+  storage:
+    provider: local
+    location:
+      path: "what/datasets/fwc_hab_karenia_1970_2023.parquet"
+  fair:
+    license: "public (Florida public records; credit FWC-FWRI)"
+    keywords: [karenia_brevis, red_tide, harmful_algal_bloom, florida, gulf_of_mexico, cell_count]
+    creators: ["Florida Fish and Wildlife Conservation Commission — Fish and Wildlife Research Institute (FWC-FWRI)"]
+    provenance: "Paginated ArcGIS REST pull of six decade layers by the exemplar's src/hab/fetch_fwc.py at aDNALabs S329 (2026-09-23); server count = fetched for every layer."
+    access_protocol: https
+  federation:
+    shareable: true
+    source_instance: "Atlantis.aDNA"
+    visibility: public
+  lineage:
+    source_module: hab.fetch_fwc
+    source_stage: fetch
+    generation_timestamp: "2026-09-23T11:22:13Z"
+    input_datasets: []
+    parameters:
+      fetcher: ArcGISMapServer
+      layers: {"1970___1979": 2, "1980___1989": 3, "1990___1999": 4, "2000___2006": 5, "2007___2014": 6, "2015___2023": 12}
+      page_size: 2000
+  class_fields:
+    atl_stream_id: atl_stream_fwc_hab_karenia
+    modality: point_count
+    authority: "WoRMS:233015"
+    variable: Karenia brevis
+    unit: /L
+    surveillance_channel: true
+    source_system: FWC-FWRI HAB Monitoring Database via ArcGIS Open Data
+    source_id: Historic_Harmful_Algal_Bloom_Events (six decade layers)
+    source_url: "https://gis.myfwc.com/mapping/rest/services/Open_Data/Historic_Harmful_Algal_Bloom_Events_{name}/MapServer/{layer}/query"
+    ingested_at: "2026-09-23T11:22:13Z"
+    ingested_at_source: "legacy summary (pre-sha256, S329); kept at M-1a"
+    pipeline_version: "hab.fetch_fwc (exemplar, S329); core equivalent atlantis_core.fetch.ArcGISMapServer"
+    min_date: "1970-10-01"
+    max_date: "2023-12-30"
+    storage_in_atlantis: grandfathered_exemplar_snapshot
+    copy_of_record: what/exemplars/gulf_karenia_brevis/data/raw/fwc_hab_karenia_1970_2023.parquet

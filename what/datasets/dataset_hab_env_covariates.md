@@ -3,10 +3,12 @@ type: dataset
 doc_id: dataset_hab_env_covariates
 title: "Environmental covariates for hab_crash_risk — OISST regional SST + USGS river discharge"
 owner: stanley
-status: snapshot
+status: superseded
+superseded_by: [dataset_oisst_region_daily, dataset_usgs_discharge_daily]
+superseded_on: 2026-10-03   # M-1d-ii pair migration — one location + one checksum per record
 created: 2026-09-23
-updated: 2026-09-23
-last_edited_by: agent_berthier
+updated: 2026-10-03
+last_edited_by: agent_proteus
 source: NOAA OISST v2.1 daily (CoastWatch ERDDAP ncdcOisst21Agg_LonPM180) · USGS NWIS daily values (parameter 00060)
 artifacts: [oisst_region_daily.parquet, usgs_discharge_daily.parquet]
 license: public (NOAA / USGS)
@@ -16,6 +18,10 @@ tags: [dataset, oisst, sst, usgs, discharge, covariates, s329, hab_crash_risk]
 ---
 
 # Environmental covariates — regional SST and river discharge
+
+> **Superseded 2026-10-03 (M-1d-ii).** The pair standard has one storage location and one checksum per record, so this
+> two-artifact note split into **`dataset_oisst_region_daily`** and **`dataset_usgs_discharge_daily`**, each with its
+> `.dataset.yaml` twin. Kept, unedited below this banner, per SO-2.
 
 Pulled 2026-09-23 by `what/exemplars/gulf_karenia_brevis/src/hab/fetch_env.py`.
 

@@ -9,19 +9,17 @@ version: "0.1.0"
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
 last_edited_by: agent_<persona>
-yaml: dataset_NAME.dataset.yaml     # the machine-readable twin (validated by the lattice-labs dataset_yaml_schema.json)
+yaml: dataset_name.dataset.yaml     # the machine-readable twin — its sha256, storage and Rule-5 provenance are authoritative
+                                    # (validated: python -m atlantis_core.datasets --check <dir>)
 stream_id: atl_stream_<...>         # the AtlObservationStream this record describes
 # --- Atlantis snapshot rule (ADR-002 §4): pointer + sha256 + fetch recipe. NO new bytes in Atlantis. ---
 storage_in_atlantis: none           # none | grandfathered_exemplar_snapshot
-fetch_recipe: "python -m atlantis_core.fetch <stream_id>"   # or the exemplar module
-# --- Ingest.aDNA Rule 5 provenance ---
+fetch_recipe: "python -m atlantis_core.fetch --instance <dir> --stream <stream_id>"
+# --- Ingest.aDNA Rule 5 provenance: the .dataset.yaml's class_fields carry it; repeated here for the reader ---
 source_system: "<FWC ArcGIS Hub | NOAA CoastWatch ERDDAP | USGS NWIS | NOAA CRW | OBIS | NCBI SRA | …>"
-source_id: "<layer id / dataset id / site / BioProject>"
 source_url: "<url>"
-captured_at: "<when the source last updated>"
 ingested_at: "<when fetched>"
-pipeline_version: "<fetcher version>"
-sha256: "<of the cached artifact in the INSTANCE>"
+sha256: "<of the cached artifact in the INSTANCE — equal to the yaml's format.checksum>"
 rows: 0
 license: "<SPDX or agency terms>"
 redacted: false

@@ -1,0 +1,369 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lattice-protocol.dev/schemas/dataset-yaml/v1.0.0",
+  "title": "Dataset YAML Schema",
+  "description": "JSON Schema for .dataset.yaml files — the declarative definition format for Lattice datasets. A Dataset is a FAIR-compliant data package with storage location abstraction supporting S3-compatible APIs, FUSE mounts, and local filesystems across L1/L2/L3 tiers. Parallel to .lattice.yaml for lattices.",
+  "type": "object",
+  "required": ["dataset"],
+  "additionalProperties": false,
+  "properties": {
+    "dataset": {
+      "type": "object",
+      "description": "Root dataset definition object.",
+      "required": ["name", "version", "description", "dataset_class", "storage", "format", "fair"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "URL-safe dataset identifier. Lowercase, underscores allowed, no spaces.",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "examples": ["sjogrens_targets", "pdb_structures", "baff_binder_results_v1"]
+        },
+        "version": {
+          "type": "string",
+          "description": "Semantic version of this dataset definition.",
+          "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9.]+)?(\\+[a-zA-Z0-9.]+)?$",
+          "examples": ["1.0.0", "0.2.1-alpha"]
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of what this dataset contains and its purpose.",
+          "minLength": 10
+        },
+        "dataset_class": {
+          "type": "string",
+          "description": "Dataset class discriminator. Maps to vault ontology. Reference = external data. Benchmark = evaluation data. Training_data = ML training set. Target = biological/computational entity. Result = pipeline output.",
+          "enum": ["reference", "benchmark", "training_data", "target", "result"],
+          "default": "reference"
+        },
+        "category": {
+          "type": "string",
+          "description": "Semantic category within the dataset class. Domain-specific classification.",
+          "examples": ["protein", "disease_graph", "structural", "genomic", "pipeline_output"]
+        },
+        "domain": {
+          "type": "string",
+          "description": "Application domain classification.",
+          "examples": ["structural_biology", "bioinformatics", "protein_engineering", "genomics"]
+        },
+        "storage": {
+          "type": "object",
+          "description": "Storage location abstraction. Supports S3-compatible APIs (AWS S3, MinIO, GCS, Ceph), FUSE-mounted filesystems, and local paths. Designed for cross-tier portability (L1/L2/L3).",
+          "required": ["provider", "location"],
+          "additionalProperties": false,
+          "properties": {
+            "provider": {
+              "type": "string",
+              "description": "Storage provider identifier. Determines which access pattern and credentials to use.",
+              "enum": ["s3", "minio", "gcs", "azure", "ceph", "local", "fuse"],
+              "examples": ["s3", "minio", "local"]
+            },
+            "location": {
+              "type": "object",
+              "description": "Provider-specific location details.",
+              "additionalProperties": false,
+              "properties": {
+                "endpoint": {
+                  "type": "string",
+                  "description": "S3-compatible API endpoint URL. Required for non-AWS S3 providers (MinIO, GCS S3-compat, Ceph). Omit for AWS S3 (uses default). For FUSE mounts, this is the mount source endpoint.",
+                  "format": "uri",
+                  "examples": [
+                    "https://minio.lattice-labs.internal:9000",
+                    "https://storage.googleapis.com",
+                    "https://s3.us-east-1.amazonaws.com",
+                    "https://ceph-rgw.cluster.local:7480"
+                  ]
+                },
+                "region": {
+                  "type": "string",
+                  "description": "Cloud region for the storage bucket. Required for AWS S3 and GCS.",
+                  "examples": ["us-east-1", "us-west-2", "europe-west1"]
+                },
+                "bucket": {
+                  "type": "string",
+                  "description": "S3 bucket name (or Azure container, GCS bucket). For local/FUSE, this is the root directory name.",
+                  "pattern": "^[a-z0-9][a-z0-9._-]{1,61}[a-z0-9]$",
+                  "examples": ["lattice-datasets", "baff-results", "latlab-data"]
+                },
+                "key_prefix": {
+                  "type": "string",
+                  "description": "Object key prefix within the bucket. Defines the dataset's location within the bucket namespace. For local/FUSE, this is the subdirectory path.",
+                  "examples": [
+                    "datasets/sjogrens/targets/v1/",
+                    "pipeline-output/baff-trap-v1/",
+                    "reference/pdb/"
+                  ]
+                },
+                "path": {
+                  "type": "string",
+                  "description": "Absolute filesystem path. Used for provider=local or provider=fuse. For FUSE, this is the mount point on the local filesystem.",
+                  "examples": [
+                    "/data/latlab/datasets/sjogrens_targets",
+                    "/mnt/s3fs/lattice-datasets/reference/pdb",
+                    "/mnt/gcsfuse/lattice-bio/targets"
+                  ]
+                }
+              }
+            },
+            "credentials_ref": {
+              "type": "string",
+              "description": "Reference to credentials for accessing this storage. Points to a key in the local secrets store (~/.lattice/secrets.json). Never contains actual credentials.",
+              "examples": ["s3_lattice_datasets", "minio_l2_admin", "gcs_bio_readonly"]
+            },
+            "fuse": {
+              "type": "object",
+              "description": "FUSE mount configuration. When provider=fuse, specifies the FUSE tool and mount options for transparent filesystem access to cloud storage.",
+              "additionalProperties": false,
+              "properties": {
+                "tool": {
+                  "type": "string",
+                  "description": "FUSE filesystem tool to use for mounting.",
+                  "enum": ["s3fs", "goofys", "gcsfuse", "blobfuse", "blobfuse2", "s3backer", "rclone"],
+                  "examples": ["s3fs", "gcsfuse"]
+                },
+                "mount_point": {
+                  "type": "string",
+                  "description": "Absolute path where the FUSE filesystem is mounted.",
+                  "examples": ["/mnt/s3fs/lattice-datasets", "/mnt/gcsfuse/lattice-bio"]
+                },
+                "mount_options": {
+                  "type": "array",
+                  "description": "Additional mount options passed to the FUSE tool.",
+                  "items": { "type": "string" },
+                  "examples": [["allow_other", "use_path_request_style", "url=https://minio.local:9000"]]
+                },
+                "backend_provider": {
+                  "type": "string",
+                  "description": "The underlying cloud provider that the FUSE tool connects to.",
+                  "enum": ["s3", "minio", "gcs", "azure", "ceph"],
+                  "examples": ["minio", "gcs"]
+                },
+                "backend_endpoint": {
+                  "type": "string",
+                  "description": "The backend storage endpoint that the FUSE tool connects to.",
+                  "format": "uri",
+                  "examples": ["https://minio.lattice-labs.internal:9000"]
+                },
+                "backend_bucket": {
+                  "type": "string",
+                  "description": "The backend bucket/container that the FUSE tool mounts.",
+                  "examples": ["lattice-datasets"]
+                }
+              }
+            },
+            "tier": {
+              "type": "string",
+              "description": "Deployment tier where this storage is accessible. L1=edge/laptop, L2=regional/HPC, L3=cloud.",
+              "enum": ["L1", "L2", "L3", "any"],
+              "default": "any"
+            },
+            "replicas": {
+              "type": "array",
+              "description": "Additional storage locations for this dataset (mirrors, caches, tier-specific copies). Each entry follows the same location schema.",
+              "items": {
+                "type": "object",
+                "required": ["provider", "tier"],
+                "additionalProperties": true,
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "enum": ["s3", "minio", "gcs", "azure", "ceph", "local", "fuse"]
+                  },
+                  "tier": {
+                    "type": "string",
+                    "enum": ["L1", "L2", "L3"]
+                  },
+                  "endpoint": { "type": "string" },
+                  "bucket": { "type": "string" },
+                  "key_prefix": { "type": "string" },
+                  "path": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "format": {
+          "type": "object",
+          "description": "Data format metadata. Describes the structure and encoding of the dataset contents.",
+          "required": ["file_type"],
+          "additionalProperties": false,
+          "properties": {
+            "file_type": {
+              "type": "string",
+              "description": "Primary file type using the type vocabulary. Refers to the canonical type names from the Lattice type vocabulary.",
+              "examples": ["pdb_file", "fasta_file", "score_table", "tensor", "alignment"]
+            },
+            "compression": {
+              "type": "string",
+              "description": "Compression format applied to the data files.",
+              "enum": ["none", "gzip", "zstd", "lz4", "bzip2", "xz", "snappy"],
+              "default": "none"
+            },
+            "encoding": {
+              "type": "string",
+              "description": "Character or binary encoding.",
+              "examples": ["utf-8", "ascii", "binary"],
+              "default": "utf-8"
+            },
+            "schema_ref": {
+              "type": "string",
+              "description": "Reference to a schema definition that describes the dataset's internal structure. Can be a vault wikilink, URL, or JSON Schema $id.",
+              "examples": [
+                "what/datasets/schemas/binder_results_schema.json",
+                "https://www.rcsb.org/pdb/file_formats",
+                "what/datasets/standard_dataset_target"
+              ]
+            },
+            "record_count": {
+              "type": "integer",
+              "description": "Number of records/entries/files in the dataset.",
+              "minimum": 0
+            },
+            "total_size": {
+              "type": "string",
+              "description": "Human-readable total data size.",
+              "examples": ["2.4 GB", "156 MB", "3.2 TB"]
+            },
+            "checksum": {
+              "type": "string",
+              "description": "Content integrity checksum (SHA-256 recommended).",
+              "examples": ["sha256:a1b2c3d4..."]
+            }
+          }
+        },
+        "lineage": {
+          "type": "object",
+          "description": "Provenance and lineage chain. Tracks how this dataset was produced.",
+          "additionalProperties": false,
+          "properties": {
+            "source_lattice": {
+              "type": "string",
+              "description": "Name of the lattice that produced this dataset.",
+              "examples": ["protein_binder_design"]
+            },
+            "source_lattice_version": {
+              "type": "string",
+              "description": "Version of the lattice that produced this dataset.",
+              "examples": ["2.0.0"]
+            },
+            "source_module": {
+              "type": "string",
+              "description": "Name of the specific module that generated this output.",
+              "examples": ["module_rfdiffusion", "module_proteinmpnn"]
+            },
+            "source_stage": {
+              "type": "string",
+              "description": "Pipeline stage identifier that produced this output.",
+              "examples": ["scaffold_generation", "sequence_design"]
+            },
+            "source_run_id": {
+              "type": "string",
+              "description": "Run identifier that generated this dataset. Links to execution record.",
+              "examples": ["baff_trap_v1_20260302"]
+            },
+            "generation_timestamp": {
+              "type": "string",
+              "description": "ISO 8601 timestamp when this dataset was generated.",
+              "format": "date-time",
+              "examples": ["2026-03-02T14:30:00Z"]
+            },
+            "input_datasets": {
+              "type": "array",
+              "description": "References to input datasets consumed during generation. Establishes the lineage DAG.",
+              "items": {
+                "type": "string",
+                "examples": ["sjogrens_targets:1.0.0", "pdb_structures:1.0.0"]
+              }
+            },
+            "parameters": {
+              "type": "object",
+              "description": "Key parameters used during generation. Captures the configuration that produced this result.",
+              "additionalProperties": true,
+              "examples": [{"num_designs": 100, "scaffold_lengths": [60, 80, 100], "temperature": 0.1}]
+            }
+          }
+        },
+        "fair": {
+          "type": "object",
+          "description": "FAIR metadata in flat envelope format. See m16_fair_canonical_mapping for flat↔nested interconversion.",
+          "required": ["license", "keywords"],
+          "additionalProperties": false,
+          "properties": {
+            "identifier": {
+              "type": "string",
+              "description": "Persistent identifier (DOI, DID, content hash). Maps to fair.findable.identifier in nested.",
+              "examples": ["10.5281/zenodo.123456", "sha256:a1b2c3d4"]
+            },
+            "keywords": {
+              "type": "array",
+              "description": "Semantic discovery keywords. Maps to fair.findable.keywords in nested.",
+              "minItems": 1,
+              "items": { "type": "string" }
+            },
+            "license": {
+              "type": "string",
+              "description": "SPDX license identifier. Maps to fair.accessible.license in nested.",
+              "examples": ["MIT", "CC0-1.0", "CC-BY-4.0", "Apache-2.0"]
+            },
+            "creators": {
+              "type": "array",
+              "description": "Creator names or identifiers.",
+              "items": { "type": "string" }
+            },
+            "provenance": {
+              "type": "string",
+              "description": "Origin and derivation description. Maps to fair.reusable.provenance in nested."
+            },
+            "access_protocol": {
+              "type": "string",
+              "description": "Access method. Maps to fair.accessible.access_protocol in nested.",
+              "enum": ["direct", "api", "request", "https", "s3", "fuse"],
+              "default": "direct"
+            }
+          }
+        },
+        "federation": {
+          "type": "object",
+          "description": "Federation metadata for cross-instance sharing. Parallels the lattice federation block.",
+          "additionalProperties": false,
+          "properties": {
+            "shareable": {
+              "type": "boolean",
+              "description": "Whether this dataset can be shared with other aDNA instances.",
+              "default": false
+            },
+            "source_instance": {
+              "type": "string",
+              "description": "Identifier of the aDNA instance that originated this dataset.",
+              "examples": ["lattice-labs-vault", "partner-instance-alpha"]
+            },
+            "version_policy": {
+              "type": "string",
+              "description": "How this dataset tracks upstream version changes.",
+              "enum": ["locked", "patch", "minor", "latest"],
+              "default": "locked"
+            },
+            "visibility": {
+              "type": "string",
+              "description": "Access control level for federation sharing.",
+              "enum": ["public", "authenticated", "private"],
+              "default": "private"
+            }
+          }
+        },
+        "class_fields": {
+          "type": "object",
+          "description": "Class-specific extension fields. Schema varies by dataset_class. Uses additionalProperties to allow class-specific fields without schema changes.",
+          "additionalProperties": true,
+          "examples": [
+            {
+              "identifiers": {"uniprot": "Q9Y275", "gene_symbol": "TNFSF13B"},
+              "organism": "Homo sapiens",
+              "tier": 1
+            }
+          ]
+        }
+      }
+    }
+  }
+}

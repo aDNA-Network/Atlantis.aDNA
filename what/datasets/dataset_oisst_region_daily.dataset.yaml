@@ -1,0 +1,55 @@
+# dataset_oisst_region_daily.dataset.yaml — twin of dataset_oisst_region_daily.md (M-1d-ii, 2026-10-03; pair standard).
+# One of the exemplar's three grandfathered snapshots (ADR-002 §4). Split out of dataset_hab_env_covariates.md (superseded).
+dataset:
+  name: dataset_oisst_region_daily
+  version: "1.0.0"
+  description: "NOAA OISST v2.1 daily SST averaged over each of nine Florida coastal region boxes, 1982-01-01 → 2024-01-01."
+  dataset_class: reference
+  category: gridded_environment
+  domain: ecosystem_early_warning
+  format:
+    file_type: parquet
+    compression: snappy
+    record_count: 127341
+    checksum: "sha256:c26b97f53854d57e61cdd7b9bbca0507504f82aed63faf716744a4963bbb7ec8"
+  storage:
+    provider: local
+    location:
+      path: "what/datasets/oisst_region_daily.parquet"
+  fair:
+    license: "public (NOAA / USGS)"
+    keywords: [sea_surface_temperature, oisst, florida, gulf_of_mexico, gridded]
+    creators: ["NOAA NCEI (OISST v2.1), served by NOAA CoastWatch ERDDAP"]
+    provenance: "ERDDAP griddap CSV pulls over the nine region boxes by the exemplar's src/hab/fetch_env.py at aDNALabs S329 (2026-09-23), 0.25° cells averaged to one value per region per day."
+    access_protocol: https
+  federation:
+    shareable: true
+    source_instance: "Atlantis.aDNA"
+    visibility: public
+  lineage:
+    source_module: hab.fetch_env
+    source_stage: fetch
+    generation_timestamp: "2026-09-23T12:10:58Z"
+    input_datasets: []
+    parameters:
+      fetcher: ERDDAPGriddap
+      dataset_id: ncdcOisst21Agg_LonPM180
+      regions: 9
+      reduce: mean over region box, daily
+  class_fields:
+    atl_stream_id: atl_stream_oisst_region_daily
+    modality: gridded_field
+    authority: "CF:sea_surface_temperature"
+    variable: sea_surface_temperature
+    unit: Cel
+    surveillance_channel: false
+    source_system: NOAA CoastWatch ERDDAP
+    source_id: ncdcOisst21Agg_LonPM180
+    source_url: "https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOisst21Agg_LonPM180.csv"
+    ingested_at: "2026-09-23T12:10:58Z"
+    ingested_at_source: "file mtime (retro-summarised at M-1a; no fetch-time record)"
+    pipeline_version: "hab.fetch_env (exemplar, S329); core equivalent atlantis_core.fetch.ERDDAPGriddap"
+    min_date: "1982-01-01"
+    max_date: "2024-01-01"
+    storage_in_atlantis: grandfathered_exemplar_snapshot
+    copy_of_record: what/exemplars/gulf_karenia_brevis/data/raw/oisst_region_daily.parquet

@@ -1,0 +1,58 @@
+# dataset_name.dataset.yaml — machine-readable twin of dataset_name.md (lattice-labs standard_dataset.md pair).
+# Validated by dataset_yaml_schema.json beside this file — a byte-identical copy of
+# Archive.aDNA/lattice-labs/what/datasets/dataset_yaml_schema.json (v1.0.0; the test checks the copy when the peer is
+# present). Check a directory of pairs: python -m atlantis_core.datasets --check <dir>
+# Snapshot rule (ADR-002 §4): storage points at the INSTANCE (or the source) — Atlantis holds no new bytes.
+# M-1d-ii (2026-10-03) fixed this template against the schema it claims (WI-18): sha256 → format.checksum ·
+# storage.location is an object · Rule-5 provenance → class_fields (the schema's lineage block is closed).
+dataset:
+  name: dataset_name                  # ^[a-z][a-z0-9_]*$ — the file stem, lower-case
+  version: "0.1.0"
+  description: "<one line, ≥ 10 characters: what, where, when>"
+  dataset_class: reference            # reference | benchmark | training_data | target | result
+  category: ocean_observations        # free: ocean_observations | gridded_environment | gauge_series | occurrence | sequence | literature
+  domain: ecosystem_early_warning
+  format:
+    file_type: parquet
+    compression: snappy               # none | gzip | zstd | lz4 | bzip2 | xz | snappy
+    record_count: 0
+    checksum: "sha256:<64 hex>"       # of the cached artifact — the pin the fetch CLI re-hashes
+  storage:
+    provider: local                   # s3 | minio | gcs | azure | ceph | local | fuse — the schema has NO "external" /
+                                      # "source" provider: a record that is only a pointer keeps provider local (the
+                                      # instance cache path) and puts the source in class_fields.source_url
+    location:
+      path: "data/raw/NAME.parquet"   # relative to the repo that holds the bytes (an absolute path would name one machine)
+  fair:
+    license: "<SPDX, or the agency's terms verbatim>"
+    keywords: [<taxon>, <region>, <variable>]
+    creators: ["<the agency that produced it>"]
+    provenance: "<one line: who fetched it, how, when>"
+    access_protocol: https            # direct | api | request | https | s3 | fuse — how the SOURCE is reached
+  federation:
+    shareable: true                   # public-data records only; an instance with partner data rules this itself (§8)
+    source_instance: "<Instance>.aDNA"
+    visibility: public                # public | authenticated | private
+  lineage:
+    source_module: atlantis_core.fetch.<Fetcher>
+    source_stage: fetch               # a stage of how/lattices/lattice_atlantis_pipeline.lattice.yaml
+    generation_timestamp: "<ISO 8601 date-time — when these bytes were written>"
+    input_datasets: []                # upstream dataset name:version, for processed tables
+    parameters: {}                    # the fetch spec, as declared (open object)
+  class_fields:                       # open object: the Atlantis stream fields + Ingest.aDNA Rule-5 provenance
+    atl_stream_id: atl_stream_<...>
+    modality: <point_count | gridded_field | gauge_series | buoy_series | edna_profile | acoustic | survey_log | literature>
+    authority: "<CF:… | WoRMS:… | dwc:…>"
+    variable: "<…>"
+    unit: "<UCUM>"
+    surveillance_channel: false
+    source_system: "<…>"
+    source_id: "<…>"
+    source_url: "<…>"
+    captured_at: "<when the source last updated, if it says>"
+    ingested_at: "<ISO — when fetched>"
+    ingested_at_source: "<fetch-time record | file mtime | …>"
+    pipeline_version: "<fetcher version>"
+    min_date: "<YYYY-MM-DD>"
+    max_date: "<YYYY-MM-DD>"
+    storage_in_atlantis: none         # none | grandfathered_exemplar_snapshot (ADR-002 §4: only the exemplar's three)

@@ -1,0 +1,54 @@
+# dataset_usgs_discharge_daily.dataset.yaml — twin of dataset_usgs_discharge_daily.md (M-1d-ii, 2026-10-03; pair standard).
+# One of the exemplar's three grandfathered snapshots (ADR-002 §4). Split out of dataset_hab_env_covariates.md (superseded).
+dataset:
+  name: dataset_usgs_discharge_daily
+  version: "1.0.0"
+  description: "USGS NWIS daily mean discharge (parameter 00060, cfs) at five Florida river gauges, 1990–2023."
+  dataset_class: reference
+  category: gauge_series
+  domain: ecosystem_early_warning
+  format:
+    file_type: parquet
+    compression: snappy
+    record_count: 61444
+    checksum: "sha256:66a58af41843b4305afa968dd814854a61e6a4e263f4898b5422d8eb03a789ea"
+  storage:
+    provider: local
+    location:
+      path: "what/datasets/usgs_discharge_daily.parquet"
+  fair:
+    license: "public (NOAA / USGS)"
+    keywords: [river_discharge, usgs_nwis, florida, caloosahatchee, lake_okeechobee]
+    creators: ["U.S. Geological Survey — National Water Information System"]
+    provenance: "NWIS daily-values pulls for five gauges by the exemplar's src/hab/fetch_env.py at aDNALabs S329 (2026-09-23); negative (reverse) flow clipped to zero AT FETCH (fetch_env.py:92), so these bytes carry no negative discharge."
+    access_protocol: https
+  federation:
+    shareable: true
+    source_instance: "Atlantis.aDNA"
+    visibility: public
+  lineage:
+    source_module: hab.fetch_env
+    source_stage: fetch
+    generation_timestamp: "2026-09-23T11:20:23Z"
+    input_datasets: []
+    parameters:
+      fetcher: NWISDailyValues
+      parameter: "00060"
+      clip_negative_to_zero: true
+      sites: ["02292900", "02296750", "02304500", "02323500", "02359170"]
+  class_fields:
+    atl_stream_id: atl_stream_usgs_discharge_daily
+    modality: gauge_series
+    variable: discharge (USGS parameter 00060)
+    unit: "[cft_i]/s"
+    surveillance_channel: false
+    source_system: USGS NWIS daily values
+    source_id: parameter 00060 at five gauges
+    source_url: "https://waterservices.usgs.gov/nwis/dv/"
+    ingested_at: "2026-09-23T11:20:23Z"
+    ingested_at_source: "file mtime (retro-summarised at M-1a; no fetch-time record)"
+    pipeline_version: "hab.fetch_env (exemplar, S329); core equivalent atlantis_core.fetch.NWISDailyValues"
+    min_date: "1990-01-01"
+    max_date: "2023-12-31"
+    storage_in_atlantis: grandfathered_exemplar_snapshot
+    copy_of_record: what/exemplars/gulf_karenia_brevis/data/raw/usgs_discharge_daily.parquet
