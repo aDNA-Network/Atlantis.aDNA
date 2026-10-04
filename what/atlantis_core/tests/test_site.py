@@ -201,3 +201,35 @@ def test_strip_groups_are_net_sums(built, exemplar_dir):
             differs += abs(row.sum() - np.abs(row).sum()) > 1e-2
     assert differs > 0
     assert all(len(b) == 2 for b in s["bands"]) and len(s["bands"]) == sum(p is None for p in s["p"])
+
+
+# ── M-1e: the v2 page (site_v2.yaml) reads its own run and says what board v2 says ─────────────────────────────────
+@pytest.fixture(scope="module")
+def built_v2(exemplar_dir):
+    if not (exemplar_dir / "data" / "processed" / "atlantis_core_v2" / "shap.npz").exists():
+        pytest.skip("exemplar data/processed/atlantis_core_v2 missing — run atlantis_core.run --out outputs/atlantis_core_v2 first")
+    inst = load_instance(exemplar_dir)
+    site = load_site(inst, "site_v2.yaml")
+    return inst, site, assemble(inst, site), yaml.safe_load((exemplar_dir / site["copy"]).read_text())
+
+
+def test_v2_page_says_what_board_v2_says(built_v2):
+    inst, site, data, copy = built_v2
+    check_copy(copy, data, TEMPLATE.read_text(), site)
+    assert data["board"]["entry_id"] == "2026-10-03_gulf_karenia_brevis_v2"
+    ar = data["metrics"]["full"]["test"]["alert_rates"]
+    assert all(v["threshold_from"] == "val" and v["realised_rate"] < v["nominal_rate"] for v in ar.values())
+    assert data["board"]["delta_vs"]["fields"]["alert_budgets"]["10pct"]["realised_rate"]["now"] == round(ar["10pct"]["realised_rate"], 4)
+    words = json.dumps(copy)
+    for must in ("fixed on the validation years", "realised", "not proven", "chooses its own tree count"):
+        assert must in words, must
+    assert "chosen on the years they score" not in words and "will land as a new board version" not in words
+
+
+def test_v2_run_against_v1_entry_is_refused(built_v2, exemplar_dir):
+    """The page must cite the run it shows: v2's outputs re-projected against v1's entry disagree on the budgets."""
+    inst, *_ = built_v2
+    m = json.loads((exemplar_dir / "outputs" / "atlantis_core_v2" / "metrics.json").read_text())
+    v1 = json.loads((exemplar_dir.parents[1] / "board" / "entries" / "2026-10-02_gulf_karenia_brevis_v1.json").read_text())
+    with pytest.raises(SiteError, match="alert_budgets"):
+        board_check(m, v1, inst)

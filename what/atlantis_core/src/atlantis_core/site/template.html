@@ -337,7 +337,12 @@ reg(()=>{ const t=tok(); const s=D.metrics.splits; const col={train:t.water,val:
     rows.forEach(([n,m,tr])=>{const r=document.createElement('tr'); r.innerHTML=`<td>${n}</td><td class="r num">${m.auroc.toFixed(3)}</td><td class="r num">${m.auprc.toFixed(3)}</td><td class="r num">${m.brier.toFixed(4)}</td><td class="r num">${m.calibration_slope.toFixed(2)}</td><td class="r num">${tr}</td>`; tb.appendChild(r);});
     const c=D.metrics.climatology_baseline_test, so=D.metrics.surveillance_only_test_auroc, pv=D.metrics.full.test.prevalence;
     [[R.climatology,c.auroc,c.auprc],[R.surveillance_only,so,null],[R.base_rate,0.5,pv]].forEach(([n,a,p])=>{const r=document.createElement('tr'); r.innerHTML=`<td>${n}</td><td class="r num">${a.toFixed(3)}</td><td class="r num">${p==null?'—':p.toFixed(3)}</td><td class="r">—</td><td class="r">—</td><td class="r">—</td>`; tb.appendChild(r);}); }
-  const ta=document.getElementById('t_alerts'); if(ta) Object.entries(D.metrics.full.test.alert_rates).forEach(([k,v])=>{const r=document.createElement('tr'); r.innerHTML=`<td>${k.replace('pct','%')}</td><td class="r num">${v.threshold.toFixed(3)}</td><td class="r num">${(v.precision*100).toFixed(0)}%</td><td class="r num">${(v.recall*100).toFixed(0)}%</td><td class="r num">${v.n_alerts}</td>`; ta.appendChild(r);});
+  const ta=document.getElementById('t_alerts'); if(ta){ const AR=Object.entries(D.metrics.full.test.alert_rates);
+    // M-1e (F-8): a threshold fixed beforehand reports what it actually flagged beside the nominal budget. Older runs (no
+    // realised_rate) render the five columns they always did.
+    const fixed=AR.length&&AR.every(([,v])=>v.threshold_from==='val'&&v.realised_rate!=null);
+    if(fixed) ta.rows[0].innerHTML='<th>Budget (nominal)</th><th class="r">Realised on test</th><th class="r">Threshold (fixed on validation)</th><th class="r">Precision</th><th class="r">Recall</th><th class="r">Alerts</th>';
+    AR.forEach(([k,v])=>{const r=document.createElement('tr'); r.innerHTML=`<td>${k.replace('pct','%')}</td>${fixed?`<td class="r num">${(v.realised_rate*100).toFixed(1)}%</td>`:''}<td class="r num">${v.threshold.toFixed(3)}</td><td class="r num">${(v.precision*100).toFixed(0)}%</td><td class="r num">${(v.recall*100).toFixed(0)}%</td><td class="r num">${v.n_alerts}</td>`; ta.appendChild(r);}); }
 })();
 
 // ---------- SHAP, globally · the T2 panel ----------

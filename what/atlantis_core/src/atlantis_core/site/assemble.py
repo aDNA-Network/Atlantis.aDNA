@@ -14,8 +14,13 @@ import pandas as pd
 from atlantis_core.config import Instance, feature_name, load_yaml
 from atlantis_core.grid import make_grid
 
-OUT_DIR = "outputs/atlantis_core"
-PROC_DIR = "data/processed/atlantis_core"
+OUT_DIR = "outputs/atlantis_core"   # default; site.yaml `outputs:` names another run (M-1e: v2's page reads outputs/atlantis_core_v2)
+
+
+def run_dirs(root: Path, site: dict) -> tuple[Path, Path]:
+    """The run a page reads: `<outputs>` and its processed tables `data/processed/<basename>` (as atlantis_core.run writes)."""
+    o = site.get("outputs", OUT_DIR)
+    return root / o, root / "data" / "processed" / Path(o).name
 
 
 class SiteError(ValueError):
@@ -36,8 +41,8 @@ def clean(o):
     return o
 
 
-def load_site(inst: Instance) -> dict:
-    p = inst.root / "site.yaml"
+def load_site(inst: Instance, name: str = "site.yaml") -> dict:
+    p = inst.root / name
     if not p.exists():
         raise SiteError(f"{inst.root.name}: no site.yaml — the site is optional; declare it to build one")
     return load_yaml(p)
@@ -112,10 +117,10 @@ def _metrics(inst, m: dict) -> dict:
     return out
 
 
-def _swaps(root: Path, inst) -> list:
+def _swaps(out_dir: Path, inst) -> list:
     out = []
     for spec in inst.cfg.get("learner_swaps", []) or []:
-        p = root / OUT_DIR / f"learner_swap_{spec['kind']}.json"
+        p = out_dir / f"learner_swap_{spec['kind']}.json"
         if not p.exists():
             raise SiteError(f"{p.name} missing — rerun atlantis_core.run without --no-swaps")
         s = json.loads(p.read_text()); ss = s["shap_summary"]; t = s["full"]["test"]
@@ -290,7 +295,7 @@ def assemble(inst: Instance, site: dict | None = None) -> dict:
     from atlantis_core.run import signal_panel
     from atlantis_core.vitals.build import build, load_frames, patient_grid
     site = site or load_site(inst)
-    root = inst.root; out_dir, proc = root / OUT_DIR, root / PROC_DIR
+    root = inst.root; out_dir, proc = run_dirs(root, site)
     need = [out_dir / "metrics.json", out_dir / "shap_summary.json", out_dir / "whatif.json",
             proc / "all_scored.parquet", proc / "test_scored.parquet", proc / "shap.npz"]
     missing = [str(p.relative_to(root)) for p in need if not p.exists()]
@@ -364,7 +369,7 @@ def assemble(inst: Instance, site: dict | None = None) -> dict:
                               "x": [R(X[keep, k]) for k in range(len(feats))], "y": test.y.values[keep].astype(int).tolist()},
                  "dependence": dep, "cases": cases(inst, site, test, sv, panel, feats, names),
                  "strips": strips(inst, site, table, panel, allr, sv_all, gidx, names)},
-        "swaps": _swaps(root, inst),
+        "swaps": _swaps(out_dir, inst),
         "whatif": whatif(inst, wi, names, site.get("station_labels") or {}), "whatif_caveat": wi.get("caveat"),
     }
     site_data["shap"]["beeswarm_n"] = len(keep)

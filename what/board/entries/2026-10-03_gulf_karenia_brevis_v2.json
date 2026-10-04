@@ -7,7 +7,7 @@
  "instance": "Atlantis.aDNA/what/exemplars/gulf_karenia_brevis",
  "method_version": "pattern_ecosystem_early_warning 0.1 · atlantis_core 0.3.0",
  "recorded_by": "agent_proteus",
- "recorded_at": "2026-10-04T04:09:28Z",
+ "recorded_at": "2026-10-04T04:19:52Z",
  "run_date": "2026-10-03",
  "evaluation": {
   "evaluation_id": "atl_eval_gulf_karenia_brevis_v2",
@@ -87,7 +87,7 @@
   "claim": "method_demonstration",
   "limitations_ref": "what/exemplars/gulf_karenia_brevis/site/gulf_karenia_brevis_v2.html#limits · README.md §Caveats",
   "recorded_by": "agent_proteus",
-  "recorded_at": "2026-10-04T04:09:28Z"
+  "recorded_at": "2026-10-04T04:19:52Z"
  },
  "evaluation_extras": {
   "event": {
@@ -588,7 +588,7 @@
      }
     },
     "alert_budgets": {
-     "0.05": {
+     "5pct": {
       "precision": {
        "was": 0.6463,
        "now": 0.6613
@@ -610,7 +610,7 @@
        "now": "validation"
       }
      },
-     "0.1": {
+     "10pct": {
       "precision": {
        "was": 0.4634,
        "now": 0.5113
@@ -632,7 +632,7 @@
        "now": "validation"
       }
      },
-     "0.2": {
+     "20pct": {
       "precision": {
        "was": 0.314,
        "now": 0.3186
@@ -754,6 +754,11 @@
      "n_trees": 254
     }
    }
+  },
+  "regenerated": {
+   "replaces_commit": "96acc3f",
+   "reason": "M-1e, same sitting, never published: delta_vs.alert_budgets re-keyed by rate_key (5pct/10pct/20pct) for the v2 page's tokens; the budget-reading note corrected — it stated the prevalence gap as THE cause, and validation has fewer onsets in count (121 vs 127); both reasons now marked likely, not proven; numbers unchanged",
+   "at": "2026-10-04T04:19:52Z"
   }
  },
  "provenance": {
@@ -766,7 +771,7 @@
  },
  "notes": [
   "Delta vs v1 has one cause, F-8 (III review of M-1b-ii-a; fixed at M-1e, operator rulings 2026-10-03). (1) Every alert-budget threshold, and so the lead-time threshold, is now fixed on the selection model's out-of-sample validation scores (2017-2019) before test is scored; v1 took quantiles of the test scores themselves. (2) Every rolling fold now early-stops on its own inner validation year (train <= Y-1, stop on Y, refit <= Y), with climatology eras clipped to <= Y-1 for the selection; v1 reused the full model's tree count, stopped on 2017-2019, in every fold. The trained model, its SHAP summary and the what-if are byte-identical to v1's (same 141 trees, same semantic hash): only the budgets, the lead time and the rolling panel move.",
-  "Reading the budgets: rate is the NOMINAL budget and realised_rate what a threshold fixed beforehand actually flagged on test. Validation prevalence (0.101) is above test's (0.077), so the fixed thresholds sit higher and every realised rate is below nominal. Precision and recall here are therefore at a different operating point from v1's, not an improvement or a loss of the model: compare at matched realised rates, never at the same nominal label. A steward staffing to a nominal budget should expect the realised rate to drift with prevalence, in either direction.",
+  "Reading the budgets: rate is the NOMINAL budget and realised_rate what a threshold fixed beforehand actually flagged on test. Every realised rate here is below nominal, and the fixed thresholds sit above the test years' own quantiles. Likely reasons, neither proven: validation prevalence (0.101) is above test's (0.077), and the thresholds are read from the train-only selection model while test is scored by the train+val final model. Validation has fewer onsets in count (121 vs 127); the difference is in rate. Precision and recall are therefore at a different operating point from v1's, not an improvement or a loss of the model: compare at matched realised rates, never at the same nominal label. A steward staffing to a nominal budget should expect the realised rate to drift, in either direction.",
   "Rolling panel: per-fold selection on a single inner year is noisy (the stopped tree counts range from tens to several hundred across folds); the panel now measures the method as a steward would run it each year, selection included, and is not comparable fold for fold with v1's fixed-count panel."
  ]
 }

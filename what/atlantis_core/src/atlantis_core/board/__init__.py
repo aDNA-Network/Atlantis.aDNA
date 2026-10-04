@@ -239,8 +239,8 @@ def delta(new_ev: dict, old_entry: dict) -> dict:
     d = {k: {"was": o.get(k), "now": new_ev.get(k), "change": (None if o.get(k) is None or new_ev.get(k) is None else _r(new_ev[k] - o[k]))}
          for k in keys}
     d["lead_time"] = {"was": o.get("lead_time"), "now": new_ev.get("lead_time")}
-    ob = {str(b["rate"]): b for b in o.get("alert_budgets", [])}
-    d["alert_budgets"] = {str(b["rate"]): {k: {"was": ob.get(str(b["rate"]), {}).get(k), "now": b.get(k)}
+    ob = {rate_key(b["rate"]): b for b in o.get("alert_budgets", [])}   # keyed as metrics.json is (10pct): a page token can reach it
+    d["alert_budgets"] = {rate_key(b["rate"]): {k: {"was": ob.get(rate_key(b["rate"]), {}).get(k), "now": b.get(k)}
                                            for k in ("precision", "recall", "n_alerts", "realised_rate", "threshold_from")}
                           for b in new_ev.get("alert_budgets", [])}
     return {"entry": old_entry["entry_id"], "fields": d}

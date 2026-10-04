@@ -1,6 +1,6 @@
 """atlantis_core.site — the explainer page as a core template whose every word is instance data (M-1b-ii-b).
 
-    python -m atlantis_core.site --instance <dir>        # → <instance>/<site.yaml output>
+    python -m atlantis_core.site --instance <dir> [--site site_v2.yaml]   # → <instance>/<site file's output>
 
 An instance opts in with two files: `site.yaml` (what to draw: board entry, groups and colours, vital display, strips,
 trace, cases, map) and `site_copy.yaml` (every word: sections as HTML fragments with `{{path|fmt}}` value tokens and
@@ -100,9 +100,9 @@ def render(tpl: str, data: dict, copy: dict, site: dict) -> str:
                .replace("__SITE_COPY__", js(copy)).replace("__SITE_DATA__", js(data)))
 
 
-def build(instance, out: str | None = None) -> Path:
+def build(instance, out: str | None = None, site_file: str = "site.yaml") -> Path:
     inst = load_instance(instance)
-    site = load_site(inst)
+    site = load_site(inst, site_file)
     copy = load_yaml(inst.root / site.get("copy", "site_copy.yaml"))
     data = assemble(inst, site)
     tpl = TEMPLATE.read_text()
@@ -117,9 +117,10 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="atlantis_core.site")
     ap.add_argument("--instance", required=True)
     ap.add_argument("--out", help="override site.yaml output (relative to the instance)")
+    ap.add_argument("--site", default="site.yaml", help="the site file (relative to the instance; one per page version, M-1e)")
     a = ap.parse_args(argv)
     try:
-        p = build(a.instance, a.out)
+        p = build(a.instance, a.out, a.site)
     except SiteError as e:
         print(f"✗ {e}", file=sys.stderr)
         return 1
