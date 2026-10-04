@@ -41,9 +41,8 @@ is the same model as v1, with model bytes identical, AUROC 0.8938 / AUPRC 0.5388
 rolling fold selects its own tree count. atl_v0 is 0.4.0, and the v2 page is `site/gulf_karenia_brevis_v2.html`. III 8/8.
 **Disclosed, not fixed:** the label horizon crosses every split boundary. The embargo is carded as board v3.
 
-**Next: M-2a** (opus) → M-2b → **P2 gate** (fable). **Pending operator rulings:**
-- the **push** (7 commits since `origin/main`, gitleaks-clean);
-- where the **horizon embargo** lands (with M-2b, or its own lane before the P2 gate).
+**Next: M-2a** (opus) → M-2b → **P2 gate** (fable). M-1e is pushed (`f07403e..9ac5e34`). **Pending operator ruling:** where the
+**horizon embargo** lands (with M-2b, or its own lane before the P2 gate).
 
 **Next Session Prompt (self-contained, M-2a):**
 
@@ -231,9 +230,8 @@ rolling fold selects its own tree count. atl_v0 is 0.4.0, and the v2 page is `si
 ## Active blockers
 
 - None blocking M-2a.
-- `#needs-human`: **the push.** 7 commits since `origin/main` (`20075f1`…close). gitleaks exit 0 over `origin/main..HEAD`;
-  no file is over 1 MB (largest: the v2 page, 0.85 MB); no data files. Board v2 has never left this machine, so it can
-  still be corrected in place until then.
+- ~~push~~ **done 2026-10-03** (operator ruling, `AskUserQuestion`): `f07403e..9ac5e34` → `origin/main`, after gitleaks over the
+  range (7 commits, exit 0), no file over 1 MB, no data files. **Board v2 is now published**: corrections from here are a new version (SO-2).
 - ~~push~~ **done 2026-10-03** (operator ruling): `cec155b..33fb62d` → `origin/main`, after gitleaks over the range
   (one false positive → a narrow match-only allowlist, tested), no file over 1 MB, no data files, 480 tests green.
 - `#needs-human`: **delivering the graduation memo** into `III.aDNA/who/coordination/`. That is a peer-vault write, for an
