@@ -1,0 +1,196 @@
+# lattice_atlantis_pipeline.lattice.yaml — the Atlantis method as one pipeline (M-1d-ii, 2026-10-03).
+#
+# Validated by BOTH the peer Python validator (aDNA.aDNA/what/lattices/tools/lattice_validate.py, imported — it has
+# no CLI) AND the strict schema (what/lattices/lattice_yaml_schema.json, byte-identical to the peer's;
+# additionalProperties: false everywhere but node `config`), plus the local invariants in atlantis_core.lattice
+# (acyclic · connected · self-test before fetch · every module imports). tests/test_lattice.py runs all three.
+#
+# Every stage-specific field lives in node `config` (the only open object). `<instance>` is the instance directory
+# given on the command line — never in a runspec (atlantis_core.runspec: no field carries a path). Order matters:
+# the self-test receipt is EARNED before fetch, so the lattice draws self-test → fetch (not the card's first list).
+# Method demonstration, not an operational forecast (SO-4).
+lattice:
+  name: atlantis_pipeline
+  version: "0.1.0"
+  lattice_type: pipeline
+  description: >
+    The Atlantis ecosystem-early-warning method as one pipeline: declare the patient, the event and the streams;
+    prove the declarations conform and the vitals cannot see the future before any data moves; fetch under two
+    gates; build the patient × week vitals table and the direction-aware onset label; train, evaluate against the
+    base rate at stated alert budgets, explain with SHAP; emit a GREEN metrics-only board entry and the instance page.
+  execution:
+    mode: workflow
+    runtime: local
+    tier: L1
+  nodes:
+    - id: declarations
+      type: dataset
+      ref: "how/templates/template_instance/"
+      description: "The instance's atl_v0 registries — atlantis.yaml · units.yaml · streams.yaml · features.yaml · events.yaml · mapping.yaml · the posture ruling. Written by atlantis_core.fork from a steward's interview; no data."
+      config:
+        produced_by: "python -m atlantis_core.fork --answers <answers.yaml> --out <instance>"
+        skill: how/skills/skill_atlantis_instance_fork.md
+    - id: discover
+      type: process
+      description: "Stream discovery — which observation streams exist for this patient and event, with licence and provenance (playbook §A/§B as checks)."
+      config:
+        status: declared_only_until_M-3a
+        skill: "how/skills/skill_stream_discovery.md (M-3a — not yet written)"
+        note: "Not built. A runspec that names this stage is rejected as not enabled; streams are declared by hand at fork until M-3a."
+    - id: conform_declared
+      type: process
+      description: "Contract v0.2.0 §B as a machine check on the declarations, before any fetch."
+      config:
+        module: atlantis_core.conform
+        command: "python -m atlantis_core.conform --instance <instance> --stage declared"
+        writes: nothing
+    - id: selftest
+      type: process
+      description: "SO-7 — the all-stream leakage self-test on a synthetic world built through the instance's own registries. Needs no data; earns the fetch gate's receipt."
+      config:
+        module: atlantis_core.selftest
+        command: "python -m atlantis_core.selftest --instance <instance>"
+        writes: "outputs/atlantis_core/selftest_receipt.json (local, gitignored; bound to semantic_hash + the self-test's own code)"
+    - id: fetch
+      type: process
+      description: "Fetch every declared stream under two gates; Rule-5 summaries + sha256 for each cache."
+      config:
+        module: atlantis_core.fetch
+        command: "python -m atlantis_core.fetch --instance <instance> [--stream <id>]… [--offline | --verify]"
+        gates:
+          - "receipt: a green self-test receipt for the CURRENT semantic_hash and self-test code (contract item 6)"
+          - "posture: a NETWORK fetch also needs the instance's own posture ruling with a signed Ratification row inside the instance (contract item 7; --offline / --verify exempt — no data moves)"
+    - id: raw_streams
+      type: dataset
+      ref: "how/templates/template_dataset_pair/"
+      description: "The instance's fetched caches + *_fetch_summary.json (sha256). Instance-side only — Atlantis holds no new bytes (ADR-002 §4)."
+      config:
+        location: "<instance>/data/raw/"
+    - id: conform_fetched
+      type: process
+      description: "Contract §B again at the fetched stage — the caches agree with their pins and their declarations."
+      config:
+        module: atlantis_core.conform
+        command: "python -m atlantis_core.conform --instance <instance> --stage fetched"
+        writes: nothing
+    - id: grid
+      type: process
+      description: "Patients — spatial units from coordinate rules, polygons (WDPA by pointer) or cells; ISO weeks."
+      config:
+        module: atlantis_core.grid
+        invoked_by: "python -m atlantis_core.run --instance <instance>"
+    - id: vitals
+      type: process
+      description: "The patient × week vitals table from the whitelisted transform grammar; calendar lags."
+      config:
+        module: atlantis_core.vitals
+        invoked_by: "python -m atlantis_core.run --instance <instance>"
+    - id: label
+      type: process
+      description: "The direction-aware onset label (above / below within the horizon) with already-in-event and unknown-outcome drops."
+      config:
+        module: atlantis_core.label
+        invoked_by: "python -m atlantis_core.run --instance <instance>"
+    - id: train
+      type: process
+      description: "The learner as config (xgboost early-stopped on val then refit · logistic), every statistic fitted on training rows."
+      config:
+        module: atlantis_core.eval
+        invoked_by: "python -m atlantis_core.run --instance <instance> [--no-swaps]"
+    - id: eval
+      type: process
+      description: "Base rate · AUROC / AUPRC · climatology baseline · alert budgets · lead time · ablations · rolling origin with R7 obligations honoured."
+      config:
+        module: atlantis_core.eval
+        invoked_by: "python -m atlantis_core.run --instance <instance>"
+    - id: explain
+      type: process
+      description: "Interventional SHAP, sums by group and tag, what-if scenarios as config. A SHAP value is never called a cause."
+      config:
+        module: atlantis_core.explain
+        invoked_by: "python -m atlantis_core.run --instance <instance>"
+        writes: "outputs/atlantis_core/{metrics,shap_summary,whatif,model}.json + learner_swap_<kind>.json"
+    - id: board
+      type: process
+      description: "A GREEN metrics-only board entry: the closed AtlEvaluation (validated) with evaluation_extras beside it."
+      config:
+        module: atlantis_core.board
+        command: "python -m atlantis_core.board --instance <instance> --version <n> --run-date <YYYY-MM-DD> --entries <instance>/what/board/entries"
+        gates:
+          - "refuses unhonoured obligations and reference-mode results"
+          - "assert_green: no per-patient content"
+        then: "python -m atlantis_core.board --index --entries <instance>/what/board/entries"
+    - id: board_entry
+      type: dataset
+      ref: "what/board/README.md"
+      description: "what/board/entries/<date>_<instance>_v<n>.json in the instance; travels to Atlantis by coordination memo (contract §A/§D), never by direct write."
+      config:
+        location: "<instance>/what/board/entries/"
+    - id: site
+      type: process
+      description: "The instance's explainer page, re-projected against its cited board entry field by field."
+      config:
+        module: atlantis_core.site
+        command: "python -m atlantis_core.site --instance <instance>"
+  edges:
+    - from: declarations
+      to: discover
+      label: "patient · event · warning wanted"
+    - from: discover
+      to: conform_declared
+      label: "streams found (from M-3a)"
+    - from: declarations
+      to: conform_declared
+      label: "streams declared by hand (until M-3a)"
+    - from: conform_declared
+      to: selftest
+      label: "items 1–8, 11–12 ✅"
+    - from: selftest
+      to: fetch
+      label: "receipt"
+      condition: "receipt matches the current semantic_hash and self-test code; a network fetch also needs a signed posture Ratification row"
+    - from: fetch
+      to: raw_streams
+      label: "caches + sha256 summaries"
+    - from: raw_streams
+      to: conform_fetched
+      label: "pins re-hashed"
+    - from: conform_fetched
+      to: grid
+      label: "fetched stage ✅"
+    - from: grid
+      to: vitals
+      label: "patients × weeks"
+    - from: vitals
+      to: label
+      label: "vitals table"
+    - from: label
+      to: train
+      label: "modelling rows"
+    - from: train
+      to: eval
+      label: "fitted learner"
+    - from: eval
+      to: explain
+      label: "metrics"
+    - from: explain
+      to: board
+      label: "metrics + shap_summary"
+      condition: "no unhonoured obligation"
+    - from: board
+      to: board_entry
+      label: "GREEN entry"
+    - from: board_entry
+      to: site
+      label: "cited entry"
+  fair:
+    license: "MIT"
+    creators:
+      - "Atlantis.aDNA (Proteus)"
+    keywords:
+      - ecosystem early warning
+      - precision medicine for oceans
+      - leakage self-test
+      - evidence board
+      - pipeline
+    provenance: "Extracted from the Gulf Karenia brevis exemplar (aDNALabs S329, 2026-09-23) through atlantis_core (P1 M-1b…M-1d-ii, Operation Tidewatch)."
