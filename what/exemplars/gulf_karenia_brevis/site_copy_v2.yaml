@@ -1,4 +1,7 @@
-# site_copy.yaml — every word of the exemplar's explainer page, as instance data for atlantis_core.site (M-1b-ii-b).
+# site_copy_v2.yaml — the v2 page's words (M-1e, 2026-10-03): copied verbatim from site_copy.yaml (v1's, which stays as it is so
+# the v1 page still rebuilds), then corrected for board v2 in a separate commit: the F-8 fix (thresholds fixed on validation, realised
+# beside nominal, per-fold selection) in the KPI, the "which numbers" note, section 6's figures, and the limits.
+# Was: site_copy.yaml — every word of the exemplar's explainer page, as instance data for atlantis_core.site (M-1b-ii-b).
 # Moved verbatim from site/template.html (hab, v0) by a one-shot script, then corrected for board v1 (calendar lags · R7 refit ·
 # F-8 limits · net group attribution · a SHAP reading belongs to one model · the raw-stream what-if · reproduce · footer).
 # HTML fragments. {{path|fmt}} binds a value from the assembled site data (fmt: 1 2 3 pct0 pct1 comma k sci label);
@@ -20,7 +23,7 @@ hero:
     l: AUROC, same test years
     s: climatology {{metrics.climatology_baseline_test.auroc|2}}
   - v: '{{metrics.full.lead.detected_fraction|pct0}}'
-    l: of onsets flagged ahead of time at a 10% alert rate
+    l: of onsets flagged ahead of time at a 10% alert budget, threshold fixed beforehand
     s: median lead {{metrics.full.lead.median_lead_weeks|1}} wk
   - v: '{{data.n_obs|k}}'
     l: water samples, FWC 1970–2023
@@ -112,7 +115,7 @@ sections:
     {{fig:split}}
     </div></div>
 
-    <div class="note"><div class="t">Which numbers these are</div><p>Every number on this page comes from the run that board entry <code>{{board.entry_id}}</code> records (semantic config hash <code>{{board.config_hash}}</code>; the build re-projects the run and checks it against the entry, field for field, before it writes a page): this exemplar run end to end through <code>atlantis_core</code>, the Atlantis reference implementation. It differs from the first run (v0) by one cause, the calendar-correct lags of section 4: test AUROC {{board.delta_vs.fields.auroc.was|4}} → {{board.delta_vs.fields.auroc.now|4}}, AUPRC {{board.delta_vs.fields.auprc.was|4}} → {{board.delta_vs.fields.auprc.now|4}}, onsets flagged ahead at the 10% budget {{board.delta_vs.fields.lead_time.was.flagged_fraction|pct0}} → {{board.delta_vs.fields.lead_time.now.flagged_fraction|pct0}}, on the same {{board.n_test|comma}} test region-weeks. The per-region sample counts in section 3 also differ from the first version's: its summary predated the region rules that are now frozen in a test. The patient grid the model reads is identical.</p></div>
+    <div class="note"><div class="t">Which numbers these are</div><p>Every number on this page comes from the run that board entry <code>{{board.entry_id}}</code> records (semantic config hash <code>{{board.config_hash}}</code>; the build re-projects the run and checks it against the entry, field for field, before it writes a page): this exemplar run end to end through <code>atlantis_core</code>, the Atlantis reference implementation. It differs from the previous run (v1) by one cause. Every alert threshold in section 6 is now <strong>fixed on the validation years' scores before the test years are scored</strong>; v1 took it from the test years' own scores, after the fact. Each rolling-origin fold now also chooses its own tree count. The model is the same model, with the same trees, the same explanation and the same test AUROC {{board.delta_vs.fields.auroc.now|4}} and AUPRC {{board.delta_vs.fields.auprc.now|4}}. What moves is what a programme would staff against. At the nominal 10% budget the fixed threshold flagged {{metrics.full.test.alert_rates.10pct.realised_rate|pct1}} of the {{board.n_test|comma}} test region-weeks: precision {{board.delta_vs.fields.alert_budgets.10pct.precision.was|pct0}} → {{board.delta_vs.fields.alert_budgets.10pct.precision.now|pct0}}, recall {{board.delta_vs.fields.alert_budgets.10pct.recall.was|pct0}} → {{board.delta_vs.fields.alert_budgets.10pct.recall.now|pct0}}, onsets flagged ahead {{board.delta_vs.fields.lead_time.was.flagged_fraction|pct0}} → {{board.delta_vs.fields.lead_time.now.flagged_fraction|pct0}}. That is a different operating point, not a better or a worse model. Earlier, v1 differed from the first run (v0) by the calendar-correct lags of section 4, and the per-region sample counts in section 3 differ from v0's because its summary predated the region rules that are now frozen in a test.</p></div>
     <h3>Discrimination and calibration on the held-out years</h3>
     <div class="grid3">
     {{fig:pr}}
@@ -125,7 +128,7 @@ sections:
     <p>Read the table against the base rate of <span class="num">{{metrics.full.test.prevalence|pct1}}</span>: a model that guessed the base rate for everyone would score that as its AUPRC. The <strong>climatology</strong> row is the honest "no model" comparator: the onset rate for that week of the year, learned from the training years. The <strong>surveillance-only</strong> row is a single feature — samples in the last four weeks — and it is the number to keep in mind while reading section 7.</p>
 
     <h3>The operational view: alert budgets and lead time</h3>
-    <p>A hospital does not read AUROC; it asks "if we act on the top 10% of scores, how often are we right, and how early?" Same here.</p>
+    <p>A hospital does not read AUROC; it asks "if we act on the top 10% of scores, how often are we right, and how early?" Same here, with the ward's constraint: the threshold has to be set before the weeks it will judge. Each budget's threshold is fixed on the validation years ({{split.val_start}}–{{split.val_end}}) and then held for the test years, so the share of weeks it actually flags on test, the <em>realised</em> rate, drifts from the nominal budget.</p>
     <div class="grid2">
     {{fig:alerts}}
     {{fig:lead}}
@@ -204,7 +207,7 @@ sections:
     <li><strong>Surveillance is endogenous.</strong> Sampling intensifies when blooms are suspected. The ablation in section 6 bounds the effect; it cannot eliminate it.</li>
     <li><strong>Discharge is flow, not nutrients;</strong> temperature is a 0.25° box average, not the water a cell lives in; wind and upwelling, which are physically important for <em>K. brevis</em> transport, are not in this version.</li>
     <li><strong>Interventional SHAP breaks correlations by construction</strong>, so it can assign credit to a feature the model only reaches through a partner. The dependence plots colour that partner for exactly this reason.</li>
-    <li><strong>Alert thresholds are chosen on the years they score.</strong> Each alert budget in section 6 flags the top share of the test years' own scores, and lead time inherits that threshold; a programme would fix it beforehand, from validation. The rolling-origin folds that test 2017–2019 also reuse a tree count early-stopped on those years. Both are disclosed on the board entry, and the fix lands as a new board version before any budget is claimed to a steward.</li>
+    <li><strong>A budget fixed beforehand drifts.</strong> Each alert threshold in section 6 is fixed on the validation years and held for the test years, as a programme would have to (fixed in this version; v1 chose it on the test years' own scores). The price is drift. Here the thresholds came out higher than the test years' own quantiles, and every budget flags less than its nominal share on test. The likely reasons are the validation years' higher onset rate (about one region-week in ten, against about one in thirteen on test) and the fact that the thresholds are read from the model trained before validation, while test is scored by the model refitted through it. Neither is proven. A programme staffing to a budget should expect the realised rate to move with the bloom rate, in either direction, and should watch it. The rolling-origin folds now choose their own tree counts on the year before each test year; one year is a small stopping set, and the chosen counts vary widely between folds.</li>
     <li><strong>An explanation is a reading of one model.</strong> The logistic swap in section 7 ranks the weeks almost as well and explains them differently. Correlated vitals split credit between them, which is why the group bars show net beside gross.</li>
     <li><strong>Absence is not a value.</strong> Two regions have no river gauge. A model that sees "discharge missing" learns which region it is looking at, and even the trees give those regions part of their discharge attribution for that reason.</li>
     <li><strong>This is a demonstration of method</strong> on a single public archive, not an operational forecast. FWC and NOAA run real ones.</li>
@@ -268,17 +271,17 @@ figures:
     title: Calibration
     sub: Predicted vs observed onset rate, deciles of risk
   alerts:
-    title: Precision and recall at fixed alert rates
-    sub: Test years. Alert rate = share of region-weeks flagged.
-    caption: At a 10% alert rate the model flags roughly one region-week in ten; precision says how many of those go on to bloom, recall says how many blooms were caught. <strong>One honest limit:</strong> the threshold column is a quantile of the test years' <em>own</em> scores, chosen after the fact. A programme would have to fix its threshold beforehand, from validation, and the alert rate it actually got would drift; the lead time below inherits the same threshold. The fix is carded and will land as a new board version.
+    title: Precision and recall at fixed alert budgets
+    sub: Test years. Budget = the share of region-weeks the threshold was set to flag on the validation years; realised = the share it flagged on test.
+    caption: Each threshold was fixed on the validation years' scores before the test years were scored, and the lead time below reads the same threshold. Precision says how many flagged region-weeks went on to bloom, recall how many blooms were caught. Every realised rate here is below its budget (section 11 says why that is likely, not proven). Read precision and recall at the realised rate, never at the nominal label alone.
   lead:
     title: Lead time before observed onsets
-    sub: 'For each onset in the test years: weeks before the first bloom sample that the score first crossed the 10% threshold'
+    sub: 'For each onset in the test years: weeks before the first bloom sample that the score first crossed the threshold fixed for the 10% budget'
     caption: '"Missed" means the score never crossed the threshold inside the four-week window. Lead time here is limited by how often the region was sampled, not only by the model.'
   roll:
     title: 'Rolling-origin check: train through year Y, test on Y+1'
     sub: AUROC and AUPRC per test year, with that year's prevalence
-    caption: One held-out block can be lucky. Retraining each year and testing on the next shows the skill is not a property of one particular split. Years with fewer than five onsets are skipped. Each fold refits its climatology normals on years up to its own training year, so no fold reads a normal built from its test year (the diamond marks the fold where that changed the vitals; here the change is immaterial, by board v1's record). The folds do reuse the tree count early-stopped on 2017–2019, which is mild selection on the three years they test there.
+    caption: One held-out block can be lucky. Retraining each year and testing on the next shows the skill is not a property of one particular split. Years with fewer than five onsets are skipped. Each fold refits its climatology normals on years up to its own training year, so no fold reads a normal built from its test year (the diamond marks the fold where that changed the vitals; here the change is immaterial, by board v1's record). Each fold also chooses its own tree count, early-stopped on the year before its test year with only the normals knowable then, so no fold is tuned on the year it scores.
   bar:
     title: Which vitals carry the signal
     sub: Mean |SHAP| over the test years, in log-odds, coloured by feature group
