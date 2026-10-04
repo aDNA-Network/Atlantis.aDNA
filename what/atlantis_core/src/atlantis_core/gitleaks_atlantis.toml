@@ -1,3 +1,15 @@
 # Atlantis conform item 12 (M-1d-i III F-5): gitleaks defaults, no allowlist an instance can widen.
 [extend]
 useDefault = true
+
+# P1 gate push (2026-10-03, operator ruling): the one narrow allowlist. An explainer page's chart JSON names its
+# panels by vital ({"key":"discharge_30d_t0"}), which the default generic-api-key rule reads as a key. Allowed only when
+# the MATCH is `key":"<short snake_case segments>"` (each segment after the first word ≤ 8 chars), so a real token such
+# as sk_live_<24 chars> in the same position still fails.
+# ⛔ NOT path-scoped, deliberately: with gitleaks 8.30 an allowlist `paths` entry skips the WHOLE matching file, and
+# `condition = "AND"` did not stop that — a first draft scoped to site/*.html let a Stripe-shaped key in a page pass
+# (caught by tests/test_gitleaks_config.py before anything was pushed). The regex alone is the narrow part.
+[[allowlists]]
+description = "chart panel keys (vital names) — the match only, never a path"
+regexTarget = "match"
+regexes = ['''^key":"[a-z]+(?:_[a-z0-9]{1,8}){0,4}"$''']
