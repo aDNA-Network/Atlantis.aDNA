@@ -209,8 +209,8 @@ The P2 conditions:
 ## Active blockers
 
 - None blocking M-1e.
-- `#needs-human`: **whether to push `main`** (ahead of `origin/main` by every P1 commit; A-1 is now ratified, so the
-  v1 page may publish).
+- ~~push~~ **done 2026-10-03** (operator ruling): `cec155b..33fb62d` → `origin/main`, after gitleaks over the range
+  (one false positive → a narrow match-only allowlist, tested), no file over 1 MB, no data files, 480 tests green.
 - `#needs-human`: **delivering the graduation memo** into `III.aDNA/who/coordination/`. That is a peer-vault write, for an
   operator-opened session.
 

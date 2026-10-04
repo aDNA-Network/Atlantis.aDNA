@@ -7,7 +7,8 @@ tags: [session, p1_gate, rulings, adr_002, contribution_guide, iii, m2, atlantis
 session_id: session_stanley_20261004_033546_p1_gate_rulings
 user: stanley
 started: 2026-10-04T03:35:46Z
-status: active
+status: completed
+completed: 2026-10-03
 executor_tier: opus
 mission: p1_gate
 campaign: campaign_atlantis_genesis
@@ -21,3 +22,11 @@ intent: "Record the operator's P1-gate rulings (asked via AskUserQuestion after 
 - ② cards + memo — M-1e (F-8, condition (a)) · M-2a / M-2b (condition (b); CRW-via-ERDDAP check + NDBC dropped, condition (c)) · M-2 superseded in place · graduation memo filed outbound in Atlantis's who/coordination/ (C-004/C-009 occurrences quoted from the local store, not paraphrased; delivery into III.aDNA left to an operator-opened session) · charter · roster · STATE (M-1e queued, self-contained prompt; WI-13 closed; WI-19/WI-20 updated) · CHANGELOG v0.8.1.
 - ③ push guards — 46 commits; no file > 1 MB; no data files added; gitleaks: 2 hits, one false positive in two commits (`"key":"discharge_30d_t0"`, a vital name in the v1 page's chart JSON). Operator ruled: allowlist, then push. FINDING: the first allowlist draft (regex AND `paths = site/*.html`, `condition = "AND"`) let ANY secret in a site page pass — gitleaks 8.30 skips the whole file on a `paths` match. Caught by the new test before any push (C-018 class: a scope on a proxy). Shipped regex-only on the match; tests plant a Stripe-shaped key in the same position, beside the chart key in a page, and a long-segment snake key — all caught.
   Then: the first commit of this step carried the two planted fake tokens literally in the test source (the staged scan flagged them, but piping it through `tail` hid its exit code). The unpushed commit was amended with the tokens assembled at runtime, so public history never carries them.
+- ④ push — operator ruled "allowlist, then push". 480 tests green; gitleaks over `origin/main..main` exit 0 (47 commits); pushed `cec155b..33fb62d`; `main...origin/main` level. This close commit is pushed under the same ruling.
+
+## SITREP
+
+- **Completed:** the P1 gate is MET with a conditional GO for P2. ADR-002 A-1 is ratified. The contribution guide is ratified (0.1.1). The graduation memo is filed. M-1e, M-2a and M-2b are carded. P1 is pushed to the public repo.
+- **Next up:** **M-1e** (opus, F-8 → board v2). The prompt is in STATE.
+- **Blockers (`#needs-human`):** delivering the graduation memo into `III.aDNA/who/coordination/` (a peer-vault write, for an operator-opened session).
+- **Findings:** a path-scoped gitleaks allowlist skips whole files (gitleaks 8.30); piping a guard through `tail` hides its exit code. Both were caught before the push.
