@@ -1,5 +1,39 @@
 # CHANGELOG — Atlantis.aDNA
 
+## 2026-10-03 — v0.9.0 · M-1e: thresholds fixed beforehand (F-8) → board v2 · P2 condition (a) MET
+
+- **Board v2** (`what/board/entries/2026-10-03_gulf_karenia_brevis_v2.json`), emitted by code with the delta attributed to F-8
+  alone. The model is v1's, byte for byte (`model.json`, SHAP and what-if identical; AUROC 0.8938 / AUPRC 0.5388; 141 trees;
+  semantic hash `acfa22c6e4`). What changed:
+  - every alert threshold is **fixed on the selection model's validation scores before test is scored**;
+  - the **realised** test rate is stated beside each nominal budget: 0.0378 / 0.0811 / 0.1933 at 5 / 10 / 20%;
+  - lead time is read at the fixed threshold: 0.636 of 22 onsets flagged ahead, median 4 weeks;
+  - each rolling fold early-stops on its own inner year, with eras clipped ≤ Y−1.
+
+  v1 and v2 are points on one curve of one model. They are not compared at a nominal label.
+- **`atlantis_core` 0.3.0:**
+  - `eval.threshold_from: val | test` and `eval.rolling_selection: per_fold | full_model` (`test` / `full_model` are for the
+    port only, which still reproduces hab to 1e-12);
+  - a `FitRecorder` checks what each fold was actually fitted on;
+  - lead time records its threshold;
+  - the board refuses F-8 for the headline and every swap, by identity and arithmetic;
+  - `run --out` gets its own processed dir;
+  - the site reads a named run (`site.yaml outputs:`, `--site`);
+  - the template draws a realised-rate column only for validation-fixed thresholds;
+  - `BOARD.md` budgets show the threshold source and realised rate.
+- **atl_v0 0.4.0:** `ThresholdSource` · `AtlAlertBudget.threshold_from` + `realised_rate` · rule validation ⇒ realised (typed
+  `all_of`). Controls 45 → 50, ALL WORLDS AGREE; the instrument is shown to fail with the rule removed or untyped. The
+  mapping template pin is 0.4.0.
+- **The v2 page** `site/gulf_karenia_brevis_v2.html` is a new file (ADR-002 §4 A-1). The v0/v1 pages and entries are
+  byte-stable (sha256-pinned).
+- **III review** (fresh context): PASS-WITH-FINDINGS, **8/8 addressed**. Two guards were true by construction (C-009 →
+  frequency 4), and a provenance label was stamped from intent (C-023, new). Source-level plants P1–P4 into eval now prove
+  the guards.
+- **Disclosed, not fixed (operator ruling):** the label horizon crosses every split boundary (C-022). The embargo is carded
+  as board v3: `how/backlog/idea_label_horizon_embargo.md`.
+- Tests 480 → 516 · SO-7 green (vitals and labels untouched) · WI-11 and WI-14 closed, WI-23 opened · **M-2a queued** (P2
+  opens).
+
 ## 2026-10-03 — v0.8.1 · P1 gate MET — conditional GO for P2
 
 - **Operator rulings** (`AskUserQuestion`, after an opus decision brief):

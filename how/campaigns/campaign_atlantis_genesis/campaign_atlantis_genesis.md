@@ -6,7 +6,7 @@ display_name: "Operation Tidewatch"
 owner: stanley
 persona: proteus            # RULED 2026-10-02 at the P0-exit gate (ADR-001 ratified)
 status: active
-phase: P1                   # P0 gate MET 2026-10-02 · P1 gate MET 2026-10-03 — CONDITIONAL GO P2 (M-1e first; P2 opens at M-2a)
+phase: P1                   # P0 gate MET 2026-10-02 · P1 gate MET 2026-10-03 — CONDITIONAL GO P2; condition (a) M-1e ✅ 2026-10-03 → P2 opens at M-2a
 phase_count: 6
 mission_count: 10           # M-0 (done) + nine carded: M-1a M-1b M-1c M-1d · M-2 · M-3a M-3b · M-4 · M-5
 estimated_sessions: "12-18"
@@ -107,7 +107,7 @@ migration + contribution guide + BOARD generator.
 fetched; `atlantis_core` reproduces the exemplar's metrics; `atl_v0` controls pass under both validators; III review
 via wrapper. **Gate MET 2026-10-03 — CONDITIONAL GO P2** (operator, `AskUserQuestion`, after an opus decision brief; the
 fable first-hand verification was offered and not required). Conditions:
-- (a) the F-8 eval-threshold fix lands first → **M-1e**, board v2;
+- (a) the F-8 eval-threshold fix lands first → **M-1e**, board v2; **✅ MET 2026-10-03** (board v2: the same model, with thresholds fixed on validation and realised beside nominal; III 8/8; horizon spill disclosed and its embargo carded);
 - (b) M-2 is re-carded → **M-2a / M-2b**, with budgets from P1's observed overruns;
 - (c) CRW via ERDDAP is checked at M-2a open, and NDBC is dropped.
 

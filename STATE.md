@@ -1,15 +1,15 @@
 ---
 type: state
 status: p1_open
-phase: "P1 gate MET 2026-10-03 — CONDITIONAL GO P2; condition lane M-1e (F-8) queued → M-2a → M-2b → P2 gate"
+phase: "P1 gate MET 2026-10-03 — CONDITIONAL GO P2; condition (a) M-1e ✅ 2026-10-03 → M-2a queued (P2 opens) → M-2b → P2 gate"
 campaigns: [campaign_atlantis_genesis]
-mission: mission_m1e_eval_thresholds_on_validation   # queued (opus); P1 gate ✅ 2026-10-03 (conditional GO); M-1d-ii ✅ 2026-10-03; M-1d-i ✅ · M-1b-ii-b ✅ 2026-10-03; M-1b-ii-a ✅ · M-1b-i ✅ · M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
+mission: mission_m2a_fknms_fork_and_fetch   # queued (opus); M-1e ✅ 2026-10-03 (board v2); P1 gate ✅ 2026-10-03 (conditional GO); M-1d-ii ✅ 2026-10-03; M-1d-i ✅ · M-1b-ii-b ✅ 2026-10-03; M-1b-ii-a ✅ · M-1b-i ✅ · M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
 persona: proteus   # RULED 2026-10-02 (ADR-001 ratified)
-last_session: session_stanley_20261004_033546_p1_gate_rulings (opus)
+last_session: session_stanley_20261004_035631_m1e_thresholds_on_validation (opus)
 created: 2026-09-23
 updated: 2026-10-03
 last_edited_by: agent_proteus
-tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_complete, m1b_ii_a_complete, m1b_ii_b_complete, m1d_i_complete, m1d_ii_complete, p1_gate_met, p2_conditional_go, m1e_queued]
+tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_complete, m1b_ii_a_complete, m1b_ii_b_complete, m1d_i_complete, m1d_ii_complete, p1_gate_met, p2_conditional_go, m1e_complete, board_v2, atl_v0_0_4_0, m2a_queued]
 ---
 
 # STATE — Atlantis.aDNA
@@ -21,9 +21,9 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
    `artifacts/mission_roster_p1_p5.md`.
 3. The three ADRs in `who/governance/` (all **ratified 2026-10-02**).
 4. The exemplar is at hygiene (M-1a): `what/exemplars/gulf_karenia_brevis/README.md` §Provenance · `uv sync && .venv/bin/python -m pytest` · self-test green.
-5. The ontology is controlled (M-1c; 0.3.0 at M-1d-i): `what/schema/atl_v0/README.md` (proof table · known limits) · `LINKML_BIN=<scratch venv>/bin what/schema/atl_v0/fixtures/controls/run_controls.sh` → ALL WORLDS AGREE (45 controls).
+5. The ontology is controlled (M-1c; 0.3.0 at M-1d-i; 0.4.0 at M-1e): `what/schema/atl_v0/README.md` (proof table · known limits) · `LINKML_BIN=<scratch venv>/bin what/schema/atl_v0/fixtures/controls/run_controls.sh` → ALL WORLDS AGREE (50 controls).
 6. III review goes through `iii/` in a fresh context (SO-10).
-7. The core (M-1b-i + ii-a + ii-b + M-1d-i + M-1d-ii): `what/atlantis_core/README.md` · `cd what/atlantis_core && uv sync && .venv/bin/python -m pytest` (475, ~2 min unloaded) ·
+7. The core (M-1b-i + ii-a + ii-b + M-1d-i + M-1d-ii): `what/atlantis_core/README.md` · `cd what/atlantis_core && uv sync && .venv/bin/python -m pytest` (516, ~2.5 min unloaded) ·
    `.venv/bin/python -m atlantis_core.selftest --instance ../exemplars/gulf_karenia_brevis` (all-stream, SO-7) ·
    `python -m atlantis_core.run --instance …` (→ `outputs/atlantis_core/`, ~7 min) · `python -m atlantis_core.board …` (→ `what/board/entries/`) ·
    `python -m atlantis_core.site --instance …` (→ the instance's page, ~2 s) · `python -m atlantis_core.mapping --check <mapping.yaml>` ·
@@ -34,43 +34,65 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
 
 ## ⏭ QUEUED — Next Live Session
 
-**P1 gate MET 2026-10-03: CONDITIONAL GO for P2** (operator, `AskUserQuestion`, after an opus decision brief; the
-charter's fable first-hand verification was offered and not required). Ruled in the same gate:
-- **ADR-002 A-1 ratified:** the exemplar's explainer pages join §4's capped exception;
-- **contribution guide ratified** (0.1.1, adding: the operator is the merge authority until P4);
-- **C-004/C-009 graduation** proposed by memo to III.aDNA (`who/coordination/coord_2026_10_03_proteus_to_argus_graduation_c004_c009.md`).
+**M-1e CLOSED 2026-10-03 — P2 condition (a) MET; P2 opens at M-2a.** Board v2 (`what/board/entries/2026-10-03_gulf_karenia_brevis_v2.json`)
+is the same model as v1, with model bytes identical, AUROC 0.8938 / AUPRC 0.5388 and 141 trees. Its alert thresholds are
+**fixed on validation** before test is scored, and every budget states its realised test rate beside the nominal one
+(0.0378 / 0.0811 / 0.1933 at 5 / 10 / 20%). Lead time at the 10% budget's fixed threshold flags 0.636 of 22 onsets. Every
+rolling fold selects its own tree count. atl_v0 is 0.4.0, and the v2 page is `site/gulf_karenia_brevis_v2.html`. III 8/8.
+**Disclosed, not fixed:** the label horizon crosses every split boundary. The embargo is carded as board v3.
 
-The P2 conditions:
-- **(a)** **M-1e** first: thresholds and fold tree counts fixed on validation (F-8), giving board v2;
-- **(b)** M-2 re-carded as **M-2a** (to fetched data) and **M-2b** (to the board entry), with budgets from P1's observed
-  overruns;
-- **(c)** CRW via ERDDAP checked at M-2a open; NDBC dropped.
+**Next: M-2a** (opus) → M-2b → **P2 gate** (fable). **Pending operator rulings:**
+- the **push** (7 commits since `origin/main`, gitleaks-clean);
+- where the **horizon embargo** lands (with M-2b, or its own lane before the P2 gate).
 
-**Next: M-1e** (opus) → M-2a → M-2b → **P2 gate** (fable).
+**Next Session Prompt (self-contained, M-2a):**
 
-**Next Session Prompt (self-contained, M-1e):**
-
-> You are Proteus in `~/aDNA/Atlantis.aDNA`. The P1 gate is MET with a **conditional GO for P2**, and this lane is
-> condition (a): no M-2a work until it closes. Run **M-1e — alert thresholds and rolling-fold tree counts fixed on
-> validation (F-8 / WI-11) → board v2** at **opus**. Read, in order:
+> You are Proteus in `~/aDNA/Atlantis.aDNA`. P2 is open: the P1 gate's conditional GO is satisfied (M-1e closed
+> 2026-10-03, board v2). Run **M-2a — `FloridaKeysCoral.aDNA`, from fork to fetched data** at **opus**. Read, in order:
 > 1. STATE;
-> 2. `how/campaigns/campaign_atlantis_genesis/missions/mission_m1e_eval_thresholds_on_validation.md`;
-> 3. `how/backlog/idea_eval_thresholds_fixed_on_validation.md`;
-> 4. the M-1b-ii-a AAR (F-8);
-> 5. `what/atlantis_core/README.md` §Known limits of eval and explain;
-> 6. `what/board/README.md`.
+> 2. `how/campaigns/campaign_atlantis_genesis/missions/mission_m2a_fknms_fork_and_fetch.md` (its acceptance criteria govern);
+> 3. `how/skills/skill_atlantis_instance_fork.md`;
+> 4. `how/campaigns/campaign_atlantis_genesis/artifacts/instance_contract_v0.md`;
+> 5. `how/campaigns/campaign_atlantis_genesis/artifacts/p2_second_instance_ruling.md`;
+> 6. the M-1d-i AAR (fork, conform, the dry run's findings);
+> 7. `what/atlantis_core/README.md` (§Known limits incl. 2b).
 >
-> Open a session lease. The card's acceptance criteria govern. Watch for:
-> - port equivalence must keep a `test` mode, so `hab`'s v1 numbers still reproduce;
-> - plant the test-quantile threshold back as a defect and watch it fail (C-009);
-> - board v2 is emitted by code with the delta attributed to F-8 alone;
-> - any new exemplar page is a **new file** citing v2 (ADR-002 §4 A-1);
-> - board v0/v1 and the v0/v1 pages stay byte-stable.
+> Open a session lease. **Do condition (c) first:** check whether NOAA Coral Reef Watch (DHW / HotSpot / SST) is reachable
+> through the built `ERDDAPGriddap` fetcher (dataset id, variables, grid, licence). If it is not, stop and card a
+> `CoralReefWatch` fetcher Atlantis-side (WI-19); never build it in the instance.
 >
-> Run the SO-7 self-tests. Budget honestly (~110–160 kT); at more than +50% over, SITREP and ask. Run the III review via
-> `iii/` in a fresh context (SO-10). Make path-scoped commits; file the AAR; close WI-11 and WI-14. Then queue M-2a.
+> Watch for:
+> - the instance is a **new vault at the workspace root**: follow the fork skill and workspace Rule 3, and send the router
+>   row to Hestia by memo;
+> - **zero instance-local patches to `atlantis_core`**: every gap is an Atlantis-side change, listed in the AAR;
+> - the persistent DHW event needs the self-test generalised Atlantis-side, with the **whole** defect catalogue re-run
+>   (C-014), green before any fetch;
+> - provenance fields are computed from what the code did, never stamped from config (C-023, M-1e);
+> - a guard is proven by a plant in the real code path (C-009, now frequency 4).
+>
+> Budget honestly (~150–200 kT; P1's overruns ran +77% to +130%); at more than +50% over, SITREP and ask. Run the III
+> review via `iii/` in a fresh context (SO-10). Make path-scoped commits; file the AAR. Then queue M-2b.
 
 ## What's in place
+
+### M-1e (2026-10-03 — commits `20075f1`…`4bda9b5` + close) — P2 condition (a)
+
+- **eval:** `threshold_from: val` fixes thresholds on the selection model's val scores and reads them back from the result.
+  `rolling_selection: per_fold` makes each fold early-stop on its inner year with eras ≤ Y−1, checked on what `fit`
+  received. A stop year with < 5 positives skips its fold, and says so. Lead time records `alert_threshold`. `test` /
+  `full_model` exist only for the port.
+- **atl_v0 0.4.0:** `threshold_from` · `realised_rate`, with the rule validation ⇒ realised required (typed `all_of`). 50 controls.
+- **board v2:** emitted by code. A single cause is proven by bytes. The emitter refuses F-8 for the headline and every swap,
+  by identity and arithmetic. `BOARD.md` budgets show the threshold source and realised rate.
+- **The v2 page:** a new file from `site_v2.yaml` and `site_copy_v2.yaml`; the site reads a named run (`outputs:`, `--site`).
+- **Tests:** 480 → 516. Plants P1–P4 are written into eval's own source.
+- **Findings of record:**
+  - every realised rate falls below nominal (two likely reasons, neither proven);
+  - per-fold selection is noisy (63–623 trees);
+  - the label horizon crosses every boundary (disclosed; embargo carded);
+  - C-023: provenance stamped from intent emits clean.
+- **III:** PASS-WITH-FINDINGS, 8/8 addressed. Learning store: C-009 → 4, plus C-022 and C-023.
+
 
 ### M-1d-ii (2026-10-03 — commits `3e787d3`…`8ca7bc5` + close)
 
@@ -208,7 +230,10 @@ The P2 conditions:
 
 ## Active blockers
 
-- None blocking M-1e.
+- None blocking M-2a.
+- `#needs-human`: **the push.** 7 commits since `origin/main` (`20075f1`…close). gitleaks exit 0 over `origin/main..HEAD`;
+  no file is over 1 MB (largest: the v2 page, 0.85 MB); no data files. Board v2 has never left this machine, so it can
+  still be corrected in place until then.
 - ~~push~~ **done 2026-10-03** (operator ruling): `cec155b..33fb62d` → `origin/main`, after gitleaks over the range
   (one false positive → a narrow match-only allowlist, tested), no file over 1 MB, no data files, 480 tests green.
 - `#needs-human`: **delivering the graduation memo** into `III.aDNA/who/coordination/`. That is a peer-vault write, for an
@@ -232,14 +257,15 @@ The P2 conditions:
   M-1d's BOARD generator.
 - ~~WI-10~~ **closed 2026-10-02 (M-1b-ii-a)** — noted on board v1; v1's 2016 fold is refit (verified per fold). Immaterial here
   (0.8810 unrefit vs 0.8808 refit), material elsewhere by construction.
-- WI-11 — **F-8 (disclosed, not fixed):** alert-budget and lead-time thresholds are test-score quantiles; rolling folds testing
+- ~~WI-11~~ **closed 2026-10-03 (M-1e):** board v2. Original text follows. **F-8 (disclosed, not fixed):** alert-budget and lead-time thresholds are test-score quantiles; rolling folds testing
   2017–2019 reuse a tree count early-stopped on them. Fix carded: `how/backlog/idea_eval_thresholds_fixed_on_validation.md` → a new
   board version, before any steward-facing budget claim.
 - WI-12 — v1 schema candidates from ii-a: a unit × stream "structurally absent" declaration (absence encodes unit identity) and
   lever-ness per station or source rather than per vital (Tampa's non-lever gauge under a lever-tagged vital).
 - ~~WI-13~~ **closed 2026-10-03 (P1 gate): A-1 RATIFIED.** Was: **ADR-002 A-1 PROPOSED 2026-10-03** (III F-5): the exemplar's explainer pages join §4's capped exception
   (exemplar-only, derived from the public parquets, rebuildable, never an instance page). Ratify at the P1 gate or before.
-- WI-14 — Board v1's `limitations_ref` points at the v0 page's `#limits`, which lacks v1's limits (III F-6). v1 stays
+- ~~WI-14~~ **closed 2026-10-03 (M-1e):** v2's `limitations_ref` → `site/gulf_karenia_brevis_v2.html#limits` (it names the fix
+  and its residuals). The v1 page's limits still describe F-8 as open, which was true when it was published. Original text follows. Board v1's `limitations_ref` points at the v0 page's `#limits`, which lacks v1's limits (III F-6). v1 stays
   byte-stable; **board v2** (with the F-8 fix) repoints it to `site/gulf_karenia_brevis_v1.html#limits`.
 - ~~WI-15~~ **closed 2026-10-03 (M-1d-i)** — `python -m atlantis_core.fetch` exists, gated on the self-test receipt and a ratified
   posture. `hab.fetch_*` is now only the recipe that produced the committed bytes; a live core re-fetch has not been run.
@@ -252,7 +278,7 @@ The P2 conditions:
   placement, `storage.location`/`provider`, lineage keys). M-1d-ii fixes the template; the upstream note goes by memo.
 - WI-19 — *(P1 gate: NDBC dropped from M-2; CRW checked via `ERDDAPGriddap` at M-2a open.)* `NDBCStdmet` (and OBIS, GBIF, CRW) are declared, not built. The first instance with a buoy stream needs NDBC; it
   is built in `atlantis_core` (the P2 rule). M-2 (gridded-only) does not need it.
-- WI-20 — **graduation proposed 2026-10-03** (P1 gate ruling: memo filed, awaiting Argus + Stanley co-ratification at III.aDNA). III learning store: C-004 and C-009 are at frequency 3, graduation candidates for the ADR-003 ceremony at
+- WI-20 — **graduation proposed 2026-10-03** (C-009 reached frequency 4 at M-1e, which strengthens the memo) (P1 gate ruling: memo filed, awaiting Argus + Stanley co-ratification at III.aDNA). III learning store: C-004 and C-009 are at frequency 3, graduation candidates for the ADR-003 ceremony at
   III.aDNA. Operator's call, at the P1 gate or after.
 - WI-21 — The exemplar is not a conformant instance (no `units.yaml`, `mapping.yaml` or posture pin). Optional: give it the
   first two, so that items 1 and 11 pass; its posture stays the ADR-002 §4 grandfathered exception.
@@ -262,9 +288,12 @@ The P2 conditions:
   - **lattice-labs / Datasets.aDNA:** 24 of 26 workspace `.dataset.yaml` fail `dataset_yaml_schema.json`, and its
     `location.path` "absolute" is unsuited to public repos.
   - **DDX:** its runspec drops unknown keys rather than rejecting them.
+- WI-23 — **The label horizon crosses every split boundary** (M-1e III F-6; C-022). Disclosed on README 2b, the v2 page and board
+  v2. The fix is carded: `how/backlog/idea_label_horizon_embargo.md` → board v3, its own cause. The operator places it, before
+  the P2 gate compares the exemplar with FKNMS.
 - WI-9 — Memo candidates after the gate (peer vaults read-only): ASOAtlas — greedy `sed` in `run_controls.sh`, untyped-postcondition
   null hole, Python `$` vs trailing newline; Rosetta (`aDNA.aDNA` ADR-062) — the same two as LinkML idiom notes.
 
 ## Next steps
 
-1. ~~M-1a~~ ✅ → … → ~~M-1d-ii~~ ✅ → ~~**P1 gate**~~ ✅ 2026-10-03 (conditional GO) → **M-1e** (opus, F-8) → M-2a → M-2b → **P2 gate** (fable). 2. M-2 FKNMS → **P2 gate**. 3. Memo to Hestia: router row category text → "reference implementation".
+1. ~~M-1a~~ ✅ → … → ~~M-1d-ii~~ ✅ → ~~**P1 gate**~~ ✅ 2026-10-03 (conditional GO) → ~~M-1e~~ ✅ 2026-10-03 → **M-2a** (opus) → M-2b → **P2 gate** (fable). 2. M-2 FKNMS → **P2 gate**. 3. Memo to Hestia: router row category text → "reference implementation".

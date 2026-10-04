@@ -2,7 +2,7 @@
 type: backlog
 doc_id: idea_eval_thresholds_fixed_on_validation
 title: "Fix alert thresholds and rolling-fold tree counts on validation, not on the years they score (M-1b-ii-a III F-8)"
-status: proposed
+status: completed   # M-1e, 2026-10-03 → board v2
 priority: high
 created: 2026-10-02
 updated: 2026-10-02
