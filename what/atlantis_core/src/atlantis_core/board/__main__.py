@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from atlantis_core.board import BoardError, delta, emit, project
+from atlantis_core.board import BoardError, delta, delta_rolling, emit, project
 from atlantis_core.board.index import write_or_check
 from atlantis_core.config import load_instance
 
@@ -79,7 +79,9 @@ def main(argv=None) -> int:
     dv = None
     if a.vs:
         ev = project(res, inst, version=a.version, recorded_at=now)
-        dv = delta(ev, json.loads(Path(a.vs).read_text()))
+        old = json.loads(Path(a.vs).read_text())
+        dv = delta(ev, old)
+        dv["rolling_origin"] = delta_rolling(res["rolling_origin"], old)
     try:
         entry = emit(res, inst, version=a.version, run_date=a.run_date, recorded_at=now, shap=shap, swaps=swaps,
                      delta_vs=dv, notes=a.note, shap_summary_ref=rel(o / "shap_summary.json"), regenerated=regen,

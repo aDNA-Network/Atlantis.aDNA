@@ -203,12 +203,16 @@ def render(entries: Path) -> str:
     parts += ["", "*Status is derived, never written into an entry (SO-2): within one source, instance and stem, the "
                   "highest version supersedes the lower ones. A superseded entry stays on the board.*",
               "", "## Alert budgets", "",
-              "*Precision and recall when the steward can staff alerts on this fraction of patient-weeks.*", "",
-              "| Entry | Budget | Precision | Recall | Alerts |", "|---|---|---|---|---|"]
+              "*Precision and recall when the steward can staff alerts on this fraction of patient-weeks. **Budget** is "
+              "nominal; **Realised** is the share of test patient-weeks a threshold fixed beforehand actually flagged "
+              "(atl_v0 0.4.0). A threshold chosen on the test years themselves (before M-1e) has no realised rate: its "
+              "precision and recall are after the fact (F-8).*", "",
+              "| Entry | Budget | Threshold fixed on | Realised | Precision | Recall | Alerts |", "|---|---|---|---|---|---|---|"]
     for _, e, _ in docs:
         for b in e["evaluation"]["alert_budgets"]:
-            parts.append(f"| `{e['entry_id']}` | {_num(b.get('rate'))} | {_num(b.get('precision'))} | "
-                         f"{_num(b.get('recall'))} | {_num(b.get('n_alerts'))} |")
+            src = b.get("threshold_from") or "test, after the fact (F-8)"
+            parts.append(f"| `{e['entry_id']}` | {_num(b.get('rate'))} | {_cell(src)} | {_num(b.get('realised_rate'))} | "
+                         f"{_num(b.get('precision'))} | {_num(b.get('recall'))} | {_num(b.get('n_alerts'))} |")
     parts += ["", "## Limits and ablations", ""]
     for _, e, _ in docs:
         ev = e["evaluation"]

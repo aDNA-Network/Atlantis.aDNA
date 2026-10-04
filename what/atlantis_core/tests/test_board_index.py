@@ -9,7 +9,8 @@ import pytest
 from atlantis_core.board import index as IX
 from atlantis_core.board.__main__ import ENTRIES, main
 
-V0, V1 = "2026-09-23_gulf_karenia_brevis_v0", "2026-10-02_gulf_karenia_brevis_v1"
+V0, V1, V2 = "2026-09-23_gulf_karenia_brevis_v0", "2026-10-02_gulf_karenia_brevis_v1", "2026-10-03_gulf_karenia_brevis_v2"
+RUN = "2099-12-31"   # a run date no real entry carries: "nothing landed in Atlantis" must not collide with a real day's entry (M-1e)
 
 
 @pytest.fixture
@@ -127,11 +128,12 @@ def instance_copy(exemplar_dir, tmp_path):
 
 def test_entries_instance_side_emit_index_and_item9_reader(instance_copy, capsys):
     e = instance_copy / "what" / "board" / "entries"
-    assert main(["--instance", str(instance_copy), "--version", "1", "--run-date", "2026-10-03", "--entries", str(e)]) == 0
+    V2 = ["--outputs", "outputs/atlantis_core_v2"]   # M-1e: v1's outputs predate F-8's fix and are refused (test_f8)
+    assert main(["--instance", str(instance_copy), "--version", "1", "--run-date", RUN, "--entries", str(e), *V2]) == 0
     [f] = list(e.glob("*.json"))
     ent = json.loads(f.read_text())
-    assert ent["provenance"]["metrics_file"] == "outputs/atlantis_core/metrics.json"       # relative to the instance repo
-    assert not list(ENTRIES.glob("2026-10-03_*"))                                          # nothing landed in Atlantis
+    assert ent["provenance"]["metrics_file"] == "outputs/atlantis_core_v2/metrics.json"    # relative to the instance repo
+    assert not list(ENTRIES.glob(f"{RUN}_*"))                                          # nothing landed in Atlantis
     assert main(["--index", "--entries", str(e)]) == 0 and (instance_copy / "what/board/BOARD.md").exists()
     # conform item 9's reader, as it runs it: closed · green · this instance's unit_ref and semantic_hash
     from atlantis_core.board import assert_green, validate
@@ -140,18 +142,18 @@ def test_entries_instance_side_emit_index_and_item9_reader(instance_copy, capsys
     validate(ent["evaluation"]); assert_green(ent)
     assert ent["evaluation"]["unit_ref"] == inst.cfg["board"]["unit_ref"]
     assert ent["evaluation_extras"]["semantic_hash"] == semantic_hash(inst)
-    assert main(["--instance", str(instance_copy), "--version", "1", "--run-date", "2026-10-03", "--entries", str(e)]) == 1  # SO-2
+    assert main(["--instance", str(instance_copy), "--version", "1", "--run-date", RUN, "--entries", str(e), *V2]) == 1  # SO-2
 
 
 def test_an_outside_instance_cannot_write_atlantis_board(instance_copy, capsys):
-    assert main(["--instance", str(instance_copy), "--version", "9", "--run-date", "2026-10-03"]) == 1
+    assert main(["--instance", str(instance_copy), "--version", "9", "--run-date", RUN]) == 1
     assert "coordination memo" in capsys.readouterr().out
-    assert not list(ENTRIES.glob("2026-10-03_*"))
+    assert not list(ENTRIES.glob(f"{RUN}_*"))
 
 
 def test_missing_entries_dir_writes_nothing(instance_copy, capsys):
     e = instance_copy / "elsewhere" / "what" / "board" / "entries"
-    assert main(["--instance", str(instance_copy), "--version", "1", "--run-date", "2026-10-03", "--entries", str(e)]) == 1
+    assert main(["--instance", str(instance_copy), "--version", "1", "--run-date", RUN, "--entries", str(e)]) == 1
     assert not e.exists()
 
 
@@ -160,13 +162,13 @@ def test_f1_outputs_flag_cannot_smuggle_another_instances_metrics(instance_copy,
     """F-1 (C-018): the gate was on --outputs (a proxy), not on the instance; pointing --outputs at the exemplar wrote
     Atlantis's board from an outside instance."""
     o = str(exemplar_dir / "outputs" / "atlantis_core")
-    assert main(["--instance", str(instance_copy), "--version", "9", "--run-date", "2026-10-03", "--outputs", o]) == 1
+    assert main(["--instance", str(instance_copy), "--version", "9", "--run-date", RUN, "--outputs", o]) == 1
     assert "is not inside the repo" in capsys.readouterr().out
     e = instance_copy / "what" / "board" / "entries"
-    assert main(["--instance", str(instance_copy), "--version", "9", "--run-date", "2026-10-03", "--outputs", o,
+    assert main(["--instance", str(instance_copy), "--version", "9", "--run-date", RUN, "--outputs", o,
                  "--entries", str(e)]) == 1
     assert "is not inside the instance" in capsys.readouterr().out
-    assert not list(ENTRIES.glob("2026-10-03_*")) and not list(e.glob("*.json"))
+    assert not list(ENTRIES.glob(f"{RUN}_*")) and not list(e.glob("*.json"))
 
 
 @pytest.mark.parametrize("eid,fn,why", [
@@ -192,8 +194,9 @@ def test_f2_pipe_is_escaped_not_a_column(board):
 
 def test_f9_supersession_is_derived(board):
     a = IX.render(board)
-    assert next(l for l in a.splitlines() if l.startswith(f"| [`{V0}`]")).endswith(f"superseded → `{V1}` |")
-    assert next(l for l in a.splitlines() if l.startswith(f"| [`{V1}`]")).endswith("| live |")
+    for old in (V0, V1):   # M-1e: v2 supersedes both (the highest version of the stem)
+        assert next(l for l in a.splitlines() if l.startswith(f"| [`{old}`]")).endswith(f"superseded → `{V2}` |")
+    assert next(l for l in a.splitlines() if l.startswith(f"| [`{V2}`]")).endswith("| live |")
     _edit(board, V1, lambda d: d.update(superseded_by=V0))           # names an entry, but disagrees with the derivation
     with pytest.raises(IX.BoardError, match="disagrees with the derived"):
         IX.render(board)
@@ -216,7 +219,8 @@ def _git(d, *c):
 def test_f3_regenerate_fails_closed(instance_copy, tmp_path, capsys):
     """F-3 (C-021): origin/main was hard-coded and a git error read as 'never published'."""
     e = instance_copy / "what" / "board" / "entries"
-    args = ["--instance", str(instance_copy), "--version", "1", "--run-date", "2026-10-03", "--entries", str(e)]
+    args = ["--instance", str(instance_copy), "--version", "1", "--run-date", RUN, "--entries", str(e),
+            "--outputs", "outputs/atlantis_core_v2"]
     assert main(args) == 0
     assert main(args + ["--regenerate", "probe"]) == 1                     # not a git repo: cannot tell → refuse
     assert "cannot tell" in capsys.readouterr().out

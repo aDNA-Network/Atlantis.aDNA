@@ -1,0 +1,772 @@
+{
+ "board_entry_schema": "atl_board_entry_v1",
+ "tier": "GREEN",
+ "accuracy_claim": "NONE — method demonstration on public data; not an operational forecast (SO-4)",
+ "entry_id": "2026-10-03_gulf_karenia_brevis_v2",
+ "source": "exemplar",
+ "instance": "Atlantis.aDNA/what/exemplars/gulf_karenia_brevis",
+ "method_version": "pattern_ecosystem_early_warning 0.1 · atlantis_core 0.3.0",
+ "recorded_by": "agent_proteus",
+ "recorded_at": "2026-10-04T04:09:28Z",
+ "run_date": "2026-10-03",
+ "evaluation": {
+  "evaluation_id": "atl_eval_gulf_karenia_brevis_v2",
+  "event_ref": "atl_event_kbrevis_onset_100k_4w",
+  "unit_ref": "atl_unit_fl_gulf_and_keys",
+  "split": "train 1994-2016 · val 2017-2019 · test 2020-2023, scored once; rolling origin 2016->2023",
+  "n_test": 1640,
+  "n_positives": 127,
+  "base_rate": 0.0774,
+  "auroc": 0.8938,
+  "auprc": 0.5388,
+  "brier": 0.0502,
+  "calibration_slope": 1.19,
+  "climatology_auroc": 0.5767,
+  "climatology_auprc": 0.1038,
+  "alert_budgets": [
+   {
+    "rate": 0.05,
+    "precision": 0.6613,
+    "recall": 0.3228,
+    "n_alerts": 62,
+    "threshold_from": "validation",
+    "realised_rate": 0.0378
+   },
+   {
+    "rate": 0.1,
+    "precision": 0.5113,
+    "recall": 0.5354,
+    "n_alerts": 133,
+    "threshold_from": "validation",
+    "realised_rate": 0.0811
+   },
+   {
+    "rate": 0.2,
+    "precision": 0.3186,
+    "recall": 0.7953,
+    "n_alerts": 317,
+    "threshold_from": "validation",
+    "realised_rate": 0.1933
+   }
+  ],
+  "lead_time": {
+   "budget_rate": 0.1,
+   "n_onsets": 22,
+   "flagged_fraction": 0.6364,
+   "median_lead": 4.0,
+   "threshold_from": "validation"
+  },
+  "ablations": [
+   {
+    "ablation_name": "without surveillance group (n_samples_t0, n_samples_4w)",
+    "ablated_auroc": 0.8885,
+    "ablated_auprc": 0.5244
+   },
+   {
+    "ablation_name": "surveillance-only single feature (n_samples_4w)",
+    "ablated_auroc": 0.6239
+   }
+  ],
+  "learner": "xgboost 3.4.1 · binary:logistic · depth 4 · eta 0.03 · early-stop logloss (100 rounds) · 141 trees · no scale_pos_weight · monotone on log_max_t0, roll_max_4w",
+  "config_hash": "acfa22c6e4",
+  "data_pins": [
+   {
+    "stream_ref": "atl_stream_fwc_hab_karenia",
+    "sha256": "2bde141038e87db37dd682561d47e525dc546189d2ae6fbecfaf1a53bcfecfd9"
+   },
+   {
+    "stream_ref": "atl_stream_oisst_region_daily",
+    "sha256": "c26b97f53854d57e61cdd7b9bbca0507504f82aed63faf716744a4963bbb7ec8"
+   },
+   {
+    "stream_ref": "atl_stream_usgs_discharge_daily",
+    "sha256": "66a58af41843b4305afa968dd814854a61e6a4e263f4898b5422d8eb03a789ea"
+   }
+  ],
+  "shap_summary_ref": "what/exemplars/gulf_karenia_brevis/outputs/atlantis_core_v2/shap_summary.json",
+  "claim": "method_demonstration",
+  "limitations_ref": "what/exemplars/gulf_karenia_brevis/site/gulf_karenia_brevis_v2.html#limits · README.md §Caveats",
+  "recorded_by": "agent_proteus",
+  "recorded_at": "2026-10-04T04:09:28Z"
+ },
+ "evaluation_extras": {
+  "event": {
+   "event_id": "atl_event_kbrevis_onset_100k_4w",
+   "threshold": 100000,
+   "unit": "/L",
+   "direction": "above",
+   "horizon": 4,
+   "onset_rule": "drop region-weeks whose last-known weekly max >= threshold (already in bloom); drop region-weeks with no sampled week in t+1..t+4 (unknown outcome)"
+  },
+  "patient": {
+   "unit_kind": "coastal_band",
+   "geometry_ref": "atlantis.yaml -> grid.rules (lat/lon rules)",
+   "n_units": 9
+  },
+  "modelling_rows": 10804,
+  "modelling_positives": 1168,
+  "modelling_prevalence": 0.1081,
+  "dropped_already_in_event": 1481,
+  "dropped_outcome_unknown": 1800,
+  "n_trees": 141,
+  "n_vitals": 25,
+  "vital_groups": {
+   "counts": 13,
+   "surveillance": 2,
+   "season": 2,
+   "sst": 5,
+   "discharge": 3
+  },
+  "sensitivity": [
+   {
+    "name": "threshold 50000 /L",
+    "test_auroc": 0.8878,
+    "test_auprc": 0.5825,
+    "test_prevalence": 0.0758
+   }
+  ],
+  "rolling_origin": [
+   {
+    "train_through": 2015,
+    "test_year": 2016,
+    "n": 388,
+    "positives": 41,
+    "prevalence": 0.1057,
+    "auroc": 0.8942,
+    "auprc": 0.4965,
+    "climatology_eras": {
+     "atl_stream_oisst_region_daily": [
+      1982,
+      2011
+     ],
+     "atl_stream_usgs_discharge_daily": [
+      1990,
+      2015
+     ]
+    },
+    "climatology_refit": true,
+    "selection": {
+     "selected_on": 2015,
+     "n_trees": 275,
+     "selection_eras": {
+      "atl_stream_oisst_region_daily": [
+       1982,
+       2011
+      ],
+      "atl_stream_usgs_discharge_daily": [
+       1990,
+       2014
+      ]
+     }
+    }
+   },
+   {
+    "train_through": 2016,
+    "test_year": 2017,
+    "n": 423,
+    "positives": 27,
+    "prevalence": 0.0638,
+    "auroc": 0.8988,
+    "auprc": 0.3206,
+    "climatology_eras": {
+     "atl_stream_oisst_region_daily": [
+      1982,
+      2011
+     ],
+     "atl_stream_usgs_discharge_daily": [
+      1990,
+      2016
+     ]
+    },
+    "climatology_refit": false,
+    "selection": {
+     "selected_on": 2016,
+     "n_trees": 445,
+     "selection_eras": {
+      "atl_stream_oisst_region_daily": [
+       1982,
+       2011
+      ],
+      "atl_stream_usgs_discharge_daily": [
+       1990,
+       2015
+      ]
+     }
+    }
+   },
+   {
+    "train_through": 2017,
+    "test_year": 2018,
+    "n": 334,
+    "positives": 67,
+    "prevalence": 0.2006,
+    "auroc": 0.8474,
+    "auprc": 0.5816,
+    "climatology_eras": {
+     "atl_stream_oisst_region_daily": [
+      1982,
+      2011
+     ],
+     "atl_stream_usgs_discharge_daily": [
+      1990,
+      2016
+     ]
+    },
+    "climatology_refit": false,
+    "selection": {
+     "selected_on": 2017,
+     "n_trees": 151,
+     "selection_eras": {
+      "atl_stream_oisst_region_daily": [
+       1982,
+       2011
+      ],
+      "atl_stream_usgs_discharge_daily": [
+       1990,
+       2016
+      ]
+     }
+    }
+   },
+   {
+    "train_through": 2018,
+    "test_year": 2019,
+    "n": 436,
+    "positives": 27,
+    "prevalence": 0.0619,
+    "auroc": 0.9014,
+    "auprc": 0.3234,
+    "climatology_eras": {
+     "atl_stream_oisst_region_daily": [
+      1982,
+      2011
+     ],
+     "atl_stream_usgs_discharge_daily": [
+      1990,
+      2016
+     ]
+    },
+    "climatology_refit": false,
+    "selection": {
+     "selected_on": 2018,
+     "n_trees": 76,
+     "selection_eras": {
+      "atl_stream_oisst_region_daily": [
+       1982,
+       2011
+      ],
+      "atl_stream_usgs_discharge_daily": [
+       1990,
+       2016
+      ]
+     }
+    }
+   },
+   {
+    "train_through": 2019,
+    "test_year": 2020,
+    "n": 449,
+    "positives": 11,
+    "prevalence": 0.0245,
+    "auroc": 0.9269,
+    "auprc": 0.4596,
+    "climatology_eras": {
+     "atl_stream_oisst_region_daily": [
+      1982,
+      2011
+     ],
+     "atl_stream_usgs_discharge_daily": [
+      1990,
+      2016
+     ]
+    },
+    "climatology_refit": false,
+    "selection": {
+     "selected_on": 2019,
+     "n_trees": 623,
+     "selection_eras": {
+      "atl_stream_oisst_region_daily": [
+       1982,
+       2011
+      ],
+      "atl_stream_usgs_discharge_daily": [
+       1990,
+       2016
+      ]
+     }
+    }
+   },
+   {
+    "train_through": 2020,
+    "test_year": 2021,
+    "n": 352,
+    "positives": 67,
+    "prevalence": 0.1903,
+    "auroc": 0.7815,
+    "auprc": 0.5288,
+    "climatology_eras": {
+     "atl_stream_oisst_region_daily": [
+      1982,
+      2011
+     ],
+     "atl_stream_usgs_discharge_daily": [
+      1990,
+      2016
+     ]
+    },
+    "climatology_refit": false,
+    "selection": {
+     "selected_on": 2020,
+     "n_trees": 598,
+     "selection_eras": {
+      "atl_stream_oisst_region_daily": [
+       1982,
+       2011
+      ],
+      "atl_stream_usgs_discharge_daily": [
+       1990,
+       2016
+      ]
+     }
+    }
+   },
+   {
+    "train_through": 2021,
+    "test_year": 2022,
+    "n": 438,
+    "positives": 31,
+    "prevalence": 0.0708,
+    "auroc": 0.936,
+    "auprc": 0.6645,
+    "climatology_eras": {
+     "atl_stream_oisst_region_daily": [
+      1982,
+      2011
+     ],
+     "atl_stream_usgs_discharge_daily": [
+      1990,
+      2016
+     ]
+    },
+    "climatology_refit": false,
+    "selection": {
+     "selected_on": 2021,
+     "n_trees": 63,
+     "selection_eras": {
+      "atl_stream_oisst_region_daily": [
+       1982,
+       2011
+      ],
+      "atl_stream_usgs_discharge_daily": [
+       1990,
+       2016
+      ]
+     }
+    }
+   },
+   {
+    "train_through": 2022,
+    "test_year": 2023,
+    "n": 401,
+    "positives": 18,
+    "prevalence": 0.0449,
+    "auroc": 0.9865,
+    "auprc": 0.7601,
+    "climatology_eras": {
+     "atl_stream_oisst_region_daily": [
+      1982,
+      2011
+     ],
+     "atl_stream_usgs_discharge_daily": [
+      1990,
+      2016
+     ]
+    },
+    "climatology_refit": false,
+    "selection": {
+     "selected_on": 2022,
+     "n_trees": 254,
+     "selection_eras": {
+      "atl_stream_oisst_region_daily": [
+       1982,
+       2011
+      ],
+      "atl_stream_usgs_discharge_daily": [
+       1990,
+       2016
+      ]
+     }
+    }
+   }
+  ],
+  "rolling_selection": "per_fold",
+  "obligations": [
+   {
+    "obligation": "eval must refit the atl_stream_usgs_discharge_daily climatology per rolling-origin fold (era ends 2016; folds testing [2016] would otherwise see their own year)",
+    "honoured": true,
+    "how": "eras clipped to ≤ train_through; vitals rebuilt for folds testing [2016] (verified per fold)"
+   }
+  ],
+  "shap_summary": {
+   "base_p": 0.057545085219967575,
+   "additivity_max_gap": 3.2503823437224355e-06,
+   "top6": [
+    "roll_max_4w",
+    "woy_sin",
+    "roll_max_8w",
+    "weeks_since_bloom",
+    "sst_delta_4w",
+    "discharge_anom_t0"
+   ],
+   "group_mean_abs_shap": {
+    "counts": 1.15111,
+    "sst": 0.49682,
+    "season": 0.3952,
+    "discharge": 0.26684,
+    "surveillance": 0.16376
+   },
+   "group_net_mean_abs_shap": {
+    "counts": 0.84039,
+    "season": 0.34877,
+    "sst": 0.24795,
+    "discharge": 0.21125,
+    "surveillance": 0.15962
+   },
+   "tag_mean_abs_shap": {
+    "state": 1.14891,
+    "proxy": 0.89202,
+    "lever": 0.26684,
+    "artifact": 0.16595
+   }
+  },
+  "semantic_hash": "acfa22c6e4",
+  "config_bytes_md5": {
+   "atlantis.yaml": "bec7af40ae",
+   "config.yaml": "979d3fdf16"
+  },
+  "data_pins": [
+   {
+    "stream_ref": "atl_stream_fwc_hab_karenia",
+    "artifact": "data/raw/fwc_hab_karenia_1970_2023.parquet",
+    "sha256": "2bde141038e87db37dd682561d47e525dc546189d2ae6fbecfaf1a53bcfecfd9"
+   },
+   {
+    "stream_ref": "atl_stream_oisst_region_daily",
+    "artifact": "data/raw/oisst_region_daily.parquet",
+    "sha256": "c26b97f53854d57e61cdd7b9bbca0507504f82aed63faf716744a4963bbb7ec8"
+   },
+   {
+    "stream_ref": "atl_stream_usgs_discharge_daily",
+    "artifact": "data/raw/usgs_discharge_daily.parquet",
+    "sha256": "66a58af41843b4305afa968dd814854a61e6a4e263f4898b5422d8eb03a789ea"
+   }
+  ],
+  "learner_swaps": [
+   {
+    "learner": "scikit-learn 1.9.1 LogisticRegression · L2 · C=1.0 (val log-loss over [0.001, 0.01, 0.1, 1.0, 10.0]) · median impute + missingness flags · standardised · imputer/scaler fitted on each model's own training rows (train for selection, train+val for the final; never test)",
+    "test_auroc": 0.8726,
+    "test_auprc": 0.5225,
+    "brier": 0.0514,
+    "calibration_slope": 1.28,
+    "alert_budgets": {
+     "5pct": {
+      "precision": 0.6452,
+      "recall": 0.315,
+      "realised_rate": 0.0378,
+      "threshold_from": "validation"
+     },
+     "10pct": {
+      "precision": 0.5308,
+      "recall": 0.5433,
+      "realised_rate": 0.0793,
+      "threshold_from": "validation"
+     },
+     "20pct": {
+      "precision": 0.3311,
+      "recall": 0.7953,
+      "realised_rate": 0.186,
+      "threshold_from": "validation"
+     }
+    },
+    "lead_time": {
+     "flagged_fraction": 0.6818,
+     "median_lead": 3.0,
+     "n_onsets": 22
+    },
+    "rolling_origin_auroc_range": [
+     0.7701,
+     0.9748
+    ],
+    "top6": [
+     "woy_cos",
+     "sst_t0",
+     "availability:discharge_30d_t3",
+     "sst_anom_t0",
+     "sst_delta_4w",
+     "n_samples_4w"
+    ],
+    "group_mean_abs_shap": {
+     "sst": 3.06356,
+     "availability": 1.74944,
+     "season": 1.69001,
+     "counts": 1.32369,
+     "surveillance": 0.34837,
+     "discharge": 0.16971
+    },
+    "group_net_mean_abs_shap": {
+     "sst": 1.66832,
+     "season": 1.57565,
+     "counts": 0.82636,
+     "surveillance": 0.34603,
+     "availability": 0.2051,
+     "discharge": 0.09661
+    },
+    "semantic_hash": "9b36c3e779"
+   }
+  ],
+  "delta_vs": {
+   "entry": "2026-10-02_gulf_karenia_brevis_v1",
+   "fields": {
+    "n_test": {
+     "was": 1640,
+     "now": 1640,
+     "change": 0.0
+    },
+    "n_positives": {
+     "was": 127,
+     "now": 127,
+     "change": 0.0
+    },
+    "base_rate": {
+     "was": 0.0774,
+     "now": 0.0774,
+     "change": 0.0
+    },
+    "auroc": {
+     "was": 0.8938,
+     "now": 0.8938,
+     "change": 0.0
+    },
+    "auprc": {
+     "was": 0.5388,
+     "now": 0.5388,
+     "change": 0.0
+    },
+    "brier": {
+     "was": 0.0502,
+     "now": 0.0502,
+     "change": 0.0
+    },
+    "calibration_slope": {
+     "was": 1.19,
+     "now": 1.19,
+     "change": 0.0
+    },
+    "climatology_auroc": {
+     "was": 0.5767,
+     "now": 0.5767,
+     "change": 0.0
+    },
+    "climatology_auprc": {
+     "was": 0.1038,
+     "now": 0.1038,
+     "change": 0.0
+    },
+    "lead_time": {
+     "was": {
+      "budget_rate": 0.1,
+      "n_onsets": 22,
+      "flagged_fraction": 0.6818,
+      "median_lead": 4.0
+     },
+     "now": {
+      "budget_rate": 0.1,
+      "n_onsets": 22,
+      "flagged_fraction": 0.6364,
+      "median_lead": 4.0,
+      "threshold_from": "validation"
+     }
+    },
+    "alert_budgets": {
+     "0.05": {
+      "precision": {
+       "was": 0.6463,
+       "now": 0.6613
+      },
+      "recall": {
+       "was": 0.4173,
+       "now": 0.3228
+      },
+      "n_alerts": {
+       "was": 82,
+       "now": 62
+      },
+      "realised_rate": {
+       "was": null,
+       "now": 0.0378
+      },
+      "threshold_from": {
+       "was": null,
+       "now": "validation"
+      }
+     },
+     "0.1": {
+      "precision": {
+       "was": 0.4634,
+       "now": 0.5113
+      },
+      "recall": {
+       "was": 0.5984,
+       "now": 0.5354
+      },
+      "n_alerts": {
+       "was": 164,
+       "now": 133
+      },
+      "realised_rate": {
+       "was": null,
+       "now": 0.0811
+      },
+      "threshold_from": {
+       "was": null,
+       "now": "validation"
+      }
+     },
+     "0.2": {
+      "precision": {
+       "was": 0.314,
+       "now": 0.3186
+      },
+      "recall": {
+       "was": 0.811,
+       "now": 0.7953
+      },
+      "n_alerts": {
+       "was": 328,
+       "now": 317
+      },
+      "realised_rate": {
+       "was": null,
+       "now": 0.1933
+      },
+      "threshold_from": {
+       "was": null,
+       "now": "validation"
+      }
+     }
+    }
+   },
+   "rolling_origin": {
+    "2016": {
+     "auroc": {
+      "was": 0.8808,
+      "now": 0.8942
+     },
+     "auprc": {
+      "was": 0.4828,
+      "now": 0.4965
+     },
+     "selected_on": 2015,
+     "n_trees": 275
+    },
+    "2017": {
+     "auroc": {
+      "was": 0.9126,
+      "now": 0.8988
+     },
+     "auprc": {
+      "was": 0.3709,
+      "now": 0.3206
+     },
+     "selected_on": 2016,
+     "n_trees": 445
+    },
+    "2018": {
+     "auroc": {
+      "was": 0.8474,
+      "now": 0.8474
+     },
+     "auprc": {
+      "was": 0.5841,
+      "now": 0.5816
+     },
+     "selected_on": 2017,
+     "n_trees": 151
+    },
+    "2019": {
+     "auroc": {
+      "was": 0.9012,
+      "now": 0.9014
+     },
+     "auprc": {
+      "was": 0.32,
+      "now": 0.3234
+     },
+     "selected_on": 2018,
+     "n_trees": 76
+    },
+    "2020": {
+     "auroc": {
+      "was": 0.9218,
+      "now": 0.9269
+     },
+     "auprc": {
+      "was": 0.3372,
+      "now": 0.4596
+     },
+     "selected_on": 2019,
+     "n_trees": 623
+    },
+    "2021": {
+     "auroc": {
+      "was": 0.7941,
+      "now": 0.7815
+     },
+     "auprc": {
+      "was": 0.5432,
+      "now": 0.5288
+     },
+     "selected_on": 2020,
+     "n_trees": 598
+    },
+    "2022": {
+     "auroc": {
+      "was": 0.9557,
+      "now": 0.936
+     },
+     "auprc": {
+      "was": 0.7061,
+      "now": 0.6645
+     },
+     "selected_on": 2021,
+     "n_trees": 63
+    },
+    "2023": {
+     "auroc": {
+      "was": 0.9884,
+      "now": 0.9865
+     },
+     "auprc": {
+      "was": 0.7973,
+      "now": 0.7601
+     },
+     "selected_on": 2022,
+     "n_trees": 254
+    }
+   }
+  }
+ },
+ "provenance": {
+  "metrics_file": "what/exemplars/gulf_karenia_brevis/outputs/atlantis_core_v2/metrics.json",
+  "shap_file": "what/exemplars/gulf_karenia_brevis/outputs/atlantis_core_v2/shap_summary.json",
+  "learner_swap_files": [
+   "what/exemplars/gulf_karenia_brevis/outputs/atlantis_core_v2/learner_swap_logistic.json"
+  ],
+  "generated_by": "atlantis_core.board (emit → closed AtlEvaluation validated against the committed atl_ontology_v0.schema.json + assert_green); numbers are not retyped"
+ },
+ "notes": [
+  "Delta vs v1 has one cause, F-8 (III review of M-1b-ii-a; fixed at M-1e, operator rulings 2026-10-03). (1) Every alert-budget threshold, and so the lead-time threshold, is now fixed on the selection model's out-of-sample validation scores (2017-2019) before test is scored; v1 took quantiles of the test scores themselves. (2) Every rolling fold now early-stops on its own inner validation year (train <= Y-1, stop on Y, refit <= Y), with climatology eras clipped to <= Y-1 for the selection; v1 reused the full model's tree count, stopped on 2017-2019, in every fold. The trained model, its SHAP summary and the what-if are byte-identical to v1's (same 141 trees, same semantic hash): only the budgets, the lead time and the rolling panel move.",
+  "Reading the budgets: rate is the NOMINAL budget and realised_rate what a threshold fixed beforehand actually flagged on test. Validation prevalence (0.101) is above test's (0.077), so the fixed thresholds sit higher and every realised rate is below nominal. Precision and recall here are therefore at a different operating point from v1's, not an improvement or a loss of the model: compare at matched realised rates, never at the same nominal label. A steward staffing to a nominal budget should expect the realised rate to drift with prevalence, in either direction.",
+  "Rolling panel: per-fold selection on a single inner year is noisy (the stopped tree counts range from tens to several hundred across folds); the panel now measures the method as a steward would run it each year, selection included, and is not comparable fold for fold with v1's fixed-count panel."
+ ]
+}

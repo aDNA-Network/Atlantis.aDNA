@@ -24,7 +24,7 @@ def test_projection_reproduces_the_v0_fixture(v0):
     inst, m = v0
     fx = yaml.safe_load(FIXTURE.read_text())["evaluations"][0]
     ev = project(m, inst, version=0, recorded_at=fx["recorded_at"], learner=fx["learner"],
-                 shap_summary_ref=fx["shap_summary_ref"])
+                 shap_summary_ref=fx["shap_summary_ref"], limitations_ref=fx["limitations_ref"])
     assert ev == fx
     validate(ev)
 

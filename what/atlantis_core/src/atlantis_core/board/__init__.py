@@ -9,6 +9,11 @@
 an allowlist of `evaluation_extras` keys, a denylist of per-row field names, and caps on list length, dict size, numeric
 leaves and numbers inside any string (M-1b-ii-a III F-4: a denylist alone let 1,640 keyed predictions through). If a
 field would carry per-patient content, the entry is wrong, not the rule.
+
+**F-8 (M-1e).** A budget's threshold must have been fixed before test was scored: `emit` refuses any budget or lead time
+whose `threshold_from` is not `validation`, and any validation budget without its realised rate (atl_v0 0.4.0). The
+projection maps the core's `val` to the ontology's `validation`, and leaves both fields out for a result that predates
+them, so v1's run still re-projects onto v1 (the v1 page's build check).
 """
 from __future__ import annotations
 
@@ -25,7 +30,7 @@ MAX_LIST = 32          # no per-patient vector fits under this; the longest legi
 MAX_DICT = 40          # a dict keyed by patient-week would exceed this; the widest legitimate one is a group/tag table
 MAX_NUMERIC = 600      # numeric leaves in a whole entry (v1 carries ~250)
 MAX_STRING_NUMBERS = 40   # numbers inside one string — notes are prose, not a smuggled vector
-EXTRAS_KEYS = {"event", "patient", "modelling_rows", "modelling_positives", "modelling_prevalence",
+EXTRAS_KEYS = {"rolling_selection", "event", "patient", "modelling_rows", "modelling_positives", "modelling_prevalence",
                "dropped_already_in_event", "dropped_outcome_unknown", "n_trees", "n_vitals", "vital_groups",
                "sensitivity", "rolling_origin", "obligations", "shap_summary", "semantic_hash", "config_bytes_md5",
                "data_pins", "learner_swaps", "delta_vs", "regenerated"}
@@ -46,12 +51,25 @@ def split_text(s: dict) -> str:
             f"test {s['test_start']}-{s['test_end']}, scored once{tail}")
 
 
+SOURCE = {"val": "validation", "test": "test"}   # atlantis_core eval mode → atl_v0 ThresholdSource
+
+
+def _budget(r: float, a: dict) -> dict:
+    out = {"rate": float(r), "precision": _r(a["precision"]), "recall": _r(a["recall"]), "n_alerts": int(a["n_alerts"])}
+    if "threshold_from" in a:   # absent in results that predate M-1e (v1's run) — then the projection is v1's shape
+        out["threshold_from"] = SOURCE[a["threshold_from"]]
+        if a.get("realised_rate") is not None:   # absent → the emit check names it (and the schema rule rejects it)
+            out["realised_rate"] = _r(a["realised_rate"])
+    return out
+
+
 def _groups(inst, res):
     return res.get("feature_groups") or {}
 
 
 def project(res: dict, inst, *, version: int, recorded_at: str, recorded_by: str = "agent_proteus",
-            config_hash: str | None = None, learner: str | None = None, shap_summary_ref: str | None = None) -> dict:
+            config_hash: str | None = None, learner: str | None = None, shap_summary_ref: str | None = None,
+            limitations_ref: str | None = None) -> dict:
     b, e = inst.cfg["board"], inst.cfg["eval"]
     full, t = res["full"], res["full"]["test"]
     budget = float(e["lead_budget"])
@@ -73,18 +91,17 @@ def project(res: dict, inst, *, version: int, recorded_at: str, recorded_by: str
           "calibration_slope": _r(t["calibration_slope"], 2),
           "climatology_auroc": _r(res["climatology_baseline_test"]["auroc"]),
           "climatology_auprc": _r(res["climatology_baseline_test"]["auprc"]),
-          "alert_budgets": [{"rate": float(r), "precision": _r(t["alert_rates"][rate_key(r)]["precision"]),
-                             "recall": _r(t["alert_rates"][rate_key(r)]["recall"]),
-                             "n_alerts": int(t["alert_rates"][rate_key(r)]["n_alerts"])} for r in e["alert_rates"]],
+          "alert_budgets": [_budget(r, t["alert_rates"][rate_key(r)]) for r in e["alert_rates"]],
           "lead_time": {"budget_rate": budget, "n_onsets": int(lt["n_onsets"]),
-                        "flagged_fraction": _r(lt["detected_fraction"]), "median_lead": lt["median_lead_weeks"]},
+                        "flagged_fraction": _r(lt["detected_fraction"]), "median_lead": lt["median_lead_weeks"],
+                        **({"threshold_from": SOURCE[lt["threshold_from"]]} if "threshold_from" in lt else {})},
           "ablations": ablations,
           "learner": learner or full.get("learner"),
           "config_hash": config_hash or res["semantic_hash"],
           "data_pins": pins,
           "shap_summary_ref": shap_summary_ref,
           "claim": "method_demonstration",
-          "limitations_ref": b["limitations_ref"],
+          "limitations_ref": limitations_ref or b["limitations_ref"],   # the instance's CURRENT limits; a record may cite its own
           "recorded_by": recorded_by, "recorded_at": recorded_at}
     return {k: v for k, v in ev.items() if v is not None}
 
@@ -99,6 +116,26 @@ def validate(ev: dict) -> None:
     errs = list(VC(S, format_checker=FC).iter_errors({"evaluations": [ev]}))
     if errs:
         raise BoardError("closed AtlEvaluation rejected: " + "; ".join(f"{'/'.join(map(str, x.absolute_path))}: {x.message[:120]}" for x in errs))
+
+
+def assert_thresholds_fixed(ev: dict, res: dict, swaps: dict | None = None) -> None:
+    """F-8: no new entry carries a threshold chosen on the years it scores, or a nominal rate without its realised one —
+    the headline's budgets and lead time, and every learner swap's. The rolling panel must have selected per fold."""
+    bad = []
+    for b in ev.get("alert_budgets", []):
+        if b.get("threshold_from") != "validation":
+            bad.append(f"budget {b['rate']}: threshold_from {b.get('threshold_from')!r}")
+        elif b.get("realised_rate") is None:
+            bad.append(f"budget {b['rate']}: no realised rate beside the nominal one")
+    if (ev.get("lead_time") or {}).get("threshold_from") != "validation":
+        bad.append(f"lead_time: threshold_from {(ev.get('lead_time') or {}).get('threshold_from')!r}")
+    for name, r in [("headline", res), *[(f"learner swap {k}", v) for k, v in (swaps or {}).items()]]:
+        if r["full"].get("threshold_from") != "val":
+            bad.append(f"{name}: eval.threshold_from {r['full'].get('threshold_from')!r}")
+        if r.get("rolling_selection") != "per_fold":
+            bad.append(f"{name}: rolling folds selected {r.get('rolling_selection')!r}, not per fold")
+    if bad:
+        raise BoardError("refusing to emit — thresholds chosen on the years they score (F-8): " + "; ".join(bad))
 
 
 _NUM = re.compile(r"-?\d+(?:\.\d+)?(?:e-?\d+)?")
@@ -137,7 +174,9 @@ def _swap_summary(sw: dict) -> dict:
     lt = next(v for k, v in sw["full"].items() if k.startswith("lead_time_test_"))
     return {"learner": sw["full"]["learner"], "test_auroc": _r(t["auroc"]), "test_auprc": _r(t["auprc"]),
             "brier": _r(t["brier"]), "calibration_slope": _r(t["calibration_slope"], 2),
-            "alert_budgets": {k: {"precision": _r(v["precision"]), "recall": _r(v["recall"])} for k, v in t["alert_rates"].items()},
+            "alert_budgets": {k: {"precision": _r(v["precision"]), "recall": _r(v["recall"]),
+                                  **({"realised_rate": _r(v["realised_rate"]), "threshold_from": SOURCE[v["threshold_from"]]}
+                                     if "threshold_from" in v else {})} for k, v in t["alert_rates"].items()},
             "lead_time": {"flagged_fraction": _r(lt["detected_fraction"]), "median_lead": lt["median_lead_weeks"], "n_onsets": lt["n_onsets"]},
             "rolling_origin_auroc_range": [_r(min(ro)), _r(max(ro))],
             "top6": sw.get("shap_summary", {}).get("top6"),
@@ -157,6 +196,7 @@ def emit(res: dict, inst, *, version: int, run_date: str, recorded_at: str, shap
     from atlantis_core import __version__
     b = inst.cfg["board"]
     ev = project(res, inst, version=version, recorded_at=recorded_at, shap_summary_ref=shap_summary_ref)
+    assert_thresholds_fixed(ev, res, swaps)   # before the schema, so the refusal names F-8 rather than a slot
     validate(ev)
     event = inst.event
     rep = res["features_report"]
@@ -171,6 +211,7 @@ def emit(res: dict, inst, *, version: int, run_date: str, recorded_at: str, shap
                          "test_auroc": _r(res["sensitivity"]["test_auroc"]), "test_auprc": _r(res["sensitivity"]["test_auprc"]),
                          "test_prevalence": _r(res["sensitivity"]["test_prevalence"])}] if "sensitivity" in res else [],
         "rolling_origin": [{k: (_r(v) if k in ("prevalence", "auroc", "auprc") else v) for k, v in r.items()} for r in res["rolling_origin"]],
+        "rolling_selection": res.get("rolling_selection"),
         "obligations": res.get("obligations", []),
         "shap_summary": {k: shap[k] for k in ("base_p", "additivity_max_gap", "top6", "group_mean_abs_shap", "group_net_mean_abs_shap",
                                               "tag_mean_abs_shap") if k in shap},
@@ -198,4 +239,21 @@ def delta(new_ev: dict, old_entry: dict) -> dict:
     d = {k: {"was": o.get(k), "now": new_ev.get(k), "change": (None if o.get(k) is None or new_ev.get(k) is None else _r(new_ev[k] - o[k]))}
          for k in keys}
     d["lead_time"] = {"was": o.get("lead_time"), "now": new_ev.get("lead_time")}
+    ob = {str(b["rate"]): b for b in o.get("alert_budgets", [])}
+    d["alert_budgets"] = {str(b["rate"]): {k: {"was": ob.get(str(b["rate"]), {}).get(k), "now": b.get(k)}
+                                           for k in ("precision", "recall", "n_alerts", "realised_rate", "threshold_from")}
+                          for b in new_ev.get("alert_budgets", [])}
     return {"entry": old_entry["entry_id"], "fields": d}
+
+
+def delta_rolling(new_rows: list, old_entry: dict) -> dict:
+    """Per rolling fold, was → now (AUROC, AUPRC, and how the fold selected). Folds keyed by test year."""
+    old = {r["test_year"]: r for r in (old_entry.get("evaluation_extras") or {}).get("rolling_origin", [])}
+    out = {}
+    for r in new_rows:
+        o = old.get(r["test_year"], {})
+        out[str(r["test_year"])] = {"auroc": {"was": o.get("auroc"), "now": _r(r["auroc"])},
+                                    "auprc": {"was": o.get("auprc"), "now": _r(r["auprc"])},
+                                    "selected_on": (r.get("selection") or {}).get("selected_on"),
+                                    "n_trees": (r.get("selection") or {}).get("n_trees")}
+    return out
