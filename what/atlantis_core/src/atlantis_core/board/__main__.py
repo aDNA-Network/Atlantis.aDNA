@@ -1,7 +1,11 @@
-"""python -m atlantis_core.board --instance <dir> --version N --run-date YYYY-MM-DD [--vs <old entry>] [--note …]…
+"""python -m atlantis_core.board --instance <dir> --version N --run-date YYYY-MM-DD [--vs <old entry>] [--note …]… [--entries <dir>]
+python -m atlantis_core.board --index [--check] [--entries <dir>]
 
 Reads `<instance>/outputs/atlantis_core/{metrics,shap_summary}.json` + `learner_swap_*.json` and writes
-`what/board/entries/<run_date>_<stem>_v<N>.json`. Refuses an existing file (entries are never overwritten, SO-2) —
+`<entries>/<run_date>_<stem>_v<N>.json`. `--entries` defaults to Atlantis's own `what/board/entries/`; an instance passes
+its own `<instance>/what/board/entries` (contract §A — the entry then travels to Atlantis by coordination memo, never by
+direct write). It must end in `what/board/entries`, so every provenance path stays relative to the repo that holds it.
+`--index` regenerates `<entries>/../BOARD.md` (`atlantis_core.board.index`); `--index --check` writes nothing. Refuses an existing file (entries are never overwritten, SO-2) —
 except `--regenerate "<reason>"`, which is refused unless the file has never reached `origin` (an entry no one else
 has seen may be corrected in place; the regeneration and its reason are recorded in `evaluation_extras.regenerated`).
 """
@@ -11,6 +15,7 @@ from pathlib import Path
 import pandas as pd
 
 from atlantis_core.board import BoardError, delta, emit, project
+from atlantis_core.board.index import write_or_check
 from atlantis_core.config import load_instance
 
 ENTRIES = Path(__file__).resolve().parents[4] / "board" / "entries"
@@ -18,23 +23,44 @@ ENTRIES = Path(__file__).resolve().parents[4] / "board" / "entries"
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="atlantis_core.board")
-    ap.add_argument("--instance", required=True); ap.add_argument("--version", type=int, required=True)
-    ap.add_argument("--run-date", required=True); ap.add_argument("--outputs", default="outputs/atlantis_core")
+    ap.add_argument("--instance"); ap.add_argument("--version", type=int)
+    ap.add_argument("--run-date"); ap.add_argument("--outputs", default="outputs/atlantis_core")
     ap.add_argument("--vs"); ap.add_argument("--note", action="append", default=[])
     ap.add_argument("--regenerate", metavar="REASON")
+    ap.add_argument("--entries", default=str(ENTRIES), help="the board's entries dir (default: Atlantis's own)")
+    ap.add_argument("--index", action="store_true", help="regenerate BOARD.md beside the entries dir")
+    ap.add_argument("--check", action="store_true", help="with --index: exit 1 if BOARD.md is stale; write nothing")
     a = ap.parse_args(argv)
+    entries = Path(a.entries).resolve()
+    if entries.parts[-3:] != ("what", "board", "entries"):
+        print(f"✗ --entries must be a <repo>/what/board/entries directory (got {a.entries})"); return 1
+    if a.index:
+        if a.instance or a.version is not None or a.run_date:
+            print("✗ --index renders the board; it does not emit (drop --instance/--version/--run-date)"); return 1
+        return write_or_check(entries, a.check)
+    if a.check:
+        print("✗ --check goes with --index"); return 1
+    missing = [f for f, v in (("--instance", a.instance), ("--version", a.version), ("--run-date", a.run_date)) if v is None]
+    if missing:
+        ap.error("emitting an entry needs " + ", ".join(missing))
+    if not entries.is_dir():
+        print(f"✗ no entries directory at {entries} (create it in the instance; nothing is written elsewhere)"); return 1
     inst = load_instance(a.instance)
     o = inst.root / a.outputs
+    if entries.parents[2] not in o.resolve().parents:
+        print(f"✗ the instance's outputs ({o}) are not inside the repo that holds {entries} — an instance writes its own "
+              f"board (--entries <instance>/what/board/entries); its entry reaches Atlantis by coordination memo, never "
+              f"by direct write (contract §A/§D)"); return 1
     res = json.loads((o / "metrics.json").read_text()); shap = json.loads((o / "shap_summary.json").read_text())
     swaps = {Path(p).stem: json.loads(Path(p).read_text()) for p in sorted(glob.glob(str(o / "learner_swap_*.json")))}
     now = pd.Timestamp.now("UTC").strftime("%Y-%m-%dT%H:%M:%SZ")
-    rel = lambda p: str(p.relative_to(ENTRIES.parents[2]))
-    out = ENTRIES / f"{a.run_date}_{inst.cfg['board']['entry_stem']}_v{a.version}.json"
+    rel = lambda p: str(Path(p).resolve().relative_to(entries.parents[2]))
+    out = entries / f"{a.run_date}_{inst.cfg['board']['entry_stem']}_v{a.version}.json"
     regen = None
     if out.exists():
         if not a.regenerate:
             print(f"✗ {out.name} exists — entries are never overwritten (SO-2)"); return 1
-        git = lambda *c: subprocess.run(["git", "-C", str(ENTRIES), *c], capture_output=True, text=True)
+        git = lambda *c: subprocess.run(["git", "-C", str(entries), *c], capture_output=True, text=True)
         if git("log", "--oneline", "origin/main", "--", out.name).stdout.strip():
             print(f"✗ {out.name} has reached origin — publish a new version instead (SO-2)"); return 1
         prev = git("log", "-1", "--format=%h", "--", out.name).stdout.strip()

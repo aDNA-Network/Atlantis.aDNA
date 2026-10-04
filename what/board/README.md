@@ -5,9 +5,9 @@ title: "what/board/ — the Atlantis evidence board (GREEN metrics only · NO AC
 status: draft
 schema: atl_board_entry_v1
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-03
 last_edited_by: agent_proteus
-mission: mission_m0_atlantis_genesis_planning
+mission: mission_m0_atlantis_genesis_planning   # BOARD.md generator + --entries: mission_m1d_ii_lattice_and_registries
 precedent: RareArchive.aDNA/what/board/ (ra_board_entry_v1, GREEN-only, promotion-to-gold is human)
 tags: [board, evidence, metrics, green, atlantis, m0]
 ---
@@ -50,17 +50,25 @@ it. If a field would carry one of these, the entry is wrong, not the rule.
    sitting script (see its `provenance` block).
 2. The entry travels to Atlantis as a coordination memo (`who/coordination/inbox/`); Proteus lands it by a dated
    commit after checking the required fields.
-3. `BOARD.md` is **regenerated** from `entries/` (generator is P1 M-1d); it is never hand-edited.
+3. `BOARD.md` is **regenerated** from `entries/` by `python -m atlantis_core.board --index` (M-1d-ii); it is never
+   hand-edited, and `--index --check` fails when it is stale. The generator refuses to render if any entry fails its
+   checks — closed `AtlEvaluation` (or the one grandfathered open shape, pinned by id **and** sha256), GREEN,
+   `assert_green`, the required minimum above. An instance keeps its own board the same way:
+   `board --instance <dir> … --entries <dir>/what/board/entries`, then `board --index --entries …`.
 4. **Promotion to a `gold/` set** (entries that anchor a thesis claim) is a **human act** — the operator's or, at
    P4, the steward council's. Nothing promotes itself.
 5. Entries are never deleted (SO-2); a superseded entry gets `superseded_by`.
 
 ## Contents
 
-| Entry | Source | Event | Base rate | AUROC / AUPRC | Lead (10% budget) | Claim |
-|---|---|---|---|---|---|---|
-| `entries/2026-09-23_gulf_karenia_brevis_v0.json` | exemplar | *K. brevis* ≥ 1e5 cells/L within 4 wk, 9 Florida coastal bands | 0.077 | 0.894 / 0.547 (climatology 0.577 / 0.104) | 64% flagged, median 4 wk | method_demonstration |
-| `entries/2026-10-02_gulf_karenia_brevis_v1.json` | exemplar via `atlantis_core` 0.2.0 | same event and patients; **calendar-correct SST lags** (v0's row-lag defect) · rolling-origin climatology refit per fold (R7) · semantic `config_hash` · closed `AtlEvaluation` | 0.077 | 0.894 / **0.539** (climatology 0.577 / 0.104) | 68% flagged, median 4 wk | method_demonstration |
+**→ [`BOARD.md`](BOARD.md)** — generated from `entries/` (the JSON is authoritative). Regenerate from `what/atlantis_core/`:
 
-*(This table is hand-maintained until the generator exists; the JSON is authoritative.)* From v1 on, entries are emitted by
-`python -m atlantis_core.board` — the `evaluation` is the closed `AtlEvaluation` and everything else sits in `evaluation_extras`.
+```
+.venv/bin/python -m atlantis_core.board --index            # writes ../board/BOARD.md
+.venv/bin/python -m atlantis_core.board --index --check    # exit 1 if stale; writes nothing
+```
+
+v0 (`2026-09-23_gulf_karenia_brevis_v0`) is shown and labelled **open shape**. The M-0 sitting script wrote it before the
+closed shape existed. It is the only open entry the generator accepts, and only as its pinned bytes (WI-8 closed
+2026-10-03). From v1 on, entries are emitted by `python -m atlantis_core.board`: the `evaluation` is the closed
+`AtlEvaluation`, and everything else sits in `evaluation_extras`.
