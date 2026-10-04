@@ -14,8 +14,8 @@ Short-lived coordination messages between concurrent agents operating on this pr
 
 ## Format
 
-Files are named `coord_<YYYY_MM_DD>_<from>_to_<persona>_<topic>.md`. This is instance contract §D's form, also used by
-`coord_2026_09_23_name_form_note.md`. *(Corrected 2026-10-03, M-1d-ii. The inherited template said
+Files are named `coord_<YYYY_MM_DD>_<from>_to_<persona>_<topic>.md`. This is instance contract §D's form.
+`coord_2026_09_23_name_form_note.md` predates it, and its `coord_` prefix is the only part that matches. *(Corrected 2026-10-03, M-1d-ii. The inherited template said
 `note_YYYYMMDD_{topic}.md`, which conflicted with the contract.)* **Memos from instance stewards go to `inbox/`**: see
 `inbox/AGENTS.md` and `who/governance/contribution_guide.md` §2a.
 

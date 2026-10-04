@@ -17,7 +17,7 @@ recipe, written as the lattice-labs pair `dataset_<x>.md` + `dataset_<x>.dataset
 | Record (pair) | Stream | Bytes here? |
 |---|---|---|
 | `dataset_fwc_hab_karenia.{md,dataset.yaml}` | `atl_stream_fwc_hab_karenia`: FWC HAB *K. brevis* counts 1970–2023 | **yes, grandfathered** (`fwc_hab_karenia_1970_2023.parquet`, 4.0 MB, public) |
-| `dataset_oisst_region_daily.{md,dataset.yaml}` | `atl_stream_oisst_region_daily`: OISST v2.1 regional SST 1982–2023 | **yes, grandfathered** (`oisst_region_daily.parquet`, 1.0 MB, public) |
+| `dataset_oisst_region_daily.{md,dataset.yaml}` | `atl_stream_oisst_region_daily`: OISST v2.1 regional SST 1982-01-01 → 2024-01-01 | **yes, grandfathered** (`oisst_region_daily.parquet`, 1.0 MB, public) |
 | `dataset_usgs_discharge_daily.{md,dataset.yaml}` | `atl_stream_usgs_discharge_daily`: USGS NWIS discharge, five gauges, 1990–2023 | **yes, grandfathered** (`usgs_discharge_daily.parquet`, 292 KB, public) |
 | `dataset_hab_env_covariates.md` | *superseded 2026-10-03* by the OISST and USGS pairs (one location and one checksum per record) | (none) |
 

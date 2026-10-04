@@ -177,3 +177,24 @@ def test_cli(exemplar_dir, tmp_path, capsys, spec):
     (tmp_path / "bad.json").write_text(json.dumps(spec))
     assert main(["--instance", str(exemplar_dir), "--spec", str(tmp_path / "bad.json")]) == 3
     assert "REJECT: instance: unknown key" in capsys.readouterr().err
+
+
+# --- III review (M-1d-ii) F-7 · F-10 -----------------------------------------------------------------------------
+def test_f7_trailing_newline_stream_id(spec):
+    spec["streams"] = ["atl_stream_fwc_hab_karenia\n"]
+    assert any("not a stream id" in e for e in rejects(spec, "streams"))
+
+
+def test_f7_non_ascii_digits_in_date(spec):
+    spec["board"]["run_date"] = "٢٠٢٦-١٠-٠٣"
+    rejects(spec, "board.run_date")
+
+
+def test_f10_huge_integer_is_a_reject_not_a_crash():
+    with pytest.raises(RunspecReject, match="unparseable"):
+        parse('{"stages": ["board"], "board": {"version": ' + "9" * 5000 + ', "run_date": "2026-10-03"}}')
+
+
+def test_f10_version_capped(spec):
+    spec["board"]["version"] = 10 ** 30
+    rejects(spec, "board.version")

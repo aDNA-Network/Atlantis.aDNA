@@ -7,7 +7,9 @@ Checks, per pair:
 - the yaml validates against `dataset_yaml_schema.json` (draft 2020-12, format checker live) — Atlantis carries a
   byte-identical copy of `Archive.aDNA/lattice-labs/what/datasets/dataset_yaml_schema.json`;
 - `name` is the file stem; `format.checksum` is `sha256:<64 hex>`;
-- if the bytes are beside it (`storage.location.path` resolves inside `<dir>`'s repo), their sha256 IS the checksum;
+- `storage.location.path` stays inside the repo; when the bytes are there, their sha256 IS the checksum. When they are
+  absent: an ERROR if the record promises them (`storage_in_atlantis: grandfathered_exemplar_snapshot`), otherwise a
+  printed "pin not verified" note — never a silent ✅ (III F-6, C-019);
 - `class_fields` carries the Rule-5 provenance (source_system · source_url · ingested_at) and the stream id;
 - the `.md` exists, points at this yaml, and repeats the same sha256 (a reader-facing copy that may not drift).
 It reads; it never fetches and never writes."""
@@ -25,7 +27,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 ROOT = Path(__file__).resolve().parents[4]
 SCHEMA = ROOT / "how" / "templates" / "template_dataset_pair" / "dataset_yaml_schema.json"
 PEER_SCHEMA = ROOT.parent / "Archive.aDNA" / "lattice-labs" / "what" / "datasets" / "dataset_yaml_schema.json"
-CHECKSUM = re.compile(r"^sha256:([0-9a-f]{64})$")
+CHECKSUM = re.compile(r"^sha256:([0-9a-f]{64})\Z")   # \Z: Python's $ accepts a trailing newline (III F-7, C-002)
 RULE5 = ("source_system", "source_url", "ingested_at")
 
 
@@ -36,8 +38,9 @@ def _front(md: Path) -> dict:
     return yaml.safe_load(t.split("---\n", 2)[1]) or {}
 
 
-def check_pair(y: Path, repo: Path, schema: dict) -> list[str]:
+def check_pair(y: Path, repo: Path, schema: dict, notes: list | None = None) -> list[str]:
     errs = []
+    notes = [] if notes is None else notes
     doc = yaml.safe_load(y.read_text())
     v = Draft202012Validator(schema, format_checker=FormatChecker())
     errs += [f"schema: {'/'.join(map(str, e.absolute_path)) or '<root>'}: {e.message[:160]}"
@@ -54,8 +57,15 @@ def check_pair(y: Path, repo: Path, schema: dict) -> list[str]:
         p = (repo / loc).resolve()
         if repo.resolve() not in p.parents:
             errs.append(f"storage.location.path {loc!r} escapes the repo")
-        elif p.exists() and hashlib.sha256(p.read_bytes()).hexdigest() != m.group(1):
-            errs.append(f"the bytes at {loc} do not hash to format.checksum")
+        elif p.exists():
+            if hashlib.sha256(p.read_bytes()).hexdigest() != m.group(1):
+                errs.append(f"the bytes at {loc} do not hash to format.checksum")
+        elif ((d.get("class_fields") or {}).get("storage_in_atlantis")) == "grandfathered_exemplar_snapshot":
+            errs.append(f"the record promises its bytes are here (grandfathered_exemplar_snapshot), but {loc} is absent")
+        else:
+            notes.append(f"{y.name}: pin not verified — no bytes at {loc} (a pointer record, or a fresh clone)")
+    elif m and not loc:
+        errs.append("storage.location.path missing")
     cf = d.get("class_fields") or {}
     for k in RULE5 + ("atl_stream_id",):
         if not cf.get(k):
@@ -74,12 +84,12 @@ def check_pair(y: Path, repo: Path, schema: dict) -> list[str]:
     return errs
 
 
-def check_dir(d: Path, repo: Path | None = None, schema_path: Path = SCHEMA) -> dict[str, list[str]]:
+def check_dir(d: Path, repo: Path | None = None, schema_path: Path = SCHEMA, notes: list | None = None) -> dict[str, list[str]]:
     import json
     schema = json.loads(Path(schema_path).read_text())
     repo = repo or _repo_of(Path(d))
     ys = sorted(Path(d).glob("dataset_*.dataset.yaml"))
-    out = {y.name: check_pair(y, repo, schema) for y in ys}
+    out = {y.name: check_pair(y, repo, schema, notes) for y in ys}
     for md in sorted(Path(d).glob("dataset_*.md")):
         f = _front(md)
         if f.get("status") != "superseded" and not md.with_name(md.stem + ".dataset.yaml").exists():
@@ -99,13 +109,16 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="atlantis_core.datasets")
     ap.add_argument("--check", required=True, metavar="DIR")
     a = ap.parse_args(argv)
-    res = check_dir(Path(a.check))
+    notes: list = []
+    res = check_dir(Path(a.check), notes=notes)
     if not res:
         print(f"✗ no dataset_*.dataset.yaml in {a.check}"); return 1
     for name, errs in res.items():
         print(("✅ " if not errs else "✗ ") + name)
         for e in errs:
             print(f"     {e}")
+    for n in notes:
+        print(f"note: {n}")
     return 1 if any(res.values()) else 0
 
 

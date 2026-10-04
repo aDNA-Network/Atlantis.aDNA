@@ -1,7 +1,7 @@
 ---
 type: dataset
 doc_id: dataset_oisst_region_daily
-title: "OISST v2.1 regional SST — nine Florida coastal region boxes, daily, 1982–2023"
+title: "OISST v2.1 regional SST — nine Florida coastal region boxes, daily, 1982-01-01 → 2024-01-01"
 dataset_class: reference
 category: gridded_environment
 domain: ecosystem_early_warning

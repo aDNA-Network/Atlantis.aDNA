@@ -8,14 +8,16 @@
 > owner's written ruling. Read every score against **its own base rate** and at **its stated alert budgets** — a bare
 > AUROC is not a result here.
 
-**2 entries** (0 superseded; 1 open-shape, grandfathered by id).
+**2 entries** (1 superseded by a newer version of the same stem; 1 open-shape, grandfathered by id).
 
 ## Entries
 
 | Entry | Source | Event | Patients | Base rate | AUROC / AUPRC | Climatology AUROC / AUPRC | Lead (budget) | Claim | Shape | Status |
 |---|---|---|---|---|---|---|---|---|---|---|
-| [`2026-09-23_gulf_karenia_brevis_v0`](entries/2026-09-23_gulf_karenia_brevis_v0.json) | exemplar | `atl_event_kbrevis_onset_100k_4w` ≥ 100000 /L within 4 wk | 9 × coastal_band | 0.0774 | 0.8941 / 0.5473 | 0.5767 / 0.1038 | 0.6364 of 22 onsets flagged, median 4.0 wk (@ 0.1) | method_demonstration | open shape — pre-atlantis_core (M-0 sitting script); not a closed AtlEvaluation | live |
+| [`2026-09-23_gulf_karenia_brevis_v0`](entries/2026-09-23_gulf_karenia_brevis_v0.json) | exemplar | `atl_event_kbrevis_onset_100k_4w` ≥ 100000 /L within 4 wk | 9 × coastal_band | 0.0774 | 0.8941 / 0.5473 | 0.5767 / 0.1038 | 0.6364 of 22 onsets flagged, median 4.0 wk (@ 0.1) | method_demonstration | open shape — pre-atlantis_core (M-0 sitting script); not a closed AtlEvaluation | superseded → `2026-10-02_gulf_karenia_brevis_v1` |
 | [`2026-10-02_gulf_karenia_brevis_v1`](entries/2026-10-02_gulf_karenia_brevis_v1.json) | exemplar | `atl_event_kbrevis_onset_100k_4w` ≥ 100000 /L within 4 wk | 9 × coastal_band | 0.0774 | 0.8938 / 0.5388 | 0.5767 / 0.1038 | 0.6818 of 22 onsets flagged, median 4.0 wk (@ 0.1) | method_demonstration | closed `AtlEvaluation` | live |
+
+*Status is derived, never written into an entry (SO-2): within one source, instance and stem, the highest version supersedes the lower ones. A superseded entry stays on the board.*
 
 ## Alert budgets
 
@@ -32,5 +34,5 @@
 
 ## Limits and ablations
 
-- **`2026-09-23_gulf_karenia_brevis_v0`** — limits: what/exemplars/gulf_karenia_brevis/site/hab_crash_risk.html#limits (§11 Where the analogy breaks) · README.md §Caveats · config `e9dea88254` · ablations: without surveillance group (n_samples_t0, n_samples_4w): AUROC 0.8903 / AUPRC 0.5264; surveillance-only single feature (n_samples_4w): AUROC 0.6239
-- **`2026-10-02_gulf_karenia_brevis_v1`** — limits: what/exemplars/gulf_karenia_brevis/site/hab_crash_risk.html#limits (§11 Where the analogy breaks) · README.md §Caveats · config `acfa22c6e4` · ablations: without surveillance group (n_samples_t0, n_samples_4w): AUROC 0.8885 / AUPRC 0.5244; surveillance-only single feature (n_samples_4w): AUROC 0.6239
+- **`2026-09-23_gulf_karenia_brevis_v0`**: limits: what/exemplars/gulf_karenia_brevis/site/hab_crash_risk.html#limits (§11 Where the analogy breaks) · README.md §Caveats · config `e9dea88254` · ablations: without surveillance group (n_samples_t0, n_samples_4w): AUROC 0.8903 / AUPRC 0.5264; surveillance-only single feature (n_samples_4w): AUROC 0.6239
+- **`2026-10-02_gulf_karenia_brevis_v1`**: limits: what/exemplars/gulf_karenia_brevis/site/hab_crash_risk.html#limits (§11 Where the analogy breaks) · README.md §Caveats · config `acfa22c6e4` · ablations: without surveillance group (n_samples_t0, n_samples_4w): AUROC 0.8885 / AUPRC 0.5244; surveillance-only single feature (n_samples_4w): AUROC 0.6239

@@ -49,8 +49,13 @@ cd what/atlantis_core && uv sync && .venv/bin/python -m pytest              # of
   - by the strict `lattice_yaml_schema.json`, a byte-identical copy of `aDNA.aDNA`'s;
   - by the peer `validate_lattice_file`, imported by path because it has no CLI. It is not run when `aDNA.aDNA` is absent,
     and its warnings count as failures;
-  - by local invariants neither checks: the graph is acyclic and connected, the gate order holds, modules import, and every
-    `-m` has a `__main__`.
+  - by local invariants neither checks:
+    - edges name real nodes, and ids are unique;
+    - the graph is acyclic and connected;
+    - each gate **dominates** its target (no path reaches `fetch` without `selftest`);
+    - modules import;
+    - every `-m` has a `__main__` guard, and every `--flag` is one its argparse declares (both checked by AST);
+    - the `invoked_by` nodes are exactly the run-spec's run block.
 
   `stages()` is the run-spec's vocabulary.
 - **`runspec`** is a closed vocabulary: `stages` · `fetch_mode` · `streams` · `learner_swaps` · `board{version,run_date}`.
@@ -64,6 +69,9 @@ cd what/atlantis_core && uv sync && .venv/bin/python -m pytest              # of
 - **`board --index`.** It renders `BOARD.md` beside the entries dir, sorted, with no timestamps.
   - Every entry is checked before anything renders, or the render refuses.
   - The one open-shape entry (v0) is grandfathered **by id and by pinned sha256**.
+  - The top level is closed. A rendered value carrying a line break or control character refuses the render, and `|` is
+    escaped.
+  - Supersession is derived, never written: the highest version of a stem supersedes the lower ones.
   - `--check` writes nothing.
   - `--entries` must end in `what/board/entries`, and the instance's outputs must sit inside that repo. An instance
     therefore cannot write Atlantis's board, and its entry travels by memo.

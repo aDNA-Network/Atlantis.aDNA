@@ -99,7 +99,7 @@ def test_fetch_before_selftest_local(doc):
     E += [{"from": "conform_declared", "to": "fetch"}, {"from": "raw_streams", "to": "selftest"},
           {"from": "selftest", "to": "conform_fetched"}]
     errs = L.check_local(doc)
-    assert any("selftest must precede fetch" in e for e in errs)
+    assert any("selftest must dominate fetch" in e for e in errs)
 
 
 def test_disconnected_local(doc):
@@ -128,3 +128,47 @@ def test_missing_gate_stage_local(doc):
     d["lattice"]["edges"] = [e for e in d["lattice"]["edges"] if "conform_fetched" not in (e["from"], e["to"])]
     d["lattice"]["edges"].append({"from": "raw_streams", "to": "grid"})
     assert any("conform_fetched" in e and "missing" in e for e in L.check_local(d))
+
+
+# --- III review (M-1d-ii) F-4 · F-5 ------------------------------------------------------------------------------
+def test_f4_bypass_edge_breaks_dominance(doc):
+    """F-4 (C-020): 'a path selftest→fetch exists' passed with a bypass edge; the gate is dominance."""
+    doc["lattice"]["edges"].append({"from": "declarations", "to": "fetch"})
+    assert any("selftest must dominate fetch" in e for e in L.check_local(doc))
+
+
+def test_f4_undeclared_flag(doc):
+    next(n for n in nodes(doc) if n["id"] == "fetch")["config"]["command"] = \
+        "python -m atlantis_core.fetch --instance <instance> --no-gate --network"
+    errs = L.check_local(doc)
+    assert any("['--network', '--no-gate']" in e for e in errs)
+
+
+def test_f4_invoker_must_be_run(doc):
+    next(n for n in nodes(doc) if n["id"] == "grid")["config"]["invoked_by"] = "python -m atlantis_core.board"
+    assert any("only atlantis_core.run runs library stages" in e for e in L.check_local(doc))
+
+
+def test_f4_run_block_matches_the_runspec(doc):
+    del next(n for n in nodes(doc) if n["id"] == "explain")["config"]["invoked_by"]
+    assert any("not the run-spec's run block" in e for e in L.check_local(doc))
+
+
+def test_f4_main_guard_is_ast_not_text(tmp_path, monkeypatch):
+    m = tmp_path / "fake_mod.py"
+    m.write_text("# __main__ is mentioned only in this comment\ndef main(): pass\n")
+    monkeypatch.syspath_prepend(str(tmp_path))
+    assert not L._has_main("fake_mod")
+    m.write_text("def main(): pass\nif __name__ == '__main__':\n    main()\n")
+    assert L._has_main("fake_mod")
+
+
+def test_f5_dangling_edge_and_duplicate_id_local(doc, monkeypatch, capsys):
+    """F-5 (C-015): with the peer absent, a dangling edge passed everything; local now re-checks it."""
+    doc["lattice"]["edges"].append({"from": "selftest", "to": "ghost_node"})
+    assert any("ghost_node" in e and "names no node" in e for e in L.check_local(doc))
+    d2 = L.load(); nodes(d2).append(dict(nodes(d2)[0]))
+    assert any("duplicate node id" in e for e in L.check_local(d2))
+    monkeypatch.setattr(L, "PEER_TOOLS", L.ROOT / "nonexistent")
+    assert L.main([]) == 0
+    assert "did NOT run" in capsys.readouterr().out

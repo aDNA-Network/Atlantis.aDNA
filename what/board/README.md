@@ -57,7 +57,11 @@ it. If a field would carry one of these, the entry is wrong, not the rule.
    `board --instance <dir> … --entries <dir>/what/board/entries`, then `board --index --entries …`.
 4. **Promotion to a `gold/` set** (entries that anchor a thesis claim) is a **human act** — the operator's or, at
    P4, the steward council's. Nothing promotes itself.
-5. Entries are never deleted (SO-2); a superseded entry gets `superseded_by`.
+5. Entries are never deleted **or edited** (SO-2). Supersession is **derived** by the generator, never written into an
+   entry: within one source, instance and stem, the highest version supersedes the lower ones (`BOARD.md` §Status).
+   An emitter may set `superseded_by` only when the entry is created, and it must agree with the derivation. *(Amended
+   2026-10-03, III F-9. The earlier text asked for `superseded_by` to be added to the old entry. That is an edit,
+   which SO-2 forbids, and v0's pinned bytes refuse it.)*
 
 ## Contents
 

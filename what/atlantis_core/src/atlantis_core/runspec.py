@@ -17,7 +17,7 @@ REJECTed (exit 3), never repaired. DDX rejects bad values but silently drops unk
 | `fetch_mode` | `offline` \\| `verify` \\| `network` — required iff `fetch` is a stage (a network fetch is chosen, never defaulted), forbidden otherwise |
 | `streams` | optional, iff `fetch` is a stage · non-empty list of `atl_stream_…` ids declared in the instance · default: every declared stream |
 | `learner_swaps` | optional bool, iff the run block is staged · default `true` |
-| `board` | `{version: int ≥ 1, run_date: "YYYY-MM-DD"}` — required iff `board` is a stage, forbidden otherwise |
+| `board` | `{version: int 1…9999, run_date: "YYYY-MM-DD"}` — required iff `board` is a stage, forbidden otherwise |
 """
 from __future__ import annotations
 
@@ -35,8 +35,9 @@ BOARD_KEYS = {"version", "run_date"}
 FETCH_MODES = ("offline", "verify", "network")
 RUN_BLOCK = ("grid", "vitals", "label", "train", "eval", "explain")
 NOT_ENABLED = {"discover": "stream discovery is declared-only until M-3a (streams are declared by hand at fork)"}
-STREAM_ID = re.compile(r"^atl_stream_[a-z0-9_]+$")
-DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+STREAM_ID = re.compile(r"^atl_stream_[a-z0-9_]+\Z")   # \Z: Python's $ accepts a trailing newline (III F-7, C-002)
+DATE = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}\Z")   # [0-9], not \d: \d matches Arabic-Indic digits
+MAX_VERSION = 9999
 
 
 class RunspecReject(ValueError):
@@ -57,6 +58,8 @@ def parse(text: str) -> dict:
             RunspecReject(f"non-finite number {c!r}")))
     except json.JSONDecodeError as e:
         raise RunspecReject(f"not JSON: {e}") from None
+    except ValueError as e:   # III F-10: a 5000-digit integer exceeds Python's int-parse limit — a REJECT, not a crash
+        raise RunspecReject(f"unparseable value: {str(e)[:120]}") from None
     return spec
 
 
@@ -137,8 +140,8 @@ def validate(spec, streams_declared, stage_vocab=None) -> list[str]:
                 errs.append(f"board.{k}: unknown key (closed vocabulary: run_date, version)")
             for k in sorted(BOARD_KEYS - set(b)):
                 errs.append(f"board.{k}: required")
-            if "version" in b and not (_is_int(b["version"]) and b["version"] >= 1):
-                errs.append(f"board.version: an integer ≥ 1 is required, got {b['version']!r}")
+            if "version" in b and not (_is_int(b["version"]) and 1 <= b["version"] <= MAX_VERSION):
+                errs.append(f"board.version: an integer 1…{MAX_VERSION} is required, got {str(b['version'])[:40]!r}")
             if "run_date" in b:
                 rd = b["run_date"]
                 if not isinstance(rd, str) or not DATE.match(rd):

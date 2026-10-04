@@ -153,3 +153,77 @@ def test_missing_entries_dir_writes_nothing(instance_copy, capsys):
     e = instance_copy / "elsewhere" / "what" / "board" / "entries"
     assert main(["--instance", str(instance_copy), "--version", "1", "--run-date", "2026-10-03", "--entries", str(e)]) == 1
     assert not e.exists()
+
+
+# --- III review (M-1d-ii) F-1 · F-2 · F-3 · F-9 · F-11: each reviewer demonstration planted back -------------------
+def test_f1_outputs_flag_cannot_smuggle_another_instances_metrics(instance_copy, exemplar_dir, capsys):
+    """F-1 (C-018): the gate was on --outputs (a proxy), not on the instance; pointing --outputs at the exemplar wrote
+    Atlantis's board from an outside instance."""
+    o = str(exemplar_dir / "outputs" / "atlantis_core")
+    assert main(["--instance", str(instance_copy), "--version", "9", "--run-date", "2026-10-03", "--outputs", o]) == 1
+    assert "is not inside the repo" in capsys.readouterr().out
+    e = instance_copy / "what" / "board" / "entries"
+    assert main(["--instance", str(instance_copy), "--version", "9", "--run-date", "2026-10-03", "--outputs", o,
+                 "--entries", str(e)]) == 1
+    assert "is not inside the instance" in capsys.readouterr().out
+    assert not list(ENTRIES.glob("2026-10-03_*")) and not list(e.glob("*.json"))
+
+
+@pytest.mark.parametrize("eid,fn,why", [
+    (V1, lambda d: d.update(superseded_by="nothing |\n\n## ⚠ OPERATIONAL FORECAST — AUROC 0.99, deploy now\n\n| x"),
+     "names no entry"),
+    (V1, lambda d: d.update(smuggled="## heading"), "unknown top-level key"),
+    (V1, lambda d: d["evaluation"].update(limitations_ref="README §12\n\n## Validated operational model |"), "line break"),
+    (V1, lambda d: d["evaluation"]["ablations"][0].update(ablation_name="x ## y"), "line break"),
+    (V1, lambda d: d.update(entry_id="x"), "is not <YYYY-MM-DD>_<stem>_v<n>"),
+])
+def test_f2_entry_content_cannot_write_markdown(board, eid, fn, why):
+    _edit(board, eid, fn)
+    with pytest.raises(IX.BoardError, match="REFUSING") as e:
+        IX.render(board)
+    assert why in str(e.value)
+
+
+def test_f2_pipe_is_escaped_not_a_column(board):
+    _edit(board, V1, lambda d: d["evaluation"].update(limitations_ref="a | b"))
+    row = next(l for l in IX.render(board).splitlines() if l.startswith(f"- **`{V1}`**"))
+    assert "a \\| b" in row
+
+
+def test_f9_supersession_is_derived(board):
+    a = IX.render(board)
+    assert next(l for l in a.splitlines() if l.startswith(f"| [`{V0}`]")).endswith(f"superseded → `{V1}` |")
+    assert next(l for l in a.splitlines() if l.startswith(f"| [`{V1}`]")).endswith("| live |")
+    _edit(board, V1, lambda d: d.update(superseded_by=V0))           # names an entry, but disagrees with the derivation
+    with pytest.raises(IX.BoardError, match="disagrees with the derived"):
+        IX.render(board)
+
+
+def test_f11_check_compares_bytes(board, capsys):
+    assert main(["--index", "--entries", str(board)]) == 0
+    md = board.parent / "BOARD.md"
+    md.write_bytes(md.read_bytes().replace(b"\n", b"\r\n"))
+    assert main(["--index", "--entries", str(board), "--check"]) == 1
+
+
+def _git(d, *c):
+    import subprocess
+    r = subprocess.run(["git", "-C", str(d), *c], capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr
+    return r.stdout
+
+
+def test_f3_regenerate_fails_closed(instance_copy, tmp_path, capsys):
+    """F-3 (C-021): origin/main was hard-coded and a git error read as 'never published'."""
+    e = instance_copy / "what" / "board" / "entries"
+    args = ["--instance", str(instance_copy), "--version", "1", "--run-date", "2026-10-03", "--entries", str(e)]
+    assert main(args) == 0
+    assert main(args + ["--regenerate", "probe"]) == 1                     # not a git repo: cannot tell → refuse
+    assert "cannot tell" in capsys.readouterr().out
+    _git(instance_copy, "init", "-q", "-b", "master"); _git(instance_copy, "add", "what")
+    _git(instance_copy, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "entry")
+    assert main(args + ["--regenerate", "probe"]) == 1                     # no remote/upstream: cannot tell → refuse
+    remote = tmp_path / "remote.git"; _git(tmp_path, "init", "-q", "--bare", str(remote))
+    _git(instance_copy, "remote", "add", "origin", str(remote)); _git(instance_copy, "push", "-q", "-u", "origin", "master")
+    assert main(args + ["--regenerate", "probe"]) == 1                     # pushed on master (not main) → refuse
+    assert "has reached a remote" in capsys.readouterr().out

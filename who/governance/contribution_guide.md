@@ -36,7 +36,7 @@ counts.
 | Docs: an error in the method, the contract or a README | **Credentials**: Atlantis stores names only (the Home broker) |
 
 **Snapshot rule (ADR-002 §4).** Atlantis adds **no new data snapshots**. A dataset record is a *pointer + sha256 +
-fetch recipe* (`how/templates/template_dataset_pair/`, checked by `python -m atlantis_core.datasets --check`). The
+fetch recipe* (`how/templates/template_dataset_pair/`, checked by `atlantis_core.datasets --check`). The
 exemplar's three public parquets are the capped, grandfathered exception. A contribution that would add bytes is wrong,
 whatever the rule says.
 
@@ -47,8 +47,8 @@ generator and `assert_green` refuse per-patient content by code. They are a back
 
 ### 2a. From an instance steward: coordination memo → inbox (contract §D)
 
-A steward never writes into Atlantis directly, and Atlantis never writes into an instance (Operations ADR-026; workspace
-Rule 10). The steward writes a memo:
+A steward never writes into Atlantis directly, and Atlantis never writes into an instance (Operations ADR-026; SO-5:
+peer vaults are read-only). The steward writes a memo:
 
 ```
 Atlantis.aDNA/who/coordination/inbox/coord_<YYYY_MM_DD>_<from>_to_proteus_<topic>.md
@@ -87,8 +87,8 @@ A code, template or doc change may arrive as a PR against `main`. A PR carries:
 | Ontology (`what/schema/atl_v0/`) | `run_controls.sh` says **ALL WORLDS AGREE**. A constraint is an intention until a fixture proves both validators enforce it |
 | Templates | the template validates against the schema it claims, with a planted defect for each failure mode it fixes (`tests/test_dataset_pairs.py`, `test_mapping_template.py`, `test_fork.py`) |
 | Board entry | emitted by code (numbers are never retyped); closed `AtlEvaluation`; GREEN; base rate, ≥ 1 alert budget, limitations ref; `claim: method_demonstration` unless the instance owner's written ruling is cited (SO-4, SO-9); then `python -m atlantis_core.board --index` regenerates `BOARD.md` |
-| Dataset record | a pair; `python -m atlantis_core.datasets --check what/datasets` ✅; pointer + sha256 + recipe, no bytes |
-| Pipeline lattice / runspec | `python -m atlantis_core.lattice` ✅: strict schema, the peer validator and the local invariants |
+| Dataset record | a pair; `.venv/bin/python -m atlantis_core.datasets --check ../datasets` ✅ (from `what/atlantis_core/`); pointer + sha256 + recipe, no bytes |
+| Pipeline lattice / runspec | `.venv/bin/python -m atlantis_core.lattice` ✅: strict schema, the peer validator (reported NOT RUN in a public clone; strict + local re-check what only it caught) and the local invariants |
 | Docs | no number without its source; no accuracy claim without its base rate, budget and limits (SO-9) |
 
 ## 4. Tiers: draft → reviewed → validated

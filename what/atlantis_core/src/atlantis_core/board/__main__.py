@@ -47,10 +47,15 @@ def main(argv=None) -> int:
         print(f"✗ no entries directory at {entries} (create it in the instance; nothing is written elsewhere)"); return 1
     inst = load_instance(a.instance)
     o = inst.root / a.outputs
-    if entries.parents[2] not in o.resolve().parents:
-        print(f"✗ the instance's outputs ({o}) are not inside the repo that holds {entries} — an instance writes its own "
+    repo, iroot = entries.parents[2], inst.root.resolve()
+    # III F-1 (C-018): gate on the IDENTITY (the instance root), not on a proxy another flag can point anywhere.
+    if not (iroot == repo or repo in iroot.parents):
+        print(f"✗ the instance ({inst.root}) is not inside the repo that holds {entries} — an instance writes its own "
               f"board (--entries <instance>/what/board/entries); its entry reaches Atlantis by coordination memo, never "
               f"by direct write (contract §A/§D)"); return 1
+    if iroot not in o.resolve().parents:
+        print(f"✗ --outputs ({o}) is not inside the instance ({inst.root}) — an entry pairs an instance's config with "
+              f"ITS OWN run's metrics"); return 1
     res = json.loads((o / "metrics.json").read_text()); shap = json.loads((o / "shap_summary.json").read_text())
     swaps = {Path(p).stem: json.loads(Path(p).read_text()) for p in sorted(glob.glob(str(o / "learner_swap_*.json")))}
     now = pd.Timestamp.now("UTC").strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -61,8 +66,14 @@ def main(argv=None) -> int:
         if not a.regenerate:
             print(f"✗ {out.name} exists — entries are never overwritten (SO-2)"); return 1
         git = lambda *c: subprocess.run(["git", "-C", str(entries), *c], capture_output=True, text=True)
-        if git("log", "--oneline", "origin/main", "--", out.name).stdout.strip():
-            print(f"✗ {out.name} has reached origin — publish a new version instead (SO-2)"); return 1
+        # III F-3 (C-021): fail CLOSED. Any git error, no remote, or no upstream = "cannot tell" = refuse. Reads the
+        # remote-tracking refs as of the last fetch (no network here); a commit on ANY of them has been published.
+        up, pub = git("rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"), git("log", "--remotes", "--oneline", "--", out.name)
+        if up.returncode or pub.returncode or not git("remote").stdout.strip():
+            print(f"✗ cannot tell whether {out.name} has been published (no git repo, remote or upstream: "
+                  f"{(up.stderr or pub.stderr).strip()[:120]}) — refusing to regenerate (SO-2); publish a new version"); return 1
+        if pub.stdout.strip():
+            print(f"✗ {out.name} has reached a remote ({up.stdout.strip()} or another) — publish a new version instead (SO-2)"); return 1
         prev = git("log", "-1", "--format=%h", "--", out.name).stdout.strip()
         regen = {"replaces_commit": prev or None, "reason": a.regenerate, "at": now}
     dv = None

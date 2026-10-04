@@ -22,7 +22,9 @@ dataset:
                                       # "source" provider: a record that is only a pointer keeps provider local (the
                                       # instance cache path) and puts the source in class_fields.source_url
     location:
-      path: "data/raw/NAME.parquet"   # relative to the repo that holds the bytes (an absolute path would name one machine)
+      path: "data/raw/NAME.parquet"   # DECLARED DEVIATION: the schema describes `path` as absolute; Atlantis records use a
+                                      # path relative to the repo that holds the bytes (an absolute path names one machine
+                                      # in a public repo). The schema types it only as a string; the checker confines it.
   fair:
     license: "<SPDX, or the agency's terms verbatim>"
     keywords: [<taxon>, <region>, <variable>]

@@ -113,3 +113,22 @@ def test_live_md_without_twin_fails_superseded_passes(recs):
     assert "dataset_hab_env_covariates.md" not in DS.check_dir(recs)          # superseded: no twin needed
     (recs / "dataset_new_stream.md").write_text("---\ntype: dataset\nstatus: active\n---\n")
     assert DS.check_dir(recs)["dataset_new_stream.md"]
+
+
+# --- III review (M-1d-ii) F-6 · F-7 ------------------------------------------------------------------------------
+def test_f6_absent_bytes_are_never_a_silent_pass(recs, capsys):
+    """F-6 (C-019): the byte check ran only `if p.exists()`."""
+    (recs / "usgs_discharge_daily.parquet").unlink()                       # promised (grandfathered) and absent → error
+    assert any("is absent" in e for e in DS.check_dir(recs)["dataset_usgs_discharge_daily.dataset.yaml"])
+    y = recs / "dataset_oisst_region_daily.dataset.yaml"
+    _edit_yaml(y, lambda d: (d["storage"]["location"].update(path="what/datasets/oisst.parqeut"),
+                             d["class_fields"].update(storage_in_atlantis="none")))
+    notes = []
+    assert DS.check_dir(recs, notes=notes)[y.name] == []                   # a pointer record without bytes: not an error…
+    assert any("pin not verified" in n for n in notes)                     # …but never silent
+
+
+def test_f7_checksum_trailing_newline(recs):
+    y = recs / "dataset_usgs_discharge_daily.dataset.yaml"
+    _edit_yaml(y, lambda d: d["format"].update(checksum=d["format"]["checksum"] + "\n"))
+    assert any("sha256:<64 hex>" in e for e in DS.check_dir(recs)[y.name])

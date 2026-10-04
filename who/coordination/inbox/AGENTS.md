@@ -10,8 +10,9 @@ tags: [directory_index, coordination, inbox, memo, atlantis]
 
 # who/coordination/inbox/
 
-Memos **to Atlantis** from instance stewards, or from peer graphs. It is the only way anything crosses into this repo from
-an instance (instance contract §D; `who/governance/contribution_guide.md` §2a). No one writes into Atlantis directly, and
+Memos **to Atlantis** from instance stewards, or from peer graphs. An instance's contributions cross into this repo only this
+way (instance contract §D; `who/governance/contribution_guide.md` §2a). Anyone may also open a pull request against the
+public repo (guide §2b), but never with instance data. No one writes into Atlantis directly, and
 Atlantis writes into no one.
 
 **File name:** `coord_<YYYY_MM_DD>_<from>_to_proteus_<topic>.md`
