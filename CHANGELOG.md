@@ -1,5 +1,17 @@
 # CHANGELOG — Atlantis.aDNA
 
+## 2026-10-03 — v0.8.1 · P1 gate MET — conditional GO for P2
+
+- **Operator rulings** (`AskUserQuestion`, after an opus decision brief):
+  - **conditional GO for P2**;
+  - **ADR-002 A-1 ratified** (the exemplar's explainer pages join §4's capped exception);
+  - **contribution guide ratified** (0.1.1: the operator is the merge authority until P4);
+  - **C-004/C-009 graduation** proposed to III.aDNA by memo.
+- **P2 conditions → cards:**
+  - **M-1e** (F-8: thresholds and fold tree counts fixed on validation → board v2) runs first;
+  - M-2 is re-carded as **M-2a** (CRW-via-ERDDAP check · fork · persistent-event self-test · fetch) and **M-2b** (model
+    · instance page · board by memo → P2 gate). NDBC is dropped. The original M-2 card is kept as superseded.
+
 ## 2026-10-03 — v0.8.0 · M-1d-ii pipeline lattice · runspec · BOARD · dataset pairs · contribution guide (P1 lanes closed)
 
 - **`how/lattices/lattice_atlantis_pipeline.lattice.yaml`** is the method as one pipeline:

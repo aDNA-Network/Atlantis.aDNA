@@ -30,7 +30,10 @@ go in each card's `token_budget_actual` at close.
 | ~~M-1d~~ | *split 2026-10-03 (operator ruling) → M-1d-i + M-1d-ii; card kept as superseded* | P1 | — | — | — | `missions/mission_m1d_fork_skill_and_registries.md` |
 | M-1d-i ✅ | Fork from templates alone: atl_v0 0.3.0 · contract v0.2.0 · fetch CLI gated on the self-test · instance templates · `atlantis_core.fork` + `conform` · `skill_atlantis_instance_fork` · dry run | P1 | opus | ~110-130kT | M-1b-ii-b, M-1c | `missions/mission_m1d_i_fork_and_conformance.md` |
 | M-1d-ii ✅ | Pipeline lattice + runspec · BOARD generator (WI-8) · dataset-pair migration · contribution guide · `board --entries` | P1 | opus | ~80-100kT (actual ≈177) | M-1d-i | `missions/mission_m1d_ii_lattice_and_registries.md` |
-| M-2 | First MPA instance — `FloridaKeysCoral.aDNA`: FKNMS zones × week, degree-heating-weeks onset, gridded-only vitals, no Atlantis code edits | P2 | opus | 150-220kT | M-1d | `missions/mission_m2_fknms_coral_instance.md` |
+| M-1e | **P2 condition (a):** alert thresholds and rolling-fold tree counts fixed on validation (F-8 / WI-11) → board v2 | P1 | opus | ~110-160kT | M-1d-ii | `missions/mission_m1e_eval_thresholds_on_validation.md` |
+| ~~M-2~~ | *re-carded 2026-10-03 (P1-gate condition (b)) → M-2a + M-2b; card kept as superseded* | P2 | — | — | — | `missions/mission_m2_fknms_coral_instance.md` |
+| M-2a | `FloridaKeysCoral.aDNA`: CRW-via-ERDDAP check · fork · posture · persistent-event self-test (full catalogue) · fetch · conform (fetched); NDBC dropped | P2 | opus | ~150-200kT | M-1d-ii, M-1e | `missions/mission_m2a_fknms_fork_and_fetch.md` |
+| M-2b | `FloridaKeysCoral.aDNA`: train · eval (thresholds on validation) · explain · instance page · board entry by memo → P2 gate | P2 | opus | ~150-200kT | M-2a | `missions/mission_m2b_fknms_model_and_board.md` |
 | M-3a | `skill_stream_discovery` — playbook §A as a runnable skill with the traps as checks | P3 | opus | 40-60kT | M-1d | `missions/mission_m3a_stream_discovery_skill.md` |
 | M-3b | Hypothesis ledger populated + `skill_feature_hypothesis_mining` + one literature-asserted driver tested by SHAP | P3 | opus | 100-150kT | M-2, M-3a | `missions/mission_m3b_hypothesis_ledger_and_mining.md` |
 | M-4 | Instance contract v1, steward governance set, consumer register, Exchange listing, first outside steward | P4 | fable | 90-140kT | M-2, M-3b | `missions/mission_m4_federation_and_stewards.md` |
@@ -49,5 +52,5 @@ Calibrated campaign estimate: **12–18 sessions** (seed said 8–14 for the nar
 
 ## Critical path
 
-M-0 ✅ → M-1a ✅ → M-1b-i ✅ → M-1b-ii-a ✅ → M-1b-ii-b ✅ → M-1d-i ✅ → M-1d-ii ✅ → **P1 gate** → M-2 → **P2 gate** → M-3b → **P3 gate** → M-4 → **P4 gate** → M-5.
+M-0 ✅ → M-1a ✅ → M-1b-i ✅ → M-1b-ii-a ✅ → M-1b-ii-b ✅ → M-1d-i ✅ → M-1d-ii ✅ → **P1 gate ✅ (conditional GO)** → M-1e → M-2a → M-2b → **P2 gate** → M-3b → **P3 gate** → M-4 → **P4 gate** → M-5.
 M-1c runs beside M-1a/M-1b; M-3a beside M-2.

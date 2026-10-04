@@ -4,7 +4,8 @@ mission_id: M-2
 plan_id: mission_m2_fknms_coral_instance
 title: "M-2 — First MPA instance — `FloridaKeysCoral.aDNA`: FKNMS zones × week, degree-heating-weeks onset, gridded-only vitals, no Atlantis code edits"
 owner: stanley
-status: planned
+status: superseded
+superseded_by: [mission_m1e_eval_thresholds_on_validation, mission_m2a_fknms_fork_and_fetch, mission_m2b_fknms_model_and_board]
 campaign: campaign_atlantis_genesis
 campaign_id: campaign_atlantis_genesis
 phase: P2
@@ -17,11 +18,15 @@ depends_on: ['M-1d']
 aar_path: how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m2_fknms_coral_instance.md
 session: TBD
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-03
 last_edited_by: agent_proteus
 home_vault: Atlantis.aDNA
 tags: [mission, m2, p2, opus, atlantis, tidewatch]
 ---
+
+> **Superseded 2026-10-03 (P1-exit gate, conditional GO).** Re-carded as **M-1e** (F-8 fix first, condition (a)) →
+> **M-2a** (fork → fetched; CRW via ERDDAP checked, NDBC dropped — condition (c)) → **M-2b** (model → board by memo →
+> P2 gate), with budgets set from P1's observed overruns (condition (b)). Kept unedited below, per SO-2.
 
 # M-2 — First MPA instance — `FloridaKeysCoral.aDNA`: FKNMS zones × week, degree-heating-weeks onset, gridded-only vitals, no Atlantis code edits
 
