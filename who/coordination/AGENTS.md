@@ -1,8 +1,8 @@
 ---
 type: directory_index
 created: 2026-02-17
-updated: 2026-02-19
-last_edited_by: agent_init
+updated: 2026-10-03
+last_edited_by: agent_proteus
 tags: [directory_index, coordination]
 ---
 
@@ -14,7 +14,10 @@ Short-lived coordination messages between concurrent agents operating on this pr
 
 ## Format
 
-Files should be named: `note_YYYYMMDD_{topic}.md`
+Files are named `coord_<YYYY_MM_DD>_<from>_to_<persona>_<topic>.md`. This is instance contract §D's form, also used by
+`coord_2026_09_23_name_form_note.md`. *(Corrected 2026-10-03, M-1d-ii. The inherited template said
+`note_YYYYMMDD_{topic}.md`, which conflicted with the contract.)* **Memos from instance stewards go to `inbox/`**: see
+`inbox/AGENTS.md` and `who/governance/contribution_guide.md` §2a.
 
 ```yaml
 ---
@@ -41,8 +44,8 @@ Brief description of what other agents need to know.
 
 1. **Create** when you discover something cross-cutting (e.g., "shared config is mid-edit", "sync issue detected")
 2. **Read** on session start (part of the Agent Startup Checklist in CLAUDE.md)
-3. **Delete** when the note is expired or no longer relevant
-4. **No archive** — coordination notes are ephemeral, no history needed
+3. **Close** an expired note by setting `status: completed | superseded` with a dated line. **Never delete** (SO-2,
+   archive-never-delete; corrected 2026-10-03, since the inherited template said "delete, no archive")
 
 ## Rules
 
@@ -57,7 +60,7 @@ Brief description of what other agents need to know.
 **Load this directory when**:
 - Session startup — checking for urgent cross-agent notes (startup checklist step 5)
 - Posting a coordination note after discovering something cross-cutting (sync issue, config conflict, shared work overlap)
-- Cleaning up expired coordination notes
+- Closing expired coordination notes (status, never `rm`)
 
 **Skip when**:
 - Already checked coordination during startup and found no urgent notes
