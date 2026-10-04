@@ -1,15 +1,15 @@
 ---
 type: state
 status: p1_open
-phase: "P1 — Core canonisation; M-1a + M-1c + M-1b-i + M-1b-ii-a complete 2026-10-02, M-1b-ii-b + M-1d-i complete 2026-10-03; M-1d-ii queued → P1 gate"
+phase: "P1 — Core canonisation; every lane complete (M-1a · M-1c · M-1b-i · M-1b-ii-a 2026-10-02; M-1b-ii-b · M-1d-i · M-1d-ii 2026-10-03) → P1 gate (fable, operator) queued"
 campaigns: [campaign_atlantis_genesis]
-mission: mission_m1d_ii_lattice_and_registries   # queued; M-1d-i ✅ 2026-10-03 (M-1d split by operator ruling → i / ii); M-1b-ii-b ✅ 2026-10-03; M-1b-ii-a ✅ · M-1b-i ✅ · M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
+mission: p1_gate   # queued (fable, operator-summoned); M-1d-ii ✅ 2026-10-03; M-1d-i ✅ · M-1b-ii-b ✅ 2026-10-03; M-1b-ii-a ✅ · M-1b-i ✅ · M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
 persona: proteus   # RULED 2026-10-02 (ADR-001 ratified)
-last_session: session_stanley_20261003_210703_m1d_i_fork_and_conformance (opus)
+last_session: session_stanley_20261004_002004_m1d_ii_lattice_and_registries (opus)
 created: 2026-09-23
 updated: 2026-10-03
 last_edited_by: agent_proteus
-tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_complete, m1b_ii_a_complete, m1b_ii_b_complete, m1d_i_complete]
+tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_complete, m1b_ii_a_complete, m1b_ii_b_complete, m1d_i_complete, m1d_ii_complete, p1_gate_queued]
 ---
 
 # STATE — Atlantis.aDNA
@@ -23,57 +23,88 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
 4. The exemplar is at hygiene (M-1a): `what/exemplars/gulf_karenia_brevis/README.md` §Provenance · `uv sync && .venv/bin/python -m pytest` · self-test green.
 5. The ontology is controlled (M-1c; 0.3.0 at M-1d-i): `what/schema/atl_v0/README.md` (proof table · known limits) · `LINKML_BIN=<scratch venv>/bin what/schema/atl_v0/fixtures/controls/run_controls.sh` → ALL WORLDS AGREE (45 controls).
 6. III review goes through `iii/` in a fresh context (SO-10).
-7. The core (M-1b-i + ii-a + ii-b + M-1d-i): `what/atlantis_core/README.md` · `cd what/atlantis_core && uv sync && .venv/bin/python -m pytest` (330, ~8.5 min) ·
+7. The core (M-1b-i + ii-a + ii-b + M-1d-i + M-1d-ii): `what/atlantis_core/README.md` · `cd what/atlantis_core && uv sync && .venv/bin/python -m pytest` (475, ~2 min unloaded) ·
    `.venv/bin/python -m atlantis_core.selftest --instance ../exemplars/gulf_karenia_brevis` (all-stream, SO-7) ·
    `python -m atlantis_core.run --instance …` (→ `outputs/atlantis_core/`, ~7 min) · `python -m atlantis_core.board …` (→ `what/board/entries/`) ·
    `python -m atlantis_core.site --instance …` (→ the instance's page, ~2 s) · `python -m atlantis_core.mapping --check <mapping.yaml>` ·
    **a new instance:** `how/skills/skill_atlantis_instance_fork.md` → `atlantis_core.fork` · `conform` · `selftest` (receipt) · `fetch` (gated).
+8. The method as one pipeline (M-1d-ii): `how/lattices/lattice_atlantis_pipeline.lattice.yaml` · `python -m atlantis_core.lattice` ·
+   `atlantis_core.runspec --plan` · `what/board/BOARD.md` (`board --index --check`) · `atlantis_core.datasets --check ../datasets` ·
+   `who/governance/contribution_guide.md` (draft).
 
 ## ⏭ QUEUED — Next Live Session
 
-**M-1d-i complete 2026-10-03** (opus; AAR `missions/aar/aar_m1d_i_fork_and_conformance.md`).
-- **The P1 exit bar is met.** A fictional hypoxia instance forked from templates alone in the scratchpad passed contract
-  items 1–8 and 11–12, with the self-test green before any fetch and no network. This held only after the III fixes; the
-  dry run was re-run on the hardened code.
-- **The core's new surfaces:**
-  - `atlantis_core.fork` (from `how/templates/template_instance/`);
-  - `atlantis_core.conform` (contract v0.2.0, items 1–12);
-  - `atlantis_core.fetch`, gated on the self-test receipt and a signed posture ruling;
-  - R8.
-- **atl_v0 0.3.0:** a declared stream validates before it is fetched.
-- **The self-test is shape-general:** any event-stream shape, a mirror-direction C5, and C8 calendar-lag invariance. The
-  full defect catalogue runs in two forked worlds.
-- **III:** PASS-WITH-FINDINGS, 9/9 addressed. C-004 and C-009 are at frequency 3, graduation candidates (the operator's call).
-- **Budget:** ≈295 kT main (≈ +130%) + ≈241 kT reviewer. The operator ruled to continue at the +50% trip.
+**M-1d-ii complete 2026-10-03** (opus; AAR `missions/aar/aar_m1d_ii_lattice_and_registries.md`). **Every P1 lane is closed.**
+- **The pipeline lattice** (`how/lattices/lattice_atlantis_pipeline.lattice.yaml`) passes three checks: the strict schema,
+  the peer `validate_lattice_file`, and local invariants (dominance for every gate · AST flags and `__main__` · run block =
+  runspec).
+- **`atlantis_core.runspec`** is a closed vocabulary (it rejects rather than coerces, and executes nothing — operator
+  ruling).
+- **`BOARD.md`** is generated, byte-stable and `--check`ed; v0 is labelled open-shape and pinned, and its supersession is
+  derived. **WI-8 closed.**
+- **`board --entries`** lets an instance keep its own board, and it cannot write Atlantis's.
+- **Dataset pairs:** the template is fixed against its schema; three pairs; `datasets --check`. **WI-18 closed.**
+- **The contribution guide** is draft 0.1.0, raised for ratification.
+- **III:** PASS-WITH-FINDINGS, 2 major, 7 minor and 5 notes, **14/14 addressed**. Learning store: C-018…C-021 new;
+  C-002, C-012 and C-015 reach 2.
+- **Tests:** 475. The byte-stable set is unchanged.
+- **Budget:** ≈177 kT main (≈ +77%) + ≈231 kT reviewer. At the post-review SITREP the operator ruled "fix all, then close".
 
-**Next: M-1d-ii** (opus), then the **P1 gate** (fable, operator).
+**Next: the P1 gate** (fable, operator-summoned). Then M-2 (FKNMS, opus) → P2 gate.
 
-**Next Session Prompt (self-contained, M-1d-ii):**
+**Next Session Prompt (self-contained, P1 gate):**
 
-> You are Proteus in `~/aDNA/Atlantis.aDNA`. P1 is open. Every P1 lane except M-1d-ii is closed (M-1d-i on 2026-10-03).
-> Run **M-1d-ii — pipeline lattice + runspec · BOARD generator · dataset pairs · contribution guide · `board --entries`**
-> at **opus**. Read, in order:
+> You are Proteus in `~/aDNA/Atlantis.aDNA`. Every P1 lane is closed: M-1a, M-1c, M-1b-i and M-1b-ii-a (2026-10-02);
+> M-1b-ii-b, M-1d-i and M-1d-ii (2026-10-03). Run the **P1 exit gate** at **fable**. It is an operator-summoned sitting
+> (SO-1). Nothing advances to P2 without Stanley's explicit GO. Read, in order:
 > 1. STATE;
-> 2. `how/campaigns/campaign_atlantis_genesis/missions/mission_m1d_ii_lattice_and_registries.md`, including §Inputs from M-1d-i;
-> 3. the M-1d-i AAR (Finding, Change, Follow-up);
-> 4. `what/atlantis_core/README.md`;
-> 5. `what/board/README.md`;
-> 6. `what/datasets/AGENTS.md`.
+> 2. the charter's §P1 exit bar (`how/campaigns/campaign_atlantis_genesis/campaign_atlantis_genesis.md`);
+> 3. the AARs of M-1d-i and M-1d-ii (`missions/aar/`), with M-1a, M-1b-i, M-1b-ii-a, M-1b-ii-b and M-1c as needed.
 >
-> Open a session lease. The card's acceptance criteria govern. Watch for:
-> - `aDNA.aDNA/what/lattices/tools/lattice_validate.py` has **no CLI**: import `validate_lattice_file`, and also validate
->   against the stricter `lattice_yaml_schema.json`. The peer vault is read-only;
-> - the dataset-pair template **fails its own lattice-labs schema**: fix it first;
-> - the `BOARD.md` generator closes WI-8 (byte-stable, with a `--check` mode, v0's open shape labelled);
-> - the lattice draws self-test **before** fetch (the fetch gates).
->
-> Do not change board v1 or the v0/v1 pages. Run the SO-7 self-tests before any vitals or label commit. Budget honestly:
-> the self-test and catalogue cost real time (~8.5 min a run), and at >50% over, SITREP and ask. Run the III review via
-> `iii/` in a fresh context (SO-10), budgeted at least the build's size. Make path-scoped commits. File the AAR; the card
-> goes `completed` only after it. Then request the **P1 gate** (fable sitting, operator-summoned). Raise ADR-002 A-1 for
-> ratification there, along with the C-004/C-009 graduation question.
+> Open a session lease. Then:
+> - **(a) Verify the exit bar first-hand. Do not take the AARs' word for it:**
+>   1. a fresh instance forks from templates alone, self-test green before any fetch: re-run the M-1d-i dry run shape
+>      in the scratchpad, `fork` → `conform` → `selftest`, with no network;
+>   2. `atlantis_core` reproduces the exemplar's metrics (`tests/test_eval.py` port equivalence);
+>   3. the `atl_v0` controls give ALL WORLDS AGREE;
+>   4. every lane carries an III review via `iii/`;
+>   5. also: `python -m atlantis_core.lattice` · `board --index --check` · `datasets --check ../datasets` · the full
+>      suite (475).
+> - **(b) Run an adversarial pass of your own** over P1 as a whole: what would a first outside steward trip on?
+> - **(c) Surface the operator decisions with `AskUserQuestion`.** Never decide them yourself:
+>   1. **GO / NO-GO for P2**;
+>   2. **ratify ADR-002 A-1** (the exemplar's explainer pages join §4's exception);
+>   3. **ratify `who/governance/contribution_guide.md`** (draft 0.1.0);
+>   4. **C-004 / C-009 graduation** to III.aDNA (frequency 3; ADR-003 ceremony);
+>   5. whether to push `main` to `origin`. Local `main` is ahead of `origin/main` by every P1 commit; pushing publishes
+>      the public repo, which is an outward act and the operator's.
+> - **(d)** Write the gate's 4-field ratification blocks for whatever is ruled. Update STATE, the charter and the
+>   CHANGELOG. Queue M-2 (`missions/mission_m2_*`, opus) if GO.
+> - **(e) Memos after the gate** (peer vaults are read-only, so these are coordination memos; see WI-9, WI-16, WI-17,
+>   M-1d-ii AAR §Follow-up): Rosetta (lattice_validate) · lattice-labs / Datasets.aDNA (dataset schema) · DDX (runspec
+>   unknown keys) · Neo4j (`atl_` labels) · Hestia (router row category).
 
 ## What's in place
+
+### M-1d-ii (2026-10-03 — commits `3e787d3`…`8ca7bc5` + close)
+
+- **Lattice:** `how/lattices/lattice_atlantis_pipeline.lattice.yaml` with `atlantis_core.lattice`. It is checked three
+  ways: the strict schema (a byte-identical copy), the peer validator imported by path, and local invariants (edge
+  references · ids · acyclic · connected · gate dominance · AST flags and `__main__` · run block = runspec).
+- **Runspec:** `atlantis_core.runspec` + `how/templates/template_runspec.example.json`. A closed vocabulary that
+  validates and plans; exit 3 = REJECT.
+- **Board:** `board --index [--check]` → `what/board/BOARD.md`. Every entry is checked, or the render refuses. v0 is
+  open-shape, pinned by id and sha256, with supersession derived. `board --entries <repo>/what/board/entries`.
+- **Datasets:** `atlantis_core.datasets --check`. The template is fixed, with its schema copied beside it. Three pairs;
+  the env-covariates note is superseded in place.
+- **Governance:** `who/governance/contribution_guide.md` (draft) · `who/coordination/inbox/`.
+- **Tests:** 330 → 475.
+- **Findings of record:**
+  - two gates checked a proxy (`--outputs`; reachability for dominance);
+  - validated strings could still write markdown onto the board;
+  - an open-shape record's only closure is its bytes;
+  - "nothing in the workspace passes" was 2 of 26 (corrected).
+
 
 ### M-1d-i (2026-10-03 — commits `999a9fa`…`16558df` + close)
 
@@ -191,7 +222,8 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
 
 ## Active blockers
 
-- None. M-1d-ii is operator-summonable at opus. **ADR-002 A-1 awaits operator ratification** (`#needs-human`, not blocking M-1d-ii).
+- None blocking. **The P1 gate is operator-summonable at fable** (`#needs-human`). At it: ADR-002 A-1 · the contribution
+  guide · C-004/C-009 graduation · GO/NO-GO for P2 · whether to push `main` (ahead of `origin/main` by every P1 commit).
 
 ## Watch items
 
@@ -202,7 +234,8 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
 - WI-5 — `Datasets.aDNA` provenance-contract seam open (ASOAtlas memo 2026-09-25 unanswered); Atlantis co-signs after the gate (`how/backlog/idea_cosign_datasets_provenance_contract.md`).
 - ~~WI-6~~ **closed 2026-10-02 (M-1a)** — README/config drift fixed; board entry already followed the outputs.
 - ~~WI-7~~ **closed 2026-10-02 (M-1b-ii-a)** — board v1's `config_hash` is the semantic hash (`acfa22c6e4`; its boundary set by effect, III F-2) with the bytes-md5s beside it; `hab`'s `e9dea88254` stays explained in exemplar README §Provenance.
-- WI-8 — The board entry's embedded `evaluation` is **not** a closed `AtlEvaluation` (extra keys: `event`, `patient`, `modelling_*`,
+- ~~WI-8~~ **closed 2026-10-03 (M-1d-ii)** — `BOARD.md` is generated by `board --index`. v0 is rendered and labelled
+  open-shape (grandfathered by id + sha256), and v1 is closed. Original text follows. The board entry's embedded `evaluation` is **not** a closed `AtlEvaluation` (extra keys: `event`, `patient`, `modelling_*`,
   `dropped_*`, `n_trees`, `n_vitals`, `vital_groups`, `sensitivity`, a `shap_summary` object; pins carry `artifact`). The `§11`
   limitations label was hand-fixed at M-1c with a provenance note. Closes when M-1b's board emitter / M-1d's BOARD generator emits the
   validated projection (= `pos_exemplar_gulf_karenia_brevis.yaml`'s evaluation) with the extras beside it.
@@ -225,7 +258,8 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
   header): a coordination memo to `Neo4j.aDNA` after the gate.
 - WI-17 — `aDNA.aDNA/what/lattices/tools/lattice_validate.py` has no CLI (and its docstring import path is stale). M-1d-ii
   imports it; memo to Rosetta after the gate.
-- WI-18 — `how/templates/template_dataset_pair/` fails the lattice-labs `dataset_yaml_schema.json` it claims (sha256
+- ~~WI-18~~ **closed 2026-10-03 (M-1d-ii)** — the template is fixed and validated (schema copy beside it). The upstream
+  note goes by memo (24 of 26 workspace `.dataset.yaml` fail it). Original text follows: `how/templates/template_dataset_pair/` fails the lattice-labs `dataset_yaml_schema.json` it claims (sha256
   placement, `storage.location`/`provider`, lineage keys). M-1d-ii fixes the template; the upstream note goes by memo.
 - WI-19 — `NDBCStdmet` (and OBIS, GBIF, CRW) are declared, not built. The first instance with a buoy stream needs NDBC; it
   is built in `atlantis_core` (the P2 rule). M-2 (gridded-only) does not need it.
@@ -233,9 +267,15 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
   III.aDNA. Operator's call, at the P1 gate or after.
 - WI-21 — The exemplar is not a conformant instance (no `units.yaml`, `mapping.yaml` or posture pin). Optional: give it the
   first two, so that items 1 and 11 pass; its posture stays the ADR-002 §4 grandfathered exception.
+- WI-22 — M-1d-ii memo candidates after the gate:
+  - **Rosetta:** `lattice_validate.py`, beyond WI-17. It never loads `additionalProperties`, has no cycle check, and its
+    package `__init__` eagerly imports the canvas tools.
+  - **lattice-labs / Datasets.aDNA:** 24 of 26 workspace `.dataset.yaml` fail `dataset_yaml_schema.json`, and its
+    `location.path` "absolute" is unsuited to public repos.
+  - **DDX:** its runspec drops unknown keys rather than rejecting them.
 - WI-9 — Memo candidates after the gate (peer vaults read-only): ASOAtlas — greedy `sed` in `run_controls.sh`, untyped-postcondition
   null hole, Python `$` vs trailing newline; Rosetta (`aDNA.aDNA` ADR-062) — the same two as LinkML idiom notes.
 
 ## Next steps
 
-1. ~~M-1a~~ ✅ → ~~M-1c~~ ✅ → ~~M-1b-i~~ ✅ → ~~M-1b-ii-a~~ ✅ → ~~M-1b-ii-b~~ ✅ → ~~M-1d-i~~ ✅ → M-1d-ii (opus) → **P1 gate** (ratify ADR-002 A-1 there; C-004/C-009 graduation). 2. M-2 FKNMS → **P2 gate**. 3. Memo to Hestia: router row category text → "reference implementation".
+1. ~~M-1a~~ ✅ → ~~M-1c~~ ✅ → ~~M-1b-i~~ ✅ → ~~M-1b-ii-a~~ ✅ → ~~M-1b-ii-b~~ ✅ → ~~M-1d-i~~ ✅ → ~~M-1d-ii~~ ✅ → **P1 gate** (fable; ratify ADR-002 A-1 + the contribution guide; C-004/C-009 graduation; push decision). 2. M-2 FKNMS → **P2 gate**. 3. Memo to Hestia: router row category text → "reference implementation".
