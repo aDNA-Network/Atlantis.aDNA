@@ -75,7 +75,9 @@ def test_check_refuses(m, schema, name, defect, match):
 
 
 def test_stale_ontology_pin_refused(m, schema):
-    """M-1d-i: atl_v0 moved to 0.3.0; a mapping still pinning 0.2.0 claims a schema the check did not read."""
+    """M-1d-i: atl_v0 moved to 0.3.0, and at M-1e to 0.4.0; a mapping still pinning an earlier version claims a schema
+    the check did not read."""
     assert not check(m, schema)
-    m["ontology"]["version"] = "0.2.0"
-    assert any("ontology.version" in e for e in check(m, schema))
+    for stale in ("0.2.0", "0.3.0"):
+        m["ontology"]["version"] = stale
+        assert any("ontology.version" in e for e in check(m, schema))

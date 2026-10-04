@@ -33,7 +33,17 @@
         },
         "AtlAlertBudget": {
             "additionalProperties": false,
-            "description": "Precision and recall at one alert rate.",
+            "description": "Precision and recall at one alert rate \u2014 nominal, and (0.4.0) realised where the threshold was fixed beforehand.",
+            "if": {
+                "properties": {
+                    "threshold_from": {
+                        "const": "validation"
+                    }
+                },
+                "required": [
+                    "threshold_from"
+                ]
+            },
             "properties": {
                 "n_alerts": {
                     "minimum": 0,
@@ -48,15 +58,28 @@
                     "type": "number"
                 },
                 "rate": {
-                    "description": "Alert rate (fraction of patient-steps flagged).",
+                    "description": "The NOMINAL alert rate \u2014 the budget (fraction of patient-steps the threshold was set to flag). Where the threshold was fixed beforehand (`threshold_from: validation`), the rate actually flagged on test is `realised_rate`.",
                     "maximum": 1,
                     "minimum": 0,
                     "type": "number"
+                },
+                "realised_rate": {
+                    "description": "0.4.0 (M-1e): the fraction of test patient-steps actually flagged at the threshold fixed beforehand \u2014 beside the nominal `rate`, never instead of it (SO-9). REQUIRED when threshold_from = validation (AtlAlertBudget rule). Controls: neg_realised_rate_gt1 (range) \u00b7 neg_budget_validation_without_realised_rate \u00b7 neg_budget_realised_rate_null. Nearest miss NOT caught: a realised rate that is not n_alerts / n_test (arithmetic across slots is the emitter's, not a schema's).",
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": [
+                        "number",
+                        "null"
+                    ]
                 },
                 "recall": {
                     "maximum": 1,
                     "minimum": 0,
                     "type": "number"
+                },
+                "threshold_from": {
+                    "$ref": "#/$defs/ThresholdSource",
+                    "description": "0.4.0 (M-1e): where the alert threshold was fixed. Optional so that grandfathered entries (v0, v1: test quantiles, disclosed as F-8) still validate; atlantis_core.board refuses to EMIT `test`. Control: neg_unknown_threshold_from."
                 }
             },
             "required": [
@@ -64,6 +87,20 @@
                 "precision",
                 "recall"
             ],
+            "then": {
+                "properties": {
+                    "realised_rate": {
+                        "allOf": [
+                            {
+                                "type": "number"
+                            }
+                        ]
+                    }
+                },
+                "required": [
+                    "realised_rate"
+                ]
+            },
             "title": "AtlAlertBudget",
             "type": "object"
         },
@@ -508,7 +545,7 @@
         },
         "AtlLeadTime": {
             "additionalProperties": false,
-            "description": "Lead-time summary at one budget. Histogram stays in the instance.",
+            "description": "Lead-time summary at one budget. Histogram stays in the instance. (0.4.0) `threshold_from` says where the threshold it reads was fixed.",
             "properties": {
                 "budget_rate": {
                     "description": "The alert budget the lead time was measured at.",
@@ -532,6 +569,10 @@
                 "n_onsets": {
                     "minimum": 0,
                     "type": "integer"
+                },
+                "threshold_from": {
+                    "$ref": "#/$defs/ThresholdSource",
+                    "description": "0.4.0 (M-1e): where the alert threshold was fixed. Optional so that grandfathered entries (v0, v1: test quantiles, disclosed as F-8) still validate; atlantis_core.board refuses to EMIT `test`. Control: neg_unknown_threshold_from."
                 }
             },
             "required": [
@@ -977,6 +1018,15 @@
             "title": "Modality",
             "type": "string"
         },
+        "ThresholdSource": {
+            "description": "Where an alert threshold was fixed (M-1e, F-8). local \u2014 no external vocabulary names this. `validation`: on scores the model was not trained on, before test was scored \u2014 the reading a steward can staff against. `test`: the quantile of the scored test set itself, chosen after the fact (hab's reading; grandfathered entries only).",
+            "enum": [
+                "validation",
+                "test"
+            ],
+            "title": "ThresholdSource",
+            "type": "string"
+        },
         "TimeStep": {
             "description": "The patient's time step. local \u2014 ISO 8601 durations would over-specify; `cruise` is irregular by design.",
             "enum": [
@@ -1068,6 +1118,6 @@
     },
     "title": "atl_ontology_v0",
     "type": "object",
-    "version": "0.3.0"
+    "version": "0.4.0"
 }
 
