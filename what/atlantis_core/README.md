@@ -30,6 +30,50 @@ cd what/atlantis_core && uv sync && .venv/bin/python -m pytest              # of
   writes nothing. `tests/test_conform.py` feeds each item the defects its contract row names. The exemplar is a reference
   run inside Atlantis, not a forked instance: it has no `units.yaml`, `mapping.yaml` or posture ADR, and conform says so.
 
+## The pipeline, the run-spec, the board, the records (M-1d-ii)
+
+```
+.venv/bin/python -m atlantis_core.lattice                                    # the pipeline lattice: strict schema · peer validator · local invariants
+.venv/bin/python -m atlantis_core.runspec --instance <dir> --spec <json> --plan   # validate a run-spec; print the commands; run NOTHING
+.venv/bin/python -m atlantis_core.board --index [--check] [--entries <repo>/what/board/entries]   # BOARD.md, byte-stable
+.venv/bin/python -m atlantis_core.board --instance <dir> --version N --run-date D --entries <dir>/what/board/entries   # an instance's own board
+.venv/bin/python -m atlantis_core.datasets --check <dir>                     # dataset_*.dataset.yaml pairs vs the lattice-labs schema + their bytes
+```
+
+- **`lattice`.** `how/lattices/lattice_atlantis_pipeline.lattice.yaml` is the method as one pipeline:
+  - `discover` is declared-only until M-3a;
+  - then `conform` (declared) → `selftest` → `fetch` (two gates) → `conform` (fetched) → `run` (grid · vitals · label ·
+    train · eval · explain) → `board` → `site`.
+
+  It is checked three ways:
+  - by the strict `lattice_yaml_schema.json`, a byte-identical copy of `aDNA.aDNA`'s;
+  - by the peer `validate_lattice_file`, imported by path because it has no CLI. It is not run when `aDNA.aDNA` is absent,
+    and its warnings count as failures;
+  - by local invariants neither checks: the graph is acyclic and connected, the gate order holds, modules import, and every
+    `-m` has a `__main__`.
+
+  `stages()` is the run-spec's vocabulary.
+- **`runspec`** is a closed vocabulary: `stages` · `fetch_mode` · `streams` · `learner_swaps` · `board{version,run_date}`.
+  - No field carries a path, a prompt or data; the instance directory comes from the command line.
+  - It rejects rather than coerces: unknown keys at either level, duplicate JSON keys, `"2"` for 2, `1` for `true`, and
+    out-of-order stages.
+  - `discover` is not enabled.
+  - It returns exit 3 on REJECT.
+  - It **executes nothing**; execution is P5's Ray run-spec, with operator GO.
+  - Example: `how/templates/template_runspec.example.json`.
+- **`board --index`.** It renders `BOARD.md` beside the entries dir, sorted, with no timestamps.
+  - Every entry is checked before anything renders, or the render refuses.
+  - The one open-shape entry (v0) is grandfathered **by id and by pinned sha256**.
+  - `--check` writes nothing.
+  - `--entries` must end in `what/board/entries`, and the instance's outputs must sit inside that repo. An instance
+    therefore cannot write Atlantis's board, and its entry travels by memo.
+- **`datasets --check`.** It validates every pair against the lattice-labs `dataset_yaml_schema.json` (Atlantis keeps a
+  byte-identical copy beside `how/templates/template_dataset_pair/`). It also checks:
+  - name = stem;
+  - the checksum is `sha256:` and equals the bytes when they are present;
+  - the Rule-5 provenance is in `class_fields`;
+  - the `.md` twin agrees.
+
 ## An instance is a directory
 
 | File | What | Checked by |
@@ -57,6 +101,7 @@ cd what/atlantis_core && uv sync && .venv/bin/python -m pytest              # of
 | `eval` | the temporal split from `atlantis.yaml`; **the learner is a config field** (`learners`: `xgboost` early-stopped on val then refit on train+val · `logistic` median-impute + missingness flags + standardise, every statistic fitted on training rows); `metrics` (alert budgets, calibration, climatology baseline); `lead` (direction-aware lead time on the full grid); ablations from vital groups; surveillance-only; the sensitivity threshold through `label.make`'s event override; `rolling` — rolling origin with **R7 honoured**: each fold's climatology eras end ≤ its train year and the moved vitals are rebuilt. `run` refuses to start with an unexecuted obligation |
 | `explain` | interventional TreeExplainer over a train-only background, additivity a hard check, interactions; exact linear SHAP for `logistic`; sums by `group` and `tag` from `features.yaml`. `explain.whatif`: scenarios are config — a raw stream scaled over a period, the vitals re-derived through `vitals.build`, refused without a `lever` vital or across a climatology era; scaling a non-lever station is reported |
 | `board` | `project` → the **closed** `AtlEvaluation`, validated against the committed JSON Schema with its format checker; `emit` → a GREEN entry with `evaluation_extras` beside it; refuses unhonoured obligations; `assert_green` rejects per-patient content |
+| `lattice` · `runspec` · `datasets` | M-1d-ii, above |
 | `run` | the instance end to end → `outputs/atlantis_core/` (metrics · shap_summary · whatif · model · `learner_swap_<kind>.json`) |
 
 ## The self-test (SO-7)
