@@ -7,7 +7,7 @@ schema: atl_board_entry_v1
 created: 2026-10-02
 updated: 2026-10-03
 last_edited_by: agent_proteus
-mission: mission_m0_atlantis_genesis_planning   # BOARD.md generator + --entries: mission_m1d_ii_lattice_and_registries
+mission: mission_m0_atlantis_genesis_planning   # BOARD.md generator + --entries: mission_m1d_ii_lattice_and_registries · thresholds fixed beforehand: mission_m1e_eval_thresholds_on_validation
 precedent: RareArchive.aDNA/what/board/ (ra_board_entry_v1, GREEN-only, promotion-to-gold is human)
 tags: [board, evidence, metrics, green, atlantis, m0]
 ---
@@ -34,6 +34,7 @@ renders the schema:
 | `evaluation.base_rate` | **required** — a score without its base rate is rejected |
 | `evaluation.climatology_auroc` | required from M-1b on (T11) |
 | `evaluation.alert_budgets[]` | ≥ 1 from M-1b on (T6) |
+| `alert_budgets[].threshold_from` · `.realised_rate` | from M-1e (board v2) on: every threshold `validation`-fixed, before test was scored, with the realised test rate beside the nominal `rate` (atl_v0 0.4.0; F-8). The emitter refuses `test`, a missing realised rate, a lead time not read at a fixed threshold, and rolling folds not selected per fold. v0/v1 predate this and carry neither field |
 | `evaluation.ablations[]` | surveillance ablation required where a surveillance channel is declared (T5) |
 | `evaluation.config_hash`, `evaluation.data_pins[]` | the join keys to the instance's run; every pin carries a sha256 |
 | `evaluation.claim` | `method_demonstration` (default) \| `operational_by_owner_ruling` (+ `owner_ruling_ref`) |

@@ -7,7 +7,7 @@
  "instance": "Atlantis.aDNA/what/exemplars/gulf_karenia_brevis",
  "method_version": "pattern_ecosystem_early_warning 0.1 · atlantis_core 0.3.0",
  "recorded_by": "agent_proteus",
- "recorded_at": "2026-10-04T04:19:52Z",
+ "recorded_at": "2026-10-04T04:50:45Z",
  "run_date": "2026-10-03",
  "evaluation": {
   "evaluation_id": "atl_eval_gulf_karenia_brevis_v2",
@@ -87,7 +87,7 @@
   "claim": "method_demonstration",
   "limitations_ref": "what/exemplars/gulf_karenia_brevis/site/gulf_karenia_brevis_v2.html#limits · README.md §Caveats",
   "recorded_by": "agent_proteus",
-  "recorded_at": "2026-10-04T04:19:52Z"
+  "recorded_at": "2026-10-04T04:50:45Z"
  },
  "evaluation_extras": {
   "event": {
@@ -146,7 +146,9 @@
     },
     "climatology_refit": true,
     "selection": {
-     "selected_on": 2015,
+     "selected_on": [
+      2015
+     ],
      "n_trees": 275,
      "selection_eras": {
       "atl_stream_oisst_region_daily": [
@@ -180,7 +182,9 @@
     },
     "climatology_refit": false,
     "selection": {
-     "selected_on": 2016,
+     "selected_on": [
+      2016
+     ],
      "n_trees": 445,
      "selection_eras": {
       "atl_stream_oisst_region_daily": [
@@ -214,7 +218,9 @@
     },
     "climatology_refit": false,
     "selection": {
-     "selected_on": 2017,
+     "selected_on": [
+      2017
+     ],
      "n_trees": 151,
      "selection_eras": {
       "atl_stream_oisst_region_daily": [
@@ -248,7 +254,9 @@
     },
     "climatology_refit": false,
     "selection": {
-     "selected_on": 2018,
+     "selected_on": [
+      2018
+     ],
      "n_trees": 76,
      "selection_eras": {
       "atl_stream_oisst_region_daily": [
@@ -282,7 +290,9 @@
     },
     "climatology_refit": false,
     "selection": {
-     "selected_on": 2019,
+     "selected_on": [
+      2019
+     ],
      "n_trees": 623,
      "selection_eras": {
       "atl_stream_oisst_region_daily": [
@@ -316,7 +326,9 @@
     },
     "climatology_refit": false,
     "selection": {
-     "selected_on": 2020,
+     "selected_on": [
+      2020
+     ],
      "n_trees": 598,
      "selection_eras": {
       "atl_stream_oisst_region_daily": [
@@ -350,7 +362,9 @@
     },
     "climatology_refit": false,
     "selection": {
-     "selected_on": 2021,
+     "selected_on": [
+      2021
+     ],
      "n_trees": 63,
      "selection_eras": {
       "atl_stream_oisst_region_daily": [
@@ -384,7 +398,9 @@
     },
     "climatology_refit": false,
     "selection": {
-     "selected_on": 2022,
+     "selected_on": [
+      2022
+     ],
      "n_trees": 254,
      "selection_eras": {
       "atl_stream_oisst_region_daily": [
@@ -400,6 +416,7 @@
    }
   ],
   "rolling_selection": "per_fold",
+  "rolling_skipped": [],
   "obligations": [
    {
     "obligation": "eval must refit the atl_stream_usgs_discharge_daily climatology per rolling-origin fold (era ends 2016; folds testing [2016] would otherwise see their own year)",
@@ -666,7 +683,9 @@
       "was": 0.4828,
       "now": 0.4965
      },
-     "selected_on": 2015,
+     "selected_on": [
+      2015
+     ],
      "n_trees": 275
     },
     "2017": {
@@ -678,7 +697,9 @@
       "was": 0.3709,
       "now": 0.3206
      },
-     "selected_on": 2016,
+     "selected_on": [
+      2016
+     ],
      "n_trees": 445
     },
     "2018": {
@@ -690,7 +711,9 @@
       "was": 0.5841,
       "now": 0.5816
      },
-     "selected_on": 2017,
+     "selected_on": [
+      2017
+     ],
      "n_trees": 151
     },
     "2019": {
@@ -702,7 +725,9 @@
       "was": 0.32,
       "now": 0.3234
      },
-     "selected_on": 2018,
+     "selected_on": [
+      2018
+     ],
      "n_trees": 76
     },
     "2020": {
@@ -714,7 +739,9 @@
       "was": 0.3372,
       "now": 0.4596
      },
-     "selected_on": 2019,
+     "selected_on": [
+      2019
+     ],
      "n_trees": 623
     },
     "2021": {
@@ -726,7 +753,9 @@
       "was": 0.5432,
       "now": 0.5288
      },
-     "selected_on": 2020,
+     "selected_on": [
+      2020
+     ],
      "n_trees": 598
     },
     "2022": {
@@ -738,7 +767,9 @@
       "was": 0.7061,
       "now": 0.6645
      },
-     "selected_on": 2021,
+     "selected_on": [
+      2021
+     ],
      "n_trees": 63
     },
     "2023": {
@@ -750,15 +781,17 @@
       "was": 0.7973,
       "now": 0.7601
      },
-     "selected_on": 2022,
+     "selected_on": [
+      2022
+     ],
      "n_trees": 254
     }
    }
   },
   "regenerated": {
-   "replaces_commit": "96acc3f",
-   "reason": "M-1e, same sitting, never published: delta_vs.alert_budgets re-keyed by rate_key (5pct/10pct/20pct) for the v2 page's tokens; the budget-reading note corrected — it stated the prevalence gap as THE cause, and validation has fewer onsets in count (121 vs 127); both reasons now marked likely, not proven; numbers unchanged",
-   "at": "2026-10-04T04:19:52Z"
+   "replaces_commit": "b8ff972",
+   "reason": "M-1e III review (fresh context, PASS-WITH-FINDINGS), never published: F-1/F-2 provenance now derived from what the code did (selected_on from the frames fit received; the lead time's alert_threshold recorded and checked); F-5 the budget note said onsets for positive region-weeks; F-6 the horizon spill disclosed; F-7 no was->now at a nominal label. Numbers unchanged",
+   "at": "2026-10-04T04:50:45Z"
   }
  },
  "provenance": {
@@ -771,7 +804,8 @@
  },
  "notes": [
   "Delta vs v1 has one cause, F-8 (III review of M-1b-ii-a; fixed at M-1e, operator rulings 2026-10-03). (1) Every alert-budget threshold, and so the lead-time threshold, is now fixed on the selection model's out-of-sample validation scores (2017-2019) before test is scored; v1 took quantiles of the test scores themselves. (2) Every rolling fold now early-stops on its own inner validation year (train <= Y-1, stop on Y, refit <= Y), with climatology eras clipped to <= Y-1 for the selection; v1 reused the full model's tree count, stopped on 2017-2019, in every fold. The trained model, its SHAP summary and the what-if are byte-identical to v1's (same 141 trees, same semantic hash): only the budgets, the lead time and the rolling panel move.",
-  "Reading the budgets: rate is the NOMINAL budget and realised_rate what a threshold fixed beforehand actually flagged on test. Every realised rate here is below nominal, and the fixed thresholds sit above the test years' own quantiles. Likely reasons, neither proven: validation prevalence (0.101) is above test's (0.077), and the thresholds are read from the train-only selection model while test is scored by the train+val final model. Validation has fewer onsets in count (121 vs 127); the difference is in rate. Precision and recall are therefore at a different operating point from v1's, not an improvement or a loss of the model: compare at matched realised rates, never at the same nominal label. A steward staffing to a nominal budget should expect the realised rate to drift, in either direction.",
-  "Rolling panel: per-fold selection on a single inner year is noisy (the stopped tree counts range from tens to several hundred across folds); the panel now measures the method as a steward would run it each year, selection included, and is not comparable fold for fold with v1's fixed-count panel."
+  "Reading the budgets: rate is the NOMINAL budget and realised_rate what a threshold fixed beforehand actually flagged on test. Every realised rate here is below nominal, and the fixed thresholds sit above the test years' own quantiles. Likely reasons, neither proven: validation's rate of positive region-weeks (0.101) is above test's (0.077), and the thresholds are read from the train-only selection model while test is scored by the train+val final model. In count, validation has fewer positive region-weeks than test (121 vs 127). Precision and recall are therefore at a different operating point from v1's. They are points on the same curve of the same model, not an improvement or a loss: compare at matched realised rates, never at the same nominal label. A steward staffing to a nominal budget should expect the realised rate to drift, in either direction.",
+  "Rolling panel: per-fold selection on a single inner year is noisy (the stopped tree counts range from tens to several hundred across folds); the panel now measures the method as a steward would run it each year, selection included, and is not comparable fold for fold with v1's fixed-count panel.",
+  "Disclosed, not fixed (III review of M-1e, F-6; operator ruling 2026-10-03): the label reads the 4 weeks after each week, so the last weeks of every fit or stop set can be labelled by onsets in the period that follows. This was measured at the rolling folds' inner stop years (up to 10 of 31 positives, stop year 2022) and holds by construction at the main split, where the 141-tree early stop reads it. The F-8 checks test calendar years. Thresholds are unaffected (they are score quantiles). The fix, a horizon embargo at every boundary, is carded (how/backlog/idea_label_horizon_embargo.md) as its own board version, because it moves the model."
  ]
 }

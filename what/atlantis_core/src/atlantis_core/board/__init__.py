@@ -30,7 +30,7 @@ MAX_LIST = 32          # no per-patient vector fits under this; the longest legi
 MAX_DICT = 40          # a dict keyed by patient-week would exceed this; the widest legitimate one is a group/tag table
 MAX_NUMERIC = 600      # numeric leaves in a whole entry (v1 carries ~250)
 MAX_STRING_NUMBERS = 40   # numbers inside one string — notes are prose, not a smuggled vector
-EXTRAS_KEYS = {"rolling_selection", "event", "patient", "modelling_rows", "modelling_positives", "modelling_prevalence",
+EXTRAS_KEYS = {"rolling_selection", "rolling_skipped", "event", "patient", "modelling_rows", "modelling_positives", "modelling_prevalence",
                "dropped_already_in_event", "dropped_outcome_unknown", "n_trees", "n_vitals", "vital_groups",
                "sensitivity", "rolling_origin", "obligations", "shap_summary", "semantic_hash", "config_bytes_md5",
                "data_pins", "learner_swaps", "delta_vs", "regenerated"}
@@ -57,7 +57,7 @@ SOURCE = {"val": "validation", "test": "test"}   # atlantis_core eval mode → a
 def _budget(r: float, a: dict) -> dict:
     out = {"rate": float(r), "precision": _r(a["precision"]), "recall": _r(a["recall"]), "n_alerts": int(a["n_alerts"])}
     if "threshold_from" in a:   # absent in results that predate M-1e (v1's run) — then the projection is v1's shape
-        out["threshold_from"] = SOURCE[a["threshold_from"]]
+        out["threshold_from"] = SOURCE.get(a["threshold_from"], a["threshold_from"])   # unknown → named by the F-8 check
         if a.get("realised_rate") is not None:   # absent → the emit check names it (and the schema rule rejects it)
             out["realised_rate"] = _r(a["realised_rate"])
     return out
@@ -94,7 +94,7 @@ def project(res: dict, inst, *, version: int, recorded_at: str, recorded_by: str
           "alert_budgets": [_budget(r, t["alert_rates"][rate_key(r)]) for r in e["alert_rates"]],
           "lead_time": {"budget_rate": budget, "n_onsets": int(lt["n_onsets"]),
                         "flagged_fraction": _r(lt["detected_fraction"]), "median_lead": lt["median_lead_weeks"],
-                        **({"threshold_from": SOURCE[lt["threshold_from"]]} if "threshold_from" in lt else {})},
+                        **({"threshold_from": SOURCE.get(lt["threshold_from"], lt["threshold_from"])} if "threshold_from" in lt else {})},
           "ablations": ablations,
           "learner": learner or full.get("learner"),
           "config_hash": config_hash or res["semantic_hash"],
@@ -119,21 +119,43 @@ def validate(ev: dict) -> None:
 
 
 def assert_thresholds_fixed(ev: dict, res: dict, swaps: dict | None = None) -> None:
-    """F-8: no new entry carries a threshold chosen on the years it scores, or a nominal rate without its realised one —
-    the headline's budgets and lead time, and every learner swap's. The rolling panel must have selected per fold."""
+    """F-8: no new entry carries a threshold chosen on the years it scores. Checked on the RUN RESULTS — the headline's and
+    every learner swap's (III M-1e F-4) — and by arithmetic and identity, not only by label (C-023): every budget fixed on
+    `val` with its realised rate, and that rate = n_alerts / n_test; the lead time read exactly the fixed threshold of its
+    budget; every rolling fold selected per fold, on the year before its test year. Runs before the schema so that the
+    refusal names F-8, and an unknown value is refused here rather than crashing the projection."""
     bad = []
     for b in ev.get("alert_budgets", []):
         if b.get("threshold_from") != "validation":
             bad.append(f"budget {b['rate']}: threshold_from {b.get('threshold_from')!r}")
-        elif b.get("realised_rate") is None:
-            bad.append(f"budget {b['rate']}: no realised rate beside the nominal one")
-    if (ev.get("lead_time") or {}).get("threshold_from") != "validation":
-        bad.append(f"lead_time: threshold_from {(ev.get('lead_time') or {}).get('threshold_from')!r}")
     for name, r in [("headline", res), *[(f"learner swap {k}", v) for k, v in (swaps or {}).items()]]:
-        if r["full"].get("threshold_from") != "val":
-            bad.append(f"{name}: eval.threshold_from {r['full'].get('threshold_from')!r}")
+        full = r["full"]
+        if full.get("threshold_from") != "val":
+            bad.append(f"{name}: eval.threshold_from {full.get('threshold_from')!r}")
+        n = full["test"]["n"]
+        for k, a in full["test"]["alert_rates"].items():
+            tag = f"{name} budget {a.get('nominal_rate')}"
+            if a.get("threshold_from") != "val":
+                bad.append(f"{tag}: threshold_from {a.get('threshold_from')!r}")
+            if a.get("realised_rate") is None:
+                bad.append(f"{tag}: no realised rate beside the nominal one")
+            elif abs(a["realised_rate"] - a["n_alerts"] / n) > 1e-9:
+                bad.append(f"{tag}: realised rate {a['realised_rate']} is not n_alerts / n_test = {a['n_alerts']}/{n}")
+        lks = [k for k in full if k.startswith("lead_time_test_")]
+        for lk in lks:
+            lt, bk = full[lk], lk[len("lead_time_test_"):]
+            if lt.get("threshold_from") != "val":
+                bad.append(f"{name} lead_time: threshold_from {lt.get('threshold_from')!r}")
+            fixed = (full["test"]["alert_rates"].get(bk) or {}).get("threshold")
+            if lt.get("alert_threshold") is None or lt.get("alert_threshold") != fixed:
+                bad.append(f"{name} lead_time: read threshold {lt.get('alert_threshold')}, not the {bk} budget's fixed {fixed}")
         if r.get("rolling_selection") != "per_fold":
             bad.append(f"{name}: rolling folds selected {r.get('rolling_selection')!r}, not per fold")
+        else:
+            off = [row["test_year"] for row in r.get("rolling_origin", [])
+                   if (row.get("selection") or {}).get("selected_on") != [row["train_through"]]]
+            if off:
+                bad.append(f"{name}: rolling folds testing {off} did not select on their own inner year")
     if bad:
         raise BoardError("refusing to emit — thresholds chosen on the years they score (F-8): " + "; ".join(bad))
 
@@ -175,7 +197,7 @@ def _swap_summary(sw: dict) -> dict:
     return {"learner": sw["full"]["learner"], "test_auroc": _r(t["auroc"]), "test_auprc": _r(t["auprc"]),
             "brier": _r(t["brier"]), "calibration_slope": _r(t["calibration_slope"], 2),
             "alert_budgets": {k: {"precision": _r(v["precision"]), "recall": _r(v["recall"]),
-                                  **({"realised_rate": _r(v["realised_rate"]), "threshold_from": SOURCE[v["threshold_from"]]}
+                                  **({"realised_rate": _r(v.get("realised_rate")), "threshold_from": SOURCE.get(v["threshold_from"], v["threshold_from"])}
                                      if "threshold_from" in v else {})} for k, v in t["alert_rates"].items()},
             "lead_time": {"flagged_fraction": _r(lt["detected_fraction"]), "median_lead": lt["median_lead_weeks"], "n_onsets": lt["n_onsets"]},
             "rolling_origin_auroc_range": [_r(min(ro)), _r(max(ro))],
@@ -212,6 +234,7 @@ def emit(res: dict, inst, *, version: int, run_date: str, recorded_at: str, shap
                          "test_prevalence": _r(res["sensitivity"]["test_prevalence"])}] if "sensitivity" in res else [],
         "rolling_origin": [{k: (_r(v) if k in ("prevalence", "auroc", "auprc") else v) for k, v in r.items()} for r in res["rolling_origin"]],
         "rolling_selection": res.get("rolling_selection"),
+        "rolling_skipped": res.get("rolling_skipped", []),
         "obligations": res.get("obligations", []),
         "shap_summary": {k: shap[k] for k in ("base_p", "additivity_max_gap", "top6", "group_mean_abs_shap", "group_net_mean_abs_shap",
                                               "tag_mean_abs_shap") if k in shap},

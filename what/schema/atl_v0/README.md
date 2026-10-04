@@ -1,22 +1,22 @@
 ---
 type: schema_pack
 doc_id: atl_schema_v0_readme
-title: "what/schema/atl_v0/ — the Atlantis `atl_` ontology, v0 (draft · 45 controls under three worlds)"
+title: "what/schema/atl_v0/ — the Atlantis `atl_` ontology, v0 (draft · 50 controls under three worlds)"
 status: draft
-version: 0.3.0
+version: 0.4.0
 created: 2026-10-02
 updated: 2026-10-03
 last_edited_by: agent_proteus
-mission: mission_m1d_i_fork_and_conformance   # 0.3.0; controlled at mission_m1c_linkml_controls; authored at mission_m0_atlantis_genesis_planning
+mission: mission_m1e_eval_thresholds_on_validation   # 0.4.0; 0.3.0 at mission_m1d_i_fork_and_conformance; controlled at mission_m1c_linkml_controls; authored at mission_m0_atlantis_genesis_planning
 authoring_idiom: "LinkML (aDNA.aDNA ADR-062, proposed — preferred-but-optional)"
 precedent: ASOAtlas.aDNA/what/schema/aso_v0/
 validation:
-  run_at: 2026-10-03   # M-1d-i (0.3.0); M-1c 2026-10-02
+  run_at: 2026-10-03   # M-1e (0.4.0); M-1d-i (0.3.0) 2026-10-03; M-1c 2026-10-02
   toolchain: "scratch uv venv · Python 3.12 · linkml 1.11.1 · jsonschema[format] + rfc3339-validator (nothing installed on the node; LINKML_BIN)"
   linkml_lint: "0 errors · 32 warnings (31 `recommended` — missing description on part/container slots; 1 `canonical_prefixes` — UCUM namespace) — accepted at v0"
-  gen_json_schema: "gen-json-schema --closed (tree_root AtlDocument) → atl_ontology_v0.schema.json COMMITTED, draft 2019-09, 18 $defs; byte-equality with a fresh generation is checked every run"
-  controls: "45 — 4 positive · 41 negative (19 at build + 23 from the M-1c III review + 3 at M-1d-i for the 0.3.0 stream rule); each negative fails ONLY on its REJECTS_ON regex AT its REJECTS_AT path, in all three worlds (linkml-validate · committed JSON desc-OFF · scratch JSON desc-ON), FORMAT_CHECKER on"
-  instrument_proven: "three deliberate sabotages each turned the run red (rule weakened · committed JSON hand-edited · a negative naming the wrong reason) + per-arm isolation: removing each of the 7 geometry/anchor arms reddens exactly its own control(s) — M-1c AAR. 0.3.0 (M-1d-i): rule removed → its 2 negatives red in all three worlds; all_of arm removed → only the null twin red"
+  gen_json_schema: "gen-json-schema --closed (tree_root AtlDocument) → atl_ontology_v0.schema.json COMMITTED, draft 2019-09, 19 $defs (0.4.0: + ThresholdSource); byte-equality with a fresh generation is checked every run"
+  controls: "50 — 5 positive · 45 negative (19 at build + 23 from the M-1c III review + 3 at M-1d-i for the 0.3.0 stream rule + 1 positive and 4 negatives at M-1e for the 0.4.0 budget rule); each negative fails ONLY on its REJECTS_ON regex AT its REJECTS_AT path, in all three worlds (linkml-validate · committed JSON desc-OFF · scratch JSON desc-ON), FORMAT_CHECKER on"
+  instrument_proven: "three deliberate sabotages each turned the run red (rule weakened · committed JSON hand-edited · a negative naming the wrong reason) + per-arm isolation: removing each of the 7 geometry/anchor arms reddens exactly its own control(s) — M-1c AAR. 0.3.0 (M-1d-i): rule removed → its 2 negatives red in all three worlds; all_of arm removed → only the null twin red. 0.4.0 (M-1e): rule removed → both new negatives pass (validate) under linkml-validate and the generated JSON; a bare `required` (all_of removed) → the null twin passes — the M-1c hole, reproduced on the new rule"
   iii_review: "PASS-WITH-FINDINGS (fresh-context reviewer via iii/ wrapper, III v0.6.0); 12 findings, 11 fixed at M-1c, 1 carried (WI-8) — M-1c AAR §III review"
   flag_proof: "Rule 4 asserted by the runner: 9 range classes, no concrete descendants"
   fit_matrix: "m1c_vocabulary_fit_matrix.md — 30 enum values; 0 bound / 30 local with reasons; Modality re-examined against GOOS EOV (live page, 36 EOVs) → stays local, EOV = v1 stream annotation"
@@ -25,7 +25,7 @@ tags: [schema, ontology, linkml, atl, atlantis, draft, m0]
 
 # `atl_v0` — the Atlantis ontology
 
-> ✅ **45 controls · three worlds · committed JSON == fresh** (M-1c 2026-10-02; 0.3.0 at M-1d-i 2026-10-03). A constraint is claimed here **only**
+> ✅ **50 controls · three worlds · committed JSON == fresh** (M-1c 2026-10-02; 0.3.0 at M-1d-i 2026-10-03; 0.4.0 at M-1e 2026-10-03). A constraint is claimed here **only**
 > where a fixture in `fixtures/controls/` proves it under `linkml-validate`, the committed `atl_ontology_v0.schema.json`
 > (descendants OFF) and a scratch JSON Schema (descendants ON) — ASOAtlas rule 1. Everything else the schema *says* is
 > documentation. Status stays `draft`; what the controls do **not** prove is listed under **Known limits** below.
@@ -79,7 +79,7 @@ Chosen by the three tests in `context_adna_core_ontology_workshop` (instance · 
 5. Referential integrity (does `stream_ref` resolve? does the ruling path exist?), uniqueness and cross-object
    equality are a **validator's** job, not the schema's — named here as known limits, never implied.
 
-## What the controls prove (M-1c · 0.3.0 at M-1d-i)
+## What the controls prove (M-1c · 0.3.0 at M-1d-i · 0.4.0 at M-1e)
 
 | Constraint | Positive | Negative(s) — rejected only on this, at this path | Nearest miss NOT caught |
 |---|---|---|---|
@@ -90,10 +90,11 @@ Chosen by the three tests in `context_adna_core_ontology_workshop` (instance · 
 | `base_rate` required, in [0,1] (SO-9) | exemplar | `neg_missing_base_rate` · `neg_base_rate_gt1` | base_rate ≠ n_positives / n_test |
 | `limitations_ref` required, non-blank (SO-4/9) | exemplar | `neg_missing_limitations_ref` · `neg_limitations_ref_blank` | a page with no Limitations section |
 | ≥ 1 alert budget (SO-9 — operator ruling: now, not M-1b) | exemplar (3 budgets) | `neg_evaluation_without_budget` · `neg_evaluation_empty_budgets` | a budget not measured at its rate |
+| A threshold fixed on validation states its realised rate: `threshold_from = validation` ⇒ `realised_rate` (rule, typed `all_of`; 0.4.0 — F-8) | `pos_budget_fixed_on_validation` | `neg_budget_validation_without_realised_rate` · `neg_budget_realised_rate_null` · `neg_realised_rate_gt1` (range) · `neg_unknown_threshold_from` (enum) | a budget that omits `threshold_from` (the grandfathered v0/v1 shape — the board emitter refuses it for new entries); a `threshold_from` that misstates where the threshold was computed (`tests/test_f8.py::test_eval_thresholds_do_not_move_with_test` tests that by effect; `board.assert_thresholds_fixed` checks realised = n_alerts / n_test) |
 | `atl_<kind>_` id prefixes — **all five** id slots | all | `neg_bad_id_prefix` (stream) · `neg_unit_id_prefix` · `neg_vital_id_prefix` · `neg_event_id_prefix` · `neg_eval_id_prefix` | duplicate ids; dangling `*_ref`s |
 | `sha256` = lowercase hex64, no trailing newline | exemplar (3 pins) | `neg_sha256_not_hex64` · `neg_sha256_trailing_newline` | a well-formed hash of the wrong bytes |
 | `geometry_ref` is a pointer (denylist — operator ruling) — **one control per arm** | exemplar rule strings · `pos_mpa_zone_wdpa` paths | arms: `neg_geometry_arm_{brace,wkt,ewkt_case,pair,pair_hemisphere,blank}`; composites: `neg_inline_geometry_{wkt,geojson,bbox}` | integer / DMS / query-string / UTM coordinates (and named false rejects — schema docstring) |
-| Closed enums — **six of seven** controlled | all | `neg_unknown_{unit_kind,time_step,modality,direction,claim,tier}` · `neg_vital_tag_driver` (VitalTag) | a wrong-but-legal value |
+| Closed enums — **seven of eight** controlled (0.4.0: `ThresholdSource`) | all | `neg_unknown_{unit_kind,time_step,modality,direction,claim,tier,threshold_from}` · `neg_vital_tag_driver` (VitalTag) | a wrong-but-legal value |
 | Closed classes — metrics only (SO-3) — root, evaluation, part | all | `neg_document_extra_key` (root) · `neg_per_patient_predictions` (evaluation) · `neg_budget_extra_key` (part) | per-patient values inside a free-text slot; extra keys on the other 8 classes (same generator path, **not controlled**) |
 
 **Finding of record (M-1c).** A LinkML rule postcondition written as a bare `{required: true}` is emitted by
@@ -142,6 +143,10 @@ Named so that nobody reads them as implied:
 12. **Declared vs fetched is a stage, not a type (0.3.0).** A stream with neither `sha256` nor `ingested_at` validates as
     *declared*; nothing in the schema says whether an instance is past its first fetch. `atlantis_core.conform --stage
     fetched` requires both on every stream, and that each hash equals the cache summary's.
+13. **Nominal vs realised is a field, not a guarantee (0.4.0).** `rate` is the budget the threshold was set for; `realised_rate`
+    is what it flagged on test. The schema requires the second only when `threshold_from: validation` is stated, so an
+    entry that says nothing about its threshold (the v0/v1 shape) still validates. The F-8 obligation — no new entry with a
+    test-derived threshold — is the board emitter's (`atlantis_core.board.assert_thresholds_fixed`), not the schema's.
 
 ## Validation history
 

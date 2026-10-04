@@ -1792,6 +1792,7 @@
     "3": 2,
     "4": 9
    },
+   "alert_threshold": 0.2723199427127838,
    "detected_fraction": 0.6363636363636364,
    "median_lead_weeks": 4.0,
    "threshold_from": "val"
@@ -3524,6 +3525,7 @@
     "3": 3,
     "4": 10
    },
+   "alert_threshold": 0.333354115486145,
    "detected_fraction": 0.6818181818181818,
    "median_lead_weeks": 4.0,
    "threshold_from": "val"
@@ -3561,6 +3563,7 @@
   "auprc": 0.10384179981359348
  },
  "rolling_selection": "per_fold",
+ "rolling_skipped": [],
  "rolling_origin": [
   {
    "train_through": 2015,
@@ -3582,7 +3585,9 @@
    },
    "climatology_refit": true,
    "selection": {
-    "selected_on": 2015,
+    "selected_on": [
+     2015
+    ],
     "n_trees": 275,
     "selection_eras": {
      "atl_stream_oisst_region_daily": [
@@ -3616,7 +3621,9 @@
    },
    "climatology_refit": false,
    "selection": {
-    "selected_on": 2016,
+    "selected_on": [
+     2016
+    ],
     "n_trees": 445,
     "selection_eras": {
      "atl_stream_oisst_region_daily": [
@@ -3650,7 +3657,9 @@
    },
    "climatology_refit": false,
    "selection": {
-    "selected_on": 2017,
+    "selected_on": [
+     2017
+    ],
     "n_trees": 151,
     "selection_eras": {
      "atl_stream_oisst_region_daily": [
@@ -3684,7 +3693,9 @@
    },
    "climatology_refit": false,
    "selection": {
-    "selected_on": 2018,
+    "selected_on": [
+     2018
+    ],
     "n_trees": 76,
     "selection_eras": {
      "atl_stream_oisst_region_daily": [
@@ -3718,7 +3729,9 @@
    },
    "climatology_refit": false,
    "selection": {
-    "selected_on": 2019,
+    "selected_on": [
+     2019
+    ],
     "n_trees": 623,
     "selection_eras": {
      "atl_stream_oisst_region_daily": [
@@ -3752,7 +3765,9 @@
    },
    "climatology_refit": false,
    "selection": {
-    "selected_on": 2020,
+    "selected_on": [
+     2020
+    ],
     "n_trees": 598,
     "selection_eras": {
      "atl_stream_oisst_region_daily": [
@@ -3786,7 +3801,9 @@
    },
    "climatology_refit": false,
    "selection": {
-    "selected_on": 2021,
+    "selected_on": [
+     2021
+    ],
     "n_trees": 63,
     "selection_eras": {
      "atl_stream_oisst_region_daily": [
@@ -3820,7 +3837,9 @@
    },
    "climatology_refit": false,
    "selection": {
-    "selected_on": 2022,
+    "selected_on": [
+     2022
+    ],
     "n_trees": 254,
     "selection_eras": {
      "atl_stream_oisst_region_daily": [
@@ -3866,5 +3885,5 @@
   "positives": 1168,
   "prevalence": 0.10810810810810811
  },
- "run_at": "2026-10-04T04:04:39.387688+00:00"
+ "run_at": "2026-10-04T04:47:29.944108+00:00"
 }

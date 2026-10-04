@@ -1786,6 +1786,7 @@
     "3": 2,
     "4": 7
    },
+   "alert_threshold": 0.2408517087373006,
    "detected_fraction": 0.6818181818181818,
    "median_lead_weeks": 3.0,
    "threshold_from": "val"
@@ -3560,6 +3561,7 @@
     "3": 1,
     "4": 9
    },
+   "alert_threshold": 0.2787828509495137,
    "detected_fraction": 0.6363636363636364,
    "median_lead_weeks": 4.0,
    "threshold_from": "val"
@@ -3615,6 +3617,7 @@
   "auprc": 0.10384179981359348
  },
  "rolling_selection": "per_fold",
+ "rolling_skipped": [],
  "rolling_origin": [
   {
    "train_through": 2015,
@@ -3636,7 +3639,9 @@
    },
    "climatology_refit": true,
    "selection": {
-    "selected_on": 2015,
+    "selected_on": [
+     2015
+    ],
     "C": 0.1,
     "selection_eras": {
      "atl_stream_oisst_region_daily": [
@@ -3670,7 +3675,9 @@
    },
    "climatology_refit": false,
    "selection": {
-    "selected_on": 2016,
+    "selected_on": [
+     2016
+    ],
     "C": 1.0,
     "selection_eras": {
      "atl_stream_oisst_region_daily": [
@@ -3704,7 +3711,9 @@
    },
    "climatology_refit": false,
    "selection": {
-    "selected_on": 2017,
+    "selected_on": [
+     2017
+    ],
     "C": 10.0,
     "selection_eras": {
      "atl_stream_oisst_region_daily": [
@@ -3738,7 +3747,9 @@
    },
    "climatology_refit": false,
    "selection": {
-    "selected_on": 2018,
+    "selected_on": [
+     2018
+    ],
     "C": 0.001,
     "selection_eras": {
      "atl_stream_oisst_region_daily": [
@@ -3772,7 +3783,9 @@
    },
    "climatology_refit": false,
    "selection": {
-    "selected_on": 2019,
+    "selected_on": [
+     2019
+    ],
     "C": 10.0,
     "selection_eras": {
      "atl_stream_oisst_region_daily": [
@@ -3806,7 +3819,9 @@
    },
    "climatology_refit": false,
    "selection": {
-    "selected_on": 2020,
+    "selected_on": [
+     2020
+    ],
     "C": 10.0,
     "selection_eras": {
      "atl_stream_oisst_region_daily": [
@@ -3840,7 +3855,9 @@
    },
    "climatology_refit": false,
    "selection": {
-    "selected_on": 2021,
+    "selected_on": [
+     2021
+    ],
     "C": 0.001,
     "selection_eras": {
      "atl_stream_oisst_region_daily": [
@@ -3874,7 +3891,9 @@
    },
    "climatology_refit": false,
    "selection": {
-    "selected_on": 2022,
+    "selected_on": [
+     2022
+    ],
     "C": 10.0,
     "selection_eras": {
      "atl_stream_oisst_region_daily": [
@@ -3927,7 +3946,7 @@
   "positives": 1168,
   "prevalence": 0.10810810810810811
  },
- "run_at": "2026-10-04T04:04:39.387688+00:00",
+ "run_at": "2026-10-04T04:47:29.944108+00:00",
  "shap_summary": {
   "learner_kind": "logistic",
   "base_logit": -2.8058472664153475,

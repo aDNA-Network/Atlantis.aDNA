@@ -1,6 +1,6 @@
 """F-8 (M-1e): nothing is chosen on the years it scores. Each defect the fix exists for is planted and caught by name, and
 the control itself is shown to fail when the old reading is planted back (C-009). v2 differs from v1 by F-8 alone."""
-import copy, hashlib, json
+import copy, hashlib, json, types
 from pathlib import Path
 
 import numpy as np
@@ -10,8 +10,8 @@ import pytest
 from atlantis_core import load_instance, semantic_hash
 from atlantis_core import eval as ev_mod
 from atlantis_core.board import BoardError, assert_thresholds_fixed, delta, emit, project
-from atlantis_core.eval import ObligationError, check_fold_selection, check_thresholds_fixed, fixed_thresholds, split
-from atlantis_core.eval.metrics import at_alert_rates, quantile_thresholds
+from atlantis_core.eval import ObligationError, check_fold_selection, split
+from atlantis_core.eval.metrics import at_alert_rates
 from atlantis_core.label import finalize
 from atlantis_core.vitals.build import build, load_frames
 
@@ -21,22 +21,114 @@ V1 = ENTRIES / "2026-10-02_gulf_karenia_brevis_v1.json"
 RATES = (0.05, 0.10, 0.20)
 
 
-# ── (a) a threshold computed from test ─────────────────────────────────────────────────────────────────────────────
+# ── planted back into the REAL code (III M-1e F-1/F-2/F-3, C-009): each defect is written into eval's own source ───
+# A guard that reads a label the same code wrote cannot fail. These plants change what the code DOES, as the reviewer did,
+# and every one must be refused by name — or, for P4, caught by the real-path invariance test.
 
-def _scores(seed=0):
-    rng = np.random.default_rng(seed)
-    return rng.beta(1, 8, 600), rng.beta(1, 6, 400)
+EVAL_SRC = Path(ev_mod.__file__).read_text()
+PLANTS = {
+    "P1_stop_on_test_year": ("_, _, finfo = L.fit(s_tr, s_va)", "_, _, finfo = L.fit(s_tr, te)"),
+    "P2_selection_eras_through_Y": ("sdf, s_eras, _ = fold(Y - 1)", "sdf, s_eras, _ = fold(Y)"),
+    "P3_lead_threshold_from_test": ('alert_threshold=r["test"]["alert_rates"][rate_key(budget)]["threshold"]',
+                                    "alert_threshold=float(np.quantile(p_test, 1 - budget))"),
+    "P4_fixed_from_test_scores": ("fixed = fixed_thresholds(p_val, rates, tf)",
+                                  "fixed = fixed_thresholds(L.predict(final, test), rates, tf)"),
+}
 
 
-def test_fixed_rule_is_invariant_to_test_scores():
-    p_val, p_test = _scores()
-    check_thresholds_fixed(lambda pv, pt: fixed_thresholds(pv, RATES, "val"), p_val, p_test)
+def planted(name=None):
+    """A fresh copy of atlantis_core.eval, with one plant written into its source (None: a clean copy)."""
+    src = EVAL_SRC
+    if name:
+        old, new = PLANTS[name]
+        assert src.count(old) == 1, f"plant {name}: the line it replaces moved — update the plant, do not drop it"
+        src = src.replace(old, new)
+    mod = types.ModuleType(f"atlantis_core_eval_planted_{name}")
+    mod.__dict__["__file__"] = ev_mod.__file__
+    exec(compile(src, f"<planted {name}>", "exec"), mod.__dict__)
+    mod.ObligationError = ev_mod.ObligationError   # raises resolve the global at call time: one class to catch
+    return mod
 
 
-def test_planted_threshold_from_test_is_caught():
-    p_val, p_test = _scores()
-    with pytest.raises(ObligationError, match="F-8: threshold moved with test scores"):
-        check_thresholds_fixed(lambda pv, pt: quantile_thresholds(pt, RATES), p_val, p_test)
+@pytest.fixture(scope="module")
+def built(exemplar_dir):
+    inst = load_instance(exemplar_dir)
+    frames = load_frames(inst)
+    table, _ = build(inst, frames)
+    m, _ = finalize(inst, table)
+    m = m.copy(); m["y"] = m["y"].astype(int)
+    return inst, frames, m
+
+
+LOGISTIC = {"kind": "logistic", "C_grid": [1.0], "max_iter": 2000}   # fast, and the F-8 rules are learner-agnostic
+
+
+def _run(mod, inst, frames, m):
+    from atlantis_core.eval.rolling import FoldTables
+    i2 = copy.copy(inst); i2.cfg = {**inst.cfg, "eval": {**inst.cfg["eval"], "ablations": []}}
+    panel = m[["region", "week"]].assign(signal=np.nan)
+    return mod.run(i2, m, panel, fold_tables=FoldTables(inst, frames, m), learner_spec=LOGISTIC, log=lambda *_: None)
+
+
+def _thresholds(mod, inst, m, test_override=None):
+    """The test thresholds `_variant` reports, and its result."""
+    tr, va, te = split(m, inst.cfg["split"])
+    if test_override is not None:
+        te = test_override(tr, te)
+    panel = te[["region", "week"]].assign(signal=np.nan)
+    r, *_ = mod._variant(inst, LOGISTIC, inst.feature_names, tr, va, te, panel, inst.cfg["eval"], "region")
+    return {k: v["threshold"] for k, v in r["test"]["alert_rates"].items()}, r
+
+
+def _shifted(tr, te):
+    """Test rows replaced by train rows (a different score distribution), keys kept."""
+    f = [c for c in te.columns if c not in ("week", "y") and not c.startswith("region")]
+    out = te.copy(); out[f] = tr.sample(len(te), replace=True, random_state=0)[f].to_numpy()
+    return out
+
+
+def test_eval_thresholds_do_not_move_with_test(built):
+    inst, _, m = built
+    a, r = _thresholds(ev_mod, inst, m)
+    b, _ = _thresholds(ev_mod, inst, m, _shifted)
+    assert a == b
+    lt = r["lead_time_test_10pct"]
+    assert lt["alert_threshold"] == a["10pct"] and lt["threshold_from"] == "val"
+    assert {k: round(v["nominal_rate"], 2) for k, v in r["test"]["alert_rates"].items()} == {"5pct": 0.05, "10pct": 0.1, "20pct": 0.2}
+    assert all(abs(v["realised_rate"] - v["n_alerts"] / r["test"]["n"]) < 1e-12 for v in r["test"]["alert_rates"].values())
+
+
+def test_p4_invariance_control_can_fail(built):
+    """C-009: thresholds fixed on the final model's TEST scores pass every runtime identity check (fixed == applied ==
+    lead) — only the real-path invariance test sees them, and it must."""
+    inst, _, m = built
+    mod = planted("P4_fixed_from_test_scores")
+    a, _ = _thresholds(mod, inst, m)
+    b, _ = _thresholds(mod, inst, m, _shifted)
+    assert a != b, "a test-derived threshold went unnoticed — the invariance control passes by construction"
+
+
+def test_hab_reading_moves_with_test(built):
+    """The same control, fed hab's own reading (threshold_from: test), also fails — as it must."""
+    inst, _, m = built
+    i2 = copy.copy(inst); i2.cfg = {**inst.cfg, "eval": {**inst.cfg["eval"], "threshold_from": "test"}}
+    assert _thresholds(ev_mod, i2, m)[0] != _thresholds(ev_mod, i2, m, _shifted)[0]
+
+
+def test_p3_lead_threshold_from_test_is_refused(built):
+    inst, _, m = built
+    with pytest.raises(ObligationError, match="F-8: lead time read threshold"):
+        _thresholds(planted("P3_lead_threshold_from_test"), inst, m)
+
+
+def test_evaluate_ignoring_fixed_thresholds_is_refused(built):
+    """hab's after-the-fact quantile planted beneath the threshold (evaluate drops `thresholds`): read back, refused."""
+    inst, _, m = built
+    mod = planted()
+    real = mod.evaluate
+    mod.evaluate = lambda y, p, label, rates, bins, **kw: real(y, p, label, rates, bins)
+    with pytest.raises(ObligationError, match="F-8: applied thresholds"):
+        _thresholds(mod, inst, m)
 
 
 def test_val_mode_refuses_to_quantile_the_scored_set():
@@ -46,59 +138,7 @@ def test_val_mode_refuses_to_quantile_the_scored_set():
         at_alert_rates(y, p, RATES, threshold_from="val")
 
 
-# ── (a, by effect) + (d, C-009): the real eval path, and the old reading planted back into it ─────────────────────
-
-@pytest.fixture(scope="module")
-def built(exemplar_dir):
-    inst = load_instance(exemplar_dir)
-    table, _ = build(inst, load_frames(inst))
-    m, _ = finalize(inst, table)
-    m = m.copy(); m["y"] = m["y"].astype(int)
-    return inst, m
-
-
-def _thresholds(inst, m, test_override=None):
-    """The test thresholds `_variant` reports, on the exemplar (logistic C=1: fast, and the rule is learner-agnostic)."""
-    tr, va, te = split(m, inst.cfg["split"])
-    if test_override is not None:
-        te = test_override(tr, te)
-    ucol = inst.cfg["grid"]["unit_column"]
-    panel = te[[ucol, "week"]].assign(signal=np.nan)
-    spec = {"kind": "logistic", "C_grid": [1.0], "max_iter": 2000}
-    r, *_ = ev_mod._variant(inst, spec, inst.feature_names, tr, va, te, panel, inst.cfg["eval"], ucol)
-    return {k: v["threshold"] for k, v in r["test"]["alert_rates"].items()}, r
-
-
-def _shifted(tr, te):
-    """Test rows replaced by train rows (a different score distribution), keys kept."""
-    f = [c for c in te.columns if c not in ("week", "y") and not c.startswith("region")]
-    sample = tr.sample(len(te), replace=True, random_state=0)[f].to_numpy()
-    out = te.copy(); out[f] = sample
-    return out
-
-
-def test_eval_thresholds_do_not_move_with_test(built):
-    inst, m = built
-    a, r = _thresholds(inst, m)
-    b, _ = _thresholds(inst, m, _shifted)
-    assert a == b
-    assert all(v["threshold_from"] == "val" for v in r["test"]["alert_rates"].values())
-    assert {k: round(v["nominal_rate"], 2) for k, v in r["test"]["alert_rates"].items()} == {"5pct": 0.05, "10pct": 0.1, "20pct": 0.2}
-    assert all(abs(v["realised_rate"] - v["n_alerts"] / r["test"]["n"]) < 1e-12 for v in r["test"]["alert_rates"].values())
-
-
-def test_c009_planting_the_test_quantile_back_fails_the_control(built, monkeypatch):
-    """C-009: the invariance test above must be able to fail. Plant hab's reading (each scored set quantiles itself)
-    into the real path and watch it fail."""
-    inst, m = built
-    real = ev_mod.evaluate
-    monkeypatch.setattr(ev_mod, "evaluate", lambda y, p, label, rates, bins, **kw: real(y, p, label, rates, bins))
-    a, _ = _thresholds(inst, m)
-    b, _ = _thresholds(inst, m, _shifted)
-    assert a != b, "the planted test-quantile threshold went unnoticed — the control passes by construction"
-
-
-# ── (b) a fold stopped on its test year ────────────────────────────────────────────────────────────────────────────
+# ── (b) a fold stopped on its test year — and its eras ─────────────────────────────────────────────────────────────
 
 def _years(*ys):
     return pd.DataFrame({"week": pd.to_datetime([f"{y}-06-01" for y in ys])})
@@ -113,18 +153,37 @@ def test_fold_selection_rule():
     (_years(2016, 2017, 2018), _years(2018)),    # selection trained through the year it stops on
     (_years(2016, 2017), _years(2018, 2019)),    # the stop set reaches the test year
 ])
-def test_planted_fold_selected_on_its_test_year_is_caught(s_tr, s_va):
+def test_fold_selection_rule_refuses(s_tr, s_va):
     with pytest.raises(ObligationError, match="F-8 fold 2018"):
         check_fold_selection(2018, s_tr, s_va)
 
 
-def test_v2_folds_each_selected_on_their_own_inner_year(exemplar_dir):
-    m = json.loads((exemplar_dir / "outputs" / "atlantis_core_v2" / "metrics.json").read_text())
-    assert m["rolling_selection"] == "per_fold" and len(m["rolling_origin"]) == 8
-    for r in m["rolling_origin"]:
-        assert r["selection"]["selected_on"] == r["train_through"] != r["test_year"]
-    eras = {r["train_through"]: r["selection"]["selection_eras"]["atl_stream_usgs_discharge_daily"] for r in m["rolling_origin"]}
+@pytest.mark.parametrize("plant, match", [
+    ("P1_stop_on_test_year", r"F-8 fold 2015→2016: selection must train ≤ 2014 and stop on 2015"),
+    ("P2_selection_eras_through_Y", r"F-8 fold 2015→2016: selection read eras"),
+])
+def test_planted_fold_defects_refused_in_the_real_loop(built, plant, match):
+    inst, frames, m = built
+    with pytest.raises(ObligationError, match=match):
+        _run(planted(plant), inst, frames, m)
+
+
+def test_clean_loop_selects_on_the_frames_it_fitted(built):
+    inst, frames, m = built
+    res, _ = _run(ev_mod, inst, frames, m)
+    assert res["rolling_selection"] == "per_fold" and res["rolling_skipped"] == []
+    for r in res["rolling_origin"]:
+        assert r["selection"]["selected_on"] == [r["train_through"]]   # derived from the frame fit() received
+    eras = {r["train_through"]: r["selection"]["selection_eras"]["atl_stream_usgs_discharge_daily"] for r in res["rolling_origin"]}
     assert eras[2015] == [1990, 2014] and eras[2016] == [1990, 2015] and eras[2017] == [1990, 2016]   # R7 on the inner split
+
+
+def test_inner_year_with_too_few_positives_is_skipped_and_said(built):
+    inst, frames, m = built
+    thin = m[~((m.week.dt.year == 2018) & (m.y == 1))].copy()   # the 2018 stop set loses its onsets
+    res, _ = _run(ev_mod, inst, frames, thin)
+    assert {"test_year": 2019, "reason": "inner stop year 2018 has 0 positives (< 5)"} in res["rolling_skipped"]
+    assert 2019 not in [r["test_year"] for r in res["rolling_origin"]]
 
 
 # ── (c) a realised rate missing beside a nominal one — and the board refuses F-8 ──────────────────────────────────
@@ -159,6 +218,26 @@ def test_planted_f8_defects_refused_at_emit(v2, plant, match):
     r = copy.deepcopy(res); plant(r)
     with pytest.raises(BoardError, match=match):
         _emit(inst, r, shap, swaps)
+
+
+SW = "learner_swap_logistic"
+
+
+@pytest.mark.parametrize("plant, match", [   # III M-1e F-4: the swap is checked as the headline is; arithmetic, not labels
+    (lambda r, s: s[SW]["full"]["test"]["alert_rates"]["10pct"].update(threshold_from="test"),
+     f"learner swap {SW} budget 0.1: threshold_from 'test'"),
+    (lambda r, s: s[SW]["full"]["lead_time_test_10pct"].update(threshold_from="test"), f"learner swap {SW} lead_time: threshold_from 'test'"),
+    (lambda r, s: s[SW]["full"]["test"]["alert_rates"]["5pct"].pop("realised_rate"), f"learner swap {SW} budget 0.05: no realised rate"),
+    (lambda r, s: r["full"]["test"]["alert_rates"]["10pct"].update(realised_rate=0.10), r"budget 0.1: realised rate 0.1 is not n_alerts / n_test"),
+    (lambda r, s: r["full"]["test"]["alert_rates"]["20pct"].update(threshold_from="validation"), r"budget 0.2: threshold_from 'validation'"),
+    (lambda r, s: r["full"]["lead_time_test_10pct"].update(alert_threshold=0.2295), r"headline lead_time: read threshold 0.2295, not the 10pct"),
+    (lambda r, s: r["rolling_origin"][3]["selection"].update(selected_on=[2019]), r"rolling folds testing \[2019\] did not select on their own inner year"),
+])
+def test_planted_board_defects_refused_by_name(v2, plant, match):
+    inst, res, shap, swaps = v2
+    r, sw = copy.deepcopy(res), copy.deepcopy(swaps); plant(r, sw)
+    with pytest.raises(BoardError, match=match):
+        _emit(inst, r, shap, sw)
 
 
 def test_a_swap_selected_after_the_fact_is_refused(v2):

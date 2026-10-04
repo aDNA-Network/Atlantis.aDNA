@@ -126,7 +126,7 @@ enums:
       reviewed: {}
       validated: {}
   ThresholdSource:
-    # Closed. Control: neg_unknown_threshold_from (an unlisted value rejected AT its slot). Nearest miss NOT caught: a value that misstates where the threshold was actually computed (that is the emitter's check, atlantis_core.eval.check_thresholds_fixed).
+    # Closed. Control: neg_unknown_threshold_from (an unlisted value rejected AT its slot). Nearest miss NOT caught: a value that misstates where the threshold was actually computed (that is caught by effect in atlantis_core/tests/test_f8.py::test_eval_thresholds_do_not_move_with_test and by the identity checks in eval._variant and board.assert_thresholds_fixed).
     description: >-
       Where an alert threshold was fixed (M-1e, F-8). local — no external vocabulary names this. `validation`: on
       scores the model was not trained on, before test was scored — the reading a steward can staff against.

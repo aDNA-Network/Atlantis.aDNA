@@ -221,9 +221,12 @@ def test_v2_page_says_what_board_v2_says(built_v2):
     assert all(v["threshold_from"] == "val" and v["realised_rate"] < v["nominal_rate"] for v in ar.values())
     assert data["board"]["delta_vs"]["fields"]["alert_budgets"]["10pct"]["realised_rate"]["now"] == round(ar["10pct"]["realised_rate"], 4)
     words = json.dumps(copy)
-    for must in ("fixed on the validation years", "realised", "not proven", "chooses its own tree count"):
+    for must in ("fixed on the validation years", "realised", "not proven", "chooses its own tree count",
+                 "points on the same curve", "looks four weeks ahead"):
         assert must in words, must
-    assert "chosen on the years they score" not in words and "will land as a new board version" not in words
+    for never in ("chosen on the years they score", "will land as a new board version", "no fold is tuned on the year it scores",
+                  "alert_budgets.10pct.precision.was"):   # III M-1e F-6 / F-7: no overclaim, no was→now at a nominal label
+        assert never not in words, never
 
 
 def test_v2_run_against_v1_entry_is_refused(built_v2, exemplar_dir):

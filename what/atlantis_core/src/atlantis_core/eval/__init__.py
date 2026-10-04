@@ -28,7 +28,7 @@ from atlantis_core.eval.learners import learner
 from atlantis_core.eval.metrics import THRESHOLD_FROM, climatology_baseline, evaluate, quantile_thresholds, rate_key
 from atlantis_core.eval.rolling import clipped_eras
 
-__all__ = ["run", "split", "groups", "ObligationError", "check_thresholds_fixed", "eval_modes"]
+__all__ = ["run", "split", "groups", "ObligationError", "check_fold_selection", "eval_modes"]
 
 ROLLING_SELECTION = ("per_fold", "full_model")
 
@@ -51,8 +51,32 @@ def groups(inst) -> dict:
     return out
 
 
+MIN_INNER_POSITIVES = 5   # as a test year: a stop set with fewer onsets than this selects on noise; the fold is skipped, and says so
+
+
+class FitRecorder:
+    """The rolling learner, recording the frames it is ACTUALLY fitted on (III M-1e F-1, C-023): the fold checks read what
+    `fit` / `refit_fixed` received, never the intent of the code that called them."""
+
+    def __init__(self, L):
+        self._L, self.fits = L, []
+
+    def fit(self, train, val):
+        self.fits.append(("fit", train, val))
+        return self._L.fit(train, val)
+
+    def refit_fixed(self, train, info):
+        self.fits.append(("refit", train, None))
+        return self._L.refit_fixed(train, info)
+
+    def __getattr__(self, k):
+        return getattr(self._L, k)
+
+
 def check_fold_selection(Y: int, s_tr: pd.DataFrame, s_va: pd.DataFrame) -> None:
-    """F-8, checked per fold: a fold testing Y+1 selects on rows strictly before it, on its inner year Y."""
+    """F-8, checked per fold on the frames the learner actually received: a fold testing Y+1 selects on rows strictly
+    before it, stopping on its inner year Y. Calendar years only — the label horizon spill across a boundary is a
+    disclosed limit (III M-1e F-6), not checked here."""
     yrs_tr, yrs_va = set(s_tr.week.dt.year), set(s_va.week.dt.year)
     if not yrs_va or yrs_va != {Y} or (yrs_tr and max(yrs_tr) >= Y):
         raise ObligationError(f"F-8 fold {Y}→{Y + 1}: selection must train ≤ {Y - 1} and stop on {Y} "
@@ -76,18 +100,6 @@ def fixed_thresholds(p_val, rates, threshold_from: str):
     return quantile_thresholds(p_val, rates) if threshold_from == "val" else None
 
 
-def check_thresholds_fixed(thresholds_of, p_val, p_test, *, seed: int = 0) -> None:
-    """F-8, checked by effect: a threshold fixed beforehand cannot move when the test scores do. `thresholds_of(p_val,
-    p_test)` is the threshold rule under test; the test scores are replaced by a permutation-and-shift of themselves and
-    every threshold must stay put. Raises ObligationError naming the budget that moved."""
-    rng = np.random.default_rng(seed)
-    a = thresholds_of(p_val, p_test)
-    b = thresholds_of(p_val, np.clip(rng.permutation(p_test) * 0.5 + 0.25, 0, 1))
-    moved = [k for k in a if not np.isclose(a[k], b[k], rtol=0, atol=1e-15)]
-    if moved:
-        raise ObligationError(f"F-8: threshold moved with test scores at {moved} — chosen on the years it scores")
-
-
 def _variant(inst, spec, feats, train, val, test, panel, ecfg, unit_col):
     tf, _ = eval_modes(ecfg)
     L = learner(spec, feats, inst)
@@ -99,6 +111,10 @@ def _variant(inst, spec, feats, train, val, test, panel, ecfg, unit_col):
     r = {**info, "learner": L.describe(info), "threshold_from": tf,
          "val": evaluate(val["y"].values, p_val, "val", rates, bins, thresholds=fixed, threshold_from=tf),
          "test": evaluate(test["y"].values, p_test, "test", rates, bins, thresholds=fixed, threshold_from=tf)}
+    if fixed is not None:   # III M-1e: the RESULT must carry the thresholds fixed above — read back, not presumed (C-023)
+        applied = {k: v["threshold"] for k, v in r["test"]["alert_rates"].items()}
+        if applied != fixed:
+            raise ObligationError(f"F-8: applied thresholds {applied} are not the ones fixed on validation {fixed}")
     budget = float(ecfg["lead_budget"])
     ev = inst.event
     scored = test.assign(p=p_test)
@@ -106,6 +122,10 @@ def _variant(inst, spec, feats, train, val, test, panel, ecfg, unit_col):
     lt = lead_time(
         pan, unit_col=unit_col, threshold=float(ev["threshold"]), direction=ev["direction"], horizon=int(ev["horizon"]),
         alert_threshold=r["test"]["alert_rates"][rate_key(budget)]["threshold"], test_start=inst.cfg["split"]["test_start"])
+    lead_thr = r["test"]["alert_rates"][rate_key(budget)]["threshold"]
+    if tf == "val" and (lead_thr != fixed[rate_key(budget)] or lt.get("alert_threshold") != lead_thr):
+        raise ObligationError(f"F-8: lead time read threshold {lt.get('alert_threshold')} — not the {rate_key(budget)} budget's "
+                              f"threshold fixed on validation ({fixed[rate_key(budget)]})")
     r[f"lead_time_test_{rate_key(budget)}"] = {**lt, "threshold_from": tf}
     r["gain_importance" if L.kind == "xgboost" else "importance"] = L.importance(final)
     return r, L, final, scored
@@ -155,8 +175,8 @@ def run(inst, model_df: pd.DataFrame, panel: pd.DataFrame, *, fold_tables=None, 
     # rolling origin. per_fold (F-8): each fold selects on its own inner validation year with eras it could have known;
     # full_model: hab's reading — the full model's selection (stopped on val) held fixed for every fold.
     _, rsel = eval_modes(ecfg)
-    L, info = art["full"]["learner"], {k: res["full"][k] for k in ("n_trees", "C") if k in res["full"]}
-    panel_ro, refit_years = [], []
+    L, info = FitRecorder(art["full"]["learner"]), {k: res["full"][k] for k in ("n_trees", "C") if k in res["full"]}
+    panel_ro, refit_years, skipped = [], [], []
     base = {sid: inst.climatology(sid) for sid in (inst.cfg.get("climatology") or {})}
 
     def fold(Y):
@@ -176,17 +196,30 @@ def run(inst, model_df: pd.DataFrame, panel: pd.DataFrame, *, fold_tables=None, 
         if te["y"].sum() < 5:
             continue
         sel = {}
+        L.fits.clear()
         if rsel == "per_fold":
             sdf, s_eras, _ = fold(Y - 1)   # the selection reads only normals knowable through Y−1 (R7 on the inner split)
+            if inst.obligations and not reference and dict(s_eras) != clipped_eras(inst, Y - 1):
+                raise ObligationError(f"F-8 fold {Y}→{Y + 1}: selection read eras {s_eras}, not those knowable through {Y - 1} "
+                                      f"({clipped_eras(inst, Y - 1)})")
             s_tr, s_va = sdf[sdf.week.dt.year <= Y - 1], sdf[sdf.week.dt.year == Y]
-            check_fold_selection(Y, s_tr, s_va)
+            if s_va["y"].sum() < MIN_INNER_POSITIVES:
+                skipped.append({"test_year": Y + 1, "reason": f"inner stop year {Y} has {int(s_va['y'].sum())} positives "
+                                                              f"(< {MIN_INNER_POSITIVES})"})
+                continue
             _, _, finfo = L.fit(s_tr, s_va)
+            (_, f_tr, f_va), = [f for f in L.fits if f[0] == "fit"]   # what was ACTUALLY fitted on (C-023)
+            check_fold_selection(Y, f_tr, f_va)
             finfo = {k: finfo[k] for k in ("n_trees", "C") if k in finfo}
-            sel = {"selected_on": Y, **finfo, "selection_eras": {k: list(v) for k, v in s_eras.items()}}
+            sel = {"selected_on": sorted(int(y) for y in set(f_va.week.dt.year)), **finfo,
+                   "selection_eras": {k: list(v) for k, v in s_eras.items()}}
         else:
             finfo = info
             sel = {"selected_on": [s["val_start"], s["val_end"]], **info}
         pp = L.predict(L.refit_fixed(tr, finfo), te)
+        (_, r_tr, _), = [f for f in L.fits if f[0] == "refit"]
+        if max(r_tr.week.dt.year) > Y or (Y + 1) in set(r_tr.week.dt.year):
+            raise ObligationError(f"F-8 fold {Y}→{Y + 1}: refit on rows through {max(r_tr.week.dt.year)}")
         row = {"train_through": Y, "test_year": Y + 1, "n": int(len(te)), "positives": int(te["y"].sum()),
                "prevalence": float(te["y"].mean()), "auroc": float(roc_auc_score(te["y"], pp)),
                "auprc": float(average_precision_score(te["y"], pp)),
@@ -198,6 +231,7 @@ def run(inst, model_df: pd.DataFrame, panel: pd.DataFrame, *, fold_tables=None, 
         log(f"  rolling {Y}→{Y+1}: AUROC {row['auroc']:.3f} AUPRC {row['auprc']:.3f} prev {row['prevalence']:.3f}"
             + ("  [climatology refit]" if rebuilt else "") + f"  [selected on {sel['selected_on']}: {finfo}]")
     res["rolling_selection"] = rsel
+    res["rolling_skipped"] = skipped
     res["rolling_origin"] = panel_ro
     honoured = fold_tables is not None and not reference   # every fold needing a refit was checked above, or we raised
     res["obligations"] = [{"obligation": o, "honoured": honoured,

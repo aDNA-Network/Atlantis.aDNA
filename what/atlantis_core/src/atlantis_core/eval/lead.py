@@ -32,6 +32,6 @@ def lead_time(panel: pd.DataFrame, *, unit_col: str, threshold: float, direction
             leads.append(int((g.loc[i, "week"] - fired.iloc[0]["week"]).days // 7) if len(fired) else -1)
     hist = {str(k): int(v) for k, v in pd.Series(leads, dtype=int).value_counts().sort_index().items()}
     det = [l for l in leads if l >= 0]
-    return {"n_onsets": len(leads), "histogram_weeks_before_onset": hist,
+    return {"n_onsets": len(leads), "histogram_weeks_before_onset": hist, "alert_threshold": float(alert_threshold),
             "detected_fraction": float(len(det) / len(leads)) if leads else None,
             "median_lead_weeks": float(np.median(det)) if det else None}
