@@ -134,6 +134,9 @@ learner_swaps:   # T2 (thesis register): the same vitals through a different lea
 eval:   # how the trained model is read — not in semantic_hash (it does not change a trained model)
   alert_rates: [0.05, 0.10, 0.20]
   lead_budget: 0.10
+  threshold_from: val          # M-1e (F-8): budget thresholds fixed on the selection model's val scores before test is scored;
+                               #   realised test rate reported beside nominal. `test` = hab's after-the-fact quantile (port only)
+  rolling_selection: per_fold  # M-1e (F-8): each fold early-stops on its own inner val year; `full_model` = hab's (port only)
   calibration_bins: 10
   ablations:                  # retrain without each group (T5: a surveillance channel is declared → its ablation is required)
     - {drop_group: surveillance}
@@ -160,4 +163,4 @@ board:   # entry metadata (atl_board_entry_v1); not in semantic_hash
   unit_ref: atl_unit_fl_gulf_and_keys
   patient: {unit_kind: coastal_band, geometry_ref: "atlantis.yaml -> grid.rules (lat/lon rules)"}
   method_version: "pattern_ecosystem_early_warning 0.1 · atlantis_core {version}"
-  limitations_ref: "what/exemplars/gulf_karenia_brevis/site/hab_crash_risk.html#limits (§11 Where the analogy breaks) · README.md §Caveats"
+  limitations_ref: "what/exemplars/gulf_karenia_brevis/site/gulf_karenia_brevis_v2.html#limits · README.md §Caveats"   # M-1e: was the v0 page's #limits (WI-14); v0/v1 entries keep theirs

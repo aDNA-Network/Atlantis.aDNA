@@ -19,20 +19,41 @@ def rate_key(r: float) -> str:
     return f"{int(r * 100)}pct"
 
 
-def at_alert_rates(y, p, rates=(0.05, 0.10, 0.20)):
+THRESHOLD_FROM = ("val", "test")
+
+
+def quantile_thresholds(p, rates) -> dict:
+    """The alert threshold for each budget: the (1 − r) quantile of the scores `p`."""
+    return {rate_key(r): float(np.quantile(p, 1 - r)) for r in rates}
+
+
+def at_alert_rates(y, p, rates=(0.05, 0.10, 0.20), *, thresholds: dict | None = None, threshold_from: str = "test"):
     """The alert budget: alert on the top `r` of scores. Precision at a budget a steward can staff is the number
-    that matters; a bare AUROC is not a result here."""
+    that matters; a bare AUROC is not a result here.
+
+    `thresholds` (rate_key → threshold), when given, is APPLIED rather than taken from `p`: it was fixed beforehand on
+    other scores (`threshold_from: val`, M-1e / F-8). The rate a steward then actually gets is `realised_rate` — reported
+    beside the nominal one, never instead of it (SO-9). Without `thresholds` the quantile is of `p` itself
+    (`threshold_from: test` — hab's after-the-fact reading, kept so the port reproduces)."""
+    if threshold_from not in THRESHOLD_FROM:
+        raise ValueError(f"threshold_from {threshold_from!r} — expected one of {THRESHOLD_FROM}")
+    if (thresholds is None) != (threshold_from == "test"):
+        raise ValueError("threshold_from: test quantiles the scored set itself; val needs thresholds fixed beforehand")
+    thr_by = thresholds if thresholds is not None else quantile_thresholds(p, rates)
     out = {}
     for r in rates:
-        thr = np.quantile(p, 1 - r)
+        thr = thr_by[rate_key(r)]
         alert = p >= thr
         tp = (alert & (y == 1)).sum()
         out[rate_key(r)] = {"threshold": float(thr), "precision": float(tp / max(alert.sum(), 1)),
-                            "recall": float(tp / max((y == 1).sum(), 1)), "n_alerts": int(alert.sum())}
+                            "recall": float(tp / max((y == 1).sum(), 1)), "n_alerts": int(alert.sum()),
+                            "nominal_rate": float(r), "realised_rate": float(alert.sum() / max(len(p), 1)),
+                            "threshold_from": threshold_from}
     return out
 
 
-def evaluate(y, p, label: str, rates=(0.05, 0.10, 0.20), bins: int = 10) -> dict:
+def evaluate(y, p, label: str, rates=(0.05, 0.10, 0.20), bins: int = 10, *, thresholds: dict | None = None,
+             threshold_from: str = "test") -> dict:
     fpr, tpr, _ = roc_curve(y, p)
     prec, rec, _ = precision_recall_curve(y, p)
     cal, slope = calibration(y, p, bins)
@@ -41,7 +62,7 @@ def evaluate(y, p, label: str, rates=(0.05, 0.10, 0.20), bins: int = 10) -> dict
     return {"split": label, "n": int(len(y)), "positives": int(y.sum()), "prevalence": float(y.mean()),
             "auroc": float(roc_auc_score(y, p)), "auprc": float(average_precision_score(y, p)),
             "brier": float(brier_score_loss(y, p)), "calibration": cal, "calibration_slope": slope,
-            "alert_rates": at_alert_rates(y, p, rates),
+            "alert_rates": at_alert_rates(y, p, rates, thresholds=thresholds, threshold_from=threshold_from),
             "roc": {"fpr": fpr[keep].round(4).tolist(), "tpr": tpr[keep].round(4).tolist()},
             "pr": {"recall": rec[keep2].round(4).tolist(), "precision": prec[keep2].round(4).tolist()}}
 

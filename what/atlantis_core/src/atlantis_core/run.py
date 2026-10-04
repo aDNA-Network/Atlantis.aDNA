@@ -3,7 +3,7 @@
     python -m atlantis_core.run --instance <dir> [--out outputs/atlantis_core] [--no-swaps]
 
 Writes `<instance>/<out>/`: metrics.json · shap_summary.json · whatif.json · model.json (xgboost) ·
-learner_swap_<kind>.json (one per `learner_swaps` entry, T2). Scored tables go to `<instance>/data/processed/atlantis_core/`
+learner_swap_<kind>.json (one per `learner_swaps` entry, T2). Scored tables go to `<instance>/data/processed/<basename of --out>/`
 (per-patient, gitignored). `whatif.json` carries per-week scores for its scenarios — committed for the public-data
 exemplar, as hab's was; an instance decides under its own data ruling. Nothing per-patient goes on the board. Every R7 obligation is honoured here (per-fold climatology refit),
 so the results are board-eligible. Method demonstration, not an operational forecast (SO-4).
@@ -73,7 +73,8 @@ def main(argv=None) -> int:
     t0 = time.time()
     inst = load_instance(a.instance)
     out = inst.root / a.out; out.mkdir(parents=True, exist_ok=True)
-    proc = inst.root / "data" / "processed" / "atlantis_core"; proc.mkdir(parents=True, exist_ok=True)
+    proc = inst.root / "data" / "processed" / Path(a.out).name   # one processed dir per output dir (v1's stays v1's)
+    proc.mkdir(parents=True, exist_ok=True)
     frames = load_frames(inst)
     units, weeks = patient_grid(inst, frames)
     table, info = build(inst, frames)
