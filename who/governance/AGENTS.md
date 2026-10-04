@@ -22,8 +22,8 @@ the operator's 4-field ratification block (§7.7).
 |------|--------|---------|
 | `adr_000_project_identity.md` | **ratified 2026-10-02** | Identity, lineage from aDNALabs S329, three-layer naming, SO-3; lineage amendment 2026-10-02 → ADR-002 |
 | `adr_001_persona_and_category.md` | **ratified 2026-10-02** | Persona **Proteus** (ruled) · **Framework + reference implementation** · code home `what/atlantis_core/` · name-form |
-| `adr_002_remit_mpa_knowledge_system.md` | **ratified 2026-10-02** | The remit widening: MPA as unit kind + audience · five layers · **snapshot rule** · what crosses / never crosses · decentralisation composed not built |
-| `contribution_guide.md` | **draft 0.1.0** (M-1d-ii, 2026-10-03), ratify at the P1 gate | What crosses / never crosses · memo → `who/coordination/inbox/` · public-repo PRs (DCO v1.1) · checks by class · tiers draft → reviewed → validated |
+| `adr_002_remit_mpa_knowledge_system.md` | **ratified 2026-10-02** · A-1 ratified 2026-10-03 | The remit widening: MPA as unit kind + audience · five layers · **snapshot rule** · what crosses / never crosses · decentralisation composed not built |
+| `contribution_guide.md` | **ratified 2026-10-03** (0.1.1; P1-exit gate) | What crosses / never crosses · memo → `who/coordination/inbox/` · public-repo PRs (DCO v1.1) · checks by class · tiers draft → reviewed → validated |
 | `governance_agent_protocol.md` | template | Agent behavioural contract (inherited; CLAUDE.md overrides where they differ) |
 | `VISION.md` | template | aDNA standard vision (inherited; not Atlantis-specific) |
 

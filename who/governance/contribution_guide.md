@@ -2,8 +2,8 @@
 type: contribution_guide
 doc_id: atl_contribution_guide
 title: "Contribution guide — Atlantis.aDNA (what crosses, how it arrives, how it is checked)"
-status: draft            # agents author, operators ratify (§7.7) — raised for ratification at the P1 gate
-version: 0.1.0
+status: ratified         # P1-exit gate, 2026-10-03 (stanley, AskUserQuestion) — ratified with one clarifying line (§2)
+version: 0.1.1
 created: 2026-10-03
 updated: 2026-10-03
 last_edited_by: agent_proteus
@@ -15,7 +15,8 @@ tags: [contribution, governance, dco, memo, inbox, tiers, atlantis, tidewatch, m
 
 # Contribution guide — Atlantis.aDNA
 
-> **Status:** draft 0.1.0. Proteus authored it at M-1d-ii. The operator ratifies it at the P1 gate. Governance beyond this
+> **Status:** ratified 0.1.1 (2026-10-03, the P1-exit gate). Proteus authored 0.1.0 at M-1d-ii; the operator ratified it
+> with one clarifying line in §2. Governance beyond this
 > guide is **P4** (ADR-002 §6): the steward council, decision authority and partner engagement arrive when a second
 > steward exists. Until then, Stanley is the operator, and Proteus lands contributions.
 
@@ -44,6 +45,10 @@ whatever the rule says.
 generator and `assert_green` refuse per-patient content by code. They are a backstop, not permission to try.
 
 ## 2. How a contribution arrives
+
+**Merge authority (added at ratification, 0.1.1).** Until P4, every landing happens in an operator-opened session, and
+the operator is the merge authority. "Proteus lands it" below means Proteus prepares and commits the landing inside such
+a session. It does not mean an agent persona merges on its own.
 
 ### 2a. From an instance steward: coordination memo → inbox (contract §D)
 
@@ -116,10 +121,12 @@ operator's, or the steward council's from P4 (`what/board/README.md` §Lifecycle
 
 | Field | Value |
 |---|---|
-| decision | *(pending)* |
-| ratified-by | *(pending: the operator, at the P1 gate)* |
-| date | *(pending)* |
-| status | draft |
+| decision | **accepted, with one clarifying line** (§2, merge authority) |
+| ratified-by | **stanley** |
+| date | **2026-10-03** |
+| status | **ratified** |
+
+Ruled at the P1-exit gate (`AskUserQuestion`). DCO stays unenforced until a first outside PR (P4).
 
 ## See also
 

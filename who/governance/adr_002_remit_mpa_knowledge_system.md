@@ -4,7 +4,7 @@ adr_id: ADR-002
 title: "ADR-002 — Remit widening: Atlantis as an MPA knowledge · data-model · evidence system (RATIFIED 2026-10-02)"
 status: ratified
 created: 2026-10-02
-updated: 2026-10-03   # A-1 proposed (§4); the ratified text above it is unchanged
+updated: 2026-10-03   # A-1 RATIFIED at the P1 gate (§4 text appended, marked); the rest of the ratified text unchanged
 last_edited_by: agent_proteus
 mission: mission_m0_atlantis_genesis_planning
 campaign_id: campaign_atlantis_genesis
@@ -17,7 +17,7 @@ ratification:
   status: ratified
   surface: AskUserQuestion (P0-exit gate, M-0 sitting)
 amendments:
-  - {id: A-1, section: "§4 snapshot rule", status: proposed, proposed: 2026-10-03, mission: mission_m1b_ii_b_site_mapping_archive}
+  - {id: A-1, section: "§4 snapshot rule", status: ratified, proposed: 2026-10-03, ratified: 2026-10-03, ratified_by: stanley, surface: "AskUserQuestion (P1-exit gate)", mission: mission_m1b_ii_b_site_mapping_archive}
 tags: [adr, remit, mpa, ontology, data_model, evidence_board, decentralisation, atlantis, m0]
 ---
 
@@ -72,6 +72,11 @@ honour.
    *pointer + sha256 + fetch recipe*. The exemplar's three parquets in `what/datasets/` (5.3 MB, public FWC / NOAA /
    USGS) are the capped, grandfathered exception and the only bytes this graph carries. WDPA polygons, Coral Reef
    Watch grids and every instance's data live in the instance.
+   *(A-1, ratified 2026-10-03:)* The exemplar's explainer pages (`what/exemplars/gulf_karenia_brevis/site/*.html`) join
+   the capped, grandfathered exception. They are derived only from the three public parquets, rebuildable from committed
+   code, config and copy (`atlantis_core.site`), and exemplar-only. No instance page is ever committed to Atlantis. The
+   evidence board stays metrics-only. A new exemplar page version is a new file beside the old one, never an overwrite,
+   and cites the board entry whose run it renders.
 
 5. **What crosses from an instance into Atlantis:** patterns and template fixes · feature-registry rows ·
    hypothesis-ledger rows (literature claims with provenance) · evidence-board entries (**metrics only**:
@@ -117,7 +122,7 @@ be publishable (Git.aDNA ADR-013).
 | date | **2026-10-02** |
 | status | **ratified** |
 
-## Amendment A-1 — the exemplar's explainer pages (PROPOSED 2026-10-03, awaiting ratification)
+## Amendment A-1 — the exemplar's explainer pages (proposed 2026-10-03 · RATIFIED 2026-10-03)
 
 **Trigger.** M-1b-ii-b III review F-5. §4 names the exemplar's three parquets as "the only bytes this graph carries".
 The exemplar's explainer pages are also committed, and they carry *derived* per-patient content:
@@ -140,8 +145,12 @@ config and copy (`atlantis_core.site`). They are exemplar-only.*
 
 | Field | Value |
 |---|---|
-| decision | *pending* |
-| ratified-by | *pending (operator)* |
-| date | *pending* |
-| status | **proposed** |
+| decision | **accepted** |
+| ratified-by | **stanley** |
+| date | **2026-10-03** |
+| status | **ratified** |
+
+**Ruled 2026-10-03 by the operator (stanley) at the P1-exit gate, `AskUserQuestion`:** ratified as written. The text
+is appended to §4 above, marked *(A-1)*. The v0 page has been public since the genesis commit, so this reconciles the
+rule with what was already published; the ruling precedes any push of the v1 page.
 
