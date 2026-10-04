@@ -4,7 +4,7 @@ mission_id: M-1d-ii
 plan_id: mission_m1d_ii_lattice_and_registries
 title: "M-1d-ii — pipeline lattice + runspec · BOARD generator (WI-8) · dataset-pair migration · contribution guide · board --entries for instances"
 owner: stanley
-status: planned
+status: in_progress
 campaign: campaign_atlantis_genesis
 campaign_id: campaign_atlantis_genesis
 phase: P1
@@ -16,7 +16,7 @@ token_budget_actual: ""
 depends_on: ['M-1d-i']
 split_from: mission_m1d_fork_skill_and_registries
 aar_path: how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m1d_ii_lattice_and_registries.md
-session: TBD
+session: session_stanley_20261004_002004_m1d_ii_lattice_and_registries
 created: 2026-10-03
 updated: 2026-10-03
 last_edited_by: agent_proteus
