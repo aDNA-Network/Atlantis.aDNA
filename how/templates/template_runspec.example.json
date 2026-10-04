@@ -1,0 +1,7 @@
+{
+  "stages": ["conform_declared", "selftest", "fetch", "conform_fetched", "grid", "vitals", "label", "train", "eval", "explain", "board", "site"],
+  "fetch_mode": "verify",
+  "streams": ["atl_stream_fwc_hab_karenia", "atl_stream_oisst_region_daily", "atl_stream_usgs_discharge_daily"],
+  "learner_swaps": true,
+  "board": {"version": 2, "run_date": "2026-10-03"}
+}
