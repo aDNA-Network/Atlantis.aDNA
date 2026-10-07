@@ -47,7 +47,7 @@ atlantis_core is 0.4.0. Exemplar bytes and board v2 are untouched (`acfa22c6e4`)
 
 **Next: M-1f** (opus; the horizon embargo, board v3) → M-2a-ii (opus; the FKNMS fork and fetch) → M-2b → **P2 gate** (fable).
 **Pending operator acts:**
-- the **push** (M-2a-i commits; gitleaks over the range);
+- ~~the push~~ **done 2026-10-06** (operator ruling): `4492b9b..bd46623` → `origin/main` (gitleaks over 10 commits clean, no data, nothing > 1 MB);
 - the graduation candidates C-004, C-005, C-009 and C-015 (WI-20).
 
 **Next Session Prompt (self-contained, M-1f):**
