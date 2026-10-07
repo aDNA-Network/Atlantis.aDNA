@@ -101,7 +101,7 @@ label:
   presence: "weekly_count(value)" # 0 over t+1..t+H → outcome unknown
   last_known_weeks: 4             # was a literal (ffill limit)
 
-split:   # (= config.yaml split)
+split:   # (= config.yaml split). embargo_weeks absent → the event horizon (4 wk), M-1f; `none` is v2's reading (port only)
   min_train_year: 1994
   train_end: 2016
   val_start: 2017
@@ -163,4 +163,4 @@ board:   # entry metadata (atl_board_entry_v1); not in semantic_hash
   unit_ref: atl_unit_fl_gulf_and_keys
   patient: {unit_kind: coastal_band, geometry_ref: "atlantis.yaml -> grid.rules (lat/lon rules)"}
   method_version: "pattern_ecosystem_early_warning 0.1 · atlantis_core {version}"
-  limitations_ref: "what/exemplars/gulf_karenia_brevis/site/gulf_karenia_brevis_v2.html#limits · README.md §Caveats"   # M-1e: was the v0 page's #limits (WI-14); v0/v1 entries keep theirs
+  limitations_ref: "what/atlantis_core/README.md#known-limits-of-eval-and-explain-so-9 · README.md §Caveats"   # M-1f: no v3 page (operator ruling), so the core's limits; M-1e had the v2 page's #limits (WI-14); v0–v2 entries keep theirs

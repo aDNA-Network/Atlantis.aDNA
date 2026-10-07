@@ -1,0 +1,992 @@
+{
+ "board_entry_schema": "atl_board_entry_v1",
+ "tier": "GREEN",
+ "accuracy_claim": "NONE — method demonstration on public data; not an operational forecast (SO-4)",
+ "entry_id": "2026-10-07_gulf_karenia_brevis_v3",
+ "source": "exemplar",
+ "instance": "Atlantis.aDNA/what/exemplars/gulf_karenia_brevis",
+ "method_version": "pattern_ecosystem_early_warning 0.1 · atlantis_core 0.5.0",
+ "recorded_by": "agent_proteus",
+ "recorded_at": "2026-10-07T18:34:42Z",
+ "run_date": "2026-10-07",
+ "evaluation": {
+  "evaluation_id": "atl_eval_gulf_karenia_brevis_v3",
+  "event_ref": "atl_event_kbrevis_onset_100k_4w",
+  "unit_ref": "atl_unit_fl_gulf_and_keys",
+  "split": "train 1994-2016 · val 2017-2019 · test 2020-2023, scored once; rolling origin 2016->2023; label-horizon embargo 4 wk at every boundary",
+  "embargo_weeks": 4,
+  "n_test": 1640,
+  "n_positives": 127,
+  "base_rate": 0.0774,
+  "auroc": 0.895,
+  "auprc": 0.5414,
+  "brier": 0.0499,
+  "calibration_slope": 1.14,
+  "climatology_auroc": 0.577,
+  "climatology_auprc": 0.1045,
+  "alert_budgets": [
+   {
+    "rate": 0.05,
+    "precision": 0.6567,
+    "recall": 0.3465,
+    "n_alerts": 67,
+    "threshold_from": "validation",
+    "realised_rate": 0.0409
+   },
+   {
+    "rate": 0.1,
+    "precision": 0.5267,
+    "recall": 0.5433,
+    "n_alerts": 131,
+    "threshold_from": "validation",
+    "realised_rate": 0.0799
+   },
+   {
+    "rate": 0.2,
+    "precision": 0.3143,
+    "recall": 0.7795,
+    "n_alerts": 315,
+    "threshold_from": "validation",
+    "realised_rate": 0.1921
+   }
+  ],
+  "lead_time": {
+   "budget_rate": 0.1,
+   "n_onsets": 22,
+   "flagged_fraction": 0.5909,
+   "median_lead": 4.0,
+   "threshold_from": "validation"
+  },
+  "ablations": [
+   {
+    "ablation_name": "without surveillance group (n_samples_t0, n_samples_4w)",
+    "ablated_auroc": 0.8911,
+    "ablated_auprc": 0.5307
+   },
+   {
+    "ablation_name": "surveillance-only single feature (n_samples_4w)",
+    "ablated_auroc": 0.6239
+   }
+  ],
+  "learner": "xgboost 3.4.1 · binary:logistic · depth 4 · eta 0.03 · early-stop logloss (100 rounds) · 146 trees · no scale_pos_weight · monotone on log_max_t0, roll_max_4w",
+  "config_hash": "7b789afded",
+  "data_pins": [
+   {
+    "stream_ref": "atl_stream_fwc_hab_karenia",
+    "sha256": "2bde141038e87db37dd682561d47e525dc546189d2ae6fbecfaf1a53bcfecfd9"
+   },
+   {
+    "stream_ref": "atl_stream_oisst_region_daily",
+    "sha256": "c26b97f53854d57e61cdd7b9bbca0507504f82aed63faf716744a4963bbb7ec8"
+   },
+   {
+    "stream_ref": "atl_stream_usgs_discharge_daily",
+    "sha256": "66a58af41843b4305afa968dd814854a61e6a4e263f4898b5422d8eb03a789ea"
+   }
+  ],
+  "shap_summary_ref": "what/exemplars/gulf_karenia_brevis/outputs/atlantis_core_v3/shap_summary.json",
+  "claim": "method_demonstration",
+  "limitations_ref": "what/atlantis_core/README.md#known-limits-of-eval-and-explain-so-9 · README.md §Caveats",
+  "recorded_by": "agent_proteus",
+  "recorded_at": "2026-10-07T18:34:42Z"
+ },
+ "evaluation_extras": {
+  "event": {
+   "event_id": "atl_event_kbrevis_onset_100k_4w",
+   "threshold": 100000,
+   "unit": "/L",
+   "direction": "above",
+   "horizon": 4,
+   "onset_rule": "drop region-weeks whose last-known weekly max >= threshold (already in bloom); drop region-weeks with no sampled week in t+1..t+4 (unknown outcome)"
+  },
+  "patient": {
+   "unit_kind": "coastal_band",
+   "geometry_ref": "atlantis.yaml -> grid.rules (lat/lon rules)",
+   "n_units": 9
+  },
+  "modelling_rows": 10804,
+  "modelling_positives": 1168,
+  "modelling_prevalence": 0.1081,
+  "dropped_already_in_event": 1481,
+  "dropped_outcome_unknown": 1800,
+  "n_trees": 146,
+  "n_vitals": 25,
+  "vital_groups": {
+   "counts": 13,
+   "surveillance": 2,
+   "season": 2,
+   "sst": 5,
+   "discharge": 3
+  },
+  "sensitivity": [
+   {
+    "name": "threshold 50000 /L",
+    "test_auroc": 0.8866,
+    "test_auprc": 0.5797,
+    "test_prevalence": 0.0758
+   }
+  ],
+  "rolling_origin": [
+   {
+    "train_through": 2015,
+    "test_year": 2016,
+    "n": 388,
+    "positives": 41,
+    "prevalence": 0.1057,
+    "auroc": 0.8908,
+    "auprc": 0.5256,
+    "climatology_eras": {
+     "atl_stream_oisst_region_daily": [
+      1982,
+      2011
+     ],
+     "atl_stream_usgs_discharge_daily": [
+      1990,
+      2015
+     ]
+    },
+    "climatology_refit": true,
+    "selection": {
+     "selected_on": [
+      2015
+     ],
+     "n_trees": 227,
+     "selection_eras": {
+      "atl_stream_oisst_region_daily": [
+       1982,
+       2011
+      ],
+      "atl_stream_usgs_discharge_daily": [
+       1990,
+       2014
+      ]
+     }
+    }
+   },
+   {
+    "train_through": 2016,
+    "test_year": 2017,
+    "n": 423,
+    "positives": 27,
+    "prevalence": 0.0638,
+    "auroc": 0.8799,
+    "auprc": 0.2812,
+    "climatology_eras": {
+     "atl_stream_oisst_region_daily": [
+      1982,
+      2011
+     ],
+     "atl_stream_usgs_discharge_daily": [
+      1990,
+      2016
+     ]
+    },
+    "climatology_refit": false,
+    "selection": {
+     "selected_on": [
+      2016
+     ],
+     "n_trees": 485,
+     "selection_eras": {
+      "atl_stream_oisst_region_daily": [
+       1982,
+       2011
+      ],
+      "atl_stream_usgs_discharge_daily": [
+       1990,
+       2015
+      ]
+     }
+    }
+   },
+   {
+    "train_through": 2017,
+    "test_year": 2018,
+    "n": 334,
+    "positives": 67,
+    "prevalence": 0.2006,
+    "auroc": 0.8427,
+    "auprc": 0.547,
+    "climatology_eras": {
+     "atl_stream_oisst_region_daily": [
+      1982,
+      2011
+     ],
+     "atl_stream_usgs_discharge_daily": [
+      1990,
+      2016
+     ]
+    },
+    "climatology_refit": false,
+    "selection": {
+     "selected_on": [
+      2017
+     ],
+     "n_trees": 140,
+     "selection_eras": {
+      "atl_stream_oisst_region_daily": [
+       1982,
+       2011
+      ],
+      "atl_stream_usgs_discharge_daily": [
+       1990,
+       2016
+      ]
+     }
+    }
+   },
+   {
+    "train_through": 2018,
+    "test_year": 2019,
+    "n": 436,
+    "positives": 27,
+    "prevalence": 0.0619,
+    "auroc": 0.9056,
+    "auprc": 0.3448,
+    "climatology_eras": {
+     "atl_stream_oisst_region_daily": [
+      1982,
+      2011
+     ],
+     "atl_stream_usgs_discharge_daily": [
+      1990,
+      2016
+     ]
+    },
+    "climatology_refit": false,
+    "selection": {
+     "selected_on": [
+      2018
+     ],
+     "n_trees": 68,
+     "selection_eras": {
+      "atl_stream_oisst_region_daily": [
+       1982,
+       2011
+      ],
+      "atl_stream_usgs_discharge_daily": [
+       1990,
+       2016
+      ]
+     }
+    }
+   },
+   {
+    "train_through": 2019,
+    "test_year": 2020,
+    "n": 449,
+    "positives": 11,
+    "prevalence": 0.0245,
+    "auroc": 0.9141,
+    "auprc": 0.3801,
+    "climatology_eras": {
+     "atl_stream_oisst_region_daily": [
+      1982,
+      2011
+     ],
+     "atl_stream_usgs_discharge_daily": [
+      1990,
+      2016
+     ]
+    },
+    "climatology_refit": false,
+    "selection": {
+     "selected_on": [
+      2019
+     ],
+     "n_trees": 579,
+     "selection_eras": {
+      "atl_stream_oisst_region_daily": [
+       1982,
+       2011
+      ],
+      "atl_stream_usgs_discharge_daily": [
+       1990,
+       2016
+      ]
+     }
+    }
+   },
+   {
+    "train_through": 2020,
+    "test_year": 2021,
+    "n": 352,
+    "positives": 67,
+    "prevalence": 0.1903,
+    "auroc": 0.7765,
+    "auprc": 0.5092,
+    "climatology_eras": {
+     "atl_stream_oisst_region_daily": [
+      1982,
+      2011
+     ],
+     "atl_stream_usgs_discharge_daily": [
+      1990,
+      2016
+     ]
+    },
+    "climatology_refit": false,
+    "selection": {
+     "selected_on": [
+      2020
+     ],
+     "n_trees": 835,
+     "selection_eras": {
+      "atl_stream_oisst_region_daily": [
+       1982,
+       2011
+      ],
+      "atl_stream_usgs_discharge_daily": [
+       1990,
+       2016
+      ]
+     }
+    }
+   },
+   {
+    "train_through": 2021,
+    "test_year": 2022,
+    "n": 438,
+    "positives": 31,
+    "prevalence": 0.0708,
+    "auroc": 0.9414,
+    "auprc": 0.6728,
+    "climatology_eras": {
+     "atl_stream_oisst_region_daily": [
+      1982,
+      2011
+     ],
+     "atl_stream_usgs_discharge_daily": [
+      1990,
+      2016
+     ]
+    },
+    "climatology_refit": false,
+    "selection": {
+     "selected_on": [
+      2021
+     ],
+     "n_trees": 52,
+     "selection_eras": {
+      "atl_stream_oisst_region_daily": [
+       1982,
+       2011
+      ],
+      "atl_stream_usgs_discharge_daily": [
+       1990,
+       2016
+      ]
+     }
+    }
+   },
+   {
+    "train_through": 2022,
+    "test_year": 2023,
+    "n": 401,
+    "positives": 18,
+    "prevalence": 0.0449,
+    "auroc": 0.9862,
+    "auprc": 0.779,
+    "climatology_eras": {
+     "atl_stream_oisst_region_daily": [
+      1982,
+      2011
+     ],
+     "atl_stream_usgs_discharge_daily": [
+      1990,
+      2016
+     ]
+    },
+    "climatology_refit": false,
+    "selection": {
+     "selected_on": [
+      2022
+     ],
+     "n_trees": 327,
+     "selection_eras": {
+      "atl_stream_oisst_region_daily": [
+       1982,
+       2011
+      ],
+      "atl_stream_usgs_discharge_daily": [
+       1990,
+       2016
+      ]
+     }
+    }
+   }
+  ],
+  "rolling_selection": "per_fold",
+  "rolling_skipped": [],
+  "obligations": [
+   {
+    "obligation": "eval must refit the atl_stream_usgs_discharge_daily climatology per rolling-origin fold (era ends 2016; folds testing [2016] would otherwise see their own year)",
+    "honoured": true,
+    "how": "eras clipped to ≤ train_through; vitals rebuilt for folds testing [2016] (verified per fold)"
+   }
+  ],
+  "shap_summary": {
+   "base_p": 0.05703728174565531,
+   "additivity_max_gap": 3.4324311624089887e-06,
+   "top6": [
+    "roll_max_4w",
+    "woy_sin",
+    "roll_max_8w",
+    "weeks_since_bloom",
+    "sst_delta_4w",
+    "discharge_anom_t0"
+   ],
+   "group_mean_abs_shap": {
+    "counts": 1.17552,
+    "sst": 0.49842,
+    "season": 0.39128,
+    "discharge": 0.27317,
+    "surveillance": 0.17223
+   },
+   "group_net_mean_abs_shap": {
+    "counts": 0.85344,
+    "season": 0.34906,
+    "sst": 0.24866,
+    "discharge": 0.21084,
+    "surveillance": 0.16829
+   },
+   "tag_mean_abs_shap": {
+    "state": 1.17425,
+    "proxy": 0.8897,
+    "lever": 0.27317,
+    "artifact": 0.1735
+   }
+  },
+  "semantic_hash": "7b789afded",
+  "config_bytes_md5": {
+   "atlantis.yaml": "c94d427078",
+   "config.yaml": "979d3fdf16"
+  },
+  "data_pins": [
+   {
+    "stream_ref": "atl_stream_fwc_hab_karenia",
+    "artifact": "data/raw/fwc_hab_karenia_1970_2023.parquet",
+    "sha256": "2bde141038e87db37dd682561d47e525dc546189d2ae6fbecfaf1a53bcfecfd9"
+   },
+   {
+    "stream_ref": "atl_stream_oisst_region_daily",
+    "artifact": "data/raw/oisst_region_daily.parquet",
+    "sha256": "c26b97f53854d57e61cdd7b9bbca0507504f82aed63faf716744a4963bbb7ec8"
+   },
+   {
+    "stream_ref": "atl_stream_usgs_discharge_daily",
+    "artifact": "data/raw/usgs_discharge_daily.parquet",
+    "sha256": "66a58af41843b4305afa968dd814854a61e6a4e263f4898b5422d8eb03a789ea"
+   }
+  ],
+  "learner_swaps": [
+   {
+    "learner": "scikit-learn 1.9.1 LogisticRegression · L2 · C=1.0 (val log-loss over [0.001, 0.01, 0.1, 1.0, 10.0]) · median impute + missingness flags · standardised · imputer/scaler fitted on each model's own training rows (train for selection, train+val for the final; never test)",
+    "test_auroc": 0.8728,
+    "test_auprc": 0.5246,
+    "brier": 0.0513,
+    "calibration_slope": 1.27,
+    "alert_budgets": {
+     "5pct": {
+      "precision": 0.6154,
+      "recall": 0.315,
+      "realised_rate": 0.0396,
+      "threshold_from": "validation"
+     },
+     "10pct": {
+      "precision": 0.5267,
+      "recall": 0.5433,
+      "realised_rate": 0.0799,
+      "threshold_from": "validation"
+     },
+     "20pct": {
+      "precision": 0.3344,
+      "recall": 0.7953,
+      "realised_rate": 0.1841,
+      "threshold_from": "validation"
+     }
+    },
+    "lead_time": {
+     "flagged_fraction": 0.6818,
+     "median_lead": 3.0,
+     "n_onsets": 22
+    },
+    "rolling_origin_auroc_range": [
+     0.7711,
+     0.9745
+    ],
+    "top6": [
+     "woy_cos",
+     "sst_t0",
+     "availability:discharge_30d_t3",
+     "sst_anom_t0",
+     "sst_delta_4w",
+     "n_samples_4w"
+    ],
+    "group_mean_abs_shap": {
+     "sst": 3.075,
+     "availability": 1.79112,
+     "season": 1.70824,
+     "counts": 1.3078,
+     "surveillance": 0.34404,
+     "discharge": 0.17528
+    },
+    "group_net_mean_abs_shap": {
+     "sst": 1.67848,
+     "season": 1.59087,
+     "counts": 0.82843,
+     "surveillance": 0.34138,
+     "availability": 0.20548,
+     "discharge": 0.09834
+    },
+    "semantic_hash": "2874d991c5"
+   }
+  ],
+  "embargo": {
+   "embargo_weeks": 4,
+   "horizon": 4,
+   "checked": true,
+   "boundaries": {
+    "train→val": {
+     "next_start": 2017,
+     "rows_dropped": 25,
+     "positives_dropped": 3,
+     "latest_window_end": "2016-12-26"
+    },
+    "val→test": {
+     "next_start": 2020,
+     "rows_dropped": 34,
+     "positives_dropped": 1,
+     "latest_window_end": "2019-12-30"
+    },
+    "refit→test": {
+     "next_start": 2020,
+     "rows_dropped": 34,
+     "positives_dropped": 1,
+     "latest_window_end": "2019-12-30"
+    }
+   },
+   "spill": {
+    "train→val": {
+     "crossing_rows": 25,
+     "rows": 7971,
+     "crossing_positives": 3,
+     "positives": 920,
+     "labelled_by_next": 3
+    },
+    "val→test": {
+     "crossing_rows": 34,
+     "rows": 1193,
+     "crossing_positives": 1,
+     "positives": 121,
+     "labelled_by_next": 0
+    }
+   },
+   "folds": {
+    "2016": {
+     "rows_dropped": {
+      "train→stop": 34,
+      "stop→test": 22,
+      "refit→test": 22
+     },
+     "positives_dropped": {
+      "train→stop": 1,
+      "stop→test": 6,
+      "refit→test": 6
+     },
+     "spill_crossing_positives": [
+      6,
+      28
+     ]
+    },
+    "2017": {
+     "rows_dropped": {
+      "train→stop": 22,
+      "stop→test": 25,
+      "refit→test": 25
+     },
+     "positives_dropped": {
+      "train→stop": 6,
+      "stop→test": 3,
+      "refit→test": 3
+     },
+     "spill_crossing_positives": [
+      3,
+      41
+     ]
+    },
+    "2018": {
+     "rows_dropped": {
+      "train→stop": 25,
+      "stop→test": 27,
+      "refit→test": 27
+     },
+     "positives_dropped": {
+      "train→stop": 3,
+      "stop→test": 6,
+      "refit→test": 6
+     },
+     "spill_crossing_positives": [
+      6,
+      27
+     ]
+    },
+    "2019": {
+     "rows_dropped": {
+      "train→stop": 27,
+      "stop→test": 33,
+      "refit→test": 33
+     },
+     "positives_dropped": {
+      "train→stop": 6,
+      "stop→test": 9,
+      "refit→test": 9
+     },
+     "spill_crossing_positives": [
+      9,
+      67
+     ]
+    },
+    "2020": {
+     "rows_dropped": {
+      "train→stop": 33,
+      "stop→test": 34,
+      "refit→test": 34
+     },
+     "positives_dropped": {
+      "train→stop": 9,
+      "stop→test": 1,
+      "refit→test": 1
+     },
+     "spill_crossing_positives": [
+      1,
+      27
+     ]
+    },
+    "2021": {
+     "rows_dropped": {
+      "train→stop": 34,
+      "stop→test": 30,
+      "refit→test": 30
+     },
+     "positives_dropped": {
+      "train→stop": 1,
+      "stop→test": 4,
+      "refit→test": 4
+     },
+     "spill_crossing_positives": [
+      4,
+      11
+     ]
+    },
+    "2022": {
+     "rows_dropped": {
+      "train→stop": 30,
+      "stop→test": 36,
+      "refit→test": 36
+     },
+     "positives_dropped": {
+      "train→stop": 4,
+      "stop→test": 0,
+      "refit→test": 0
+     },
+     "spill_crossing_positives": [
+      0,
+      67
+     ]
+    },
+    "2023": {
+     "rows_dropped": {
+      "train→stop": 36,
+      "stop→test": 26,
+      "refit→test": 26
+     },
+     "positives_dropped": {
+      "train→stop": 0,
+      "stop→test": 10,
+      "refit→test": 10
+     },
+     "spill_crossing_positives": [
+      10,
+      31
+     ]
+    }
+   }
+  },
+  "delta_vs": {
+   "entry": "2026-10-03_gulf_karenia_brevis_v2",
+   "fields": {
+    "n_test": {
+     "was": 1640,
+     "now": 1640,
+     "change": 0.0
+    },
+    "n_positives": {
+     "was": 127,
+     "now": 127,
+     "change": 0.0
+    },
+    "base_rate": {
+     "was": 0.0774,
+     "now": 0.0774,
+     "change": 0.0
+    },
+    "auroc": {
+     "was": 0.8938,
+     "now": 0.895,
+     "change": 0.0012
+    },
+    "auprc": {
+     "was": 0.5388,
+     "now": 0.5414,
+     "change": 0.0026
+    },
+    "brier": {
+     "was": 0.0502,
+     "now": 0.0499,
+     "change": -0.0003
+    },
+    "calibration_slope": {
+     "was": 1.19,
+     "now": 1.14,
+     "change": -0.05
+    },
+    "climatology_auroc": {
+     "was": 0.5767,
+     "now": 0.577,
+     "change": 0.0003
+    },
+    "climatology_auprc": {
+     "was": 0.1038,
+     "now": 0.1045,
+     "change": 0.0007
+    },
+    "lead_time": {
+     "was": {
+      "budget_rate": 0.1,
+      "n_onsets": 22,
+      "flagged_fraction": 0.6364,
+      "median_lead": 4.0,
+      "threshold_from": "validation"
+     },
+     "now": {
+      "budget_rate": 0.1,
+      "n_onsets": 22,
+      "flagged_fraction": 0.5909,
+      "median_lead": 4.0,
+      "threshold_from": "validation"
+     }
+    },
+    "split": {
+     "was": "train 1994-2016 · val 2017-2019 · test 2020-2023, scored once; rolling origin 2016->2023",
+     "now": "train 1994-2016 · val 2017-2019 · test 2020-2023, scored once; rolling origin 2016->2023; label-horizon embargo 4 wk at every boundary"
+    },
+    "embargo_weeks": {
+     "was": null,
+     "now": 4
+    },
+    "learner": {
+     "was": "xgboost 3.4.1 · binary:logistic · depth 4 · eta 0.03 · early-stop logloss (100 rounds) · 141 trees · no scale_pos_weight · monotone on log_max_t0, roll_max_4w",
+     "now": "xgboost 3.4.1 · binary:logistic · depth 4 · eta 0.03 · early-stop logloss (100 rounds) · 146 trees · no scale_pos_weight · monotone on log_max_t0, roll_max_4w"
+    },
+    "alert_budgets": {
+     "5pct": {
+      "precision": {
+       "was": 0.6613,
+       "now": 0.6567
+      },
+      "recall": {
+       "was": 0.3228,
+       "now": 0.3465
+      },
+      "n_alerts": {
+       "was": 62,
+       "now": 67
+      },
+      "realised_rate": {
+       "was": 0.0378,
+       "now": 0.0409
+      },
+      "threshold_from": {
+       "was": "validation",
+       "now": "validation"
+      }
+     },
+     "10pct": {
+      "precision": {
+       "was": 0.5113,
+       "now": 0.5267
+      },
+      "recall": {
+       "was": 0.5354,
+       "now": 0.5433
+      },
+      "n_alerts": {
+       "was": 133,
+       "now": 131
+      },
+      "realised_rate": {
+       "was": 0.0811,
+       "now": 0.0799
+      },
+      "threshold_from": {
+       "was": "validation",
+       "now": "validation"
+      }
+     },
+     "20pct": {
+      "precision": {
+       "was": 0.3186,
+       "now": 0.3143
+      },
+      "recall": {
+       "was": 0.7953,
+       "now": 0.7795
+      },
+      "n_alerts": {
+       "was": 317,
+       "now": 315
+      },
+      "realised_rate": {
+       "was": 0.1933,
+       "now": 0.1921
+      },
+      "threshold_from": {
+       "was": "validation",
+       "now": "validation"
+      }
+     }
+    }
+   },
+   "rolling_origin": {
+    "2016": {
+     "auroc": {
+      "was": 0.8942,
+      "now": 0.8908
+     },
+     "auprc": {
+      "was": 0.4965,
+      "now": 0.5256
+     },
+     "selected_on": [
+      2015
+     ],
+     "n_trees": 227
+    },
+    "2017": {
+     "auroc": {
+      "was": 0.8988,
+      "now": 0.8799
+     },
+     "auprc": {
+      "was": 0.3206,
+      "now": 0.2812
+     },
+     "selected_on": [
+      2016
+     ],
+     "n_trees": 485
+    },
+    "2018": {
+     "auroc": {
+      "was": 0.8474,
+      "now": 0.8427
+     },
+     "auprc": {
+      "was": 0.5816,
+      "now": 0.547
+     },
+     "selected_on": [
+      2017
+     ],
+     "n_trees": 140
+    },
+    "2019": {
+     "auroc": {
+      "was": 0.9014,
+      "now": 0.9056
+     },
+     "auprc": {
+      "was": 0.3234,
+      "now": 0.3448
+     },
+     "selected_on": [
+      2018
+     ],
+     "n_trees": 68
+    },
+    "2020": {
+     "auroc": {
+      "was": 0.9269,
+      "now": 0.9141
+     },
+     "auprc": {
+      "was": 0.4596,
+      "now": 0.3801
+     },
+     "selected_on": [
+      2019
+     ],
+     "n_trees": 579
+    },
+    "2021": {
+     "auroc": {
+      "was": 0.7815,
+      "now": 0.7765
+     },
+     "auprc": {
+      "was": 0.5288,
+      "now": 0.5092
+     },
+     "selected_on": [
+      2020
+     ],
+     "n_trees": 835
+    },
+    "2022": {
+     "auroc": {
+      "was": 0.936,
+      "now": 0.9414
+     },
+     "auprc": {
+      "was": 0.6645,
+      "now": 0.6728
+     },
+     "selected_on": [
+      2021
+     ],
+     "n_trees": 52
+    },
+    "2023": {
+     "auroc": {
+      "was": 0.9865,
+      "now": 0.9862
+     },
+     "auprc": {
+      "was": 0.7601,
+      "now": 0.779
+     },
+     "selected_on": [
+      2022
+     ],
+     "n_trees": 327
+    }
+   }
+  }
+ },
+ "provenance": {
+  "metrics_file": "what/exemplars/gulf_karenia_brevis/outputs/atlantis_core_v3/metrics.json",
+  "shap_file": "what/exemplars/gulf_karenia_brevis/outputs/atlantis_core_v3/shap_summary.json",
+  "learner_swap_files": [
+   "what/exemplars/gulf_karenia_brevis/outputs/atlantis_core_v3/learner_swap_logistic.json"
+  ],
+  "generated_by": "atlantis_core.board (emit → closed AtlEvaluation validated against the committed atl_ontology_v0.schema.json + assert_green); numbers are not retyped"
+ },
+ "notes": [
+  "Delta vs v2 has one cause, the label-horizon embargo (III review of M-1e, F-6; fixed at M-1f, operator rulings 2026-10-07). A row's label reads the 4 weeks after it, so each fit and stop set now drops the rows whose label window reads the period that set must not see: the selection-train set before validation, the validation stop set and the final refit before test, and the same three cuts in every rolling fold. The train tail returns for the final refit, because its labels read only validation, which the refit trains on too. With the embargo off (none) the same code reproduces v2's metrics.json in every number (test_none_reproduces_board_v2), so the change is the embargo's alone.",
+  "Measured spill, before the cut: at the main split, 3 of 920 training positives and 1 of 121 validation positives had a label window reaching into the next period (25 and 34 region-weeks in all, counting negatives whose no-bloom label read it). At the rolling folds' inner stop years it reached 10 of 31 positives (2022, read by 2023), the M-1e review's count. The main-split spill was small, so the headline moves little: 146 trees (was 141), test AUROC 0.8950 and AUPRC 0.5414 (was 0.8938 and 0.5388), on the same test set. Read this as a leak removed, not as a gain; no difference here is tested for significance.",
+  "Budgets and lead: the thresholds are fixed on every validation week's scores, as at v2, and the validation metrics now read only the stop set's labels (1159 of 1193 region-weeks). At the 10% budget the fixed threshold rose from 0.272 to 0.281 and lead time flags 13 of 22 onsets ahead (was 14), median 4 weeks. Realised rates stay below nominal, as at v2.",
+  "Rolling panel: per-fold selection on one inner year stays noisy (52 to 835 trees), and no fold was skipped. Every boundary, headline and fold, was checked on the frames the learner received, against the event's horizon, not the embargo setting (atlantis_core.eval.check_label_windows; refused at emit otherwise).",
+  "No v3 page (operator ruling 2026-10-07): limitations_ref points to the core README's known limits. The v2 page and entry stand as published; their limits describe the spill as open, which was true when they were published."
+ ]
+}

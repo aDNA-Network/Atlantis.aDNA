@@ -1,6 +1,6 @@
 [project]
 name = "atlantis-core"
-version = "0.4.0"
+version = "0.5.0"
 description = "Atlantis reference implementation — registries → vitals → direction-aware label, with the all-stream leakage self-test (P1 M-1b-i); eval · explain · board (M-1b-ii-a)"
 readme = "README.md"
 license = "MIT"

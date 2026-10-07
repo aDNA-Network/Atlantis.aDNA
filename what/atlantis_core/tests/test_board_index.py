@@ -10,6 +10,7 @@ from atlantis_core.board import index as IX
 from atlantis_core.board.__main__ import ENTRIES, main
 
 V0, V1, V2 = "2026-09-23_gulf_karenia_brevis_v0", "2026-10-02_gulf_karenia_brevis_v1", "2026-10-03_gulf_karenia_brevis_v2"
+V3 = "2026-10-07_gulf_karenia_brevis_v3"
 RUN = "2099-12-31"   # a run date no real entry carries: "nothing landed in Atlantis" must not collide with a real day's entry (M-1e)
 
 
@@ -128,11 +129,14 @@ def instance_copy(exemplar_dir, tmp_path):
 
 def test_entries_instance_side_emit_index_and_item9_reader(instance_copy, capsys):
     e = instance_copy / "what" / "board" / "entries"
-    V2 = ["--outputs", "outputs/atlantis_core_v2"]   # M-1e: v1's outputs predate F-8's fix and are refused (test_f8)
-    assert main(["--instance", str(instance_copy), "--version", "1", "--run-date", RUN, "--entries", str(e), *V2]) == 0
+    V2 = ["--outputs", "outputs/atlantis_core_v2"]   # M-1f: v2's outputs predate the embargo and are refused by name
+    assert main(["--instance", str(instance_copy), "--version", "1", "--run-date", RUN, "--entries", str(e), *V2]) == 1
+    assert "label windows cross a boundary (M-1f, C-022): headline: no embargo recorded" in capsys.readouterr().out
+    V3 = ["--outputs", "outputs/atlantis_core_v3"]   # (M-1e: v1's outputs predate F-8's fix and are refused, test_f8)
+    assert main(["--instance", str(instance_copy), "--version", "1", "--run-date", RUN, "--entries", str(e), *V3]) == 0
     [f] = list(e.glob("*.json"))
     ent = json.loads(f.read_text())
-    assert ent["provenance"]["metrics_file"] == "outputs/atlantis_core_v2/metrics.json"    # relative to the instance repo
+    assert ent["provenance"]["metrics_file"] == "outputs/atlantis_core_v3/metrics.json"    # relative to the instance repo
     assert not list(ENTRIES.glob(f"{RUN}_*"))                                          # nothing landed in Atlantis
     assert main(["--index", "--entries", str(e)]) == 0 and (instance_copy / "what/board/BOARD.md").exists()
     # conform item 9's reader, as it runs it: closed · green · this instance's unit_ref and semantic_hash
@@ -141,9 +145,8 @@ def test_entries_instance_side_emit_index_and_item9_reader(instance_copy, capsys
     inst = load_instance(instance_copy)
     validate(ent["evaluation"]); assert_green(ent)
     assert ent["evaluation"]["unit_ref"] == inst.cfg["board"]["unit_ref"]
-    # M-1f: v2's outputs predate the embargo; this instance's config resolves it, so item 9's reader sees them as stale
-    assert ent["evaluation_extras"]["semantic_hash"] == "acfa22c6e4" != semantic_hash(inst) == "7b789afded"
-    assert main(["--instance", str(instance_copy), "--version", "1", "--run-date", RUN, "--entries", str(e), *V2]) == 1  # SO-2
+    assert ent["evaluation_extras"]["semantic_hash"] == semantic_hash(inst) == "7b789afded"   # M-1f: the embargoed config
+    assert main(["--instance", str(instance_copy), "--version", "1", "--run-date", RUN, "--entries", str(e), *V3]) == 1  # SO-2
 
 
 def test_an_outside_instance_cannot_write_atlantis_board(instance_copy, capsys):
@@ -195,9 +198,9 @@ def test_f2_pipe_is_escaped_not_a_column(board):
 
 def test_f9_supersession_is_derived(board):
     a = IX.render(board)
-    for old in (V0, V1):   # M-1e: v2 supersedes both (the highest version of the stem)
-        assert next(l for l in a.splitlines() if l.startswith(f"| [`{old}`]")).endswith(f"superseded → `{V2}` |")
-    assert next(l for l in a.splitlines() if l.startswith(f"| [`{V2}`]")).endswith("| live |")
+    for old in (V0, V1, V2):   # M-1f: v3 supersedes all three (the highest version of the stem)
+        assert next(l for l in a.splitlines() if l.startswith(f"| [`{old}`]")).endswith(f"superseded → `{V3}` |")
+    assert next(l for l in a.splitlines() if l.startswith(f"| [`{V3}`]")).endswith("| live |")
     _edit(board, V1, lambda d: d.update(superseded_by=V0))           # names an entry, but disagrees with the derivation
     with pytest.raises(IX.BoardError, match="disagrees with the derived"):
         IX.render(board)
@@ -221,7 +224,7 @@ def test_f3_regenerate_fails_closed(instance_copy, tmp_path, capsys):
     """F-3 (C-021): origin/main was hard-coded and a git error read as 'never published'."""
     e = instance_copy / "what" / "board" / "entries"
     args = ["--instance", str(instance_copy), "--version", "1", "--run-date", RUN, "--entries", str(e),
-            "--outputs", "outputs/atlantis_core_v2"]
+            "--outputs", "outputs/atlantis_core_v3"]   # M-1f: the embargoed run (v2's outputs are refused)
     assert main(args) == 0
     assert main(args + ["--regenerate", "probe"]) == 1                     # not a git repo: cannot tell → refuse
     assert "cannot tell" in capsys.readouterr().out

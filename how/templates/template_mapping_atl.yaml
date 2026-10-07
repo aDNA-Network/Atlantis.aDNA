@@ -20,7 +20,7 @@
 version: "0.1"                    # append-only; consumers pin it
 instance: "{{instance_slug}}"     # e.g. florida_keys_coral — stamps every node's `source` (see stamps)
 source_root: "."                  # the instance root, relative to this file
-ontology: {schema: atl_v0, version: "0.5.0", pin: "Atlantis.aDNA/what/schema/atl_v0/atl_ontology_v0.linkml.yaml"}
+ontology: {schema: atl_v0, version: "0.6.0", pin: "Atlantis.aDNA/what/schema/atl_v0/atl_ontology_v0.linkml.yaml"}
 
 # The ONLY files the projection may read. Each is an AtlDocument (linkml-validate -C AtlDocument passes on it).
 sources:

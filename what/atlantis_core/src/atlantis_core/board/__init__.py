@@ -33,7 +33,7 @@ MAX_STRING_NUMBERS = 40   # numbers inside one string — notes are prose, not a
 EXTRAS_KEYS = {"rolling_selection", "rolling_skipped", "event", "patient", "modelling_rows", "modelling_positives", "modelling_prevalence",
                "dropped_already_in_event", "dropped_outcome_unknown", "n_trees", "n_vitals", "vital_groups",
                "sensitivity", "rolling_origin", "obligations", "shap_summary", "semantic_hash", "config_bytes_md5",
-               "data_pins", "learner_swaps", "delta_vs", "regenerated"}
+               "data_pins", "learner_swaps", "delta_vs", "regenerated", "embargo"}
 
 
 class BoardError(ValueError):
@@ -44,11 +44,13 @@ def _r(x, d=4):
     return None if x is None else round(float(x), d)
 
 
-def split_text(s: dict) -> str:
+def split_text(s: dict, embargo: dict | None = None) -> str:
+    """The split in words; with the label-horizon embargo (M-1f) only when the RESULT says it was applied and checked."""
     ro = s.get("rolling_origin_years") or []
     tail = f"; rolling origin {min(ro) + 1}->{max(ro) + 1}" if ro else ""
+    emb = f"; label-horizon embargo {embargo['weeks']} wk at every boundary" if embargo and embargo.get("checked") else ""
     return (f"train {s['min_train_year']}-{s['train_end']} · val {s['val_start']}-{s['val_end']} · "
-            f"test {s['test_start']}-{s['test_end']}, scored once{tail}")
+            f"test {s['test_start']}-{s['test_end']}, scored once{tail}{emb}")
 
 
 SOURCE = {"val": "validation", "test": "test"}   # atlantis_core eval mode → atl_v0 ThresholdSource
@@ -85,7 +87,8 @@ def project(res: dict, inst, *, version: int, recorded_at: str, recorded_by: str
         ablations.append({"ablation_name": f"surveillance-only single feature ({so})", "ablated_auroc": _r(res["surveillance_only_test_auroc"])})
     pins = [{"stream_ref": sid, "sha256": s["sha256"]} for sid, s in inst.streams.items() if s.get("sha256")]
     ev = {"evaluation_id": f"{b['evaluation_id_stem']}_v{version}", "event_ref": inst.cfg["label"]["event"],
-          "unit_ref": b["unit_ref"], "split": split_text(inst.cfg["split"]),
+          "unit_ref": b["unit_ref"], "split": split_text(inst.cfg["split"], res.get("embargo")),
+          "embargo_weeks": (res["embargo"]["weeks"] if (res.get("embargo") or {}).get("checked") else None),   # from the act (C-023)
           "n_test": int(t["n"]), "n_positives": int(t["positives"]), "base_rate": _r(t["prevalence"]),
           "auroc": _r(t["auroc"]), "auprc": _r(t["auprc"]), "brier": _r(t["brier"]),
           "calibration_slope": _r(t["calibration_slope"], 2),
@@ -160,6 +163,61 @@ def assert_thresholds_fixed(ev: dict, res: dict, swaps: dict | None = None) -> N
         raise BoardError("refusing to emit — thresholds chosen on the years they score (F-8): " + "; ".join(bad))
 
 
+def assert_embargo(res: dict, inst, swaps: dict | None = None) -> None:
+    """M-1f (III M-1e F-6, C-022): no new entry rests on a fit or stop set whose labels read the period after it. Checked on
+    the RUN RESULTS — the headline's, every learner swap's, every rolling fold's — from the boundaries eval recorded off
+    the frames the learner received: on, ≥ the event's horizon, every boundary checked, every label window ending before
+    the period it must not see. `none` (v2's reading) is refused here, as `threshold_from: test` is by F-8."""
+    H, bad = int(inst.event["horizon"]), []
+
+    def bounds(tag, bs, want):
+        if set(bs or {}) != want:
+            bad.append(f"{tag}: boundaries {sorted(bs or {})}, expected {sorted(want)}")
+        for name, x in (bs or {}).items():
+            end = x.get("latest_window_end")
+            if not x.get("checked"):
+                bad.append(f"{tag} {name}: not checked")
+            elif end is not None and int(end[:4]) >= x["next_start"]:
+                bad.append(f"{tag} {name}: a label window ends {end}, in or after {x['next_start']}")
+
+    for name, r in [("headline", res), *[(f"learner swap {k}", v) for k, v in (swaps or {}).items()]]:
+        e = r.get("embargo")
+        if not e:
+            bad.append(f"{name}: no embargo recorded (a result from before M-1f)")
+            continue
+        if not e.get("checked") or not e.get("weeks"):
+            bad.append(f"{name}: embargo off (weeks {e.get('weeks')!r})")
+            continue
+        if e["weeks"] < H or e.get("horizon") != H:
+            bad.append(f"{name}: embargo {e['weeks']} wk against horizon {e.get('horizon')} (the event says {H})")
+        bounds(name, e.get("boundaries"), {"train→val", "val→test", "refit→test"})
+        for row in r.get("rolling_origin", []):
+            tag = f"{name} fold {row['train_through']}→{row['test_year']}"
+            fb = {**((row.get("selection") or {}).get("embargo") or {}),
+                  **{k: v for k, v in (row.get("embargo") or {}).items() if k != "spill"}}
+            bounds(tag, fb, {"train→stop", "stop→test", "refit→test"})
+    if bad:
+        raise BoardError("refusing to emit — label windows cross a boundary (M-1f, C-022): " + "; ".join(bad))
+
+
+def embargo_extras(res: dict) -> dict:
+    """The headline's embargo, and per fold what was dropped and the spill it removed — counts, never rows."""
+    e = res["embargo"]
+    folds = {}
+    for row in res.get("rolling_origin", []):
+        fb = {**((row.get("selection") or {}).get("embargo") or {}), **{k: v for k, v in row["embargo"].items() if k != "spill"}}
+        sp = row["embargo"]["spill"]
+        folds[str(row["test_year"])] = {"rows_dropped": {k: v["rows_dropped"] for k, v in fb.items()},
+                                        "positives_dropped": {k: v["positives_dropped"] for k, v in fb.items()},
+                                        "spill_crossing_positives": [sp["crossing_positives"], sp["positives"]]}
+    return {"embargo_weeks": e["weeks"], "horizon": e["horizon"], "checked": e["checked"],   # not "weeks": a FORBIDDEN key
+            "boundaries": {k: {f: v[f] for f in ("next_start", "rows_dropped", "positives_dropped", "latest_window_end")}
+                           for k, v in e["boundaries"].items()},
+            "spill": {k: {f: v[f] for f in ("crossing_rows", "rows", "crossing_positives", "positives", "labelled_by_next")}
+                      for k, v in e["spill"].items()},
+            "folds": folds}
+
+
 _NUM = re.compile(r"-?\d+(?:\.\d+)?(?:e-?\d+)?")
 
 
@@ -219,6 +277,7 @@ def emit(res: dict, inst, *, version: int, run_date: str, recorded_at: str, shap
     b = inst.cfg["board"]
     ev = project(res, inst, version=version, recorded_at=recorded_at, shap_summary_ref=shap_summary_ref)
     assert_thresholds_fixed(ev, res, swaps)   # before the schema, so the refusal names F-8 rather than a slot
+    assert_embargo(res, inst, swaps)          # and M-1f's, by name
     validate(ev)
     event = inst.event
     rep = res["features_report"]
@@ -232,7 +291,8 @@ def emit(res: dict, inst, *, version: int, run_date: str, recorded_at: str, shap
         "sensitivity": [{"name": f"threshold {res['sensitivity']['threshold']:g} {event.get('unit', '')}".strip(),
                          "test_auroc": _r(res["sensitivity"]["test_auroc"]), "test_auprc": _r(res["sensitivity"]["test_auprc"]),
                          "test_prevalence": _r(res["sensitivity"]["test_prevalence"])}] if "sensitivity" in res else [],
-        "rolling_origin": [{k: (_r(v) if k in ("prevalence", "auroc", "auprc") else v) for k, v in r.items()} for r in res["rolling_origin"]],
+        "rolling_origin": [{k: (_r(v) if k in ("prevalence", "auroc", "auprc") else v) for k, v in r.items() if k != "embargo"}
+                           | {"selection": {k: v for k, v in r["selection"].items() if k != "embargo"}} for r in res["rolling_origin"]],
         "rolling_selection": res.get("rolling_selection"),
         "rolling_skipped": res.get("rolling_skipped", []),
         "obligations": res.get("obligations", []),
@@ -242,6 +302,7 @@ def emit(res: dict, inst, *, version: int, run_date: str, recorded_at: str, shap
         "data_pins": [{"stream_ref": sid, "artifact": inst.stream_spec(sid).get("artifact"), "sha256": s["sha256"]}
                       for sid, s in inst.streams.items() if s.get("sha256")],
         "learner_swaps": [_swap_summary(sw) for sw in (swaps or {}).values()],
+        "embargo": embargo_extras(res),
     }
     if delta_vs:
         extras["delta_vs"] = delta_vs
@@ -262,6 +323,8 @@ def delta(new_ev: dict, old_entry: dict) -> dict:
     d = {k: {"was": o.get(k), "now": new_ev.get(k), "change": (None if o.get(k) is None or new_ev.get(k) is None else _r(new_ev[k] - o[k]))}
          for k in keys}
     d["lead_time"] = {"was": o.get("lead_time"), "now": new_ev.get("lead_time")}
+    for k in ("split", "embargo_weeks", "learner"):   # M-1f: the cause of a v3 delta is visible beside its effect
+        d[k] = {"was": o.get(k), "now": new_ev.get(k)}
     ob = {rate_key(b["rate"]): b for b in o.get("alert_budgets", [])}   # keyed as metrics.json is (10pct): a page token can reach it
     d["alert_budgets"] = {rate_key(b["rate"]): {k: {"was": ob.get(rate_key(b["rate"]), {}).get(k), "now": b.get(k)}
                                            for k in ("precision", "recall", "n_alerts", "realised_rate", "threshold_from")}

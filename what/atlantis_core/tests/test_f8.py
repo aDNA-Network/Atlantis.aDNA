@@ -222,12 +222,27 @@ def v2(exemplar_dir):
     return load_instance(exemplar_dir), res, shap, swaps
 
 
-def _emit(inst, res, shap, swaps):
-    return emit(res, inst, version=2, run_date="2026-10-03", recorded_at="2026-10-03T00:00:00Z", shap=shap, swaps=swaps)
+@pytest.fixture(scope="module")
+def v3(exemplar_dir):
+    """M-1f: the F-8 emit checks now run on embargoed results — v2's predate the embargo and are refused for it."""
+    o = exemplar_dir / "outputs" / "atlantis_core_v3"
+    res = json.loads((o / "metrics.json").read_text())
+    shap = json.loads((o / "shap_summary.json").read_text())
+    swaps = {"learner_swap_logistic": json.loads((o / "learner_swap_logistic.json").read_text())}
+    return load_instance(exemplar_dir), res, shap, swaps
 
 
-def test_v2_emits(v2):
-    e = _emit(*v2)
+def _emit(inst, res, shap, swaps, version=3):
+    return emit(res, inst, version=version, run_date="2026-10-07", recorded_at="2026-10-07T00:00:00Z", shap=shap, swaps=swaps)
+
+
+def test_v2_results_are_refused_for_the_embargo(v2):
+    with pytest.raises(BoardError, match=r"label windows cross a boundary \(M-1f, C-022\): headline: no embargo recorded"):
+        _emit(*v2, version=2)
+
+
+def test_v3_emits(v3):
+    e = _emit(*v3)
     assert all(b["threshold_from"] == "validation" and 0 <= b["realised_rate"] <= 1 for b in e["evaluation"]["alert_budgets"])
     assert e["evaluation"]["lead_time"]["threshold_from"] == "validation"
 
@@ -238,8 +253,8 @@ def test_v2_emits(v2):
     (lambda r: r["full"]["lead_time_test_10pct"].update(threshold_from="test"), "lead_time: threshold_from 'test'"),
     (lambda r: r.update(rolling_selection="full_model"), "rolling folds selected 'full_model'"),
 ])
-def test_planted_f8_defects_refused_at_emit(v2, plant, match):
-    inst, res, shap, swaps = v2
+def test_planted_f8_defects_refused_at_emit(v3, plant, match):
+    inst, res, shap, swaps = v3
     r = copy.deepcopy(res); plant(r)
     with pytest.raises(BoardError, match=match):
         _emit(inst, r, shap, swaps)
@@ -258,8 +273,8 @@ SW = "learner_swap_logistic"
     (lambda r, s: r["full"]["lead_time_test_10pct"].update(alert_threshold=0.2295), r"headline lead_time: read threshold 0.2295, not the 10pct"),
     (lambda r, s: r["rolling_origin"][3]["selection"].update(selected_on=[2019]), r"rolling folds testing \[2019\] did not select on their own inner year"),
 ])
-def test_planted_board_defects_refused_by_name(v2, plant, match):
-    inst, res, shap, swaps = v2
+def test_planted_board_defects_refused_by_name(v3, plant, match):
+    inst, res, shap, swaps = v3
     r, sw = copy.deepcopy(res), copy.deepcopy(swaps); plant(r, sw)
     with pytest.raises(BoardError, match=match):
         _emit(inst, r, shap, sw)
@@ -308,6 +323,54 @@ def test_v2_differs_from_v1_by_f8_alone(v2, exemplar_dir):
     assert all(v["threshold_from"] == {"was": None, "now": "validation"} for v in d["alert_budgets"].values())
 
 
+# ── M-1f: the board refuses a result whose labels read the period after a set — by name, at every level ────────────
+
+EMB = "label windows cross a boundary"
+
+
+@pytest.mark.parametrize("plant, match", [
+    (lambda r, s: r["embargo"].update(weeks=0, checked=False), r"headline: embargo off \(weeks 0\)"),
+    (lambda r, s: r["embargo"].update(weeks=3), r"headline: embargo 3 wk against horizon 4"),
+    (lambda r, s: r["embargo"]["boundaries"]["val→test"].update(checked=False), r"headline val→test: not checked"),
+    (lambda r, s: r["embargo"]["boundaries"]["refit→test"].update(latest_window_end="2020-01-06"),
+     r"headline refit→test: a label window ends 2020-01-06, in or after 2020"),
+    (lambda r, s: r["embargo"]["boundaries"].pop("train→val"), r"headline: boundaries \['refit→test', 'val→test'\]"),
+    (lambda r, s: r["rolling_origin"][2]["selection"]["embargo"]["train→stop"].update(latest_window_end="2017-01-02"),
+     r"headline fold 2017→2018 train→stop: a label window ends 2017-01-02, in or after 2017"),
+    (lambda r, s: r["rolling_origin"][5].pop("embargo"), r"headline fold 2020→2021: boundaries \['stop→test', 'train→stop'\]"),
+    (lambda r, s: s[SW].pop("embargo"), rf"learner swap {SW}: no embargo recorded"),
+])
+def test_planted_embargo_defects_refused_at_emit(v3, plant, match):
+    inst, res, shap, swaps = v3
+    r, sw = copy.deepcopy(res), copy.deepcopy(swaps); plant(r, sw)
+    with pytest.raises(BoardError, match=rf"{EMB} \(M-1f, C-022\): .*{match}"):
+        _emit(inst, r, shap, sw)
+
+
+V2E = ENTRIES / "2026-10-03_gulf_karenia_brevis_v2.json"
+V3E = ENTRIES / "2026-10-07_gulf_karenia_brevis_v3.json"
+
+
+def test_v3_differs_from_v2_by_the_embargo_alone(v3, exemplar_dir):
+    """The CAUSE is proven by running: with the embargo off, today's code reproduces v2's metrics.json in every number
+    (test_embargo.test_none_reproduces_board_v2). Here: the committed v3 entry is what today's code emits from v3's
+    outputs, it states the embargo it was checked with, and its delta names the moves."""
+    inst, res, shap, swaps = v3
+    e3, e2 = json.loads(V3E.read_text()), json.loads(V2E.read_text())
+    ev = project(res, inst, version=3, recorded_at=e3["recorded_at"], shap_summary_ref=e3["evaluation"].get("shap_summary_ref"))
+    assert ev == e3["evaluation"]                                       # numbers are not retyped
+    assert ev["embargo_weeks"] == 4 and ev["split"].endswith("; label-horizon embargo 4 wk at every boundary")
+    assert ev["config_hash"] == semantic_hash(inst) == "7b789afded" != e2["evaluation"]["config_hash"]
+    assert {k: ev[k] for k in ("n_test", "n_positives", "base_rate", "event_ref", "unit_ref", "claim")} == \
+           {k: e2["evaluation"][k] for k in ("n_test", "n_positives", "base_rate", "event_ref", "unit_ref", "claim")}
+    d = e3["evaluation_extras"]["delta_vs"]
+    assert d["entry"] == e2["entry_id"] and d["fields"]["embargo_weeks"] == {"was": None, "now": 4}
+    assert "141 trees" in d["fields"]["learner"]["was"] and "146 trees" in d["fields"]["learner"]["now"]
+    x = e3["evaluation_extras"]["embargo"]
+    assert x["embargo_weeks"] == 4 and x["checked"] and x["boundaries"]["val→test"]["rows_dropped"] == 34
+    assert x["spill"]["val→test"]["crossing_positives"] == 1 and x["folds"]["2023"]["spill_crossing_positives"] == [10, 31]
+
+
 # ── byte-stable: what M-1e must not touch ──────────────────────────────────────────────────────────────────────────
 
 PINNED = {
@@ -316,9 +379,13 @@ PINNED = {
     "exemplars/gulf_karenia_brevis/site/hab_crash_risk.html": "c7fae2039e8aaf2568e1a28bf7bb72e6103c4f28a18aae15fca8b114e45eb07e",
     "exemplars/gulf_karenia_brevis/site/gulf_karenia_brevis_v1.html": "c9e2e0adecf71d7c0899d479557ad79819766a6042f24bd7188186c7568faa69",
     "exemplars/gulf_karenia_brevis/outputs/atlantis_core/metrics.json": "1fb52eaa74d62284be897067dc258f21cbc20ecd3b7a54db16f1dbae271cf368",
+    # M-1f: v2 is published — its entry, its page and the outputs it was emitted from stay as they are (SO-2)
+    "board/entries/2026-10-03_gulf_karenia_brevis_v2.json": "f8f85565e675d221417fb79f062de3d5f02db38d6ef31d274bcd70fdcca9f0b4",
+    "exemplars/gulf_karenia_brevis/site/gulf_karenia_brevis_v2.html": "4ca2e55b098b49203d94654a08193b25563531c4d211046dc829b8c968f68968",
+    "exemplars/gulf_karenia_brevis/outputs/atlantis_core_v2/metrics.json": "5f6829dd53bf4a70e14a5325f5337b3e790f1ddb9f6fbe0a826be89ab82cfcea",
 }
 
 
 @pytest.mark.parametrize("rel", sorted(PINNED))
-def test_v0_v1_byte_stable(rel):
+def test_published_entries_and_pages_byte_stable(rel):
     assert hashlib.sha256((WHAT / rel).read_bytes()).hexdigest() == PINNED[rel]
