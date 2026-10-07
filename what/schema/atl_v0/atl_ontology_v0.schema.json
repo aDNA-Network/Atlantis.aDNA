@@ -332,6 +332,14 @@
                         "null"
                     ]
                 },
+                "embargo_weeks": {
+                    "description": "0.6.0 (M-1f). The label-horizon embargo the evaluation's fit and stop sets were cut with: the rows whose label window t+1\u2026t+H reads the period a set must not see were dropped (III M-1e F-6). 0 = none; \u2265 the event horizon when on (atlantis_core refuses a partial embargo). Optional so that grandfathered entries (v0\u2013v2, unembargoed and disclosed as such) still validate; the emitter writes it from the boundaries it CHECKED, not from config. Controls: pos_evaluation_embargo \u00b7 neg_evaluation_embargo_negative \u00b7 neg_evaluation_embargo_float. Nearest miss NOT caught: an embargo shorter than the horizon (H lives on the event, not the evaluation \u2014 cross-object arithmetic is the emitter's).",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
                 "evaluation_id": {
                     "description": "Evaluation id. Control: neg_eval_id_prefix.",
                     "pattern": "^atl_eval_[a-z0-9_]{2,64}(?!\\n)$",
@@ -1126,6 +1134,6 @@
     },
     "title": "atl_ontology_v0",
     "type": "object",
-    "version": "0.5.0"
+    "version": "0.6.0"
 }
 

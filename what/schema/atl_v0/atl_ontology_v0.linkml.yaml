@@ -1,9 +1,11 @@
 # atl_ontology_v0.linkml.yaml — Atlantis.aDNA · the `atl_` ontology for ecosystem early warning, v0
 #
-# STATUS: draft (v0.4.0) — authored at M-0 (2026-10-02, fable); CONTROLLED at P1 M-1c (2026-10-02, opus); 0.3.0 at M-1d-i
+# STATUS: draft (v0.6.0) — authored at M-0 (2026-10-02, fable); CONTROLLED at P1 M-1c (2026-10-02, opus); 0.3.0 at M-1d-i
 # (2026-10-03, operator ruling): a stream may be DECLARED before it is fetched — `ingested_at` optional, and a hash ⇒ a fetch time.
 # 0.4.0 at M-1e (2026-10-03, operator ruling; F-8): an alert budget says where its threshold was fixed (`threshold_from`), and a
-# threshold fixed on validation ⇒ the REALISED test alert rate is stated beside the nominal `rate`. A constraint
+# threshold fixed on validation ⇒ the REALISED test alert rate is stated beside the nominal `rate`. 0.5.0 at M-2a-i (2026-10-06):
+# `refractory_weeks` on an event. 0.6.0 at M-1f (2026-10-07, operator ruling): an evaluation may state the label-horizon
+# embargo its fit and stop sets were cut with (`embargo_weeks`). A constraint
 # is claimed ONLY where a control in fixtures/controls/ proves it under all three worlds of run_controls.sh
 # (linkml-validate · the committed atl_ontology_v0.schema.json, descendants OFF · a scratch JSON Schema, descendants ON).
 # The control count and the known limits are in README.md. A constraint whose docstring names no control is NOT claimed.
@@ -34,7 +36,7 @@ description: >-
   (a feature with a tag and a lineage), an event definition (threshold · direction · horizon), and an evaluation
   (the measurement, always against its base rate). Observations, labels and predictions are table shapes, not
   entities, and never cross into Atlantis.
-version: 0.5.0
+version: 0.6.0
 license: https://opensource.org/licenses/MIT
 status: draft
 
@@ -225,6 +227,7 @@ slots:
   event_ref:        {range: AtlEventDefinition, required: true}
   unit_ref:         {range: AtlSpatialUnit, description: "The patient population the evaluation covers (the parent unit when many)."}
   split:            {range: string, required: true, description: "Temporal split in words: train 1994–2016 · val 2017–2019 · test 2020–2023, scored once."}
+  embargo_weeks:    {range: integer, minimum_value: 0, description: "0.6.0 (M-1f). The label-horizon embargo the evaluation's fit and stop sets were cut with: the rows whose label window t+1…t+H reads the period a set must not see were dropped (III M-1e F-6). 0 = none; ≥ the event horizon when on (atlantis_core refuses a partial embargo). Optional so that grandfathered entries (v0–v2, unembargoed and disclosed as such) still validate; the emitter writes it from the boundaries it CHECKED, not from config. Controls: pos_evaluation_embargo · neg_evaluation_embargo_negative · neg_evaluation_embargo_float. Nearest miss NOT caught: an embargo shorter than the horizon (H lives on the event, not the evaluation — cross-object arithmetic is the emitter's)."}
   n_test:           {range: integer, required: true, minimum_value: 1}
   n_positives:      {range: integer, required: true, minimum_value: 0}
   base_rate:        {range: float, required: true, minimum_value: 0, maximum_value: 1, description: "Test prevalence. REQUIRED — a score without its base rate is not a result (Proteus doctrine 2; SO-9). Controls: neg_missing_base_rate · neg_base_rate_gt1 (1.5). Nearest miss NOT caught: base_rate ≠ n_positives / n_test (cross-field arithmetic is a validator's job)."}
@@ -353,7 +356,7 @@ classes:
       per-patient `predictions` list is rejected AT the evaluation; neg_budget_extra_key (a part) and
       neg_document_extra_key (the root) prove closed-ness at the other two levels. Nearest miss NOT caught: per-patient values
       smuggled inside a declared free-text slot (e.g. `split`, `learner`) — a reviewer's catch, not a shape's.
-    slots: [evaluation_id, event_ref, unit_ref, split, n_test, n_positives, base_rate, auroc, auprc, brier, calibration_slope,
+    slots: [evaluation_id, event_ref, unit_ref, split, embargo_weeks, n_test, n_positives, base_rate, auroc, auprc, brier, calibration_slope,
             climatology_auroc, climatology_auprc, alert_budgets, lead_time, ablations, learner, config_hash, data_pins,
             shap_summary_ref, claim, owner_ruling_ref, limitations_ref]
     rules:

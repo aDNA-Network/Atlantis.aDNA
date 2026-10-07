@@ -32,8 +32,10 @@ for f in "$HERE"/pos_*.yaml "$HERE"/neg_*.yaml; do
            if [ -z "$pat" ]; then echo "FAIL  $b has no REJECTS_ON line"; fail=$((fail+1));
            elif [ $rc -eq 0 ]; then echo "FAIL  $b should be rejected but validates"; fail=$((fail+1));
            elif [ -z "$errs" ]; then echo "FAIL  $b rejected with NO error line — instrument failure, not a result"; printf '%s\n' "$out" | head -3; fail=$((fail+1));
-           elif printf '%s\n' "$errs" | grep -vqE "$pat"; then echo "FAIL  $b rejected for an UNNAMED reason:"; printf '%s\n' "$errs" | grep -vE "$pat" | head -3; fail=$((fail+1));
-           elif [ -n "$at" ] && printf '%s\n' "$errs" | awk 'match($0, / in \/[^ ]*$/) {print substr($0, RSTART+4); next} {print "<no path>"}' | grep -vqE "$at"; then
+           # `-e`: a REJECTS_ON that starts with '-' (e.g. "-1 is less than…") was read as a grep OPTION, grep exited 2, and the
+           # unnamed-reason test was skipped — vacuous in this world since 0.5.0 (M-1f finding; the JSON worlds use `re`)
+           elif printf '%s\n' "$errs" | grep -vqE -e "$pat"; then echo "FAIL  $b rejected for an UNNAMED reason:"; printf '%s\n' "$errs" | grep -vE -e "$pat" | head -3; fail=$((fail+1));
+           elif [ -n "$at" ] && printf '%s\n' "$errs" | awk 'match($0, / in \/[^ ]*$/) {print substr($0, RSTART+4); next} {print "<no path>"}' | grep -vqE -e "$at"; then
              echo "FAIL  $b rejected at an UNNAMED site (REJECTS_AT $at):"; printf '%s\n' "$errs" | awk 'match($0, / in \/[^ ]*$/) {print "      " substr($0, RSTART+4)}' | head -3; fail=$((fail+1))
            else echo "PASS  $b rejected — $(printf '%s\n' "$errs" | head -1 | cut -c1-120)"; pass=$((pass+1)); fi ;;
   esac
