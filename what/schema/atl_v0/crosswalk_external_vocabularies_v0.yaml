@@ -33,7 +33,7 @@ bound:   # adopted now — an atl_ slot carries this authority's id
     applies_when: "modality in {gridded_field, gauge_series, buoy_series}"
     adoption_verdict: adopt
     reason: "ERDDAP, NOAA CRW and Copernicus products already name variables this way (sea_surface_temperature, mass_concentration_of_chlorophyll_a_in_sea_water); adopting means the exemplar's OISST stream is conformant by naming, not by translation."
-    known_limit: "Derived indices (degree-heating-weeks) have no CF standard name; declare `variable` as the producer's name and `authority` as the producer (NOAA CRW) until a name exists."
+    known_limit: "Derived indices (degree-heating-weeks) have no CF standard name; declare `variable` as the producer's name and `authority` as the producer's CURIE (`NOAACRW:<variable>`, row noaa_crw_products, bound 2026-10-06) until a name exists."
 
   - id: ucum
     external_authority: "UCUM — Unified Code for Units of Measure"
@@ -72,6 +72,18 @@ bound:   # adopted now — an atl_ slot carries this authority's id
     reason: "Ingest.aDNA Rule 5 fields are PROV-O's minimum by another name; declaring the mapping lets a Datasets.aDNA provenance contract (backlog) consume the same fields."
     known_limit: "No RDF projection is generated in v0; the mapping is declarative."
 
+  - id: noaa_crw_products
+    external_authority: "NOAA Coral Reef Watch product definitions (DHW, HotSpot, SST anomaly, Bleaching Alert Area) — 5 km v3.1"
+    iri_base: https://coralreefwatch.noaa.gov/product/5km/
+    curie_prefix: NOAACRW
+    pin_field: AtlObservationStream.authority + AtlObservationStream.variable
+    applies_when: "a CRW-derived index with no CF standard name (degree_heating_week, hotspot); CF is preferred whenever one exists (CRW SST → CF:sea_surface_temperature)"
+    adoption_verdict: adopt
+    bound_at: "2026-10-06, M-2a-i (was deferred at M-0; bind_when 'P2 FKNMS' met). conform item 2 admits the prefix (instance contract v0.3.0); atl_v0 0.5.0 declares it"
+    version_pinned_by: "the instance (CRW product version, e.g. v3.1, in streams.yaml)"
+    reason: "DHW is the P2 event variable and has no CF standard name (cf_standard_names.known_limit). The producer's product doc is the only authority that defines it."
+    known_limit: "A producer-scoped id, not a community vocabulary — replace with CF the day a standard name exists. Ids are CRW ERDDAP variable names; nothing checks them against CRW's service."
+
 deferred:   # listed so nobody re-discovers them; bound when an instance needs them
 
   - id: envo
@@ -106,12 +118,6 @@ deferred:   # listed so nobody re-discovers them; bound when an instance needs t
     iri_base: https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=
     adoption_verdict: defer
     bind_when: "a freshwater or sequence-based instance names taxa outside WoRMS"
-
-  - id: noaa_crw_products
-    external_authority: "NOAA Coral Reef Watch product definitions (DHW, HotSpot, Bleaching Alert Area)"
-    iri_base: https://coralreefwatch.noaa.gov/product/5km/
-    adoption_verdict: defer
-    bind_when: "P2 FKNMS — the event variable is DHW; CRW's product doc is the authority until a CF name exists (see cf_standard_names.known_limit)"
 
 not_vocabularies:   # source protocols — streams.yaml material, recorded here only to stop the question recurring
   - {id: erddap,        is_a: source_system, example: "coastwatch.pfeg.noaa.gov/erddap — ncdcOisst21Agg_LonPM180"}

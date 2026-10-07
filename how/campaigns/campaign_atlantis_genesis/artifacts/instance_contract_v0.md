@@ -3,9 +3,9 @@ type: artifact
 doc_id: instance_contract_v0
 title: "Instance contract v0 — what a regional instance carries to federate Atlantis, what Atlantis promises back, and how a reviewer conforms it without seeing its data"
 status: draft
-version: 0.2.0
+version: 0.3.0
 created: 2026-10-02
-updated: 2026-10-03
+updated: 2026-10-06
 last_edited_by: agent_proteus
 mission: mission_m0_atlantis_genesis_planning   # v0.2.0 amended in place at mission_m1d_i_fork_and_conformance (operator ruling)
 campaign_id: campaign_atlantis_genesis
@@ -14,6 +14,10 @@ tags: [artifact, instance_contract, federation, conformance, mapping_yaml, atlan
 ---
 
 # Instance contract v0
+
+> ⛩ **v0.3.0 — 2026-10-06 (M-2a-i), a minor amendment.** Item 2's authority allowlist admits `NOAACRW:` (crosswalk row
+> `noaa_crw_products`, bound). DHW, the P2 event variable, has no CF standard name. This adds one prefix and removes
+> nothing, so a pin on 0.2.0 with `version_policy: minor` stays valid.
 
 > ⛩ **v0.2.0 — amended in place 2026-10-03 (M-1d-i, operator ruling).** v0.1.0 was written at M-0, before the reference
 > implementation existed, and named files and a command the core never adopted: `config.yaml → patient / event / split`
@@ -45,7 +49,7 @@ federation_ref:
   source_persona: Proteus
   source_path: what/atlantis_core/                 # the reference implementation the instance installs (P1)
   source_commit: <sha>                             # pinned at fork; bumped deliberately
-  version: "0.2.0"                                 # THIS contract's version; the atl_v0 schema version is pinned by mapping.yaml → ontology
+  version: "0.3.0"                                 # THIS contract's version; the atl_v0 schema version is pinned by mapping.yaml → ontology
   version_policy: minor                            # minor (auto patch/minor) | locked
   patterns_used: [ATL-ONTOLOGY, ATL-STREAM, ATL-VITALS, ATL-LABEL, ATL-EVAL, ATL-EXPLAIN, ATL-BOARD]
   conformance: atlantis_instance
@@ -95,7 +99,7 @@ Items 9 and 10 apply only after a run.
 | # | Requirement | Checked in | Why |
 |---|---|---|---|
 | 1 | **Patient defined**: `unit_kind` ∈ atl enum; `time_step` ∈ enum; geometry is a *pointer* (file path / WDPA id), never inline coordinates of partner sites (coordinate `rules` grids and `cells` bboxes only under `public` posture; every path relative and inside the instance). *Not counted as site geometry, stated:* a public gridded product's query `boxes` in a fetch spec, and the self-test's synthetic points | `units.yaml` · `atlantis.yaml → grid` | T1; ADR-002 §5 |
-| 2 | **Event defined**: variable with an authority CURIE on its stream (`CF:` · `WoRMS:` · `dwc:`, an allowlist), threshold + UCUM unit, `direction`, horizon; onset rule stated; `atlantis.yaml → label.event` names it | `events.yaml` · `streams.yaml` · `atlantis.yaml → label` | T3 |
+| 2 | **Event defined**: variable with an authority CURIE on its stream (`CF:` · `WoRMS:` · `dwc:` · `NOAACRW:`, an allowlist; CF whenever a standard name exists), threshold + UCUM unit, `direction`, horizon; onset rule stated; `atlantis.yaml → label.event` names it | `events.yaml` · `streams.yaml` · `atlantis.yaml → label` | T3 |
 | 3 | **Streams registered** with Ingest Rule-5 provenance. *Declared:* `source_system`, `source_id`, `license`, a known `fetcher`. *Fetched:* also `ingested_at`, `pipeline_version` and the `sha256` of each cached artifact, equal to its fetch summary | `streams.yaml` · `atlantis.yaml → streams` | ATL-STREAM; reproducibility |
 | 4 | **Every vital has a tag** (lever · proxy · artifact · state), a `stream_ref`, lag/window; levers name an `owner` | `features.yaml` | T7; the tag is reviewable, not hidden in code |
 | 5 | **Surveillance channel declared** (a stream with `surveillance_channel: true` read by a vital in `group: surveillance`), or declared absent with the reason (e.g. gridded-only) | `streams.yaml` · `features.yaml` · `atlantis.yaml → surveillance` | T5 |

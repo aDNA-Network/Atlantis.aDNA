@@ -22,7 +22,7 @@ requirements:
 
 This skill forks one steward's regional instance of the Atlantis method in one sitting. Atlantis supplies the method, the
 `atl_v0` ontology, `atlantis_core` and the templates. The instance is data-bearing and owns its data, its rulings and its
-partners. The fork produces an `<Instance>.aDNA` vault whose declarations conform to **instance contract v0.2.0**, with the
+partners. The fork produces an `<Instance>.aDNA` vault whose declarations conform to **instance contract v0.3.0**, with the
 **self-test green before any real data is fetched**, which is the P1 exit bar. This skill fetches nothing. The fetch comes
 at the end, only after two gates: a self-test receipt for the current config, and a ratified posture ADR.
 
@@ -148,7 +148,7 @@ which contract items are green. The next work is the run (`atlantis_core.run` â†
 
 ## Outputs
 
-`<Instance>.aDNA` with declarations that conform to contract v0.2.0 at the declared stage, a self-test receipt, and a
+`<Instance>.aDNA` with declarations that conform to contract v0.3.0 at the declared stage, a self-test receipt, and a
 posture ADR awaiting the owner's ratification. No data, until step 6.
 
 ## Known limits

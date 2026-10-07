@@ -1,4 +1,4 @@
-"""atlantis_core.conform (M-1d-i): contract v0.2.0 §B as a machine check. The forked example conforms; then each item is
+"""atlantis_core.conform (M-1d-i): contract v0.3.0 §B as a machine check. The forked example conforms; then each item is
 fed the defects its contract row names, and must fail — that item, by name (C-009/C-013: the minimum IS the contract)."""
 import json, shutil
 
@@ -220,7 +220,22 @@ def test_item10_limits_section(forked, page, ok):
 def test_item2_authority_allowlist(forked):
     edit("streams.yaml", lambda s: s["observation_streams"][0].__setitem__("authority", "x:y"))(forked)
     r = check(forked, [2], selftest=False)[2]
-    assert r["status"] == "fail" and any("CF/WoRMS/dwc" in x for x in r["reasons"])
+    assert r["status"] == "fail" and any("CF/WoRMS/dwc/NOAACRW" in x for x in r["reasons"])
+
+
+
+@pytest.mark.parametrize("auth, ok", [
+    ("NOAACRW:degree_heating_week", True),    # M-2a-i: a CRW product is the event variable's authority until a CF name exists
+    ("NOAA CRW", False),                      # the producer's name is not a CURIE (the card's wording; crosswalk known_limit)
+    ("NOAACRW:", False),                      # a prefix with no local id
+    ("noaacrw:degree_heating_week", False),   # prefixes are case-exact, as the schema declares them
+])
+def test_item2_crw_authority(forked, auth, ok):
+    edit("streams.yaml", lambda s: s["observation_streams"][0].__setitem__("authority", auth))(forked)
+    r = check(forked, [2], selftest=False)[2]
+    assert (r["status"] == "pass") is ok, r
+    if not ok:
+        assert any("names no authority CURIE" in x for x in r["reasons"]), r
 
 
 @pytest.mark.skipif(shutil.which("gitleaks") is None, reason="gitleaks not installed")

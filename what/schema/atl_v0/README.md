@@ -40,7 +40,7 @@ tags: [schema, ontology, linkml, atl, atlantis, draft, m0]
 | File | What | Status |
 |---|---|---|
 | `atl_ontology_v0.linkml.yaml` | Five classes · seven enums · the slots an instance's registries are declared in | draft |
-| `crosswalk_external_vocabularies_v0.yaml` | Which marine authorities an `atl_` slot binds to (6 bound: WDPA · CF · UCUM · WoRMS · Darwin Core · PROV-O), which are deferred and why, and which things are *source protocols*, not vocabularies | draft |
+| `crosswalk_external_vocabularies_v0.yaml` | Which marine authorities an `atl_` slot binds to (7 bound: WDPA · CF · UCUM · WoRMS · Darwin Core · PROV-O · NOAA CRW — the last bound 2026-10-06 at M-2a-i), which are deferred and why, and which things are *source protocols*, not vocabularies | draft |
 | `atl_ontology_v0.schema.json` | `gen-json-schema --closed` output, committed; the runner fails if it drifts | controlled |
 | `fixtures/controls/` | 4 `pos_*` · 41 `neg_*` (each with `# REJECTS_ON:` + `# REJECTS_AT:`) · `run_controls.sh` · `check_controls_json.py` · `_common_header.txt` (fixture sourcing) | controlled |
 | `m1c_vocabulary_fit_matrix.md` | Every enum value × every crosswalk authority; the GOOS EOV re-examination | draft |

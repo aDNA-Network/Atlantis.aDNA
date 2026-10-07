@@ -1,4 +1,4 @@
-"""atlantis_core.conform — the instance contract (v0.2.0 §B) as a machine check, one ✅/✗ per item (M-1d-i).
+"""atlantis_core.conform — the instance contract (v0.3.0 §B) as a machine check, one ✅/✗ per item (M-1d-i).
 
     python -m atlantis_core.conform --instance <dir> [--items 1-8,11,12] [--stage declared|fetched] [--no-selftest]
 
@@ -93,7 +93,8 @@ def inside(root: Path, rel) -> Path | None:
     return r if r.is_relative_to(root.resolve()) else None
 
 
-AUTHORITIES = ("CF", "WoRMS", "dwc")   # contract item 2: the variable's vocabulary — CF standard name · WoRMS AphiaID · Darwin Core
+AUTHORITIES = ("CF", "WoRMS", "dwc", "NOAACRW")   # contract item 2: the variable's vocabulary — CF standard name · WoRMS AphiaID ·
+# Darwin Core · NOAA Coral Reef Watch product (v0.3.0, M-2a-i: DHW has no CF standard name; crosswalk row noaa_crw_products)
 RATIFIED = ("ratified", "accepted")
 
 
@@ -436,7 +437,7 @@ def main(argv=None) -> int:
     a = ap.parse_args(argv)
     R = check(a.instance, parse_items(a.items), a.stage, selftest=not a.no_selftest)
     mark = {"pass": "✅", "fail": "✗ ", "n/a": "– ", "not_run": "⚠ "}
-    print(f"instance contract v0.2.0 · {Path(a.instance).resolve().name} · stage {a.stage}")
+    print(f"instance contract v0.3.0 · {Path(a.instance).resolve().name} · stage {a.stage}")
     for i, r in R.items():
         print(f"{mark[r['status']]} {i:>2} {ITEMS[i]}  [{' · '.join(r['read'])}]")
         for why in r["reasons"]:

@@ -3,7 +3,7 @@ type: federation_contract
 doc_id: federation_atlantis_wrapper
 title: "how/federation/atlantis/ — what a regional instance carries to federate Atlantis (contract v0)"
 status: draft
-version: 0.2.0
+version: 0.3.0
 created: 2026-09-23
 updated: 2026-10-03
 last_edited_by: agent_proteus
@@ -16,7 +16,7 @@ tags: [federation, wrapper, atlantis, instance_contract, adr_045, conformance]
 An instance carries `how/federation/atlantis/CLAUDE.md` with the `federation_ref` block below (ADR-045 placement).
 **The contract — the twelve-item checklist a reviewer runs from `atlantis.yaml` · `units.yaml` · `streams.yaml` ·
 `features.yaml` · `events.yaml` · `mapping.yaml` and the posture ADR without seeing the instance's data (machine-checked by
-`python -m atlantis_core.conform`; v0.2.0, 2026-10-03), what Atlantis promises back, and how knowledge moves between
+`python -m atlantis_core.conform`; v0.3.0, 2026-10-06), what Atlantis promises back, and how knowledge moves between
 stewards — is `instance_contract_v0.md`** (linked in frontmatter). This file is the pin; that file is the terms.
 
 ```yaml
