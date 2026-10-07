@@ -8,10 +8,10 @@ from __future__ import annotations
 import pandas as pd
 
 from atlantis_core.grid.rules import RuleGrid, RuleError
-from atlantis_core.grid.polygons import PolygonGrid
+from atlantis_core.grid.polygons import PolygonGrid, GridPinError, file_sha256
 from atlantis_core.grid.cells import CellGrid
 
-__all__ = ["RuleGrid", "RuleError", "PolygonGrid", "CellGrid", "make_grid", "week_start", "patient_weeks"]
+__all__ = ["RuleGrid", "RuleError", "PolygonGrid", "GridPinError", "file_sha256", "CellGrid", "make_grid", "week_start", "patient_weeks"]
 
 
 def make_grid(inst):
@@ -20,7 +20,7 @@ def make_grid(inst):
     if kind == "rules":
         return RuleGrid(g["rules"])
     if kind == "polygons":
-        return PolygonGrid.from_file(inst.path(g["path"]), g["id_property"], g.get("name_property"))
+        return PolygonGrid.from_file(inst.path(g["path"]), g["id_property"], g.get("name_property"), sha256=g.get("sha256"))
     if kind == "cells":
         return CellGrid(g["res"], *g["bbox"])
     raise ValueError(f"grid.kind {kind!r} — expected rules | polygons | cells")

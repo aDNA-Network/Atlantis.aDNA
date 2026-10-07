@@ -5,7 +5,8 @@
 # Every value came from the steward's interview answers or from a template default marked (default). Review the defaults.
 registries: {streams: streams.yaml, features: features.yaml, events: events.yaml}
 
-grid:   # the patient's space. Geometry is a POINTER (contract item 1): the file lives in this instance and is pinned here.
+grid:   # the patient's space. Geometry is a POINTER (contract item 1): the file lives in this instance and
+        # its bytes are pinned by `sha256` (written by fork; make_grid and conform item 1 refuse a mismatch).
   {{grid_block}}
 
 streams:   # engine shape per stream_id (streams.yaml carries the provenance). `fetch` is the fetcher's spec, if known yet.

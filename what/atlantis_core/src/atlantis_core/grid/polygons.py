@@ -1,15 +1,37 @@
 """Patient units from polygon files — GeoJSON (incl. a WDPA export) that the *instance* points at.
 
-Atlantis never holds a polygon (ADR-002 §4): `grid.polygons.path` is resolved inside the instance, and the file is
-pinned there by sha256. Point-in-polygon is even-odd ray casting in numpy, holes honoured, MultiPolygon supported;
+Atlantis never holds a polygon (ADR-002 §4): `grid.path` is resolved inside the instance, and its bytes are pinned by
+`grid.sha256` in `atlantis.yaml`. `fork` writes the pin, `make_grid` and `conform` item 1 refuse a missing or mismatched
+pin, and because the pin sits in the `grid` section it is inside `semantic_hash`, so a new zone file invalidates the
+self-test receipt. (M-2a-i: until then this docstring claimed a pin no code made, the C-023 class.) Point-in-polygon is even-odd ray casting in numpy, holes honoured, MultiPolygon supported;
 no shapely. First feature that contains a point wins (declare overlapping zones in priority order). Points exactly on
 an edge are not guaranteed either way — snap or buffer upstream if that matters for an instance.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 import numpy as np
+
+
+class GridPinError(ValueError):
+    """The polygon file is not the one `grid.sha256` pins (or there is no pin)."""
+
+
+def file_sha256(path) -> str:
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def check_pin(path, sha256) -> None:
+    """Refuse a polygon file whose bytes are not the pinned ones. A missing pin is a refusal too, not a pass."""
+    if not sha256:
+        raise GridPinError(f"grid.sha256 missing: the polygon file {Path(path).name} is unpinned (re-fork, or pin it "
+                           f"with its sha256 in atlantis.yaml → grid)")
+    got = file_sha256(path)
+    if got != str(sha256):
+        raise GridPinError(f"grid.sha256 mismatch: {Path(path).name} is {got[:12]}…, atlantis.yaml pins {str(sha256)[:12]}… "
+                           f"— the zone file changed; re-pin deliberately and re-run the self-test")
 
 
 def _ring_contains(ring: np.ndarray, x: np.ndarray, y: np.ndarray) -> np.ndarray:
@@ -55,8 +77,11 @@ class PolygonGrid:
             self.units.append((uid, name, f["geometry"]))
 
     @classmethod
-    def from_file(cls, path: Path, id_property: str, name_property: str | None = None):
-        gj = json.loads(Path(path).read_text())
+    def from_file(cls, path: Path, id_property: str, name_property: str | None = None, sha256: str | None = None,
+                  pinned: bool = True):
+        if pinned:
+            check_pin(path, sha256)
+        gj = json.loads(Path(path).read_bytes())
         feats = gj["features"] if gj.get("type") == "FeatureCollection" else [gj]
         return cls(feats, id_property, name_property)
 

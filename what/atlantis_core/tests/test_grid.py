@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from atlantis_core import load_instance
-from atlantis_core.grid import RuleGrid, RuleError, PolygonGrid, CellGrid, make_grid, week_start
+from atlantis_core.grid import RuleGrid, RuleError, PolygonGrid, CellGrid, GridPinError, file_sha256, make_grid, week_start
 from atlantis_core.grid.rules import parse_rule
 
 # frozen at M-1a from hab.regions on the committed FWC parquet (exemplar tests/test_regions.py)
@@ -47,12 +47,27 @@ MULTI = {"type": "Feature", "properties": {"WDPAID": 777},
 def test_polygon_holes_and_multipolygon(tmp_path):
     p = tmp_path / "zones.geojson"
     p.write_text(json.dumps({"type": "FeatureCollection", "features": [SQUARE, MULTI]}))
-    g = PolygonGrid.from_file(p, "WDPAID", "NAME")
+    g = PolygonGrid.from_file(p, "WDPAID", "NAME", sha256=file_sha256(p))
     lat = [2, 5, 21, 31, 25, -1]; lon = [2, 5, 21, 31, 25, -1]   # inside · in hole · multi-a · multi-b · between · outside
     out = g.assign(lat, lon)
     assert out[0] == 555 and out[2] == 777 and out[3] == 777
     assert all(pd.isna(out[i]) for i in (1, 4, 5))
     assert g.names() == {555: "square", 777: "777"}
+
+
+
+def test_polygon_pin_refuses_missing_and_changed_bytes(tmp_path):
+    """M-2a-i: the pin the docstring claimed now exists. Missing → refused; one moved vertex → refused, by name."""
+    p = tmp_path / "zones.geojson"
+    p.write_text(json.dumps({"type": "FeatureCollection", "features": [SQUARE, MULTI]}))
+    pin = file_sha256(p)
+    with pytest.raises(GridPinError, match="grid.sha256 missing"):
+        PolygonGrid.from_file(p, "WDPAID")
+    moved = json.loads(p.read_text()); moved["features"][0]["geometry"]["coordinates"][0][1] = [10, 0.001]
+    p.write_text(json.dumps(moved))
+    with pytest.raises(GridPinError, match="grid.sha256 mismatch"):
+        PolygonGrid.from_file(p, "WDPAID", sha256=pin)
+    assert PolygonGrid.from_file(p, "WDPAID", pinned=False).names() == {555: "555", 777: "777"}   # explicit opt-out only
 
 
 def test_cells():

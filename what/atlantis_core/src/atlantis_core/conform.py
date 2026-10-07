@@ -28,6 +28,7 @@ import yaml
 
 from atlantis_core.config import load_instance, load_yaml
 from atlantis_core.fork import POSTURES
+from atlantis_core.grid.polygons import file_sha256
 
 ATLANTIS = Path(__file__).resolve().parents[4]
 JSON_SCHEMA = ATLANTIS / "what" / "schema" / "atl_v0" / "atl_ontology_v0.schema.json"
@@ -233,6 +234,11 @@ def check(root, items=None, stage: str = "declared", selftest: bool = True) -> d
             if gp is None or not gp.is_file():
                 fail(1, f"grid.path {g.get('path')!r} does not resolve inside the instance (relative, under its root)")
             if gp is not None and gp.is_file():
+                if not g.get("sha256"):
+                    fail(1, f"grid.sha256 missing: {g.get('path')} is unpinned — the patient's geometry must be pinned by its bytes")
+                elif file_sha256(gp) != str(g["sha256"]):
+                    fail(1, f"grid.sha256 mismatch: {g.get('path')} is {file_sha256(gp)[:12]}…, atlantis.yaml pins "
+                            f"{str(g['sha256'])[:12]}…")
                 try:
                     feats = json.loads(gp.read_text()).get("features") or []
                     have = {str((f.get("properties") or {}).get(g["id_property"])) for f in feats}

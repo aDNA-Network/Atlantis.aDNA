@@ -23,6 +23,8 @@ from pathlib import Path
 
 import yaml
 
+from atlantis_core.grid.polygons import file_sha256
+
 ATLANTIS = Path(__file__).resolve().parents[4]
 TEMPLATES = ATLANTIS / "how" / "templates" / "template_instance"
 MAPPING_TEMPLATE = ATLANTIS / "how" / "templates" / "template_mapping_atl.yaml"
@@ -219,7 +221,8 @@ def _values(a: dict, schema: dict, out: Path, commit: str, today: str, answers_f
                                         "time_step": pat["time_step"], "parent_unit": region_id}.items() if v is not None})
     gblock = {"kind": kind}
     if kind == "polygons":
-        gblock.update({"path": gpath, "id_property": grid["id_property"]})
+        gblock.update({"path": gpath, "sha256": file_sha256(out / gpath),   # the pin is computed from the bytes (C-023)
+                       "id_property": grid["id_property"]})
         if grid.get("name_property"):
             gblock["name_property"] = grid["name_property"]
     elif kind == "rules":

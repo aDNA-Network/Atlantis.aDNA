@@ -222,3 +222,15 @@ def test_fork_refuses_iii(tmp_path, capsys, fn, why):
     assert fork_into(tmp_path / "x", a) == 1
     assert why in capsys.readouterr().err
     assert not (tmp_path / "x" / "atlantis.yaml").exists() and not (tmp_path / "x" / ".gitignore").exists()
+
+
+def test_fork_pins_the_zone_file_by_its_bytes_and_the_selftest_refuses_a_moved_vertex(forked):
+    """M-2a-i (C-023): the pin is computed from the file fork found, and the real build path (make_grid, which the self-test
+    and vitals both call) refuses the moment one vertex moves — before any vital is computed."""
+    from atlantis_core.grid import GridPinError, file_sha256
+    g = load_instance(forked).cfg["grid"]
+    assert g["sha256"] == file_sha256(forked / g["path"])
+    p = forked / g["path"]
+    p.write_text(p.read_text().replace("-76.2, 35.5", "-76.2, 35.51", 1))
+    with pytest.raises(GridPinError, match="grid.sha256 mismatch"):
+        st.run(load_instance(forked), verbose=False)

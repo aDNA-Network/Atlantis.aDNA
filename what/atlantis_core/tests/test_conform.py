@@ -52,6 +52,11 @@ DEFECTS = [
     (1, lambda d: (d / "geometry/example_sound_segments.geojson").write_text(json.dumps(
         {"type": "FeatureCollection", "features": [{"type": "Feature", "properties": {"seg": 1}, "geometry": None}]})),
      "are not features of"),
+    # M-2a-i: the geometry is pinned by its bytes — an unpinned file, and one moved vertex, each fail item 1 by name
+    (1, edit("atlantis.yaml", lambda c: c["grid"].pop("sha256")), "grid.sha256 missing"),
+    (1, lambda d: (d / "geometry/example_sound_segments.geojson").write_text(
+        (d / "geometry/example_sound_segments.geojson").read_text().replace("-76.2, 35.5", "-76.2, 35.51", 1)),
+     "grid.sha256 mismatch"),
     (1, lambda d: (edit("atlantis.yaml", lambda c: c["grid"].update({"kind": "rules", "rules": [{"id": 1, "rule": "lat >= 35.2"}, {"id": 2, "rule": "True"}]}))(d),
                    _set_fed(d, lambda t: t.replace("class: public", "class: partner"))), "public posture only"),
     # 2 — event
