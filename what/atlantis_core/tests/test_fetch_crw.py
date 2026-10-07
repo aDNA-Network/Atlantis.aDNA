@@ -60,14 +60,23 @@ COLS = {"date": "date", "value": "dhw", "unit": "seg"}
 def crw(tmp_path, features, session=None, offline=False):
     f = CoralReefWatch(tmp_path, "dhw.parquet", "dhw_fetch_summary.json", offline=offline, session=session or FakeERDDAP())
     f.grid, f.columns, f.date_col, f.reduction = PolygonGrid(features, "seg"), dict(COLS), "date", {}
+    f.grid_sha256 = "0" * 64
     return f
 
 
-def expected(feature, day: int) -> tuple[float, int]:
-    """Independent of the fetcher: the mean over grid centres strictly inside an axis-aligned square, land excluded."""
+def _in_square(feature):
     (lon0, lat0), _, (lon1, lat1) = feature["geometry"]["coordinates"][0][:3]
+    return lambda la, lo: lat0 < la < lat1 and lon0 < lo < lon1
+
+
+INSIDE = {}   # uid → an analytic membership test, written by hand per shape (never the fetcher's geometry code)
+
+
+def expected(feature, day: int) -> tuple[float, int]:
+    """Independent of the fetcher: the mean over grid centres inside the zone (INSIDE, else an axis-aligned square), land excluded."""
+    inside = INSIDE.get(feature["properties"]["seg"]) or _in_square(feature)
     cells = [(la, lo) for la in np.round(np.arange(34.025, 36.0, 0.05), 3) for lo in np.round(np.arange(-77.975, -75.0, 0.05), 3)
-             if lat0 < la < lat1 and lon0 < lo < lon1 and (la, lo) != LAND]
+             if inside(la, lo) and (la, lo) != LAND]
     return float(np.mean([value(la, lo, day) for la, lo in cells])), len(cells)
 
 
@@ -91,11 +100,14 @@ def test_zone_means_are_the_cells_inside_each_polygon(tmp_path):
     df = f.fetch(SPEC)
     assert list(df.columns) == ["date", "dhw", "seg"]
     assert zone_problems(df, [SEG1, SEG2]) == []
-    assert f.reduction["1"] == {"n_cells": expected(SEG1, 0)[1], "fallback": False, "cells_in_envelope": 8 * 10, "shared_cells": 0}
+    z = f.reduction["zones"]
+    assert z["1"] == {"n_cells": expected(SEG1, 0)[1], "fallback": False, "cells_in_envelope": 8 * 10, "shared_cells": 0}
     # envelope 35.15–35.55 × −76.65–−76.15 → 8 latitude × 10 longitude centres
-    assert f.reduction["2"]["n_cells"] == expected(SEG2, 0)[1]          # the land cell is not counted
+    assert z["2"]["n_cells"] == expected(SEG2, 0)[1]                   # the land cell is not counted
     s = json.loads((tmp_path / "dhw_fetch_summary.json").read_text())
     assert s["reduction"] == f.reduction and s["rows"] == 4 and "cell centre in polygon" in s["reduction_rule"]
+    assert {k: s["reduction"][k] for k in ("grid_sha256", "pad_deg", "variable", "base")} == \
+        {"grid_sha256": "0" * 64, "pad_deg": 0.05, "variable": SPEC["variable"], "base": SPEC["base"]}   # III F-1: the basis
 
 
 def test_plant_an_envelope_mask_is_caught(tmp_path, monkeypatch):
@@ -109,7 +121,7 @@ def test_sub_cell_zone_falls_back_to_the_nearest_cell_and_says_so(tmp_path):
     tiny = square(9, 35.31, 35.32, -76.42, -76.41)   # between centres: no centre inside
     f = crw(tmp_path, [tiny])
     df = f.fetch(SPEC)
-    assert f.reduction["9"]["fallback"] is True and f.reduction["9"]["n_cells"] == 1
+    assert f.reduction["zones"]["9"]["fallback"] is True and f.reduction["zones"]["9"]["n_cells"] == 1
     assert df["dhw"].tolist() == [value(35.325, -76.425, 0), value(35.325, -76.425, 1)]   # the nearest centre
 
 
@@ -117,7 +129,7 @@ def test_overlapping_zones_share_cells_and_say_so(tmp_path):
     a, b = square(1, 35.2, 35.5, -76.6, -76.2), square(2, 35.3, 35.6, -76.4, -76.0)
     f = crw(tmp_path, [a, b])
     f.fetch(SPEC)
-    assert f.reduction["1"]["shared_cells"] == f.reduction["2"]["shared_cells"] > 0
+    assert f.reduction["zones"]["1"]["shared_cells"] == f.reduction["zones"]["2"]["shared_cells"] > 0
 
 
 def test_cache_hit_without_summary_does_not_invent_a_reduction(tmp_path):
@@ -157,3 +169,84 @@ def test_fetcher_for_binds_the_pinned_grid_and_the_streams_columns(persistent_ma
     with pytest.raises(GridPinError, match="grid.sha256 mismatch"):
         fetcher_for(load_instance(d), "atl_stream_example_dhw_daily", session=silent)
     assert silent.calls == []
+
+
+
+# ── M-2a-i III F-5: zones that are not their bounding box ───────────────────────────────────────────────────────────
+TRI = {"type": "Feature", "properties": {"seg": 21}, "geometry": {"type": "Polygon", "coordinates": [
+    [[-76.6, 35.2], [-76.19, 35.2], [-76.6, 35.61], [-76.6, 35.2]]]}}   # no centre ON the hypotenuse (edges are undefined)
+HOLED = {"type": "Feature", "properties": {"seg": 22}, "geometry": {"type": "Polygon", "coordinates": [
+    [[-76.6, 35.2], [-76.2, 35.2], [-76.2, 35.6], [-76.6, 35.6], [-76.6, 35.2]],
+    [[-76.5, 35.3], [-76.3, 35.3], [-76.3, 35.5], [-76.5, 35.5], [-76.5, 35.3]]]}}
+MULTI = {"type": "Feature", "properties": {"seg": 23}, "geometry": {"type": "MultiPolygon", "coordinates": [
+    [[[-76.6, 35.2], [-76.4, 35.2], [-76.4, 35.4], [-76.6, 35.4], [-76.6, 35.2]]],
+    [[[-76.0, 35.6], [-75.8, 35.6], [-75.8, 35.8], [-76.0, 35.8], [-76.0, 35.6]]]]}}
+INSIDE[21] = lambda la, lo: lo > -76.6 and la > 35.2 and (lo + 76.6) / 0.41 + (la - 35.2) / 0.41 < 1
+INSIDE[22] = lambda la, lo: (35.2 < la < 35.6 and -76.6 < lo < -76.2) and not (35.3 < la < 35.5 and -76.5 < lo < -76.3)
+INSIDE[23] = lambda la, lo: (35.2 < la < 35.4 and -76.6 < lo < -76.4) or (35.6 < la < 35.8 and -76.0 < lo < -75.8)
+SHAPES = [TRI, HOLED, MULTI]
+
+
+def test_non_rectangular_zones(tmp_path):
+    f = crw(tmp_path, SHAPES)
+    df = f.fetch(SPEC)
+    assert zone_problems(df, SHAPES) == []
+    assert all(not z["fallback"] and z["n_cells"] == expected(ft, 0)[1] for ft, z in zip(SHAPES, f.reduction["zones"].values()))
+
+
+def test_plant_a_bounding_box_mask_is_caught(tmp_path, monkeypatch):
+    """III F-5: a mask that is the zone's own bounding box (not its padded envelope) passed the rectangle-only tests."""
+    def bbox(geom, lat, lon):
+        lat0, lat1, lon0, lon1 = crw_mod.envelope(geom, 0.0)
+        return (np.asarray(lat) > lat0) & (np.asarray(lat) < lat1) & (np.asarray(lon) > lon0) & (np.asarray(lon) < lon1)
+    monkeypatch.setattr(crw_mod, "geometry_contains", bbox)
+    df = crw(tmp_path, SHAPES).fetch(SPEC)
+    assert len(zone_problems(df, SHAPES)) == 3       # triangle, hole and MultiPolygon each caught
+
+
+# ── M-2a-i III F-1: a re-pinned zone file never reuses the old zones' data ──────────────────────────────────────────
+def test_repin_with_artifact_kept_is_refused(tmp_path):
+    crw(tmp_path, [SEG1]).fetch(SPEC)
+    moved = square(1, 35.6, 35.9, -76.6, -76.2)
+    f2 = crw(tmp_path, [moved], session=FakeERDDAP()); f2.grid_sha256 = "1" * 64
+    with pytest.raises(ValueError, match="grid_sha256"):
+        f2.fetch(SPEC)
+
+
+def test_repin_with_artifact_deleted_refetches_the_new_zone(tmp_path):
+    crw(tmp_path, [SEG1]).fetch(SPEC)
+    (tmp_path / "dhw.parquet").unlink(); (tmp_path / "dhw_fetch_summary.json").unlink()
+    moved = square(1, 35.6, 35.9, -76.6, -76.2)
+    sess = FakeERDDAP()
+    f2 = crw(tmp_path, [moved], session=sess); f2.grid_sha256 = "1" * 64
+    df = f2.fetch(SPEC)
+    assert sess.calls, "the old zone's cached cells were reused"
+    assert zone_problems(df, [moved]) == [] and not f2.reduction["zones"]["1"]["fallback"]
+
+
+def test_summary_without_reduction_is_refused_at_the_next_fetch(tmp_path):
+    crw(tmp_path, [SEG1]).fetch(SPEC)
+    (tmp_path / "dhw_fetch_summary.json").unlink()
+    crw(tmp_path, [SEG1], offline=True).fetch(SPEC)              # cache hit: summary rewritten, reduction None
+    with pytest.raises(ValueError, match="records no reduction"):
+        crw(tmp_path, [SEG1], offline=True).fetch(SPEC)
+
+
+def test_verify_and_conform_refuse_a_stale_basis(persistent_master, tmp_path):
+    """The CLI's --verify (and so conform item 3, fetched) reads the basis, not only the bytes."""
+    from atlantis_core.fetch.__main__ import verify
+    d = tmp_path / "inst"; shutil.copytree(persistent_master, d)
+    inst = load_instance(d); sid = "atl_stream_example_dhw_daily"
+    spec = inst.stream_spec(sid)["fetch"] | {"years": [2020, 2020]}
+    f = fetcher_for(inst, sid, session=FakeERDDAP()); f.fetch(spec)
+    summ = json.loads(f.summary.read_text()); summ["reduction"]["pad_deg"] = 0.1
+    f.summary.write_text(json.dumps(summ))
+    probs = verify(inst, sid)
+    assert any("pad_deg" in p for p in probs), probs
+
+
+# ── M-2a-i III F-2: one feature per unit ────────────────────────────────────────────────────────────────────────────
+def test_duplicate_zone_ids_are_refused(tmp_path):
+    twin = square(1, 34.9, 35.2, -76.6, -76.2)
+    with pytest.raises(ValueError, match="duplicate seg"):
+        PolygonGrid([SEG1, twin], "seg")

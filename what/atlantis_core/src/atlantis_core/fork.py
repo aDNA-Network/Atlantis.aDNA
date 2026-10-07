@@ -145,6 +145,16 @@ def _values(a: dict, schema: dict, out: Path, commit: str, today: str, answers_f
             errs.append(f"patient.grid.path {gp!r} must be a relative path inside the instance (III F-4)")
         elif not r.is_file():
             errs.append(f"patient.grid.path {gp!r} not found inside the instance ({out}) — the pointer must resolve there")
+        else:
+            import json
+            try:
+                ids = [str((f.get("properties") or {}).get(grid.get("id_property"))) for f in json.loads(r.read_text())["features"]]
+                dups = sorted({i for i in ids if ids.count(i) > 1})
+                if dups:
+                    errs.append(f"patient.grid.path {gp!r}: duplicate {grid.get('id_property')} {dups} — one feature per unit "
+                                f"(dissolve a multi-part zone into one MultiPolygon; M-2a-i III F-2)")
+            except (ValueError, KeyError, TypeError, AttributeError) as e:
+                errs.append(f"patient.grid.path {gp!r}: not a GeoJSON FeatureCollection ({e})")
     for u in units:
         ref = str(u.get("geometry_ref") or "")
         if ref.startswith(("/", "~")) or "/../" in f"/{ref}":

@@ -315,3 +315,15 @@ def test_event_series_choice_and_refusals(persistent_master, forked):
     f.cfg["selftest"]["event_series"] = "accumulating"
     with pytest.raises(ValueError, match="ABOVE event on a daily event stream"):
         st.event_series(f)
+
+
+
+def test_fork_refuses_duplicate_zone_ids(tmp_path, capsys):
+    """M-2a-i III F-2: a zone exported as two features with one id is refused before anything is written."""
+    import conftest
+    g = copy.deepcopy(conftest.GEOJSON); g["features"].append(copy.deepcopy(g["features"][0]))
+    d = tmp_path / "inst"; (d / "geometry").mkdir(parents=True)
+    (d / "geometry" / "example_sound_segments.geojson").write_text(json.dumps(g))
+    assert fork_into(d, geometry=False) == 1
+    assert "duplicate seg" in capsys.readouterr().err
+    assert not (d / "atlantis.yaml").exists()

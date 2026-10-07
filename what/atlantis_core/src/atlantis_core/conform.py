@@ -241,7 +241,11 @@ def check(root, items=None, stage: str = "declared", selftest: bool = True) -> d
                             f"{str(g['sha256'])[:12]}…")
                 try:
                     feats = json.loads(gp.read_text()).get("features") or []
-                    have = {str((f.get("properties") or {}).get(g["id_property"])) for f in feats}
+                    ids = [str((f.get("properties") or {}).get(g["id_property"])) for f in feats]
+                    have = set(ids)
+                    dups = sorted({i for i in ids if ids.count(i) > 1})
+                    if dups:
+                        fail(1, f"{g['path']}: duplicate {g['id_property']} {dups} — one feature per unit (III F-2)")
                     miss = [c for c in codes if c not in have]
                     if miss:
                         fail(1, f"grid units {miss} are not features of {g['path']} (by {g['id_property']})")

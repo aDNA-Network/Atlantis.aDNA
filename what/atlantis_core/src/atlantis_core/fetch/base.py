@@ -36,6 +36,10 @@ class Fetcher:
         """Hook: what the fetcher may take from its instance before downloading (M-2a-i). `fetch.fetcher_for` calls it.
         Default: nothing. A spec-only fetcher stays spec-only."""
 
+    def provenance_problem(self, spec: dict) -> str | None:
+        """Hook: why a cached artifact is not valid for the current instance (M-2a-i III F-1), or None. Default: None."""
+        return None
+
     @property
     def pipeline_version(self) -> str:
         return f"atlantis_core {__version__} · {type(self).__name__}"

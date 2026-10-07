@@ -70,6 +70,11 @@ class PolygonGrid:
     """`features`: GeoJSON features; `id_property`: the property holding the unit id (e.g. WDPAID)."""
 
     def __init__(self, features: list[dict], id_property: str, name_property: str | None = None):
+        ids = [f["properties"][id_property] for f in features]
+        dups = sorted({str(i) for i in ids if ids.count(i) > 1})
+        if dups:   # M-2a-i III F-2: a per-zone cache, record or row keyed by a repeated id collides silently
+            raise ValueError(f"duplicate {id_property} {dups} in the zone file — one feature per unit: dissolve a "
+                             f"multi-part zone into one MultiPolygon first")
         self.units = []
         for f in features:
             uid = f["properties"][id_property]

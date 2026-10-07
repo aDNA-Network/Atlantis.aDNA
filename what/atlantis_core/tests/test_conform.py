@@ -54,6 +54,10 @@ DEFECTS = [
      "are not features of"),
     # M-2a-i: the geometry is pinned by its bytes — an unpinned file, and one moved vertex, each fail item 1 by name
     (1, edit("atlantis.yaml", lambda c: c["grid"].pop("sha256")), "grid.sha256 missing"),
+    (1, lambda d: (d / "geometry/example_sound_segments.geojson").write_text(json.dumps({"type": "FeatureCollection", "features": [
+        json.loads((d / "geometry/example_sound_segments.geojson").read_text())["features"][0]] * 2 + [
+        json.loads((d / "geometry/example_sound_segments.geojson").read_text())["features"][1]]})),
+     "duplicate seg"),                                                      # III F-2: one feature per unit
     (1, lambda d: (d / "geometry/example_sound_segments.geojson").write_text(
         (d / "geometry/example_sound_segments.geojson").read_text().replace("-76.2, 35.5", "-76.2, 35.51", 1)),
      "grid.sha256 mismatch"),

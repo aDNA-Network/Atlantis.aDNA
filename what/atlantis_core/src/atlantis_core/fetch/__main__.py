@@ -53,6 +53,12 @@ def verify(inst, sid: str) -> list[str]:
         out.append(f"{sid}: streams.yaml sha256 {s['sha256'][:12]}… ≠ cached bytes {actual[:12]}…")
     if not s.get("sha256"):
         out.append(f"{sid}: streams.yaml carries no sha256 — record {actual} (contract item 3, fetched stage)")
+    try:                                   # III F-1: bytes that match their pin can still be the wrong zones' bytes
+        p = fetcher_for(inst, sid, offline=True).provenance_problem(spec.get("fetch") or {})
+    except Exception as e:  # noqa: BLE001 — a fetcher that cannot even bind (e.g. a re-pinned grid) is a problem too
+        p = f"cannot check the artifact's basis: {type(e).__name__}: {e}"
+    if p:
+        out.append(f"{sid}: {p}")
     return out
 
 
