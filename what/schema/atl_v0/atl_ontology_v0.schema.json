@@ -511,7 +511,7 @@
                     ]
                 },
                 "refractory_weeks": {
-                    "description": "0.5.0 (M-2a-i). Optional; absent = 0. A patient-step is dropped as already-in-event when the carried signal crossed the threshold at ANY of t\u2212R \u2026 t, not only at t \u2014 so a persistent or flickering event (DHW decaying and re-accumulating) yields one onset, not several. R = horizon matches eval's lead-time onset (no crossing in the previous H steps). Past-only by construction; the self-test's C9 proves it reads nothing after t. Controls: pos_event_refractory \u00b7 neg_event_refractory_negative \u00b7 neg_event_refractory_float.",
+                    "description": "0.5.0 (M-2a-i). Optional; absent = 0. A patient-step is dropped as already-in-event when the carried signal crossed the threshold at ANY of t\u2212R \u2026 t, not only at t \u2014 so a persistent or flickering event (DHW decaying and re-accumulating) yields one onset, not several. R = horizon \u2212 1 matches eval's lead-time onset (no crossing in the previous H steps); R = horizon is one step stricter. Past-only by construction: the self-test's C1/C2 prove nothing after t moves it, and C9 that it bites at its declared length. Controls: pos_event_refractory \u00b7 neg_event_refractory_negative \u00b7 neg_event_refractory_float.",
                     "minimum": 0,
                     "type": [
                         "integer",

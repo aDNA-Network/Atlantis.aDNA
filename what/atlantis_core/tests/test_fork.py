@@ -1,6 +1,8 @@
 """atlantis_core.fork (M-1d-i): a conformant instance from templates alone — every refusal fed its defect, the result held
 to the registry checks, the mapping check and the self-test, and the self-test seen to FAIL in the forked world."""
-import copy, json
+import copy, json, shutil
+
+import pandas as pd
 
 import numpy as np
 
@@ -206,7 +208,8 @@ def test_template_tokens_all_resolved_by_fork():
         toks |= set(TOKEN.findall(p.read_text()))
     with tempfile.TemporaryDirectory() as d:
         (Path(d) / "geometry").mkdir()
-        (Path(d) / "geometry" / "example_sound_segments.geojson").write_text("{}")
+        import conftest   # III F-2: fork now reads the zone file (duplicate ids), so the placeholder must be a real one
+        (Path(d) / "geometry" / "example_sound_segments.geojson").write_text(json.dumps(conftest.GEOJSON))
         vals, errs = _values(example_answers(), yaml.safe_load(FS.read_text()), Path(d), "c", "2026-10-03", "a.yaml", "001")
     assert not errs and toks <= set(vals), sorted(toks - set(vals))
 
@@ -268,6 +271,13 @@ def _refractory_variant(mode):
         elif mode == "from_horizon":          # the drop computed after the horizon cut: on the FUTURE signal
             sig = s_.weekly(_grammar.parse(lc["signal"], consts))
             add = sum(sig.shift(-k).ge(thr).astype(int) for k in range(1, int(ev["horizon"]) + 1)).gt(0)
+        elif mode == "raw":                    # III F-7: the window on the RAW signal, ignoring the documented carry
+            sig = s_.weekly(_grammar.parse(lc["signal"], consts))
+            add = sum(sig.shift(k).ge(thr).astype(int) for k in range(1, R + 1)).gt(0)
+        elif mode == "rows":                   # III F-7: R counted in observed rows, not calendar weeks
+            car = s_.weekly(_grammar.parse(lc["signal"], consts)).ffill(limit=int(lc["last_known_weeks"]))
+            add = pd.DataFrame({c: sum(car[c].dropna().ge(thr).shift(k, fill_value=False).astype(int) for k in range(1, R + 1))
+                                .gt(0).reindex(car.index, fill_value=False) for c in car.columns})
         else:                                  # "weekly_mean": the refractory reads a different aggregate than the label
             m = s_.weekly(_grammar.parse("weekly_mean(value)", consts)).ge(thr)
             add = sum(m.shift(k, fill_value=False).astype(int) for k in range(1, R + 1)).gt(0)
@@ -277,12 +287,14 @@ def _refractory_variant(mode):
 
 
 @pytest.mark.parametrize("mode,check", [
-    ("ignored", "C9 refractory: a crossing at t−8 .* did not set"),   # R declared, never applied
-    ("short", "C9 refractory: a crossing at t−8 .* did not set"),     # R − 1
-    ("long", "C9 refractory: a crossing at t−9 set"),              # R + 1 (off by one)
+    ("ignored", "C9 refractory: a crossing at t−7 .* did not set"),   # R declared, never applied
+    ("short", "C9 refractory: a crossing at t−7 .* did not set"),     # R − 1
+    ("long", "C9 refractory: a crossing at t−8 set"),              # R + 1 (off by one)
     ("future", "C1 LEAK"),                                          # reads t+1
     ("from_horizon", "C1 LEAK"),                                    # the drop applied after the horizon cut
     ("weekly_mean", "C9 episode"),                                  # right at t−R and t−R−1, wrong on the episode
+    ("raw", "C9 episode"),                                          # III F-7: ignores the carry through the episode's gap
+    ("rows", "C9 episode"),                                         # III F-7: counts observed rows across the gap
 ])
 def test_persistent_selftest_catches_refractory_defects(persistent_master, monkeypatch, mode, check):
     inst = load_instance(persistent_master)
@@ -295,10 +307,13 @@ def test_persistent_world_passes_and_records_what_ran(persistent_master):
     """The world and R are computed into the result (and so the receipt), not stamped from config (C-023)."""
     inst = load_instance(persistent_master)
     r = st.run(inst, verbose=False)
-    assert r["event_series"] == "accumulating" and r["refractory_weeks"] == 8
+    assert r["event_series"] == "accumulating" and r["refractory_weeks"] == 7
     ep = r["C9"]["episode"]
     assert r["C9"]["bites"] == r["C9"]["boundary"] == "ok"
     assert ep["checked"] and ep["crossing_runs"] >= 2 and ep["dip_weeks"] >= 1 and ep["dip_weeks_dropped"] == ep["dip_weeks"]
+    assert ep["gap_weeks"] > int(inst.cfg["label"]["last_known_weeks"])          # III F-7: carried ≠ raw is exercised
+    rec = json.loads(st.write_receipt(inst, r).read_text())
+    assert rec["C9"]["episode"]["checked"] and rec["C9"]["boundary"].startswith("ok")   # III F-3: on the receipt
     assert all(v.get("C3") == "ok" or k != "atl_stream_example_dhw_daily" for k, v in r["streams"].items())
 
 
@@ -313,7 +328,7 @@ def test_event_series_choice_and_refusals(persistent_master, forked):
     f = load_instance(forked)                                       # a below event: accumulating is refused, iid is default
     assert st.event_series(f) == "iid"
     f.cfg["selftest"]["event_series"] = "accumulating"
-    with pytest.raises(ValueError, match="ABOVE event on a daily event stream"):
+    with pytest.raises(ValueError, match="ABOVE event on a unit_daily event stream"):
         st.event_series(f)
 
 
@@ -327,3 +342,48 @@ def test_fork_refuses_duplicate_zone_ids(tmp_path, capsys):
     assert fork_into(d, geometry=False) == 1
     assert "duplicate seg" in capsys.readouterr().err
     assert not (d / "atlantis.yaml").exists()
+
+
+
+def _with_refractory(d, R, signal=None):
+    p = d / "events.yaml"; doc = yaml.safe_load(p.read_text()); doc["event_definitions"][0]["refractory_weeks"] = R
+    p.write_text(yaml.safe_dump(doc, sort_keys=False))
+    if signal:
+        q = d / "atlantis.yaml"; c = yaml.safe_load(q.read_text()); c["label"]["signal"] = signal
+        q.write_text(yaml.safe_dump(c, sort_keys=False))
+
+
+def test_iid_world_boundary_is_never_skipped(forked, monkeypatch):
+    """III F-3 (the reviewer's escape): R = 4 in the iid world — the boundary probe used to be skipped there, and an R + 1
+    refractory passed the whole self-test. Now the unobserved week is filled and the probe runs."""
+    _with_refractory(forked, 4)
+    r = st.run(load_instance(forked), verbose=False)
+    assert r["event_series"] == "iid" and r["C9"]["boundary"].startswith("ok")
+    monkeypatch.setattr(label, "make", _refractory_variant("long"))
+    with pytest.raises(st.LeakError, match="C9 refractory: a crossing at t−5 set"):
+        st.run(load_instance(forked), verbose=False)
+
+
+def test_episode_check_refuses_a_signal_it_cannot_recompute(persistent_master, tmp_path):
+    d = tmp_path / "inst"; shutil.copytree(persistent_master, d)
+    _with_refractory(d, 7, signal="weekly_p90(value)")
+    with pytest.raises(st.LeakError, match="C9 episode: cannot recompute"):
+        st.run(load_instance(d), verbose=False)
+
+
+def test_episode_check_follows_a_weekly_mean_signal(persistent_master, tmp_path):
+    d = tmp_path / "inst"; shutil.copytree(persistent_master, d)
+    _with_refractory(d, 7, signal="weekly_mean(value)")
+    r = st.run(load_instance(d), verbose=False)
+    assert r["C9"]["episode"]["checked"] and r["C9"]["episode"]["signal"] == "weekly_mean(value)"
+
+
+def test_station_keyed_above_event_defaults_to_iid(forked):
+    """III F-6: a station_daily event with R > 0 crashed the episode check (station frames carry no unit column)."""
+    inst = load_instance(forked)
+    inst.event["direction"] = "above"; inst.event["refractory_weeks"] = 3
+    assert inst.stream_spec(inst.event["event_variable_stream"])["shape"] == "station_daily"
+    assert st.event_series(inst) == "iid"
+    inst.cfg["selftest"]["event_series"] = "accumulating"
+    with pytest.raises(ValueError, match="unit_daily event stream"):
+        st.event_series(inst)

@@ -71,7 +71,7 @@ def variant_master(tmp_path_factory):
 
 def persistent_answers() -> dict:
     """M-2a-i: the FKNMS shape, fictional. Polygon MPA zones, a `unit_daily` ABOVE event that accumulates (DHW-like),
-    H = 8 with an onset refractory of 8, gridded-only streams, surveillance declared absent (R8 → ablation N/A). The
+    H = 8 with an onset refractory of 7 (R = H − 1 is the one that matches eval's lead-time onset — III F-4), gridded-only streams, surveillance declared absent (R8 → ablation N/A). The
     self-test runs it in the accumulating world by default (an above event with R > 0 on a daily stream)."""
     a = example_answers()
     a["instance"] = {"slug": "example_reef_heat", "name": "Example Reef heat stress", "vault": "ExampleReefHeat.aDNA",
@@ -79,9 +79,9 @@ def persistent_answers() -> dict:
     a["patient"]["unit_kind"] = "mpa_zone"
     a["patient"]["region"] = {"code": "all", "name": "Example Reef", "external_id": "WDPA:0000000"}
     a["event"] = {"name": "Heat stress onset (DHW ≥ 4 °C-weeks within 8 weeks)", "stream": "atl_stream_example_dhw_daily",
-                  "threshold": 4.0, "unit": "Cel.wk", "direction": "above", "horizon": 8, "refractory_weeks": 8,
-                  "onset_rule": "drop zone-weeks whose DHW crossed 4 in the last 8 weeks (refractory = horizon: one episode, "
-                                "one onset); drop zone-weeks with no DHW in t+1..t+8 (unknown outcome)"}
+                  "threshold": 4.0, "unit": "Cel.wk", "direction": "above", "horizon": 8, "refractory_weeks": 7,
+                  "onset_rule": "drop zone-weeks whose carried DHW crossed 4 in t−7..t (refractory 7 = horizon − 1, the "
+                                "lead-time onset: one episode, one onset); drop zone-weeks with no DHW in t+1..t+8 (unknown outcome)"}
     crw = {"modality": "gridded_field", "source_system": "NOAA Coral Reef Watch ERDDAP (illustrative)",
            "license": "public (NOAA CRW; credit CRW)", "surveillance_channel": False, "shape": "unit_daily",
            "fetcher": "CoralReefWatch"}

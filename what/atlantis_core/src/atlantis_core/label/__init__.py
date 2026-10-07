@@ -12,8 +12,11 @@ From `events.yaml` (threshold · direction · horizon) and `atlantis.yaml → la
 Onset refractory (`events.yaml → refractory_weeks`, R, atl_v0 0.5.0, M-2a-i; absent = 0): already_in_event becomes "the
 carried signal crossed at ANY of t−R … t". R = 0 is the rule above, computed by the same expression, so a config without R
 labels byte-identically. For a persistent event (DHW accumulates for weeks, decays, can re-cross) R stops a flicker from
-counting as a fresh onset; R = H makes the label's onset the one `eval/lead.py` counts (no crossing in the previous H
-weeks). It reads only the past — the self-test's C9 proves it.
+counting as a fresh onset. **R = H − 1 matches `eval/lead.py`'s onset** (a crossing with none in the previous H weeks):
+every onset lead.py counts keeps at least one positive row, its nearest. R = H is one week stricter and drops that row
+whenever the previous crossing sat exactly H + 1 weeks earlier. That was M-2a-i III F-4: the first draft said "R = H".
+`tests/test_label_refractory.py` pairs the two modules. It reads only the past: C1 and C2 prove nothing after t moves it,
+and C9 proves it bites at its declared length.
 
 `finalize` applies the modelling filters (split years; drop already-in-event; drop unknown outcome) and reports BOTH
 drop counts (SO-9's honesty applies to denominators too).

@@ -136,8 +136,9 @@ It also checks, once per run:
 - **C6:** the declared climatology dependence is **reported**. Only `anomaly()` vitals may move, and every era year is
   affected because the normal is one statistic over the whole era.
 - **C9 (M-2a-i, an event with `refractory_weeks` R > 0):** a crossing at the primary's week t−R sets `already_in_event` at
-  t, one at t−R−1 does not, and neither moves y. The boundary is skipped, and the run says so, when the primary's own gap
-  week would carry the crossing in. That the refractory reads nothing after t is already C1's and C2's job.
+  t, one at t−R−1 does not, and neither moves y. **The boundary is never skipped** (III F-3): any unobserved week a t−R−1
+  crossing could be carried through is filled first, and the result and the receipt say so. That the refractory reads
+  nothing after t is already C1's and C2's job.
 
 `tests/test_selftest.py` plants **16 defects** and each one is caught by its named check:
 
@@ -172,21 +173,26 @@ variant with no point stream, a two-station mean and no surveillance. Each defec
 exemplar suite gains a back-filled weekly mean, a pre-existing blind spot.
 
 **A persistent event (M-2a-i, for FKNMS DHW).** The onset refractory (`events.yaml → refractory_weeks`, atl_v0 0.5.0)
-drops a week whose carried signal crossed anywhere in t−R…t. R = H makes the label's onset the one `eval/lead.py` counts.
+drops a week whose carried signal crossed anywhere in t−R…t. **R = H − 1** makes the label's onset the one `eval/lead.py` counts, and R = H is one week stricter (III F-4; the paired test is in `tests/test_label_refractory.py`).
 - **The accumulating world.** `selftest.event_series` is `iid` or `accumulating`. The accumulating series is a DHW-like
   trailing 12-week sum of a daily "hotspot". It carries one past episode, at least 30 weeks before t, that crosses, dips
   for three weeks and re-crosses: the flicker a refractory exists for. The default is `accumulating` for an `above` event
   with R > 0 on a daily stream; the world used is recorded in the result and the receipt.
-- **C9's episode check** compares `already_in_event` against "crossed in w−R…w", computed from the **raw synthetic frame**
-  rather than from the label.
-- **A third forked world, `persistent_master`:** polygon MPA zones, a `unit_daily` above event, H = 8, R = 8, gridded-only,
+- **C9's episode check** compares `already_in_event` against "the **carried** signal crossed in w−R…w", recomputed from the
+  **raw synthetic frame** rather than from the label. The episode carries a gap of `last_known_weeks` + 1 weeks right after
+  a crossing, so a refractory on the raw signal, or one counted in observed rows, disagrees with it (III F-7). The signal
+  must be `weekly_{max,min,mean,median}(value)`; anything else is refused, not skipped (III F-3). The default world applies
+  to `unit_daily` event streams only (III F-6).
+- **A third forked world, `persistent_master`:** polygon MPA zones, a `unit_daily` above event, H = 8, R = 7 (= H − 1), gridded-only,
   surveillance absent. The **whole** catalogue re-runs across all three worlds (C-014). One defect reaches this world by a
   different road: it has no `weekly_min` vital, so a leaky `weekly_min` reaches only C5's mirror label, and C5 names it
   (`WORLD_EXPECT`).
-- **Six refractory plants, each caught by name:**
+- **Eight refractory plants, plus the iid-boundary case, each caught by name:**
   - ignored, R−1 and R+1 → C9;
   - a window that reads t+1, and the drop applied after the horizon cut → C1;
-  - a refractory on the weekly *mean*, which is right at t−R and t−R−1 → only C9's episode check.
+  - a refractory on the weekly *mean*, which is right at t−R and t−R−1 → only C9's episode check;
+  - (III F-7) a refractory on the raw signal, and one counted in observed rows → only C9's episode check;
+  - (III F-3) R = 4 in the iid world with an R + 1 refractory, which used to pass when the probe was skipped → C9.
 
 **Known limits.** The self-test does not prove:
 

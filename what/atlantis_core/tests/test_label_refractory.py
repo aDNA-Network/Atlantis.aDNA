@@ -53,3 +53,36 @@ def test_r2_drops_the_episode_tail(monkeypatch):
 def test_bad_refractory_refused(monkeypatch, bad):
     with pytest.raises(ValueError, match="refractory_weeks"):
         _make(monkeypatch, refractory_weeks=bad)
+
+
+# ── M-2a-i III F-4: the label's refractory paired with eval/lead.py's onset, through both modules ────────────────────
+from atlantis_core.eval.lead import lead_time
+
+W2 = pd.date_range("2020-01-06", periods=14, freq="7D")
+SIG2 = pd.DataFrame({"u1": [0, 0, 0, 5, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0]}, index=W2, dtype=float)   # crossings at 3 and 7, H = 3
+
+
+class _Stream2:
+    def weekly(self, node):
+        return SIG2.copy() if node.startswith("weekly_max") else pd.DataFrame({"u1": [7.0] * 14}, index=W2)
+
+
+def _kept_positive_coverage(monkeypatch, R) -> float:
+    """lead.py's detected fraction when the 'score' is 1 exactly on the label's KEPT positive rows: the share of the onsets
+    lead.py counts that the label gives at least one kept positive row to."""
+    monkeypatch.setattr(label.grammar, "parse", lambda s, consts, where: s)
+    ev = {"event_variable_stream": "s", "threshold": 4.0, "direction": "above", "horizon": 3, "refractory_weeks": R}
+    t = label.make(_Inst(ev), pd.DataFrame({"week": W2, "unit": "u1"}), {"s": _Stream2()}, ["u1"], W2)
+    kept_pos = (~t["already_in_event"]) & t["y"].eq(1).fillna(False)
+    panel = pd.DataFrame({"unit": "u1", "week": W2, "signal": SIG2["u1"].values, "p": kept_pos.astype(float).where(kept_pos)})
+    r = lead_time(panel, unit_col="unit", threshold=4.0, direction="above", horizon=3, alert_threshold=0.5, test_start=2020)
+    assert r["n_onsets"] == 2
+    return r["detected_fraction"]
+
+
+def test_refractory_h_minus_1_matches_lead_onsets(monkeypatch):
+    assert _kept_positive_coverage(monkeypatch, 2) == 1.0      # R = H − 1: every lead.py onset keeps a positive row
+
+
+def test_refractory_h_is_one_week_stricter(monkeypatch):
+    assert _kept_positive_coverage(monkeypatch, 3) == 0.5      # R = H: the onset 4 weeks after the last crossing has none

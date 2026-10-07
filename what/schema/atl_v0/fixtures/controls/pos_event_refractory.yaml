@@ -1,10 +1,10 @@
-# POSITIVE — M-2a-i. SYNTHETIC. A persistent above-event (a DHW-like accumulation) with an onset refractory of 8 steps,
-# equal to its horizon. Must validate.
+# POSITIVE — M-2a-i. SYNTHETIC. A persistent above-event (a DHW-like accumulation) with an onset refractory of 7 steps,
+# horizon − 1 (the lead-time onset; III F-4). Must validate.
 event_definitions:
   - event_id: atl_event_example
     event_variable_stream: atl_stream_example
     threshold: 4
     direction: above
     horizon: 8
-    onset_rule: "drop patient-steps whose carried signal crossed in the last 8 steps (refractory = horizon); drop unknown outcomes"
-    refractory_weeks: 8
+    onset_rule: "drop patient-steps whose carried signal crossed in t−7…t (refractory = horizon − 1); drop unknown outcomes"
+    refractory_weeks: 7
