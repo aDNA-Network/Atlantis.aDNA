@@ -60,7 +60,7 @@ structured fields.
 | # | Question | Becomes |
 |---|---|---|
 | 1 | **What is the patient?** What unit do you manage, and on what clock? | `patient.unit_kind` (atl_v0 `UnitKind`) · `time_step: iso_week` · `grid` (a polygon file **in the instance**, a WDPA export, or cells; coordinate rules only under a public posture) · `units[]` |
-| 2 | **What is the event?** Which variable, which threshold, which direction? | `event.{stream, threshold, unit (UCUM), direction above\|below, onset_rule}` |
+| 2 | **What is the event?** Which variable, which threshold, which direction? Once it starts, does it **persist**? | `event.{stream, threshold, unit (UCUM), direction above\|below, onset_rule}`, plus `refractory_weeks` for a persistent or accumulating event such as DHW (one episode is one onset; R = horizon matches lead time). The event stream's `authority` is a `CF:` · `WoRMS:` · `dwc:` · `NOAACRW:` CURIE, CF whenever a standard name exists |
 | 3 | **How much warning would change what you do?** | `event.horizon` in weeks, plus the recorded sentence, which lands in `events.yaml` |
 | 4 | **What streams exist?** For each: who publishes it, its id there, its licence, how often, and whether *where people look* reacts to what they saw (a surveillance channel) | `streams[]` (modality · source_system · source_id · authority CURIE · licence · fetcher · shape · columns · stations) · `surveillance` |
 | 5 | **What is the data posture?** Public, partner, or human-subject (Network ADR-016 §8)? | `posture.{class, rationale}` |
@@ -81,7 +81,10 @@ Pick **≥ 2 self-test patients** every stream reaches. A point stream also need
 Run `how/skills/skill_project_fork.md` with `project_name = <Vault>` (e.g. `ChesapeakeHypoxia`). It copies `.adna/` and
 stamps MANIFEST · STATE · CLAUDE · AGENTS. For a rehearsal outside the workspace root, run its step 3 commands by hand
 into `target`. Put the steward's geometry file at the path `patient.grid.path` names, **inside the vault**. Atlantis never
-holds a polygon.
+holds a polygon. `fork` pins the file by its **sha256** (`atlantis.yaml → grid.sha256`). A changed zone file is refused by
+`make_grid`, so by the self-test, vitals and fetch, and by conform item 1. A new geometry is a deliberate re-pin plus a
+re-run self-test. A shapefile is converted to GeoJSON inside the vault first, by a recipe recorded in its STATE (the core
+reads GeoJSON only).
 
 ### 3. Fork the declarations
 
@@ -115,7 +118,8 @@ $A/.venv/bin/python -m atlantis_core.conform --instance <vault> --stage declared
 $A/.venv/bin/python -m atlantis_core.selftest --instance <vault>      # writes outputs/atlantis_core/selftest_receipt.json
 ```
 
-The receipt carries the config's `semantic_hash`. Any later change to vitals, label or grid invalidates it, and the fetch
+The receipt carries the config's `semantic_hash`, and the synthetic world it ran (`event_series`): an above event with a
+`refractory_weeks` runs in the **accumulating** world, which adds C9, the refractory check. Any later change to vitals, label or grid invalidates it, and the fetch
 CLI refuses until the self-test is re-run. Then review with the steward:
 - every `tag` (starter tags are placeholders; **a SHAP value is never a cause**);
 - the default alert budgets, against what they can actually staff;
@@ -137,12 +141,21 @@ frontmatter agrees. Flipping the status word alone does not open the gate. Each 
 fetcher's keys (the fetcher's docstring and `spec_required`). The interview does not derive them: they come from the
 source's documentation and the steward, and fork checks only that the keys are present.
 
-A stream whose fetcher is **declared, not built** (NDBC · OBIS · GBIF · CRW today) stops here with that message. Building
+A stream whose fetcher is **declared, not built** (NDBC · OBIS · GBIF today) stops here with that message. **CRW is built**
+(M-2a-i). `CoralReefWatch` takes `{base, variable, years}`; its zones come from the instance's pinned polygons, not the
+spec. The fetch summary's `reduction` block records per zone `n_cells`, `fallback` (a zone smaller than one 5 km cell
+takes the nearest cell) and `shared_cells`. Review it with the steward: a fallback zone is one cell, not a zone mean. Building
 it is an Atlantis template change (P2 rule), done there, never inside the instance.
 
 ### 7. Commit and hand over
 
-Commit with path-scoped `git add` (never `-A`). Under a partner or human-subject posture, confirm that `git status` shows
+Commit with path-scoped `git add` (never `-A`).
+
+**The router row goes to Hestia, by memo** (workspace Rule 3, M-2a-i). A new `<Instance>.aDNA` at the workspace root needs a
+row in the workspace router. That router is `Home.aDNA`'s, and peer vaults are read-only, so the instance never edits it.
+Write `Home.aDNA/who/coordination/` a memo with the proposed row (directory · type · persona · one-line purpose; routing
+identity only, Rule 7) and let Hestia land it. Record the memo in the instance's STATE as an open item until the row
+appears. Under a partner or human-subject posture, confirm that `git status` shows
 nothing under `data/`, `outputs/` or `site/`. In the steward's STATE, record what was forked, at which Atlantis commit, and
 which contract items are green. The next work is the run (`atlantis_core.run` → `board` → `site`), the M-1d-ii pipeline lattice.
 
