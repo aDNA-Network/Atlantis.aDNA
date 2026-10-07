@@ -46,8 +46,8 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
 
 **Next: M-2a-ii** (opus; the FKNMS fork and fetch) → M-2b → **P2 gate** (fable).
 **Pending operator acts:**
-- **the push:** `4d812f9..HEAD` is unpushed (board v3, atl_v0 0.6.0). Run gitleaks over the range first; nothing in it is
-  data, and nothing is > 1 MB;
+- ~~the push~~ **done 2026-10-07** (operator ruling): `4d812f9..c553844` → `origin/main` (gitleaks over 8 commits clean, no data,
+  nothing > 1 MB). **Board v3 is now published**: corrections from here are a new version (SO-2);
 - the graduation candidates C-004, C-005, C-009, C-015 and **C-023** (WI-20).
 
 **Next Session Prompt (self-contained, M-2a-ii):**
