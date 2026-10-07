@@ -179,6 +179,9 @@ DEL = object()
     (lambda a: a["streams"][0].__setitem__("stations", {"EXS09": [9]}), "reaches no self-test patient"),
     (lambda a: [p.pop("lat") for p in a["selftest"]["patients"]], "needs lat/lon"),
     (_edit(["split", "test_end"], DEL), "split: needs"),
+    (_edit(["eval"], {"alert_rates": [0.5]}), "eval.alert_rates: not an interview answer"),            # M-2a-ii: closed
+    (_edit(["eval"], {"sensitivity_threshold": True}), "eval.sensitivity_threshold True"),
+    (_edit(["eval"], {"sensitivity_threshold": 2.0}), "other than the event threshold"),
 ])
 def test_fork_refuses(tmp_path, capsys, fn, why):
     a = example_answers(); fn(a)
@@ -387,3 +390,14 @@ def test_station_keyed_above_event_defaults_to_iid(forked):
     inst.cfg["selftest"]["event_series"] = "accumulating"
     with pytest.raises(ValueError, match="unit_daily event stream"):
         st.event_series(inst)
+
+
+def test_fork_renders_the_sensitivity_threshold_and_it_moves_the_hash(tmp_path):
+    """M-2a-ii: `answers.eval.sensitivity_threshold` (the FKNMS card's Alert Level 2) reaches atlantis.yaml → eval, where
+    run.py reads it; it is a training key, so it is in the semantic hash and a receipt earned without it does not cover it."""
+    from atlantis_core.config import semantic_hash
+    a = example_answers(); a["eval"] = {"sensitivity_threshold": 1.0}
+    assert fork_into(tmp_path / "s", a) == 0 and fork_into(tmp_path / "n", example_answers()) == 0
+    with_s, without = load_instance(tmp_path / "s"), load_instance(tmp_path / "n")
+    assert with_s.cfg["eval"]["sensitivity_threshold"] == 1.0 and "sensitivity_threshold" not in without.cfg["eval"]
+    assert semantic_hash(with_s) != semantic_hash(without)

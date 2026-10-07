@@ -42,6 +42,9 @@ event:
                                          # matches eval's lead-time onset (R = horizon is one week stricter). Absent = 0. The
                                          # onset_rule prose must say the same.
 
+# eval:                                 # optional (M-2a-ii), a closed vocabulary; every other eval key is a template default
+#   sensitivity_threshold: 1.5         # the sensitivity run: same vitals, the label re-made at this threshold (≠ event.threshold)
+
 streams:
   - stream_id: atl_stream_example_do_daily
     fetcher: NDBCStdmet                  # declared in atlantis_core, not built — fine before the first fetch

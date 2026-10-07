@@ -32,6 +32,7 @@ SCHEMA = ATLANTIS / "what" / "schema" / "atl_v0" / "atl_ontology_v0.linkml.yaml"
 TOKEN = re.compile(r"\{\{\s*([a-z_]+)\s*\}\}")
 SLUG = re.compile(r"^[a-z][a-z0-9_]{1,62}$")
 POSTURES = ("public", "partner", "human_subject")
+EVAL_ANSWERS = {"sensitivity_threshold"}   # answers.eval keys fork renders into atlantis.yaml → eval (M-2a-ii)
 SHAPE_COLUMNS = {"point": ("date", "value", "lat", "lon"), "unit_daily": ("date", "value", "unit"),
                  "station_daily": ("date", "value", "station")}
 
@@ -209,6 +210,19 @@ def _values(a: dict, schema: dict, out: Path, commit: str, today: str, answers_f
     need = ("min_train_year", "train_end", "val_start", "val_end", "test_start", "test_end")
     if any(k not in sp for k in need):
         errs.append(f"split: needs {need}")
+    ea = a.get("eval")   # M-2a-ii: a closed vocabulary — only what the interview rules and the template does not default
+    if ea is not None:
+        if not isinstance(ea, dict):
+            errs.append(f"eval: a mapping of {sorted(EVAL_ANSWERS)}, got {type(ea).__name__}")
+            ea = {}
+        for k in sorted(set(ea) - EVAL_ANSWERS):
+            errs.append(f"eval.{k}: not an interview answer (allowed: {sorted(EVAL_ANSWERS)}); other eval keys are template "
+                        f"defaults the steward reviews in atlantis.yaml")
+        thr = ea.get("sensitivity_threshold")
+        if "sensitivity_threshold" in ea and (isinstance(thr, bool) or not isinstance(thr, (int, float)) or thr <= 0
+                                              or thr == ev.get("threshold")):
+            errs.append(f"eval.sensitivity_threshold {thr!r}: a positive number other than the event threshold "
+                        f"{ev.get('threshold')!r} (the sensitivity run re-makes the label at it)")
     if errs:
         return {}, errs
 
@@ -275,6 +289,8 @@ def _values(a: dict, schema: dict, out: Path, commit: str, today: str, answers_f
     else:
         surv_block = {"declared": "absent", "reason": surv.get("reason", "")}
         eval_block = {"ablations": []}
+    if (a.get("eval") or {}).get("sensitivity_threshold") is not None:
+        eval_block["sensitivity_threshold"] = a["eval"]["sensitivity_threshold"]
     clim = a.get("climatology") or {}
     st_block = {"patients": ps,
                 "week": str(st.get("week") or _first_monday(int(sp["val_start"])))}
