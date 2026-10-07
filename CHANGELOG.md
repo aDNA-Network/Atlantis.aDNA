@@ -1,5 +1,34 @@
 # CHANGELOG — Atlantis.aDNA
 
+## 2026-10-07 — v0.11.0 · M-1f: the label-horizon embargo → board v3 · WI-23 closed
+
+- **Measured first.** The M-1e review's fold table reproduces exactly as crossing positives (up to 10 of 31, stop year
+  2022). The main split, measured for the first time:
+  - train→val: 25 of 7,971 region-weeks, 3 of 920 positives;
+  - val→test: 34 of 1,193 region-weeks, 1 of 121 positives.
+- **atlantis_core 0.5.0 — `split.embargo_weeks`** (absent → the event horizon; `none` → off, port only):
+  - **The cut.** Every fit and stop set drops the rows whose label window t+1…t+H reads the period it must not see. That
+    is six boundaries: the main split and every fold. The refits keep the train tail (operator ruling). Climatology, the
+    ablations and the sensitivity run follow.
+  - **The check.** `check_label_windows` reads the event's H on the frames the learner received. A raw-stream
+    perturbation through `label.make` proves no kept label moves.
+  - **Provenance** of what was dropped and the measured spill, on every result and fold. `semantic_hash` reads the
+    resolved embargo: the exemplar is `7b789afded`, and `none` re-derives `acfa22c6e4`.
+- **Board v3** (`what/board/entries/2026-10-07_gulf_karenia_brevis_v3.json`), emitted by code. Its single cause is proven
+  by running: `none` reproduces v2's `metrics.json` in every number. The numbers:
+  - 146 trees (was 141);
+  - AUROC 0.8950 / AUPRC 0.5414 (was 0.8938 / 0.5388), base rate 0.0774;
+  - lead time 13 of 22 onsets (was 14).
+
+  A leak removed, not a gain. The board refuses any result whose embargo is missing, off, short, unchecked or
+  misattributed, in any published run. No v3 page (operator ruling); `limitations_ref` → the core README.
+- **atl_v0 0.6.0:** `AtlEvaluation.embargo_weeks`. 56 controls, ALL WORLDS AGREE. **The runner was blind in one world:** a
+  pattern starting with `-` or a bad regex left linkml-validate's reason test vacuous since 0.5.0. It now reads grep's
+  exit status whole.
+- **III:** PASS-WITH-FINDINGS, 0 major, 7/7 addressed. Local store: C-009 → 5, C-023 → 3, C-018 and C-021 → 2; new C-026
+  and C-027. C-023 joins the graduation candidates.
+- **Not touched:** the v0–v2 entries and pages, and v2's outputs (sha256-pinned). No data committed.
+
 ## 2026-10-06 — v0.10.0 · M-2a-i: the core for a persistent, polygon, gridded instance · P2 condition (c) MET
 
 - **The split (operator ruling, 2026-10-06).** M-2a became M-2a-i (this mission), then M-1f (the horizon embargo), then
