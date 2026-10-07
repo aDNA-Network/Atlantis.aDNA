@@ -37,6 +37,9 @@ event:
   direction: below                       # below: y = min(signal[t+1..t+H]) <= threshold
   horizon: 2                             # weeks — the steward's answer to "how much warning changes what you do"
   onset_rule: "drop segment-weeks whose last-known weekly minimum is already <= 2 mg/L (already hypoxic); drop segment-weeks with no DO reading in t+1..t+2 (unknown outcome)"
+  # refractory_weeks: 2                  # optional (atl_v0 0.5.0): also drop weeks whose signal crossed in the last R weeks —
+                                         # set it for a PERSISTENT event (e.g. DHW), so one episode is one onset; R = horizon
+                                         # matches eval's lead-time onset. Absent = 0. The onset_rule prose must say the same.
 
 streams:
   - stream_id: atl_stream_example_do_daily

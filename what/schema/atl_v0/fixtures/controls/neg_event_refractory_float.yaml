@@ -1,0 +1,11 @@
+# NEGATIVE — M-2a-i. refractory_weeks 2.5 — steps are whole. MUST FAIL, and only on this.
+# REJECTS_ON: 2\.5 is not of type 'integer'
+# REJECTS_AT: ^/event_definitions/0/refractory_weeks$
+event_definitions:
+  - event_id: atl_event_example
+    event_variable_stream: atl_stream_example
+    threshold: 4
+    direction: above
+    horizon: 8
+    onset_rule: "drop patient-steps already past threshold; drop unknown outcomes"
+    refractory_weeks: 2.5

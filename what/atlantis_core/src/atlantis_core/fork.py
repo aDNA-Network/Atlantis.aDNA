@@ -125,6 +125,9 @@ def _values(a: dict, schema: dict, out: Path, commit: str, today: str, answers_f
         errs.append(f"patient.time_step {pat.get('time_step')!r}: atlantis_core builds ISO weeks only (atl_v0 lists more; v1)")
     if ev.get("direction") not in _enum(schema, "Direction"):
         errs.append(f"event.direction {ev.get('direction')!r} not in {sorted(_enum(schema, 'Direction'))}")
+    r = ev.get("refractory_weeks")
+    if r is not None and (isinstance(r, bool) or not isinstance(r, int) or r < 0):
+        errs.append(f"event.refractory_weeks {r!r}: a whole number of weeks ≥ 0 (atl_v0 0.5.0)")
     for k in ("name", "stream", "threshold", "unit", "horizon", "onset_rule"):
         if ev.get(k) in (None, ""):
             errs.append(f"event.{k} missing")
@@ -271,6 +274,8 @@ def _values(a: dict, schema: dict, out: Path, commit: str, today: str, answers_f
     erow = {"event_id": f"atl_event_{slug}_onset", "name": ev["name"], "event_variable_stream": ev["stream"],
             "threshold": ev["threshold"], "unit": ev["unit"], "direction": ev["direction"], "horizon": int(ev["horizon"]),
             "onset_rule": ev["onset_rule"]}
+    if ev.get("refractory_weeks"):   # M-2a-i (atl_v0 0.5.0): a persistent event's onset refractory; absent ≡ 0
+        erow["refractory_weeks"] = ev["refractory_weeks"]
     ev_stream = next(s for s in streams if s["stream_id"] == ev["stream"])
     posture_ignores = "" if post["class"] == "public" else (
         "# non-public posture: nothing under these leaves this node\ndata/\noutputs/\nsite/\n")

@@ -9,6 +9,12 @@ From `events.yaml` (threshold · direction · horizon) and `atlantis.yaml → la
     below: y = min(signal[t+1..t+H]) <= threshold ; already_in_event = carried signal[t] <= threshold
     y is NA where no week in t+1..t+H has a signal; outcome_unknown = presence summed over t+1..t+H == 0.
 
+Onset refractory (`events.yaml → refractory_weeks`, R, atl_v0 0.5.0, M-2a-i; absent = 0): already_in_event becomes "the
+carried signal crossed at ANY of t−R … t". R = 0 is the rule above, computed by the same expression, so a config without R
+labels byte-identically. For a persistent event (DHW accumulates for weeks, decays, can re-cross) R stops a flicker from
+counting as a fresh onset; R = H makes the label's onset the one `eval/lead.py` counts (no crossing in the previous H
+weeks). It reads only the past — the self-test's C9 proves it.
+
 `finalize` applies the modelling filters (split years; drop already-in-event; drop unknown outcome) and reports BOTH
 drop counts (SO-9's honesty applies to denominators too).
 """
@@ -25,10 +31,21 @@ def _cut(df: pd.DataFrame, units, weeks) -> pd.Series:
     return pd.Series(df.reindex(weeks)[units].to_numpy().T.reshape(-1))
 
 
+def refractory(ev: dict) -> int:
+    """`refractory_weeks` of an event definition: absent / null → 0; anything not a whole number ≥ 0 is refused."""
+    r = ev.get("refractory_weeks")
+    if r is None:
+        return 0
+    if isinstance(r, bool) or not isinstance(r, int) or r < 0:
+        raise ValueError(f"refractory_weeks {r!r} — a whole number of weeks ≥ 0 (atl_v0 0.5.0)")
+    return r
+
+
 def make(inst, table: pd.DataFrame, evs: dict, units, weeks, event: dict | None = None, lcfg: dict | None = None):
     ev = event or inst.event
     lcfg = lcfg or inst.cfg["label"]
     direction, thr, H = ev["direction"], float(ev["threshold"]), int(ev["horizon"])
+    R = refractory(ev)
     if direction not in DIRECTIONS:
         raise ValueError(f"direction {direction!r} — expected above | below")
     e = evs[ev["event_variable_stream"]]
@@ -44,6 +61,8 @@ def make(inst, table: pd.DataFrame, evs: dict, units, weeks, event: dict | None 
 
     hit = fut_sig.ge(thr) if direction == "above" else fut_sig.le(thr)
     in_event = last_known.ge(thr) if direction == "above" else last_known.le(thr)
+    if R:
+        in_event = in_event | sum(in_event.shift(k, fill_value=False).astype(int) for k in range(1, R + 1)).gt(0)
 
     t = table.copy()
     t["future_signal"] = _cut(fut_sig, units, weeks).values

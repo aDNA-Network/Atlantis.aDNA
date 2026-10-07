@@ -21,6 +21,8 @@ STREAM_NON_TRAINING = ("fetch", "summary", "artifact", "lever_stations")   # fet
 EVAL_TRAINING_KEYS = ("ablations", "sensitivity_threshold", "surveillance_only")   # they choose WHICH models are trained (M-1b-ii-a III F-2)
 VITAL_MACHINE_FIELDS = ("vital_id", "stream_ref", "transform", "lag", "window", "monotone", "group")   # group drives the ablations
 EVENT_MACHINE_FIELDS = ("event_id", "event_variable_stream", "threshold", "direction", "horizon")
+EVENT_MACHINE_OPTIONAL = ("refractory_weeks",)   # M-2a-i: hashed only when set and non-zero, so every config written before it
+                                                 # (absent ≡ 0, the same label) keeps its hash — board v1/v2's acfa22c6e4
 
 
 @dataclass
@@ -104,7 +106,9 @@ def semantic_hash(inst: Instance, learner: dict | None = None) -> str:
         "config": {k: (_strip_streams(cfg[k]) if k == "streams" else cfg[k]) for k in TRAINING_SECTIONS if k in cfg},
         "eval": {k: (cfg.get("eval") or {}).get(k) for k in EVAL_TRAINING_KEYS},
         "vitals": [{k: v.get(k) for k in VITAL_MACHINE_FIELDS} for v in inst.vitals],
-        "events": [{k: inst.events[e].get(k) for k in EVENT_MACHINE_FIELDS} for e in sorted(inst.events)],
+        "events": [{**{k: inst.events[e].get(k) for k in EVENT_MACHINE_FIELDS},
+                    **{k: inst.events[e][k] for k in EVENT_MACHINE_OPTIONAL if inst.events[e].get(k)}}
+                   for e in sorted(inst.events)],
     }
     blob = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.md5(blob.encode()).hexdigest()[:10]
