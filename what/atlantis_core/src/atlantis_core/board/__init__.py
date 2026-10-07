@@ -88,7 +88,9 @@ def project(res: dict, inst, *, version: int, recorded_at: str, recorded_by: str
     pins = [{"stream_ref": sid, "sha256": s["sha256"]} for sid, s in inst.streams.items() if s.get("sha256")]
     ev = {"evaluation_id": f"{b['evaluation_id_stem']}_v{version}", "event_ref": inst.cfg["label"]["event"],
           "unit_ref": b["unit_ref"], "split": split_text(inst.cfg["split"], res.get("embargo")),
-          "embargo_weeks": (res["embargo"]["weeks"] if (res.get("embargo") or {}).get("checked") else None),   # from the act (C-023)
+          # E as resolved and applied, stated only when checked; what PROVES the cut is assert_embargo (each boundary's window
+          # end and rows_dropped ≥ the H-window crossing count), not this number (III M-1f F-3)
+          "embargo_weeks": (res["embargo"]["weeks"] if (res.get("embargo") or {}).get("checked") else None),
           "n_test": int(t["n"]), "n_positives": int(t["positives"]), "base_rate": _r(t["prevalence"]),
           "auroc": _r(t["auroc"]), "auprc": _r(t["auprc"]), "brier": _r(t["brier"]),
           "calibration_slope": _r(t["calibration_slope"], 2),
@@ -165,20 +167,31 @@ def assert_thresholds_fixed(ev: dict, res: dict, swaps: dict | None = None) -> N
 
 def assert_embargo(res: dict, inst, swaps: dict | None = None) -> None:
     """M-1f (III M-1e F-6, C-022): no new entry rests on a fit or stop set whose labels read the period after it. Checked on
-    the RUN RESULTS — the headline's, every learner swap's, every rolling fold's — from the boundaries eval recorded off
-    the frames the learner received: on, ≥ the event's horizon, every boundary checked, every label window ending before
-    the period it must not see. `none` (v2's reading) is refused here, as `threshold_from: test` is by F-8."""
-    H, bad = int(inst.event["horizon"]), []
+    the RUN RESULTS — the headline's and every learner swap's: every variant (`full` and each ablation), the sensitivity
+    run and every rolling fold (III M-1f F-1) — from the boundaries eval recorded off the frames the learner received.
+    Each must be on, ≥ the event's horizon and checked; must guard the year THE SPLIT names, never the year the record
+    names for itself (F-2, C-018); must be non-empty with a window end before that year; and, where the spill was
+    measured, must have dropped at least the rows whose H-week window crosses (F-3). `none` (v2's reading) is refused
+    here, as `threshold_from: test` is by F-8."""
+    H, s, bad = int(inst.event["horizon"]), inst.cfg["split"], []
+    MAIN = {"train→val": s["val_start"], "val→test": s["test_start"], "refit→test": s["test_start"]}
 
-    def bounds(tag, bs, want):
-        if set(bs or {}) != want:
+    def bounds(tag, bs, want: dict, spill: dict | None = None):
+        if set(bs or {}) != set(want):
             bad.append(f"{tag}: boundaries {sorted(bs or {})}, expected {sorted(want)}")
         for name, x in (bs or {}).items():
-            end = x.get("latest_window_end")
+            end, nxt = x.get("latest_window_end"), want.get(name)
             if not x.get("checked"):
                 bad.append(f"{tag} {name}: not checked")
-            elif end is not None and int(end[:4]) >= x["next_start"]:
-                bad.append(f"{tag} {name}: a label window ends {end}, in or after {x['next_start']}")
+            elif x.get("next_start") != nxt:
+                bad.append(f"{tag} {name}: guards {x.get('next_start')}, the split says {nxt}")
+            elif not x.get("n") or end is None:
+                bad.append(f"{tag} {name}: an empty set, or no label window end recorded")
+            elif int(end[:4]) >= nxt:
+                bad.append(f"{tag} {name}: a label window ends {end}, in or after {nxt}")
+            elif spill and name in spill and x.get("rows_dropped", 0) < spill[name]["crossing_rows"]:
+                bad.append(f"{tag} {name}: dropped {x.get('rows_dropped')} rows, fewer than the "
+                           f"{spill[name]['crossing_rows']} whose {H}-week label window crosses")
 
     for name, r in [("headline", res), *[(f"learner swap {k}", v) for k, v in (swaps or {}).items()]]:
         e = r.get("embargo")
@@ -190,12 +203,22 @@ def assert_embargo(res: dict, inst, swaps: dict | None = None) -> None:
             continue
         if e["weeks"] < H or e.get("horizon") != H:
             bad.append(f"{name}: embargo {e['weeks']} wk against horizon {e.get('horizon')} (the event says {H})")
-        bounds(name, e.get("boundaries"), {"train→val", "val→test", "refit→test"})
+        sp = e.get("spill") or {}
+        spill = {"train→val": sp.get("train→val"), "val→test": sp.get("val→test"), "refit→test": sp.get("val→test")}
+        spill = {k: v for k, v in spill.items() if v}
+        if e.get("boundaries") != (r.get("full") or {}).get("embargo"):
+            bad.append(f"{name}: the headline's embargo record disagrees with the full model's")
+        for v in [k for k in r if k == "full" or k.startswith("no_")]:
+            bounds(f"{name} {v}", (r[v] or {}).get("embargo"), MAIN, spill)
+        if "sensitivity" in r:
+            bounds(f"{name} sensitivity", r["sensitivity"].get("embargo"), MAIN)
         for row in r.get("rolling_origin", []):
-            tag = f"{name} fold {row['train_through']}→{row['test_year']}"
-            fb = {**((row.get("selection") or {}).get("embargo") or {}),
-                  **{k: v for k, v in (row.get("embargo") or {}).items() if k != "spill"}}
-            bounds(tag, fb, {"train→stop", "stop→test", "refit→test"})
+            Y = row["train_through"]
+            tag = f"{name} fold {Y}→{row['test_year']}"
+            fe = row.get("embargo") or {}
+            fb = {**((row.get("selection") or {}).get("embargo") or {}), **{k: v for k, v in fe.items() if k != "spill"}}
+            bounds(tag, fb, {"train→stop": Y, "stop→test": Y + 1, "refit→test": Y + 1},
+                   {"refit→test": fe["spill"]} if fe.get("spill") else None)
     if bad:
         raise BoardError("refusing to emit — label windows cross a boundary (M-1f, C-022): " + "; ".join(bad))
 

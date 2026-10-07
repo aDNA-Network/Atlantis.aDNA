@@ -7,7 +7,7 @@
  "instance": "Atlantis.aDNA/what/exemplars/gulf_karenia_brevis",
  "method_version": "pattern_ecosystem_early_warning 0.1 · atlantis_core 0.5.0",
  "recorded_by": "agent_proteus",
- "recorded_at": "2026-10-07T18:34:42Z",
+ "recorded_at": "2026-10-07T19:02:16Z",
  "run_date": "2026-10-07",
  "evaluation": {
   "evaluation_id": "atl_eval_gulf_karenia_brevis_v3",
@@ -88,7 +88,7 @@
   "claim": "method_demonstration",
   "limitations_ref": "what/atlantis_core/README.md#known-limits-of-eval-and-explain-so-9 · README.md §Caveats",
   "recorded_by": "agent_proteus",
-  "recorded_at": "2026-10-07T18:34:42Z"
+  "recorded_at": "2026-10-07T19:02:16Z"
  },
  "evaluation_extras": {
   "event": {
@@ -972,6 +972,11 @@
      "n_trees": 327
     }
    }
+  },
+  "regenerated": {
+   "replaces_commit": "50f3499",
+   "reason": "III M-1f F-1/F-7: sensitivity run records its embargo and the board checks it; notes name the climatology, sensitivity and ablation moves; never pushed",
+   "at": "2026-10-07T19:02:16Z"
   }
  },
  "provenance": {
@@ -986,7 +991,8 @@
   "Delta vs v2 has one cause, the label-horizon embargo (III review of M-1e, F-6; fixed at M-1f, operator rulings 2026-10-07). A row's label reads the 4 weeks after it, so each fit and stop set now drops the rows whose label window reads the period that set must not see: the selection-train set before validation, the validation stop set and the final refit before test, and the same three cuts in every rolling fold. The train tail returns for the final refit, because its labels read only validation, which the refit trains on too. With the embargo off (none) the same code reproduces v2's metrics.json in every number (test_none_reproduces_board_v2), so the change is the embargo's alone.",
   "Measured spill, before the cut: at the main split, 3 of 920 training positives and 1 of 121 validation positives had a label window reaching into the next period (25 and 34 region-weeks in all, counting negatives whose no-bloom label read it). At the rolling folds' inner stop years it reached 10 of 31 positives (2022, read by 2023), the M-1e review's count. The main-split spill was small, so the headline moves little: 146 trees (was 141), test AUROC 0.8950 and AUPRC 0.5414 (was 0.8938 and 0.5388), on the same test set. Read this as a leak removed, not as a gain; no difference here is tested for significance.",
   "Budgets and lead: the thresholds are fixed on every validation week's scores, as at v2, and the validation metrics now read only the stop set's labels (1159 of 1193 region-weeks). At the 10% budget the fixed threshold rose from 0.272 to 0.281 and lead time flags 13 of 22 onsets ahead (was 14), median 4 weeks. Realised rates stay below nominal, as at v2.",
-  "Rolling panel: per-fold selection on one inner year stays noisy (52 to 835 trees), and no fold was skipped. Every boundary, headline and fold, was checked on the frames the learner received, against the event's horizon, not the embargo setting (atlantis_core.eval.check_label_windows; refused at emit otherwise).",
+  "Also moved, by the same cause: the climatology baseline, now fitted on the refit's embargoed rows (AUROC 0.5767 to 0.5770); the sensitivity run at 50000 cells/L, now embargoed like the headline (AUROC 0.8878 to 0.8866, 137 to 118 trees); and the model without the surveillance group (AUROC 0.8885 to 0.8911). Each of these runs is checked at every boundary before emit, as the headline is.",
+  "Rolling panel: per-fold selection on one inner year stays noisy (52 to 835 trees), and no fold was skipped. Every boundary, headline and fold, was checked on the frames the learner received, against the event's horizon, not the embargo setting (atlantis_core.eval.check_label_windows; refused at emit otherwise). The boundary is exact in week-years (a week belongs to its Monday's year), and a raw-stream perturbation through the labeller proves no kept label reads the next period.",
   "No v3 page (operator ruling 2026-10-07): limitations_ref points to the core README's known limits. The v2 page and entry stand as published; their limits describe the spill as open, which was true when they were published."
  ]
 }

@@ -4352,6 +4352,35 @@
    "0.1": 0.24657723828514688,
    "1.0": 0.2474455807068171,
    "10.0": 0.2478143557297527
+  },
+  "embargo": {
+   "train\u2192val": {
+    "next_start": 2017,
+    "n": 7760,
+    "positives": 952,
+    "latest_window_end": "2016-12-26",
+    "checked": true,
+    "rows_dropped": 24,
+    "positives_dropped": 2
+   },
+   "val\u2192test": {
+    "next_start": 2020,
+    "n": 1141,
+    "positives": 124,
+    "latest_window_end": "2019-12-30",
+    "checked": true,
+    "rows_dropped": 34,
+    "positives_dropped": 3
+   },
+   "refit\u2192test": {
+    "next_start": 2020,
+    "n": 8925,
+    "positives": 1078,
+    "latest_window_end": "2019-12-30",
+    "checked": true,
+    "rows_dropped": 34,
+    "positives_dropped": 3
+   }
   }
  },
  "atlantis_core": "0.5.0",
@@ -4368,7 +4397,7 @@
   "positives": 1168,
   "prevalence": 0.10810810810810811
  },
- "run_at": "2026-10-07T18:31:39.309864+00:00",
+ "run_at": "2026-10-07T18:58:40.196673+00:00",
  "shap_summary": {
   "learner_kind": "logistic",
   "base_logit": -2.808992278759157,

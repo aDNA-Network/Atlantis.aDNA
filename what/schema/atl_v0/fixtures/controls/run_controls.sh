@@ -34,8 +34,13 @@ for f in "$HERE"/pos_*.yaml "$HERE"/neg_*.yaml; do
            elif [ -z "$errs" ]; then echo "FAIL  $b rejected with NO error line — instrument failure, not a result"; printf '%s\n' "$out" | head -3; fail=$((fail+1));
            # `-e`: a REJECTS_ON that starts with '-' (e.g. "-1 is less than…") was read as a grep OPTION, grep exited 2, and the
            # unnamed-reason test was skipped — vacuous in this world since 0.5.0 (M-1f finding; the JSON worlds use `re`)
-           elif printf '%s\n' "$errs" | grep -vqE -e "$pat"; then echo "FAIL  $b rejected for an UNNAMED reason:"; printf '%s\n' "$errs" | grep -vE -e "$pat" | head -3; fail=$((fail+1));
-           elif [ -n "$at" ] && printf '%s\n' "$errs" | awk 'match($0, / in \/[^ ]*$/) {print substr($0, RSTART+4); next} {print "<no path>"}' | grep -vqE -e "$at"; then
+           # III M-1f F-5: grep's exit status is read whole — 0 = a line the pattern does not name, 1 = all named, 2 = the
+           # pattern itself failed (a bad regex), which is an INSTRUMENT failure, never "all named"
+           elif printf '%s\n' "$errs" | grep -vqE -e "$pat"; rc_on=$?; [ $rc_on -eq 2 ]; then echo "FAIL  $b REJECTS_ON is not a valid pattern (grep rc 2) — instrument failure"; fail=$((fail+1));
+           elif [ $rc_on -eq 0 ]; then echo "FAIL  $b rejected for an UNNAMED reason:"; printf '%s\n' "$errs" | grep -vE -e "$pat" | head -3; fail=$((fail+1));
+           elif [ -n "$at" ] && { printf '%s\n' "$errs" | awk 'match($0, / in \/[^ ]*$/) {print substr($0, RSTART+4); next} {print "<no path>"}' | grep -vqE -e "$at"; rc_at=$?; [ $rc_at -eq 2 ]; }; then
+             echo "FAIL  $b REJECTS_AT is not a valid pattern (grep rc 2) — instrument failure"; fail=$((fail+1))
+           elif [ -n "$at" ] && [ $rc_at -eq 0 ]; then
              echo "FAIL  $b rejected at an UNNAMED site (REJECTS_AT $at):"; printf '%s\n' "$errs" | awk 'match($0, / in \/[^ ]*$/) {print "      " substr($0, RSTART+4)}' | head -3; fail=$((fail+1))
            else echo "PASS  $b rejected — $(printf '%s\n' "$errs" | head -1 | cut -c1-120)"; pass=$((pass+1)); fi ;;
   esac

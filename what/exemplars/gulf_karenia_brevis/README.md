@@ -13,7 +13,9 @@ monitoring programme can absorb. The explainer site walks the whole thing, inclu
 
 > **These are v0's numbers, kept as the record of the origin run.** The live record is the board
 > (`what/board/BOARD.md`). The latest version is **v3** (2026-10-07, M-1f), where every fit and stop set is cut with a 4-week
-> label-horizon embargo: 146 trees, test AUROC 0.8950, AUPRC 0.5414, on the same test set. Its limits are in
+> label-horizon embargo: 146 trees, test AUROC 0.8950 and AUPRC 0.5414 against a base rate of 0.0774 (1,640 region-weeks).
+> At the 10% budget (threshold fixed on validation; 7.99% realised) precision is 0.527 and recall 0.543, and 13 of 22
+> onsets are flagged ahead (median 4 weeks). Its limits are in
 > `what/atlantis_core/README.md` §Known limits.
 
 Modelling set: **10,804 region-weeks, 1,168 onsets (10.8%)** after dropping

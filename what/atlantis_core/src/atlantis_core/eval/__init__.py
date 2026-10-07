@@ -308,7 +308,8 @@ def run(inst, model_df: pd.DataFrame, panel: pd.DataFrame, *, fold_tables=None, 
     for Y in s["rolling_origin_years"]:
         fdf, eras, rebuilt = fold(Y)
         tr, te = fdf[fdf.week.dt.year <= Y], fdf[fdf.week.dt.year == Y + 1]
-        if te["y"].sum() < 5:
+        if te["y"].sum() < 5:   # III M-1f F-7: said, as the inner-year skip is (a rare-event instance meets this)
+            skipped.append({"test_year": Y + 1, "reason": f"test year {Y + 1} has {int(te['y'].sum())} positives (< 5)"})
             continue
         sel = {}
         L.fits.clear()
@@ -365,10 +366,10 @@ def run(inst, model_df: pd.DataFrame, panel: pd.DataFrame, *, fold_tables=None, 
         d2 = sensitivity_df.copy(); d2["y"] = d2["y"].astype(int)
         tr2, va2, te2 = split(d2, s)
         L2 = learner(spec, feats, inst)
-        _, f2, i2, _, _ = _fit_main(L2, tr2, va2, s, E, H, where="sensitivity ")
+        _, f2, i2, _, s_emb = _fit_main(L2, tr2, va2, s, E, H, where="sensitivity ")
         p2 = L2.predict(f2, te2)
         res["sensitivity"] = {"threshold": thr, "test_auroc": float(roc_auc_score(te2["y"], p2)),
                               "test_auprc": float(average_precision_score(te2["y"], p2)),
                               "test_prevalence": float(te2["y"].mean()), "n_test": int(len(te2)),
-                              "positives_test": int(te2["y"].sum()), **i2}
+                              "positives_test": int(te2["y"].sum()), **i2, "embargo": s_emb}   # III M-1f F-1
     return res, art

@@ -254,7 +254,11 @@ only; the board refuses them. What remains is named under each.
    selection included, and is not comparable fold for fold with v1's.
 2b. ~~**The label horizon crosses every boundary.**~~ **Fixed (M-1f):** every fit and stop set drops the rows whose label window
    t+1…t+H reads the period after it (`split.embargo_weeks`, default H), and each boundary is checked on the frames the learner
-   received against the event's H, not against row years (C-018, C-022). **Measured before the cut** (exemplar, H = 4):
+   received against the event's H, not against row years (C-018, C-022). "The period after" is in **week-years**: a week
+   belongs to the year of its Monday, as the grid bins it, so a year's last week can hold the first days of January. The
+   check is exact in that convention, and a raw-stream perturbation through `label.make` proves it
+   (`tests/test_embargo_perturbation.py`). In calendar dates, 1 kept training label and 5 kept validation labels still read
+   1–5 January, in the week a test row's label never reads (III M-1f F-4). **Measured before the cut** (exemplar, H = 4):
    - main split: 25 of 7,971 training region-weeks (3 of 920 positives) read 2017; 34 of 1,193 validation region-weeks (1 of
      121 positives) read 2020;
    - fold stop years: up to 10 of 31 positives (2022, read by 2023), as the M-1e review counted.
@@ -262,8 +266,10 @@ only; the board refuses them. What remains is named under each.
    The headline moved little (141 → 146 trees; AUROC 0.8938 → 0.8950, AUPRC 0.5388 → 0.5414). `none` reproduces v2 in every number.
 
    **Residuals:**
-   - **A seasonal hole at each boundary.** The last H weeks of each set (December, for H = 4 and year boundaries) are never
-     fitted or stopped on next to that boundary. How much that costs depends on where the ecosystem's season falls.
+   - **A seasonal hole at each boundary.** The last H weeks before each boundary (December, for H = 4 and year boundaries)
+     are absent from the selection fit and the stop set. The validation tail is also absent from the final refit, and each
+     fold's last year's tail from its refit. The final refit and each fold refit keep the train tail. How much this costs
+     depends on where the ecosystem's season falls.
    - **The check covers labels only.** That vitals read only the past is the self-test's proof (SO-7), not this check's.
    - **Thresholds still read every validation week's scores.** This is deliberate (a budget is per year, and a score reads no
      label). The embargoed rows still carry `split = train`/`val` in `all_scored`, so the SHAP background may sample a

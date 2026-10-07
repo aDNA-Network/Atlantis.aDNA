@@ -43,6 +43,12 @@ PLANTS = {
                                   "pp = L.predict(L.refit_fixed(tr, finfo), te)"),
     "P9_main_refit_on_full_val": ("final = R.refit_fixed(pd.concat([train, stop]), info)",
                                   "final = R.refit_fixed(full, info)"),
+    # III M-1f F-1: the runs the board also publishes — the sensitivity fit and the ablation variants
+    "Q2_sensitivity_unembargoed": ('_, f2, i2, _, s_emb = _fit_main(L2, tr2, va2, s, E, H, where="sensitivity ")',
+                                   "(_, f2, i2), s_emb = L2.fit(tr2, va2), None"),
+    "Q3_ablations_unembargoed": ("    E, H = _embargo_of(inst)\n    L = learner(spec, feats, inst)",
+                                 "    E, H = _embargo_of(inst); E = E if list(feats) == list(inst.feature_names) else 0\n"
+                                 "    L = learner(spec, feats, inst)"),
 }
 
 
@@ -193,6 +199,34 @@ def test_planted_embargo_defects_refused_in_the_real_loop(built, plant, match):
         _run(planted(plant), inst, frames, m)
 
 
+@pytest.mark.parametrize("plant, match", [
+    ("Q2_sensitivity_unembargoed", r"headline sensitivity: boundaries \[\], expected"),
+    ("Q3_ablations_unembargoed", r"headline no_surveillance train→val: not checked"),
+])
+def test_planted_unguarded_runs_refused_at_the_board(built, plant, match):
+    """III M-1f F-1 (C-009): the ablation and sensitivity numbers ride under the same 'every boundary' line, so the board
+    walks them too. Each plant is written into eval's source and run for real (sensitivity on, ablations kept)."""
+    from atlantis_core.board import assert_embargo
+    from atlantis_core.eval.rolling import FoldTables
+    inst, frames, m = built
+    panel = m[["region", "week"]].assign(signal=np.nan)
+    res, _ = planted(plant).run(inst, m, panel, fold_tables=FoldTables(inst, frames, m), sensitivity_df=m,
+                                learner_spec=LOGISTIC, log=lambda *_: None)
+    with pytest.raises(BoardError, match=match):
+        assert_embargo(res, inst)
+    clean, _ = ev_mod.run(inst, m, panel, fold_tables=FoldTables(inst, frames, m), sensitivity_df=m,
+                          learner_spec=LOGISTIC, log=lambda *_: None)
+    assert_embargo(clean, inst)
+
+
+def test_a_test_year_with_too_few_positives_is_skipped_and_said(built):
+    """III M-1f F-7: the test-year skip was silent; a rare-event instance (FKNMS) meets it."""
+    inst, frames, m = built
+    thin = m[~((m.week.dt.year == 2019) & (m.y == 1))].copy()
+    res, _ = _run(ev_mod, inst, frames, thin)
+    assert {"test_year": 2019, "reason": "test year 2019 has 0 positives (< 5)"} in res["rolling_skipped"]
+
+
 def test_clean_loop_selects_on_the_frames_it_fitted(built):
     inst, frames, m = built
     res, _ = _run(ev_mod, inst, frames, m)
@@ -331,14 +365,28 @@ EMB = "label windows cross a boundary"
 @pytest.mark.parametrize("plant, match", [
     (lambda r, s: r["embargo"].update(weeks=0, checked=False), r"headline: embargo off \(weeks 0\)"),
     (lambda r, s: r["embargo"].update(weeks=3), r"headline: embargo 3 wk against horizon 4"),
-    (lambda r, s: r["embargo"]["boundaries"]["val→test"].update(checked=False), r"headline val→test: not checked"),
-    (lambda r, s: r["embargo"]["boundaries"]["refit→test"].update(latest_window_end="2020-01-06"),
-     r"headline refit→test: a label window ends 2020-01-06, in or after 2020"),
-    (lambda r, s: r["embargo"]["boundaries"].pop("train→val"), r"headline: boundaries \['refit→test', 'val→test'\]"),
+    (lambda r, s: r["full"]["embargo"]["val→test"].update(checked=False), r"headline full val→test: not checked"),
+    (lambda r, s: r["full"]["embargo"]["refit→test"].update(latest_window_end="2020-01-06"),
+     r"headline full refit→test: a label window ends 2020-01-06, in or after 2020"),
+    (lambda r, s: r["full"]["embargo"].pop("train→val"), r"headline full: boundaries \['refit→test', 'val→test'\]"),
     (lambda r, s: r["rolling_origin"][2]["selection"]["embargo"]["train→stop"].update(latest_window_end="2017-01-02"),
      r"headline fold 2017→2018 train→stop: a label window ends 2017-01-02, in or after 2017"),
     (lambda r, s: r["rolling_origin"][5].pop("embargo"), r"headline fold 2020→2021: boundaries \['stop→test', 'train→stop'\]"),
     (lambda r, s: s[SW].pop("embargo"), rf"learner swap {SW}: no embargo recorded"),
+    # III M-1f F-2: a boundary is held to the year the SPLIT names, not the one it names for itself
+    (lambda r, s: r["full"]["embargo"]["val→test"].update(next_start=2021, latest_window_end="2020-01-27"),
+     r"headline full val→test: guards 2021, the split says 2020"),
+    (lambda r, s: r["rolling_origin"][4]["embargo"]["refit→test"].update(next_start=2021),
+     r"headline fold 2019→2020 refit→test: guards 2021, the split says 2020"),
+    (lambda r, s: r["full"]["embargo"]["train→val"].update(latest_window_end=None), r"headline full train→val: an empty set"),
+    (lambda r, s: r["full"]["embargo"]["val→test"].update(n=0), r"headline full val→test: an empty set"),
+    (lambda r, s: r["full"]["embargo"]["refit→test"].update(checked=False), r"headline: the headline's embargo record disagrees"),
+    # F-1: the ablation and the sensitivity runs
+    (lambda r, s: r["no_surveillance"]["embargo"]["val→test"].update(checked=False), r"headline no_surveillance val→test: not checked"),
+    (lambda r, s: r["sensitivity"].pop("embargo"), r"headline sensitivity: boundaries \[\]"),
+    # F-3: an embargo that dropped fewer rows than the H-week windows that cross
+    (lambda r, s: r["full"]["embargo"]["val→test"].update(rows_dropped=33),
+     r"headline full val→test: dropped 33 rows, fewer than the 34 whose 4-week label window crosses"),
 ])
 def test_planted_embargo_defects_refused_at_emit(v3, plant, match):
     inst, res, shap, swaps = v3

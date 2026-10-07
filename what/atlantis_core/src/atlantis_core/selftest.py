@@ -647,7 +647,10 @@ def receipt_problem(inst: Instance) -> str | None:
         return f"{RECEIPT} is not JSON"
     if rec.get("passed") is not True:
         return f"{RECEIPT} does not record a pass"
-    h = semantic_hash(inst)
+    try:
+        h = semantic_hash(inst)
+    except ValueError as e:   # III M-1f F-6: a malformed config (e.g. a partial embargo) is a refusal, not a traceback
+        return f"the instance's config cannot be hashed ({e}) — fix it, then re-run the self-test"
     if rec.get("semantic_hash") != h:
         return (f"{RECEIPT} is for config {rec.get('semantic_hash')!r}, the instance is now {h!r} — "
                 f"vitals, label or grid changed since the self-test; re-run it (SO-7)")
