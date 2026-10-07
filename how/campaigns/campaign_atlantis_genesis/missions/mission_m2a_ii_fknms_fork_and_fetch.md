@@ -38,7 +38,7 @@ horizon embargo) have closed, so the instance's self-test receipt is earned once
 
 ## Interview starting point (the steward rules each item; these are proposals)
 
-- **Event:** CRW DHW ≥ 4 °C-weeks, CRW Bleaching Alert Level 1, `direction: above`, horizon 8; `refractory_weeks: 8`, which
+- **Event:** CRW DHW ≥ 4 °C-weeks, CRW Bleaching Alert Level 1, `direction: above`, horizon 8; `refractory_weeks: 7` (= H − 1, corrected at M-2a-i III F-4 from 8), which
   aligns the onset with `lead.py`; `eval.sensitivity_threshold: 8` (Alert Level 2). Authority: the CRW CURIE admitted at
   M-2a-i.
 - **Streams:** CRW DHW (event) · HotSpot · SST · SST anomaly, each `noaacrw*Daily` on `coastwatch.noaa.gov`, plus OISST.

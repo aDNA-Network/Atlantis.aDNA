@@ -4,7 +4,7 @@ mission_id: M-2a-i
 plan_id: mission_m2a_i_core_for_persistent_polygon_instances
 title: "M-2a-i — atlantis_core for a persistent, polygon, gridded instance: CRW authority · grid pin · onset refractory · persistent self-test world (whole catalogue) · CoralReefWatch polygon fetcher"
 owner: stanley
-status: active
+status: completed
 campaign: campaign_atlantis_genesis
 campaign_id: campaign_atlantis_genesis
 phase: P2
@@ -12,7 +12,7 @@ campaign_phase: 2
 mission_class: implementation
 executor_tier: opus
 token_budget_estimated: "~180-220kT main + fresh-context III reviewer"
-token_budget_actual: ""
+token_budget_actual: "≈345kT main (≈ +57%; SITREP at +50%, operator ruled fix-all) + ≈235kT III reviewer"
 depends_on: ['M-1e']
 split_from: mission_m2a_fknms_fork_and_fetch
 aar_path: how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m2a_i_core_for_persistent_polygon_instances.md
@@ -51,23 +51,23 @@ The PFEG mirror timed out.
 
 ## Acceptance criteria
 
-- [ ] **Authority:** a CRW CURIE prefix is admitted by `conform` item 2. The crosswalk row `noaa_crw_products` is bound.
+- [x] **Authority:** a CRW CURIE prefix is admitted by `conform` item 2. The crosswalk row `noaa_crw_products` is bound.
       The contract goes to v0.3.0 (minor). A bare `NOAA CRW` fails item 2 by name
-- [ ] **Grid pin:** `grid.sha256` for polygon grids is written by `fork` from the file's bytes and verified wherever the grid
+- [x] **Grid pin:** `grid.sha256` for polygon grids is written by `fork` from the file's bytes and verified wherever the grid
       is built and by `conform` item 1. A moved vertex is refused by name. The false docstrings are corrected
-- [ ] **Refractory:** `label.refractory_weeks` (default 0; R = 0 is byte-identical) drops rows whose carried signal crossed
+- [x] **Refractory:** `label.refractory_weeks` (default 0; R = 0 is byte-identical) drops rows whose carried signal crossed
       in t−R…t. The slot is in atl_v0 (0.5.0) with controls, and ALL WORLDS AGREE
-- [ ] **Self-test:** an `accumulating` synthetic event series; a check that the refractory reads only the past; a third
-      forked world (`persistent_master`: polygons, `unit_daily` above-event, H = 8, R = 8, surveillance absent). The
+- [x] **Self-test:** an `accumulating` synthetic event series; a check that the refractory reads only the past; a third
+      forked world (`persistent_master`: polygons, `unit_daily` above-event, H = 8, R = 7 (= H − 1, III F-4), surveillance absent). The
       **whole** catalogue re-runs across all three worlds plus the exemplar's 16. New plants fail by name. The exemplar's
       receipt is re-issued green (SO-7)
-- [ ] **Fetcher:** `CoralReefWatch` is built as an `ERDDAPGriddap` subclass on CRW's own ERDDAP. It reduces by a per-feature
+- [x] **Fetcher:** `CoralReefWatch` is built as an `ERDDAPGriddap` subclass on CRW's own ERDDAP. It reduces by a per-feature
       cell-centre mask over the instance's pinned polygons, with a nearest-cell fallback. Per-zone `n_cells` and `fallback`
       are computed by the code (C-023). It is offline-tested and a plant fails. One live smoke result goes in the AAR only
       (no data committed)
-- [ ] **Skill:** `skill_atlantis_instance_fork` gains the Hestia router-row memo step and notes on the above
-- [ ] The exemplar's byte-stable set is unchanged (board v2; model, SHAP and what-if bytes; `test_f8`, `test_equivalence`)
-- [ ] III review via `iii/`, in a fresh context; AAR
+- [x] **Skill:** `skill_atlantis_instance_fork` gains the Hestia router-row memo step and notes on the above
+- [x] The exemplar's byte-stable set is unchanged (board v2; model, SHAP and what-if bytes; `test_f8`, `test_equivalence`)
+- [x] III review via `iii/`, in a fresh context; AAR
 
 ## Guardrails
 

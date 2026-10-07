@@ -1,15 +1,15 @@
 ---
 type: state
 status: p1_open
-phase: "P2 open — condition (a) M-1e ✅ 2026-10-03 · condition (c) ✅ 2026-10-06; M-2a split → M-2a-i (active) → M-1f → M-2a-ii → M-2b → P2 gate"
+phase: "P2 open — conditions (a) ✅ 2026-10-03 · (c) ✅ 2026-10-06; M-2a-i ✅ 2026-10-06 → M-1f queued → M-2a-ii → M-2b → P2 gate"
 campaigns: [campaign_atlantis_genesis]
-mission: mission_m2a_i_core_for_persistent_polygon_instances   # ACTIVE (opus) 2026-10-06; M-2a split; M-1e ✅ 2026-10-03 (board v2); P1 gate ✅ 2026-10-03 (conditional GO); M-1d-ii ✅ 2026-10-03; M-1d-i ✅ · M-1b-ii-b ✅ 2026-10-03; M-1b-ii-a ✅ · M-1b-i ✅ · M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
+mission: mission_m1f_label_horizon_embargo   # queued (opus); M-2a-i ✅ 2026-10-06; M-2a split 2026-10-06; M-1e ✅ 2026-10-03 (board v2); P1 gate ✅ 2026-10-03 (conditional GO); M-1d-ii ✅ 2026-10-03; M-1d-i ✅ · M-1b-ii-b ✅ 2026-10-03; M-1b-ii-a ✅ · M-1b-i ✅ · M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
 persona: proteus   # RULED 2026-10-02 (ADR-001 ratified)
-last_session: session_stanley_20261004_035631_m1e_thresholds_on_validation (opus)
+last_session: session_stanley_20261007_023031_m2a_i_core_for_persistent_polygon_instances (opus)
 created: 2026-09-23
 updated: 2026-10-06
 last_edited_by: agent_proteus
-tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_complete, m1b_ii_a_complete, m1b_ii_b_complete, m1d_i_complete, m1d_ii_complete, p1_gate_met, p2_conditional_go, m1e_complete, board_v2, atl_v0_0_4_0, m2a_split, m2a_i_active]
+tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_complete, m1b_ii_a_complete, m1b_ii_b_complete, m1d_i_complete, m1d_ii_complete, p1_gate_met, p2_conditional_go, m1e_complete, board_v2, atl_v0_0_4_0, m2a_split, m2a_i_complete, atl_v0_0_5_0, core_0_4_0, crw_built, m1f_queued]
 ---
 
 # STATE — Atlantis.aDNA
@@ -34,54 +34,65 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
 
 ## ⏭ QUEUED — Next Live Session
 
-> **2026-10-06 — M-2a-i ACTIVE** (session `session_stanley_20261007_023031_m2a_i_…`). At the M-2a planning sitting the operator
-> ruled:
-> - **split M-2a** → M-2a-i (core) → **M-1f** (embargo, WI-23 placed) → M-2a-ii (fork and fetch);
-> - **FKNMS zones plus a polygon reducer**;
-> - **H = 8, one window**.
->
-> **Condition (c) MET:** CRW is served by `coastwatch.noaa.gov` ERDDAP through the `ERDDAPGriddap` query shape. The text below
-> is the pre-split queue, kept until this session closes and rewrites it.
+**M-2a-i CLOSED 2026-10-06.** Every gap the FKNMS instance would have hit is now closed Atlantis-side:
+- the `NOAACRW:` authority (contract v0.3.0);
+- the zone file pinned by its bytes (`grid.sha256`), with duplicate ids refused;
+- the onset refractory `refractory_weeks` (atl_v0 0.5.0; **R = H − 1 matches lead.py's onset**, by a paired test);
+- the self-test's accumulating world with C9, and a third forked world, with the whole catalogue × 3;
+- **`CoralReefWatch` built**: polygon-zone means over CRW's own ERDDAP, with the reduction and its basis recorded and a
+  stale basis refused.
 
-**M-1e CLOSED 2026-10-03 — P2 condition (a) MET; P2 opens at M-2a.** Board v2 (`what/board/entries/2026-10-03_gulf_karenia_brevis_v2.json`)
-is the same model as v1, with model bytes identical, AUROC 0.8938 / AUPRC 0.5388 and 141 trees. Its alert thresholds are
-**fixed on validation** before test is scored, and every budget states its realised test rate beside the nominal one
-(0.0378 / 0.0811 / 0.1933 at 5 / 10 / 20%). Lead time at the 10% budget's fixed threshold flags 0.636 of 22 onsets. Every
-rolling fold selects its own tree count. atl_v0 is 0.4.0, and the v2 page is `site/gulf_karenia_brevis_v2.html`. III 8/8.
-**Disclosed, not fixed:** the label horizon crosses every split boundary. The embargo is carded as board v3.
+atlantis_core is 0.4.0. Exemplar bytes and board v2 are untouched (`acfa22c6e4`). III PASS-WITH-FINDINGS, 8/8 addressed.
+**P2 condition (c) MET.**
 
-**Next: M-2a** (opus) → M-2b → **P2 gate** (fable). M-1e is pushed (`f07403e..9ac5e34`). **Pending operator ruling:** where the
-**horizon embargo** lands (with M-2b, or its own lane before the P2 gate).
+**Next: M-1f** (opus; the horizon embargo, board v3) → M-2a-ii (opus; the FKNMS fork and fetch) → M-2b → **P2 gate** (fable).
+**Pending operator acts:**
+- the **push** (M-2a-i commits; gitleaks over the range);
+- the graduation candidates C-004, C-005, C-009 and C-015 (WI-20).
 
-**Next Session Prompt (self-contained, M-2a):**
+**Next Session Prompt (self-contained, M-1f):**
 
-> You are Proteus in `~/aDNA/Atlantis.aDNA`. P2 is open: the P1 gate's conditional GO is satisfied (M-1e closed
-> 2026-10-03, board v2). Run **M-2a — `FloridaKeysCoral.aDNA`, from fork to fetched data** at **opus**. Read, in order:
+> You are Proteus in `~/aDNA/Atlantis.aDNA`. P2 is open. M-2a-i closed on 2026-10-06 with the core FKNMS needs. Run
+> **M-1f, the label-horizon embargo, which produces board v3**, at **opus**. Read, in order:
 > 1. STATE;
-> 2. `how/campaigns/campaign_atlantis_genesis/missions/mission_m2a_fknms_fork_and_fetch.md` (its acceptance criteria govern);
-> 3. `how/skills/skill_atlantis_instance_fork.md`;
-> 4. `how/campaigns/campaign_atlantis_genesis/artifacts/instance_contract_v0.md`;
-> 5. `how/campaigns/campaign_atlantis_genesis/artifacts/p2_second_instance_ruling.md`;
-> 6. the M-1d-i AAR (fork, conform, the dry run's findings);
-> 7. `what/atlantis_core/README.md` (§Known limits incl. 2b).
+> 2. `how/campaigns/campaign_atlantis_genesis/missions/mission_m1f_label_horizon_embargo.md` (its acceptance criteria govern);
+> 3. `how/backlog/idea_label_horizon_embargo.md` (the measured spill and the shape of the fix);
+> 4. the M-1e AAR (F-8, board v2, how a single-cause board version was emitted and checked);
+> 5. `what/atlantis_core/README.md` §Known limits 2b, and `src/atlantis_core/eval/` (split, rolling, the FitRecorder checks).
 >
-> Open a session lease. **Do condition (c) first:** check whether NOAA Coral Reef Watch (DHW / HotSpot / SST) is reachable
-> through the built `ERDDAPGriddap` fetcher (dataset id, variables, grid, licence). If it is not, stop and card a
-> `CoralReefWatch` fetcher Atlantis-side (WI-19); never build it in the instance.
+> Open a session lease. **Measure first:** count the positives labelled across each main boundary (train→val, val→test).
+> Then build `split.embargo_weeks` (default = horizon), with a `none` mode that reproduces v2 exactly. Watch for:
+> - **a check that reads label windows, not row years** (C-018, C-022);
+> - a crossing row planted in the real code path must fail by name (C-009, frequency 4);
+> - board v3 emitted by code, with the delta attributed to the embargo alone (SO-2: v2 is published);
+> - provenance computed, never stamped (C-023);
+> - any claim that two modules agree is backed by a test that runs both (C-025, new at M-2a-i);
+> - the split is part of `semantic_hash`, so the exemplar's receipt is re-earned. FKNMS has no receipt yet, which is the
+>   point of running M-1f first.
 >
-> Watch for:
-> - the instance is a **new vault at the workspace root**: follow the fork skill and workspace Rule 3, and send the router
->   row to Hestia by memo;
-> - **zero instance-local patches to `atlantis_core`**: every gap is an Atlantis-side change, listed in the AAR;
-> - the persistent DHW event needs the self-test generalised Atlantis-side, with the **whole** defect catalogue re-run
->   (C-014), green before any fetch;
-> - provenance fields are computed from what the code did, never stamped from config (C-023, M-1e);
-> - a guard is proven by a plant in the real code path (C-009, now frequency 4).
->
-> Budget honestly (~150–200 kT; P1's overruns ran +77% to +130%); at more than +50% over, SITREP and ask. Run the III
-> review via `iii/` in a fresh context (SO-10). Make path-scoped commits; file the AAR. Then queue M-2b.
+> Budget honestly (~120–170 kT; P1/P2 lanes ran +57% to +130%). At more than +50%, SITREP and ask. Run the III review via
+> `iii/` in a fresh context (SO-10). Make path-scoped commits and file the AAR. Then queue M-2a-ii.
 
 ## What's in place
+
+### M-2a-i (2026-10-06 — commits `9873844`…`dd103fb` + III + close) — P2 condition (c)
+
+- **Contract v0.3.0:** `NOAACRW:` authority. **atl_v0 0.5.0:** `refractory_weeks` + the prefix (53 controls).
+- **atlantis_core 0.4.0:**
+  - **Grid:** `grid.sha256` (fork / `make_grid` / conform item 1); duplicate ids refused.
+  - **Label:** `refractory_weeks` (R absent ≡ 0, hashed only when set).
+  - **Self-test:** `event_series` iid | accumulating; C9 (never skipped); the episode check recomputed from the raw frame,
+    through a gap longer than the carry; `persistent_master`; catalogue × 3; refractory plants.
+  - **Fetch:** `CoralReefWatch` built (`bind`; per-feature cell-centre mask; nearest-cell fallback; reduction + basis on
+    the summary; a stale basis is refused by fetch, `--verify` and conform item 3).
+- **Live smoke (scratch):** in 2023, Lower Keys DHW ≥ 4 from 10 July, ~18 by late September. CRW answered after three 502s.
+- **Findings of record:**
+  - the grid pin had never existed (C-023 class);
+  - R = H − 1, not R = H, is the lead-time onset (C-025);
+  - the CRW cache key omitted its basis (C-010 / C-023);
+  - C9's first boundary skip was C-015 again.
+- **III:** PASS-WITH-FINDINGS, 8/8. Local store: C-024 and C-025 new. Graduation candidates: C-004, C-005, C-009, C-015.
+
 
 ### M-1e (2026-10-03 — commits `20075f1`…`4bda9b5` + close) — P2 condition (a)
 
@@ -283,9 +294,9 @@ rolling fold selects its own tree count. atl_v0 is 0.4.0, and the v2 page is `si
 - ~~WI-18~~ **closed 2026-10-03 (M-1d-ii)** — the template is fixed and validated (schema copy beside it). The upstream
   note goes by memo (24 of 26 workspace `.dataset.yaml` fail it). Original text follows: `how/templates/template_dataset_pair/` fails the lattice-labs `dataset_yaml_schema.json` it claims (sha256
   placement, `storage.location`/`provider`, lineage keys). M-1d-ii fixes the template; the upstream note goes by memo.
-- WI-19 — *(P1 gate: NDBC dropped from M-2. **CRW: checked 2026-10-06, reachable via ERDDAP; the polygon `CoralReefWatch` fetcher is built at M-2a-i.**)* `NDBCStdmet` (and OBIS, GBIF, CRW) are declared, not built. The first instance with a buoy stream needs NDBC; it
+- WI-19 — *(P1 gate: NDBC dropped from M-2. **CRW BUILT 2026-10-06 (M-2a-i)**; NDBC, OBIS and GBIF remain declared.)* `NDBCStdmet` (and OBIS, GBIF, CRW) are declared, not built. The first instance with a buoy stream needs NDBC; it
   is built in `atlantis_core` (the P2 rule). M-2 (gridded-only) does not need it.
-- WI-20 — **graduation proposed 2026-10-03** (C-009 reached frequency 4 at M-1e, which strengthens the memo) (P1 gate ruling: memo filed, awaiting Argus + Stanley co-ratification at III.aDNA). III learning store: C-004 and C-009 are at frequency 3, graduation candidates for the ADR-003 ceremony at
+- WI-20 — *(M-2a-i: the candidates at frequency ≥ 3 are now **C-004 · C-005 (4) · C-009 (4) · C-015**.)* **graduation proposed 2026-10-03** (C-009 reached frequency 4 at M-1e, which strengthens the memo) (P1 gate ruling: memo filed, awaiting Argus + Stanley co-ratification at III.aDNA). III learning store: C-004 and C-009 are at frequency 3, graduation candidates for the ADR-003 ceremony at
   III.aDNA. Operator's call, at the P1 gate or after.
 - WI-21 — The exemplar is not a conformant instance (no `units.yaml`, `mapping.yaml` or posture pin). Optional: give it the
   first two, so that items 1 and 11 pass; its posture stays the ADR-002 §4 grandfathered exception.
@@ -298,9 +309,12 @@ rolling fold selects its own tree count. atl_v0 is 0.4.0, and the v2 page is `si
 - WI-23 — *(**placed 2026-10-06:** M-1f, its own lane between M-2a-i and M-2a-ii.)* **The label horizon crosses every split boundary** (M-1e III F-6; C-022). Disclosed on README 2b, the v2 page and board
   v2. The fix is carded: `how/backlog/idea_label_horizon_embargo.md` → board v3, its own cause. The operator places it, before
   the P2 gate compares the exemplar with FKNMS.
+- WI-24 — **M-2a-ii licence ruling (OSTIA).** The PacIOOS mirror of CoralTemp v3.1 carries an OSTIA academic-only clause for
+  1985–2002, and CRW's own licence text does not. The steward rules on it at the posture ADR: cite CRW-native with the caveat
+  noted, or start the era in 2002.
 - WI-9 — Memo candidates after the gate (peer vaults read-only): ASOAtlas — greedy `sed` in `run_controls.sh`, untyped-postcondition
   null hole, Python `$` vs trailing newline; Rosetta (`aDNA.aDNA` ADR-062) — the same two as LinkML idiom notes.
 
 ## Next steps
 
-1. ~~M-1a~~ ✅ → … → ~~M-1d-ii~~ ✅ → ~~**P1 gate**~~ ✅ 2026-10-03 (conditional GO) → ~~M-1e~~ ✅ 2026-10-03 → **M-2a** (opus) → M-2b → **P2 gate** (fable). 2. M-2 FKNMS → **P2 gate**. 3. Memo to Hestia: router row category text → "reference implementation".
+1. ~~M-1a~~ ✅ → … → ~~M-1d-ii~~ ✅ → ~~**P1 gate**~~ ✅ 2026-10-03 (conditional GO) → ~~M-1e~~ ✅ 2026-10-03 → ~~M-2a-i~~ ✅ 2026-10-06 → **M-1f** (opus) → M-2a-ii → M-2b → **P2 gate** (fable). 2. M-2 FKNMS → **P2 gate**. 3. Memo to Hestia: router row category text → "reference implementation".

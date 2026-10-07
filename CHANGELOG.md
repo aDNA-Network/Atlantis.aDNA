@@ -1,5 +1,36 @@
 # CHANGELOG — Atlantis.aDNA
 
+## 2026-10-06 — v0.10.0 · M-2a-i: the core for a persistent, polygon, gridded instance · P2 condition (c) MET
+
+- **The split (operator ruling, 2026-10-06).** M-2a became M-2a-i (this mission), then M-1f (the horizon embargo), then
+  M-2a-ii (the FKNMS fork and fetch). Patients are FKNMS zones, reduced by a polygon reducer; H = 8, one window.
+  **Condition (c) MET:** CRW is reachable through `ERDDAPGriddap`'s query shape on `coastwatch.noaa.gov`.
+- **Instance contract v0.3.0 (minor):** item 2 admits `NOAACRW:`, since DHW has no CF standard name. Crosswalk row
+  `noaa_crw_products` is bound.
+- **atl_v0 0.5.0:** `AtlEventDefinition.refractory_weeks` plus the `NOAACRW` prefix. 53 controls, ALL WORLDS AGREE, and
+  the sabotage bites.
+- **atlantis_core 0.4.0:**
+  - **The zone file is pinned by its bytes** (`grid.sha256`). This was claimed since M-1b-i and never implemented.
+    Duplicate zone ids are refused.
+  - **Label onset refractory:** R absent ≡ 0, the same expression, hashed only when set, so the exemplar keeps `acfa22c6e4`.
+    **R = H − 1 matches `eval/lead.py`'s onset**, and a paired test proves it.
+  - **Self-test:**
+    - the accumulating DHW-like world: a past episode with a flicker, plus a gap longer than the carry;
+    - **C9:** the refractory bites at its declared length, and the boundary is never skipped;
+    - the episode check is recomputed from the raw frame;
+    - a third forked world, `persistent_master`, with the whole catalogue × 3;
+    - 8 refractory plants plus the iid-boundary case;
+    - the receipt records its world and C9's outcome, and its code hash covers `grid/`.
+  - **`CoralReefWatch` built:**
+    - zone means over CRW's own ERDDAP, using a cell-centre-in-polygon mask per feature with a nearest-cell fallback;
+    - the zones come from the instance's pinned grid (`bind`);
+    - the summary records the reduction and its basis, and a cached artifact on another basis is refused by `fetch`,
+      `--verify` and conform item 3.
+- **The fork skill:** the router row goes to Hestia by memo; the interview asks about persistence; the receipt names its world.
+- **III:** PASS-WITH-FINDINGS, 8/8 addressed (operator ruled "fix all 8" at the +50% SITREP). Local store: C-023, C-010 and
+  C-015 +1, C-005 +2, new C-024 and C-025. Graduation candidates: C-004 · C-005 · C-009 · C-015.
+- **Not touched:** the exemplar's bytes, board v2 and every page. No data committed. The live CRW smoke was scratch only.
+
 ## 2026-10-03 — v0.9.0 · M-1e: thresholds fixed beforehand (F-8) → board v2 · P2 condition (a) MET
 
 - **Board v2** (`what/board/entries/2026-10-03_gulf_karenia_brevis_v2.json`), emitted by code with the delta attributed to F-8
