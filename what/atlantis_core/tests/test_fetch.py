@@ -9,13 +9,13 @@ from atlantis_core.fetch import provenance
 
 
 def test_registry_of_fetchers():
-    assert set(BUILT) == {"ArcGISMapServer", "ERDDAPGriddap", "NWISDailyValues"}
+    assert set(BUILT) == {"ArcGISMapServer", "ERDDAPGriddap", "NWISDailyValues", "CoralReefWatch"}   # CRW built at M-2a-i
     declared = {n for n, c in FETCHERS.items() if issubclass(c, DeclaredFetcher)}
-    assert declared == {"NDBCStdmet", "OBISOccurrence", "GBIFOccurrence", "CoralReefWatch"}
+    assert declared == {"NDBCStdmet", "OBISOccurrence", "GBIFOccurrence"}
     assert not (declared & set(BUILT))
 
 
-@pytest.mark.parametrize("name", ["NDBCStdmet", "OBISOccurrence", "GBIFOccurrence", "CoralReefWatch"])
+@pytest.mark.parametrize("name", ["NDBCStdmet", "OBISOccurrence", "GBIFOccurrence"])
 def test_declared_fetchers_raise_and_name_endpoint(tmp_path, name):
     f = FETCHERS[name](tmp_path, "x.parquet", "x_fetch_summary.json")
     assert f.endpoint.startswith("https://")

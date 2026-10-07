@@ -32,6 +32,10 @@ class Fetcher:
         self.offline, self.retries, self.backoff, self.timeout = offline, retries, backoff, timeout
         self._session = session
 
+    def bind(self, inst, sid: str) -> None:
+        """Hook: what the fetcher may take from its instance before downloading (M-2a-i). `fetch.fetcher_for` calls it.
+        Default: nothing. A spec-only fetcher stays spec-only."""
+
     @property
     def pipeline_version(self) -> str:
         return f"atlantis_core {__version__} · {type(self).__name__}"

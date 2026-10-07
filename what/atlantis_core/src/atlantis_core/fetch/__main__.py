@@ -34,7 +34,9 @@ def fetcher_for(inst, sid: str, offline: bool = False, session=None):
     art, summ = inst.path(spec["artifact"]), inst.path(spec["summary"])
     if art.parent != summ.parent:
         raise SystemExit(f"✗ {sid}: artifact and summary must share a directory ({spec['artifact']} · {spec['summary']})")
-    return FETCHERS[name](art.parent, art.name, summ.name, offline=offline, session=session)
+    f = FETCHERS[name](art.parent, art.name, summ.name, offline=offline, session=session)
+    f.bind(inst, sid)   # M-2a-i: e.g. CoralReefWatch takes the instance's pinned polygon grid and the stream's columns
+    return f
 
 
 def verify(inst, sid: str) -> list[str]:
