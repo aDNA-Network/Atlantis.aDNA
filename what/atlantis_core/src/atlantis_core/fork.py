@@ -268,6 +268,8 @@ def _values(a: dict, schema: dict, out: Path, commit: str, today: str, answers_f
     clim = a.get("climatology") or {}
     st_block = {"patients": ps,
                 "week": str(st.get("week") or _first_monday(int(sp["val_start"])))}
+    if st.get("event_series"):   # M-2a-i: iid | accumulating (selftest decides the default from the event)
+        st_block["event_series"] = st["event_series"]
     if clim:
         lo = max(int(e[0]) for e in clim.values()); hi = min(int(e[1]) for e in clim.values())
         st_block["in_era_week"] = str(st.get("in_era_week") or _first_monday((lo + hi) // 2, month=6))

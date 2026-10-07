@@ -104,9 +104,16 @@ CATALOGUE = [   # (name, object, attribute, sabotage factory, check that must na
 ]
 
 
-@pytest.mark.parametrize("world", ["forked_master", "variant_master"])
+# Where a world reaches a defect by a different road, it is named here, not widened for every world (M-2a-i finding): the
+# persistent world has no weekly_min vital (an above event reads weekly_max; SST is a mean), so a leaky weekly_min reaches
+# only C5's mirror-direction label — and C5 names it.
+WORLD_EXPECT = {("weekly_min_next", "persistent_master"): "C5 below"}
+
+
+@pytest.mark.parametrize("world", ["forked_master", "variant_master", "persistent_master"])   # M-2a-i: + the persistent world (C-014)
 @pytest.mark.parametrize("name,obj,attr,factory,check", CATALOGUE, ids=[c[0] for c in CATALOGUE])
 def test_forked_selftest_catches_catalogue(request, monkeypatch, world, name, obj, attr, factory, check):
+    check = WORLD_EXPECT.get((name, world), check)
     inst = load_instance(request.getfixturevalue(world))
     monkeypatch.setattr(obj, attr, factory())
     with pytest.raises(st.LeakError, match=check):
@@ -234,3 +241,77 @@ def test_fork_pins_the_zone_file_by_its_bytes_and_the_selftest_refuses_a_moved_v
     p.write_text(p.read_text().replace("-76.2, 35.5", "-76.2, 35.51", 1))
     with pytest.raises(GridPinError, match="grid.sha256 mismatch"):
         st.run(load_instance(forked), verbose=False)
+
+
+
+# ── M-2a-i: the onset refractory, planted in the real label path of the persistent world (C-009) ──────────────────────
+from atlantis_core.vitals import grammar as _grammar
+
+
+def _refractory_variant(mode):
+    """Each mode is a label.make that is wrong about the refractory in one way; C1 or C9 must name it."""
+    def make(inst_, table, evs, units, weeks, event=None, lcfg=None):
+        ev = dict(event or inst_.event); lc = lcfg or inst_.cfg["label"]
+        R = int(ev.get("refractory_weeks") or 0)
+        if mode in ("short", "long"):
+            ev["refractory_weeks"] = R - 1 if mode == "short" else R + 1
+            return _orig_make(inst_, table, evs, units, weeks, event=ev, lcfg=lcfg)
+        bare = {k: v for k, v in ev.items() if k != "refractory_weeks"}
+        t = _orig_make(inst_, table, evs, units, weeks, event=bare if mode != "future" else ev, lcfg=lcfg)
+        if mode == "ignored":
+            return t
+        consts = list(inst_.cfg.get("constants", {}))
+        thr, s_ = float(ev["threshold"]), evs[ev["event_variable_stream"]]
+        if mode == "future":                  # the refractory window centred on t: it also looks at t+1
+            sig = s_.weekly(_grammar.parse(lc["signal"], consts))
+            add = sig.shift(-1).ge(thr)
+        elif mode == "from_horizon":          # the drop computed after the horizon cut: on the FUTURE signal
+            sig = s_.weekly(_grammar.parse(lc["signal"], consts))
+            add = sum(sig.shift(-k).ge(thr).astype(int) for k in range(1, int(ev["horizon"]) + 1)).gt(0)
+        else:                                  # "weekly_mean": the refractory reads a different aggregate than the label
+            m = s_.weekly(_grammar.parse("weekly_mean(value)", consts)).ge(thr)
+            add = sum(m.shift(k, fill_value=False).astype(int) for k in range(1, R + 1)).gt(0)
+        t["already_in_event"] = t["already_in_event"].values | label._cut(add, units, weeks).fillna(False).astype(bool).values
+        return t
+    return make
+
+
+@pytest.mark.parametrize("mode,check", [
+    ("ignored", "C9 refractory: a crossing at t−8 .* did not set"),   # R declared, never applied
+    ("short", "C9 refractory: a crossing at t−8 .* did not set"),     # R − 1
+    ("long", "C9 refractory: a crossing at t−9 set"),              # R + 1 (off by one)
+    ("future", "C1 LEAK"),                                          # reads t+1
+    ("from_horizon", "C1 LEAK"),                                    # the drop applied after the horizon cut
+    ("weekly_mean", "C9 episode"),                                  # right at t−R and t−R−1, wrong on the episode
+])
+def test_persistent_selftest_catches_refractory_defects(persistent_master, monkeypatch, mode, check):
+    inst = load_instance(persistent_master)
+    monkeypatch.setattr(label, "make", _refractory_variant(mode))
+    with pytest.raises(st.LeakError, match=check):
+        st.run(inst, verbose=False)
+
+
+def test_persistent_world_passes_and_records_what_ran(persistent_master):
+    """The world and R are computed into the result (and so the receipt), not stamped from config (C-023)."""
+    inst = load_instance(persistent_master)
+    r = st.run(inst, verbose=False)
+    assert r["event_series"] == "accumulating" and r["refractory_weeks"] == 8
+    ep = r["C9"]["episode"]
+    assert r["C9"]["bites"] == r["C9"]["boundary"] == "ok"
+    assert ep["checked"] and ep["crossing_runs"] >= 2 and ep["dip_weeks"] >= 1 and ep["dip_weeks_dropped"] == ep["dip_weeks"]
+    assert all(v.get("C3") == "ok" or k != "atl_stream_example_dhw_daily" for k, v in r["streams"].items())
+
+
+def test_event_series_choice_and_refusals(persistent_master, forked):
+    p = load_instance(persistent_master)
+    assert st.event_series(p) == "accumulating"
+    p.cfg["selftest"]["event_series"] = "iid"
+    assert st.event_series(p) == "iid"
+    p.cfg["selftest"]["event_series"] = "smooth"
+    with pytest.raises(ValueError, match="event_series 'smooth'"):
+        st.event_series(p)
+    f = load_instance(forked)                                       # a below event: accumulating is refused, iid is default
+    assert st.event_series(f) == "iid"
+    f.cfg["selftest"]["event_series"] = "accumulating"
+    with pytest.raises(ValueError, match="ABOVE event on a daily event stream"):
+        st.event_series(f)

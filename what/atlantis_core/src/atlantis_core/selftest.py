@@ -26,6 +26,12 @@ and once:
   C5  the event re-declared in the MIRROR direction (an `above` event → `below` with weekly_min; a `below` event → `above`
       with weekly_max): a single observation past the threshold at t+1 or t+H flips y, at t+H+1 does not; no vital /
       `already_in_event` at weeks ≤ t moves. Both tails are exercised on every instance.
+  C9  (an event with `refractory_weeks` R > 0 — M-2a-i) the onset refractory bites and is the declared length: a crossing
+      at the primary's week t−R sets already_in_event at t, one at t−R−1 does not (skipped, and said, when the primary's
+      own gap week would carry it in), and neither moves y. That it reads nothing AFTER t is C1's and C2's job — they
+      already diff every already_in_event flag at weeks ≤ t. In the accumulating world (below) it also checks the past
+      episode: at every primary week of it, the drop equals "the raw weekly maximum crossed in t−R … t", computed from the
+      synthetic frame, not from the label, and the episode's flicker (a dip between two crossings) is dropped.
   C6  REPORTED, not hidden: inside a climatology era a t+1 perturbation moves anomaly() vitals at earlier weeks — the era
       normal is one statistic over the whole era, so the same calendar week in EVERY earlier era year depends on it.
       Asserted: only anomaly() vitals move. Reported: cells, max |Δ|, real vs float residue (pandas' running-sum rolling
@@ -35,6 +41,12 @@ The event stream may have any shape (M-1d-i: a station-keyed `below` event — h
 until then the synthetic world placed event values against the threshold, and spiked them, for point streams only). Its
 synthetic values sit on the safe side of a POSITIVE threshold; a spike is ONE observation per entity past it (for a daily
 stream, one date set across every selected entity, so a mean over stations crosses too). A threshold ≤ 0 is refused here.
+
+Event series (M-2a-i): `selftest.event_series` is `iid` (values drawn independently each day on the safe side of the
+threshold — every world before M-2a-i) or `accumulating` (a DHW-like trailing 12-week sum of a non-negative daily
+"hotspot": persistent, and carrying one past episode that crosses, dips below and re-crosses well before t). The default
+is `accumulating` for an `above` event with R > 0 on a daily event stream, `iid` otherwise; the world used is recorded in
+the result and the receipt (computed, C-023). The mirror-direction world (C5) is always `iid`.
 
 Equality is exact (NaN == NaN). KNOWN LIMITS — what this test does not prove:
   * coverage is what the synthetic world exercises: two units, the gap pattern above, one t; a transform whose leak only
@@ -95,6 +107,37 @@ def _event_big(ev) -> float:
 
 
 GAP_DEFAULT = {"point": 4, "unit_daily": 1, "station_daily": 1}
+SERIES = ("iid", "accumulating")
+EPISODE_START_WEEKS = 60   # the accumulating world's past episode starts this many weeks before t …
+EPISODE_A, EPISODE_B = (0, 6, 0.22), (16, 18, 0.6)   # … hotspot blocks (first week, end week, level × threshold). Weekly
+# maxima (× thr, simulated at M-2a-i): crossing from episode week 4 to 13 (peak 1.32), a three-week dip 14–16 (0.85 · 0.63 ·
+# 0.82), re-crossing 17–28 (the flicker: 1.20), below from 29, baseline from 30 — all ≥ 30 weeks before t.
+
+
+def event_series(inst: Instance) -> str:
+    """Which synthetic event series the world uses (module docstring). Refuses a combination it cannot honour."""
+    from atlantis_core.label import refractory
+    ev = inst.event
+    shape = inst.stream_spec(ev["event_variable_stream"])["shape"]
+    want = (inst.cfg.get("selftest") or {}).get("event_series")
+    if want is None:
+        return "accumulating" if refractory(ev) and ev["direction"] == "above" and shape != "point" else "iid"
+    if want not in SERIES:
+        raise ValueError(f"selftest.event_series {want!r} — expected one of {SERIES}")
+    if want == "accumulating" and (ev["direction"] != "above" or shape == "point"):
+        raise ValueError("selftest.event_series accumulating synthesises an ABOVE event on a daily event stream "
+                         f"(this event: {ev['direction']}, shape {shape})")
+    return want
+
+
+def _accumulating(days: pd.DatetimeIndex, t: pd.Timestamp, thr: float, rng) -> np.ndarray:
+    """A DHW-like series: the trailing 84-day sum of a daily hotspot, / 7 (°C-weeks from °C). Baseline hotspot keeps the
+    sum ≤ 0.05·thr (the safe side, as in the iid world); the episode blocks are EPISODE_A / EPISODE_B."""
+    hot = rng.uniform(0, 0.05 * thr / 12, len(days))
+    e0 = week_start([t - W(EPISODE_START_WEEKS)]).iloc[0]
+    for w0, w1, lvl in (EPISODE_A, EPISODE_B):
+        hot[(days >= e0 + W(w0)) & (days < e0 + W(w1))] = lvl * thr
+    return pd.Series(hot).rolling(84, min_periods=1).sum().to_numpy() / 7.0
 
 
 def _eq(x, v) -> bool:
@@ -123,9 +166,10 @@ def gap_week(inst: Instance, sid: str) -> int:
     return free[0] if free else max(lags) + 1
 
 
-def synth(inst: Instance, t: pd.Timestamp, seed: int = 0) -> dict:
+def synth(inst: Instance, t: pd.Timestamp, seed: int = 0, series: str | None = None) -> dict:
     """Raw frames in the instance's own columns, normalised through the real path."""
     rng = np.random.default_rng(seed)
+    series = series or event_series(inst)
     ps, ev, H = patients(inst), inst.event, int(inst.event["horizon"])
     first, last = _span(inst, t)
     grid = make_grid(inst)
@@ -170,7 +214,8 @@ def synth(inst: Instance, t: pd.Timestamp, seed: int = 0) -> dict:
                     gap |= (days >= g) & (days <= g + pd.Timedelta(days=6))
                 m = keep_random & ~gap
                 if sid == ev["event_variable_stream"]:
-                    v = rng.uniform(*_event_band(ev), len(days))       # the safe side of the threshold, every day
+                    v = (_accumulating(days, t, float(ev["threshold"]), rng) if series == "accumulating" else
+                         rng.uniform(*_event_band(ev), len(days)))       # the safe side of the threshold, every day
                     key = cols["unit"] if shape == "unit_daily" else cols["station"]
                     parts.append(pd.DataFrame({cols["date"]: days[m], key: ent, cols["value"]: v[m]}))
                 elif shape == "unit_daily":
@@ -283,6 +328,70 @@ def _past_clean(inst, base_tab, tab, t, feats, tag):
         raise LeakError(f"{tag}: moved vitals/filters at weeks ≤ t: {leak}")
 
 
+def _c9(inst, frames, base, B, P, t, R, series, ev_sid, say) -> dict:
+    out = {}
+    bR = at(B(perturb(frames, inst, ev_sid, t - W(R), units=[P])), inst, P, t)
+    if not _eq(bR["already_in_event"], True):
+        raise LeakError(f"C9 refractory: a crossing at t−{R} (R = refractory_weeks) did not set already_in_event at "
+                        f"(primary, t) — the refractory is ignored or shorter than declared")
+    if moved(base, bR, ["y", "outcome_unknown"]):
+        raise LeakError(f"C9 refractory: a crossing at t−{R} moved the label at (primary, t): {moved(base, bR, ['y', 'outcome_unknown'])}")
+    lk = int(inst.cfg["label"]["last_known_weeks"])
+    carry = {t - W(R - j) for j in range(lk)}                       # weeks a crossing at t−R−1 could be carried into
+    if t - W(gap_week(inst, ev_sid)) in carry:
+        out["boundary"] = f"skipped: the primary's gap week t−{gap_week(inst, ev_sid)} would carry a t−{R + 1} crossing in"
+    else:
+        bR1 = at(B(perturb(frames, inst, ev_sid, t - W(R + 1), units=[P])), inst, P, t)
+        if not _eq(bR1["already_in_event"], False):
+            raise LeakError(f"C9 refractory: a crossing at t−{R + 1} set already_in_event at (primary, t) — the refractory "
+                            f"is longer than the declared {R} weeks")
+        out["boundary"] = "ok"
+    out["bites"] = "ok"
+    if series == "accumulating":
+        out["episode"] = _c9_episode(inst, frames, B(frames), P, t, R)
+    say(f"C9 ✅ refractory R = {R}: a crossing at t−{R} drops (primary, t), at t−{R + 1} {out['boundary']}; y unmoved"
+        + (f" · episode: {out['episode']['crossing_runs']} crossing runs, {out['episode']['dropped_by_refractory']} weeks "
+           f"dropped by the refractory alone, {out['episode']['dip_weeks_dropped']}/{out['episode']['dip_weeks']} dip weeks dropped"
+           if out.get("episode", {}).get("checked") else ""))
+    return out
+
+
+def _c9_episode(inst, frames, tab, P, t, R) -> dict:
+    """The accumulating world's past episode, checked against the RAW frame (not the label's code): at every primary week
+    from the episode's start to R + 2 weeks past its last crossing, already_in_event == the raw weekly maximum crossed at
+    some week in w−R … w. Needs label.signal = weekly_max(value) — otherwise said, not checked."""
+    if inst.cfg["label"]["signal"].replace(" ", "") != "weekly_max(value)":
+        return {"checked": False, "reason": f"label.signal {inst.cfg['label']['signal']!r} is not weekly_max(value)"}
+    thr = float(inst.event["threshold"])
+    d = frames[inst.event["event_variable_stream"]]
+    d = d[d["unit"] == P]
+    wmax = d.groupby(week_start(d["date"]).values)["value"].max()
+    e0 = week_start([t - W(EPISODE_START_WEEKS)]).iloc[0]
+    crossed = wmax[wmax.ge(thr)]
+    if crossed.empty:
+        raise LeakError("C9 episode: the accumulating world never crossed — the episode is vacuous")
+    weeks = pd.date_range(e0, crossed.index.max() + W(R + 2), freq="7D")
+    cw = set(crossed.index)
+    runs = sum(1 for w in sorted(cw) if (w - W(1)) not in cw)
+    if runs < 2:
+        raise LeakError(f"C9 episode: {runs} crossing run — the world has no flicker for the refractory to act on")
+    ucol = inst.cfg["grid"].get("unit_column", "unit")
+    rows = tab[(tab[ucol] == P) & tab["week"].isin(weeks)].set_index("week")["already_in_event"]
+    bad, by_r = [], 0
+    for w in weeks:
+        exp = any((w - W(j)) in cw for j in range(R + 1))
+        got = bool(rows.get(w, False))
+        if got != exp:
+            bad.append(f"{w.date()}: expected {exp}, label {got}")
+        by_r += exp and w not in cw
+    if bad:
+        raise LeakError(f"C9 episode: already_in_event disagrees with 'crossed in w−{R}…w' on the raw frame: {bad[:4]}")
+    first, last = min(cw), max(cw)
+    dips = [w for w in weeks if first < w < last and w not in cw]          # between the runs: the flicker's gap
+    return {"checked": True, "crossing_runs": runs, "weeks": len(weeks), "dropped_by_refractory": int(by_r),
+            "dip_weeks": len(dips), "dip_weeks_dropped": int(sum(bool(rows.get(w, False)) for w in dips))}
+
+
 # -- the test -------------------------------------------------------------------------------------------------------
 def run(inst: Instance, verbose: bool = True) -> dict:
     say = print if verbose else (lambda *a, **k: None)
@@ -295,11 +404,15 @@ def run(inst: Instance, verbose: bool = True) -> dict:
     feats, ev_sid = inst.feature_names, inst.event["event_variable_stream"]
     consts = list(inst.cfg.get("constants", {}))
     vit = {feature_name(v): v for v in inst.vitals}
-    frames = synth(inst, t)
+    series = event_series(inst)
+    from atlantis_core.label import refractory
+    R = refractory(inst.event)
+    frames = synth(inst, t, series=series)
     base_tab, _ = build(inst, frames)
     B = lambda f: build(inst, f)[0]
     base = at(base_tab, inst, P, t)
-    res = {"streams": {}, "vitals": len(feats), "patients": [p["unit"] for p in ps]}
+    res = {"streams": {}, "vitals": len(feats), "patients": [p["unit"] for p in ps], "event_series": series,
+           "refractory_weeks": R}
 
     nan_at_t = [f for f in feats if pd.isna(base[f])]
     if nan_at_t:
@@ -405,12 +518,15 @@ def run(inst: Instance, verbose: bool = True) -> dict:
         raise LeakError("C2b: t+H observed but outcome flagged unknown — presence looks short of its horizon")
     say(f"C2b ✅ horizon from inside: t+{H} flips y; t+{H} alone keeps the outcome known")
 
+    # C9 — the onset refractory bites, at its declared length, and never moves y (M-2a-i)
+    res["C9"] = _c9(inst, frames, base, B, P, t, R, series, ev_sid, say) if R else "n/a: no refractory_weeks declared"
+
     # C5 — the event in the MIRROR direction on the same streams (an above instance tests below, and vice versa)
     mirror = "below" if inst.event["direction"] == "above" else "above"
     mi = copy.deepcopy(inst)
     mi.event["direction"] = mirror
     mi.cfg["label"]["signal"] = "weekly_min(value)" if mirror == "below" else "weekly_max(value)"
-    fb = synth(mi, t, seed=1)
+    fb = synth(mi, t, seed=1, series="iid")
     tb_tab = build(mi, fb)[0]; tb = at(tb_tab, mi, P, t)
     t1_tab = build(mi, perturb(fb, mi, ev_sid, t + W(1)))[0]
     tH = at(build(mi, perturb(fb, mi, ev_sid, t + W(H)))[0], mi, P, t)
@@ -461,6 +577,7 @@ def write_receipt(inst: Instance, res: dict) -> Path:
     rec = {"receipt": "atlantis_core.selftest", "passed": True, "semantic_hash": semantic_hash(inst),
            "core_version": __version__, "selftest_code": selftest_code_hash(), "streams": sorted(inst.streams), "n_vitals": res["vitals"],
            "patients": res["patients"], "horizon": int(inst.event["horizon"]),
+           **{k: res[k] for k in ("event_series", "refractory_weeks") if k in res},   # what run() computed (M-2a-i)
            "passed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
     tmp = out.with_suffix(".tmp"); tmp.write_text(json.dumps(rec, indent=1) + "\n"); tmp.rename(out)
     return out

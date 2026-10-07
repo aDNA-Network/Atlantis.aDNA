@@ -268,3 +268,10 @@ def test_conform_writes_nothing(forked_master):
     before = sorted(p.relative_to(forked_master) for p in forked_master.rglob("*"))
     check(forked_master)
     assert sorted(p.relative_to(forked_master) for p in forked_master.rglob("*")) == before
+
+
+def test_persistent_world_conforms_declared(persistent_master, capsys):
+    """M-2a-i: the FKNMS shape (polygon MPA zones pinned by sha256 · a NOAACRW: event authority · refractory_weeks in
+    events.yaml, valid under atl_v0 0.5.0 · surveillance declared absent) conforms at the declared stage, items 1–8 and
+    11–12, with item 6 running its accumulating-world self-test."""
+    assert main(["--instance", str(persistent_master), "--items", "1-8,11,12", "--stage", "declared"]) == 0, capsys.readouterr().out
