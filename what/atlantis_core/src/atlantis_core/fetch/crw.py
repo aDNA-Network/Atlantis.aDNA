@@ -13,7 +13,8 @@ Latitude is stored descending. The ascending `[(lat0):1:(lat1)]` query that `ERD
 checked live at planning. The licence reads "available for use without restriction; credit NOAA CRW and the dataset DOI".
 The instance's posture ADR rules on it, including any upstream era caveat (CoralTemp's 1985–2002 OSTIA input).
 
-spec: {base (…/griddap/<dataset>.csv), variable, years: [y0, y1], chunk_years (default 5), pad_deg (default 0.05)}
+spec: {base (…/griddap/<dataset>.csv), variable, years: [y0, y1], chunk_years (default 5), pad_deg (default 0.05),
+       start (optional; noaacrwdhwDaily begins 1985-03-25 — see erddap.first_day)}
 
 **The patients come from the instance, not from the spec.** `bind(inst, sid)` takes the instance's polygon grid through
 `make_grid`, so the zone file's sha256 pin is checked before any request. It also takes the stream's own column names.

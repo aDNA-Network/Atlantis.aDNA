@@ -250,3 +250,19 @@ def test_duplicate_zone_ids_are_refused(tmp_path):
     twin = square(1, 34.9, 35.2, -76.6, -76.2)
     with pytest.raises(ValueError, match="duplicate seg"):
         PolygonGrid([SEG1, twin], "seg")
+
+
+def test_start_clamps_the_first_chunk_only(tmp_path):
+    """M-2a-ii: CRW's DHW begins 1985-03-25, and ERDDAP answers a range that starts before it with a 404 that is not
+    "No data", so a 1985 fetch gave up. `start` moves the first chunk's first day; later chunks still begin 1 January."""
+    from atlantis_core.fetch.erddap import first_day
+    f = crw(tmp_path, [SEG1])
+    spec = {**SPEC, "years": [1985, 1994], "start": "1985-03-25"}
+    q1, q2 = f.query(spec, 1985, 1989, [24.5, 24.6, -81.4, -81.3]), f.query(spec, 1990, 1994, [24.5, 24.6, -81.4, -81.3])
+    assert "[(1985-03-25T12:00:00Z):1:(1989-12-31T12:00:00Z)]" in q1 and "[(1990-01-01T12:00:00Z):1:(1994-12-31T12:00:00Z)]" in q2
+    assert first_day(SPEC, 2020) == "2020-01-01"                                   # absent: unchanged
+    for bad, why in (("1986-03-25", "first year"), ("25/03/1985", "ISO date")):
+        with pytest.raises(ValueError, match=why):
+            first_day({**spec, "start": bad}, 1985)
+    df = crw(tmp_path / "s", [SEG1]).fetch({**SPEC, "start": "2020-07-02"})        # through the real download path
+    assert len(df) == 2                                                            # the fake serves both days regardless
