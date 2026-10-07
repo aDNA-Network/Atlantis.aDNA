@@ -4,7 +4,7 @@ mission_id: M-2a
 plan_id: mission_m2a_fknms_fork_and_fetch
 title: "M-2a — FloridaKeysCoral.aDNA: fork · posture · persistent-event self-test · CRW data path · fetch · conform (fetched)"
 owner: stanley
-status: planned
+status: superseded   # split 2026-10-06 (operator ruling, AskUserQuestion) → M-2a-i + M-1f + M-2a-ii
 campaign: campaign_atlantis_genesis
 campaign_id: campaign_atlantis_genesis
 phase: P2
@@ -18,13 +18,15 @@ split_from: mission_m2_fknms_coral_instance
 aar_path: how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m2a_fknms_fork_and_fetch.md
 session: TBD
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-06
 last_edited_by: agent_proteus
 home_vault: Atlantis.aDNA
 tags: [mission, m2a, p2, opus, fknms, coral, mpa, fork, fetch, atlantis, tidewatch]
 ---
 
 # M-2a — FloridaKeysCoral.aDNA, from fork to fetched data
+
+> **Superseded 2026-10-06, split (operator ruling at the M-2a planning sitting).** The core survey found that this card could not go green without core changes. Those land Atlantis-side in **M-2a-i** (`mission_m2a_i_core_for_persistent_polygon_instances.md`). The horizon embargo runs as **M-1f**, and the fork and fetch become **M-2a-ii** (`mission_m2a_ii_fknms_fork_and_fetch.md`). Condition (c) is **MET**: CRW is reachable through `ERDDAPGriddap` on `coastwatch.noaa.gov`. The card is kept as written (SO-2).
 
 **Campaign:** `../campaign_atlantis_genesis.md` · **Phase:** P2 · **Tier:** opus. **Split from** `mission_m2_fknms_coral_instance.md`
 under the P1-exit gate ruling (2026-10-03: conditional GO). **Sibling:** `mission_m2b_fknms_model_and_board.md`.

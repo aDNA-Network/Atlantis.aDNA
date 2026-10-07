@@ -4,7 +4,7 @@ doc_id: mission_roster_p1_p5
 title: "Mission roster P1–P5 — Operation Tidewatch, re-chartered to the five layers (M-0 output)"
 status: active
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-06
 last_edited_by: agent_proteus
 mission: mission_m0_atlantis_genesis_planning
 campaign_id: campaign_atlantis_genesis
@@ -32,8 +32,11 @@ go in each card's `token_budget_actual` at close.
 | M-1d-ii ✅ | Pipeline lattice + runspec · BOARD generator (WI-8) · dataset-pair migration · contribution guide · `board --entries` | P1 | opus | ~80-100kT (actual ≈177) | M-1d-i | `missions/mission_m1d_ii_lattice_and_registries.md` |
 | M-1e ✅ | **P2 condition (a):** alert thresholds and rolling-fold tree counts fixed on validation (F-8 / WI-11) → board v2 · atl_v0 0.4.0 · v2 page | P1 | opus | ~110-160kT (actual ≈370 + III ≈260) | M-1d-ii | `missions/mission_m1e_eval_thresholds_on_validation.md` |
 | ~~M-2~~ | *re-carded 2026-10-03 (P1-gate condition (b)) → M-2a + M-2b; card kept as superseded* | P2 | — | — | — | `missions/mission_m2_fknms_coral_instance.md` |
-| M-2a | `FloridaKeysCoral.aDNA`: CRW-via-ERDDAP check · fork · posture · persistent-event self-test (full catalogue) · fetch · conform (fetched); NDBC dropped | P2 | opus | ~150-200kT | M-1d-ii, M-1e | `missions/mission_m2a_fknms_fork_and_fetch.md` |
-| M-2b | `FloridaKeysCoral.aDNA`: train · eval (thresholds on validation) · explain · instance page · board entry by memo → P2 gate | P2 | opus | ~150-200kT | M-2a | `missions/mission_m2b_fknms_model_and_board.md` |
+| ~~M-2a~~ | *split 2026-10-06 (operator ruling, M-2a planning) → M-2a-i + M-1f + M-2a-ii; condition (c) MET (CRW via `ERDDAPGriddap` on coastwatch.noaa.gov); card kept as superseded* | P2 | — | — | — | `missions/mission_m2a_fknms_fork_and_fetch.md` |
+| M-2a-i | atlantis_core for a persistent, polygon, gridded instance: CRW authority · grid sha256 pin · onset refractory · persistent self-test world (whole catalogue) · `CoralReefWatch` polygon fetcher · fork-skill Hestia step | P2 | opus | ~180-220kT + reviewer | M-1e | `missions/mission_m2a_i_core_for_persistent_polygon_instances.md` |
+| M-1f | Label-horizon embargo at every split boundary (WI-23) → board v3; placed before the fork so FKNMS's receipt is earned once | P2 | opus | ~120-170kT + reviewer | M-2a-i | `missions/mission_m1f_label_horizon_embargo.md` |
+| M-2a-ii | `FloridaKeysCoral.aDNA`: interview · fork · zone geometry (pointer + sha256) · posture + licence ruling · receipt · ratify · fetch · conform (fetched) · Hestia memo | P2 | opus | ~120-160kT + reviewer | M-2a-i, M-1f | `missions/mission_m2a_ii_fknms_fork_and_fetch.md` |
+| M-2b | `FloridaKeysCoral.aDNA`: train · eval (thresholds on validation) · explain · instance page · board entry by memo → P2 gate | P2 | opus | ~150-200kT | M-2a-ii | `missions/mission_m2b_fknms_model_and_board.md` |
 | M-3a | `skill_stream_discovery` — playbook §A as a runnable skill with the traps as checks | P3 | opus | 40-60kT | M-1d | `missions/mission_m3a_stream_discovery_skill.md` |
 | M-3b | Hypothesis ledger populated + `skill_feature_hypothesis_mining` + one literature-asserted driver tested by SHAP | P3 | opus | 100-150kT | M-2, M-3a | `missions/mission_m3b_hypothesis_ledger_and_mining.md` |
 | M-4 | Instance contract v1, steward governance set, consumer register, Exchange listing, first outside steward | P4 | fable | 90-140kT | M-2, M-3b | `missions/mission_m4_federation_and_stewards.md` |
@@ -52,5 +55,5 @@ Calibrated campaign estimate: **12–18 sessions** (seed said 8–14 for the nar
 
 ## Critical path
 
-M-0 ✅ → M-1a ✅ → M-1b-i ✅ → M-1b-ii-a ✅ → M-1b-ii-b ✅ → M-1d-i ✅ → M-1d-ii ✅ → **P1 gate ✅ (conditional GO)** → M-1e ✅ → M-2a → M-2b → **P2 gate** → M-3b → **P3 gate** → M-4 → **P4 gate** → M-5.
+M-0 ✅ → M-1a ✅ → M-1b-i ✅ → M-1b-ii-a ✅ → M-1b-ii-b ✅ → M-1d-i ✅ → M-1d-ii ✅ → **P1 gate ✅ (conditional GO)** → M-1e ✅ → M-2a-i → M-1f → M-2a-ii → M-2b → **P2 gate** → M-3b → **P3 gate** → M-4 → **P4 gate** → M-5.
 M-1c runs beside M-1a/M-1b; M-3a beside M-2.

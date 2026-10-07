@@ -6,7 +6,7 @@ display_name: "Operation Tidewatch"
 owner: stanley
 persona: proteus            # RULED 2026-10-02 at the P0-exit gate (ADR-001 ratified)
 status: active
-phase: P1                   # P0 gate MET 2026-10-02 · P1 gate MET 2026-10-03 — CONDITIONAL GO P2; condition (a) M-1e ✅ 2026-10-03 → P2 opens at M-2a
+phase: P1                   # P0 gate MET 2026-10-02 · P1 gate MET 2026-10-03 — CONDITIONAL GO P2; condition (a) M-1e ✅ 2026-10-03 → P2 open; M-2a split 2026-10-06 → M-2a-i (active)
 phase_count: 6
 mission_count: 10           # M-0 (done) + nine carded: M-1a M-1b M-1c M-1d · M-2 · M-3a M-3b · M-4 · M-5
 estimated_sessions: "12-18"
@@ -109,7 +109,8 @@ via wrapper. **Gate MET 2026-10-03 — CONDITIONAL GO P2** (operator, `AskUserQu
 fable first-hand verification was offered and not required). Conditions:
 - (a) the F-8 eval-threshold fix lands first → **M-1e**, board v2; **✅ MET 2026-10-03** (board v2: the same model, with thresholds fixed on validation and realised beside nominal; III 8/8; horizon spill disclosed and its embargo carded);
 - (b) M-2 is re-carded → **M-2a / M-2b**, with budgets from P1's observed overruns;
-- (c) CRW via ERDDAP is checked at M-2a open, and NDBC is dropped.
+- (c) CRW via ERDDAP is checked at M-2a open, and NDBC is dropped. **✅ MET 2026-10-06** (M-2a planning): CRW's own ERDDAP
+  (`coastwatch.noaa.gov/erddap/griddap/noaacrw{dhw,hotspot,sst,sstanomaly}Daily`) answers the `ERDDAPGriddap` query shape.
 
 Ruled in the same gate: ADR-002 A-1 ratified · contribution guide ratified (0.1.1) · C-004/C-009 graduation memo to
 III.aDNA.
@@ -118,6 +119,14 @@ III.aDNA.
 M-2 `FloridaKeysCoral.aDNA` — FKNMS zones × week · DHW onset · gridded-only vitals · no surveillance channel
 (ablation declared N/A, not skipped) · board entry landed. **Exit bar:** trained + explained + paged + on the board
 **without editing Atlantis code**; every deviation became a P1 template change. Ruling: `artifacts/p2_second_instance_ruling.md`.
+**M-2a split 2026-10-06** (operator, `AskUserQuestion`, at the M-2a planning sitting). The core survey found the FKNMS
+instance could not go green as carded without core changes, so:
+- **M-2a-i** makes those changes Atlantis-side: CRW authority · grid pin · onset refractory · persistent self-test world ·
+  `CoralReefWatch` polygon fetcher.
+- **M-1f** is the horizon embargo, board v3, placed before the fork.
+- **M-2a-ii** is the fork and fetch.
+
+The same sitting ruled the patients (FKNMS zones plus a polygon reducer, not rectangles) and the horizon (H = 8, one window).
 
 ### P3 — Knowledge lane (opus)
 M-3a `skill_stream_discovery` (playbook §A/§B as checks) · M-3b hypothesis ledger populated (≥ 25 rows, one
@@ -164,7 +173,7 @@ AAR · successor cards. **Exit bar:** AAR in this file; Atlantis joins the fleet
 gate. **M-1a complete 2026-10-02** (exemplar hygiene; AAR filed). **M-1c complete 2026-10-02** (`atl_v0` controls: 42, three
 worlds agree; `iii/` adopted, III review PASS-WITH-FINDINGS; AAR filed). **M-1b split** (operator, 2026-10-02) → **M-1b-i complete
 2026-10-02** (`atlantis_core` registries · fetch · grid · vitals · label · all-stream self-test; hab's SST row-lag defect found,
-calendar-correct ruled; III 11/11 fixed; AAR filed). M-1b-ii-a ✅ 2026-10-02 (eval · explain · board; port exact to 1e-12; board v1 0.8938 / 0.5388; T2 swap: ranking survives, explanation does not; III 8/8). M-1b-ii-b ✅ 2026-10-03 (site template with every word as instance copy; v1 page checked against its board entry field for field; `template_mapping_atl.yaml` + `--check`; `src/hab` archived in place, still the fetch path; III 10/10; ADR-002 A-1 proposed). M-1d split 2026-10-03 (operator ruling) → M-1d-i (fork from templates alone — the exit-bar path) + M-1d-ii (lattice · BOARD · dataset pairs · contribution guide). M-1d-i ✅ 2026-10-03 (atl_v0 0.3.0 · contract v0.2.0 · fetch gated on receipt + ratified posture · template_instance · fork · conform · skill · dry run: a fictional hypoxia instance forks from templates alone, items 1–8 and 11–12 green, no network; self-test made shape-general with C8; III 9/9; ≈ +130% over budget, operator ruled continue). M-1d-ii ✅ 2026-10-03 (pipeline lattice under three checks · closed-vocabulary runspec, plan only · BOARD.md generated, WI-8 closed · `board --entries` for instances · dataset-pair template fixed and three pairs, WI-18 closed · contribution guide draft; III 14/14; ≈ +77% over budget, operator ruled fix-all). **P1 gate MET 2026-10-03, conditional GO P2** (A-1 and the contribution guide ratified; C-004/C-009 graduation proposed). Next: **M-1e** (opus, F-8) → M-2a → M-2b → P2 gate.
+calendar-correct ruled; III 11/11 fixed; AAR filed). M-1b-ii-a ✅ 2026-10-02 (eval · explain · board; port exact to 1e-12; board v1 0.8938 / 0.5388; T2 swap: ranking survives, explanation does not; III 8/8). M-1b-ii-b ✅ 2026-10-03 (site template with every word as instance copy; v1 page checked against its board entry field for field; `template_mapping_atl.yaml` + `--check`; `src/hab` archived in place, still the fetch path; III 10/10; ADR-002 A-1 proposed). M-1d split 2026-10-03 (operator ruling) → M-1d-i (fork from templates alone — the exit-bar path) + M-1d-ii (lattice · BOARD · dataset pairs · contribution guide). M-1d-i ✅ 2026-10-03 (atl_v0 0.3.0 · contract v0.2.0 · fetch gated on receipt + ratified posture · template_instance · fork · conform · skill · dry run: a fictional hypoxia instance forks from templates alone, items 1–8 and 11–12 green, no network; self-test made shape-general with C8; III 9/9; ≈ +130% over budget, operator ruled continue). M-1d-ii ✅ 2026-10-03 (pipeline lattice under three checks · closed-vocabulary runspec, plan only · BOARD.md generated, WI-8 closed · `board --entries` for instances · dataset-pair template fixed and three pairs, WI-18 closed · contribution guide draft; III 14/14; ≈ +77% over budget, operator ruled fix-all). **P1 gate MET 2026-10-03, conditional GO P2** (A-1 and the contribution guide ratified; C-004/C-009 graduation proposed). M-1e ✅ 2026-10-03 (board v2). **M-2a split 2026-10-06** → M-2a-i → M-1f → M-2a-ii → M-2b → P2 gate; condition (c) MET.
 
 ## AAR (campaign — filled at P5)
 

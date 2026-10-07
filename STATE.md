@@ -1,15 +1,15 @@
 ---
 type: state
 status: p1_open
-phase: "P1 gate MET 2026-10-03 — CONDITIONAL GO P2; condition (a) M-1e ✅ 2026-10-03 → M-2a queued (P2 opens) → M-2b → P2 gate"
+phase: "P2 open — condition (a) M-1e ✅ 2026-10-03 · condition (c) ✅ 2026-10-06; M-2a split → M-2a-i (active) → M-1f → M-2a-ii → M-2b → P2 gate"
 campaigns: [campaign_atlantis_genesis]
-mission: mission_m2a_fknms_fork_and_fetch   # queued (opus); M-1e ✅ 2026-10-03 (board v2); P1 gate ✅ 2026-10-03 (conditional GO); M-1d-ii ✅ 2026-10-03; M-1d-i ✅ · M-1b-ii-b ✅ 2026-10-03; M-1b-ii-a ✅ · M-1b-i ✅ · M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
+mission: mission_m2a_i_core_for_persistent_polygon_instances   # ACTIVE (opus) 2026-10-06; M-2a split; M-1e ✅ 2026-10-03 (board v2); P1 gate ✅ 2026-10-03 (conditional GO); M-1d-ii ✅ 2026-10-03; M-1d-i ✅ · M-1b-ii-b ✅ 2026-10-03; M-1b-ii-a ✅ · M-1b-i ✅ · M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
 persona: proteus   # RULED 2026-10-02 (ADR-001 ratified)
 last_session: session_stanley_20261004_035631_m1e_thresholds_on_validation (opus)
 created: 2026-09-23
-updated: 2026-10-03
+updated: 2026-10-06
 last_edited_by: agent_proteus
-tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_complete, m1b_ii_a_complete, m1b_ii_b_complete, m1d_i_complete, m1d_ii_complete, p1_gate_met, p2_conditional_go, m1e_complete, board_v2, atl_v0_0_4_0, m2a_queued]
+tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_complete, m1b_ii_a_complete, m1b_ii_b_complete, m1d_i_complete, m1d_ii_complete, p1_gate_met, p2_conditional_go, m1e_complete, board_v2, atl_v0_0_4_0, m2a_split, m2a_i_active]
 ---
 
 # STATE — Atlantis.aDNA
@@ -33,6 +33,15 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
    `who/governance/contribution_guide.md` (draft).
 
 ## ⏭ QUEUED — Next Live Session
+
+> **2026-10-06 — M-2a-i ACTIVE** (session `session_stanley_20261007_023031_m2a_i_…`). At the M-2a planning sitting the operator
+> ruled:
+> - **split M-2a** → M-2a-i (core) → **M-1f** (embargo, WI-23 placed) → M-2a-ii (fork and fetch);
+> - **FKNMS zones plus a polygon reducer**;
+> - **H = 8, one window**.
+>
+> **Condition (c) MET:** CRW is served by `coastwatch.noaa.gov` ERDDAP through the `ERDDAPGriddap` query shape. The text below
+> is the pre-split queue, kept until this session closes and rewrites it.
 
 **M-1e CLOSED 2026-10-03 — P2 condition (a) MET; P2 opens at M-2a.** Board v2 (`what/board/entries/2026-10-03_gulf_karenia_brevis_v2.json`)
 is the same model as v1, with model bytes identical, AUROC 0.8938 / AUPRC 0.5388 and 141 trees. Its alert thresholds are
@@ -274,7 +283,7 @@ rolling fold selects its own tree count. atl_v0 is 0.4.0, and the v2 page is `si
 - ~~WI-18~~ **closed 2026-10-03 (M-1d-ii)** — the template is fixed and validated (schema copy beside it). The upstream
   note goes by memo (24 of 26 workspace `.dataset.yaml` fail it). Original text follows: `how/templates/template_dataset_pair/` fails the lattice-labs `dataset_yaml_schema.json` it claims (sha256
   placement, `storage.location`/`provider`, lineage keys). M-1d-ii fixes the template; the upstream note goes by memo.
-- WI-19 — *(P1 gate: NDBC dropped from M-2; CRW checked via `ERDDAPGriddap` at M-2a open.)* `NDBCStdmet` (and OBIS, GBIF, CRW) are declared, not built. The first instance with a buoy stream needs NDBC; it
+- WI-19 — *(P1 gate: NDBC dropped from M-2. **CRW: checked 2026-10-06, reachable via ERDDAP; the polygon `CoralReefWatch` fetcher is built at M-2a-i.**)* `NDBCStdmet` (and OBIS, GBIF, CRW) are declared, not built. The first instance with a buoy stream needs NDBC; it
   is built in `atlantis_core` (the P2 rule). M-2 (gridded-only) does not need it.
 - WI-20 — **graduation proposed 2026-10-03** (C-009 reached frequency 4 at M-1e, which strengthens the memo) (P1 gate ruling: memo filed, awaiting Argus + Stanley co-ratification at III.aDNA). III learning store: C-004 and C-009 are at frequency 3, graduation candidates for the ADR-003 ceremony at
   III.aDNA. Operator's call, at the P1 gate or after.
@@ -286,7 +295,7 @@ rolling fold selects its own tree count. atl_v0 is 0.4.0, and the v2 page is `si
   - **lattice-labs / Datasets.aDNA:** 24 of 26 workspace `.dataset.yaml` fail `dataset_yaml_schema.json`, and its
     `location.path` "absolute" is unsuited to public repos.
   - **DDX:** its runspec drops unknown keys rather than rejecting them.
-- WI-23 — **The label horizon crosses every split boundary** (M-1e III F-6; C-022). Disclosed on README 2b, the v2 page and board
+- WI-23 — *(**placed 2026-10-06:** M-1f, its own lane between M-2a-i and M-2a-ii.)* **The label horizon crosses every split boundary** (M-1e III F-6; C-022). Disclosed on README 2b, the v2 page and board
   v2. The fix is carded: `how/backlog/idea_label_horizon_embargo.md` → board v3, its own cause. The operator places it, before
   the P2 gate compares the exemplar with FKNMS.
 - WI-9 — Memo candidates after the gate (peer vaults read-only): ASOAtlas — greedy `sed` in `run_controls.sh`, untyped-postcondition

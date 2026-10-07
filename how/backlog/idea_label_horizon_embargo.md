@@ -2,10 +2,10 @@
 type: backlog
 doc_id: idea_label_horizon_embargo
 title: "Embargo the label horizon at every split boundary (M-1e III F-6) → its own board version"
-status: proposed
+status: carded   # → mission_m1f_label_horizon_embargo (placed 2026-10-06)
 priority: medium
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-06
 last_edited_by: agent_proteus
 origin: mission_m1e_eval_thresholds_on_validation
 tags: [backlog, eval, leakage, split, horizon, so9, atlantis_core, atlantis]
@@ -44,3 +44,6 @@ the v2 page's limits, and on board v2's notes. The fix lands as **a new board ve
 **When.** It goes before any steward-facing claim that rests on the early-stopped model's numbers, and before the P2 gate
 compares the exemplar with the FKNMS instance on the board. The operator decides whether it rides with M-2b or runs as its
 own small lane.
+
+**Placed 2026-10-06 (operator, AskUserQuestion, M-2a planning):** its own lane, **M-1f**, between M-2a-i and M-2a-ii →
+`how/campaigns/campaign_atlantis_genesis/missions/mission_m1f_label_horizon_embargo.md`.
