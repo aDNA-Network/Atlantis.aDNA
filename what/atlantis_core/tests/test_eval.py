@@ -42,8 +42,10 @@ def hab_port(exemplar_dir):
         pytest.skip("exemplar data/processed missing — run hab.build_features + hab.train first")
     inst = load_instance(exemplar_dir)
     i2 = copy.copy(inst)
-    # hab's after-the-fact readings (F-8), kept as modes so the port still reproduces metrics.json exactly
-    i2.cfg = {**inst.cfg, "eval": {**inst.cfg["eval"], "threshold_from": "test", "rolling_selection": "full_model"}}
+    # hab's after-the-fact readings (F-8), kept as modes so the port still reproduces metrics.json exactly; hab did not
+    # embargo the label horizon either (M-1f)
+    i2.cfg = {**inst.cfg, "eval": {**inst.cfg["eval"], "threshold_from": "test", "rolling_selection": "full_model"},
+              "split": {**inst.cfg["split"], "embargo_weeks": "none"}}
     eid = inst.cfg["label"]["event"]
     i2.events = {**inst.events, eid: {**inst.event, "threshold": float(np.log10(1 + inst.event["threshold"]))}}
     df = pd.read_parquet(proc / "features.parquet")

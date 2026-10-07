@@ -31,8 +31,18 @@ PLANTS = {
     "P2_selection_eras_through_Y": ("sdf, s_eras, _ = fold(Y - 1)", "sdf, s_eras, _ = fold(Y)"),
     "P3_lead_threshold_from_test": ('alert_threshold=r["test"]["alert_rates"][rate_key(budget)]["threshold"]',
                                     "alert_threshold=float(np.quantile(p_test, 1 - budget))"),
-    "P4_fixed_from_test_scores": ("fixed = fixed_thresholds(p_val, rates, tf)",
+    "P4_fixed_from_test_scores": ("fixed = fixed_thresholds(L.predict(vm, val), rates, tf)",
                                   "fixed = fixed_thresholds(L.predict(final, test), rates, tf)"),
+    # M-1f: the embargo removed or mis-cut in eval's own code — each must fail by name at the boundary it opens (C-009)
+    "P5_main_stop_set_unembargoed": ('stop = embargo(val, s["test_start"], E)', "stop = val"),
+    "P6_fold_selection_train_unembargoed": ("s_tr, s_va = embargo(s_tr0, Y, E), embargo(s_va0, Y + 1, E)",
+                                            "s_tr, s_va = s_tr0, embargo(s_va0, Y + 1, E)"),
+    "P7_embargo_one_week_short": ("return frame[_window_end(frame, weeks).dt.year < next_start]",
+                                  "return frame[_window_end(frame, weeks - 1).dt.year < next_start]"),
+    "P8_fold_refit_unembargoed": ("pp = L.predict(L.refit_fixed(embargo(tr, Y + 1, E), finfo), te)",
+                                  "pp = L.predict(L.refit_fixed(tr, finfo), te)"),
+    "P9_main_refit_on_full_val": ("final = R.refit_fixed(pd.concat([train, stop]), info)",
+                                  "final = R.refit_fixed(full, info)"),
 }
 
 
@@ -168,6 +178,21 @@ def test_planted_fold_defects_refused_in_the_real_loop(built, plant, match):
         _run(planted(plant), inst, frames, m)
 
 
+@pytest.mark.parametrize("plant, match", [
+    ("P5_main_stop_set_unembargoed", r"embargo val→test: 34 rows' label windows cross into 2020"),
+    ("P6_fold_selection_train_unembargoed", r"embargo fold 2015→2016 train→stop: \d+ rows' label windows cross into 2015"),
+    ("P7_embargo_one_week_short", r"embargo train→val: \d+ rows' label windows cross into 2017 \(latest ends 2017-01-0"),
+    ("P8_fold_refit_unembargoed", r"embargo fold 2015→2016 refit→test: \d+ rows' label windows cross into 2016"),
+    ("P9_main_refit_on_full_val", r"embargo refit→test: 34 rows' label windows cross into 2020"),
+])
+def test_planted_embargo_defects_refused_in_the_real_loop(built, plant, match):
+    """M-1f (C-009, C-022): a crossing row that reaches the learner fails by name. The check reads the event's H on the
+    frame the learner received, so it sees each plant whatever the embargo code believes it did."""
+    inst, frames, m = built
+    with pytest.raises(ObligationError, match=match):
+        _run(planted(plant), inst, frames, m)
+
+
 def test_clean_loop_selects_on_the_frames_it_fitted(built):
     inst, frames, m = built
     res, _ = _run(ev_mod, inst, frames, m)
@@ -269,7 +294,8 @@ def test_v2_differs_from_v1_by_f8_alone(v2, exemplar_dir):
     assert {k: ev[k] for k in UNMOVED} == {k: old["evaluation"][k] for k in UNMOVED}
     assert "141 trees" in ev["learner"] and ev["learner"] == old["evaluation"]["learner"]
     x = old["evaluation_extras"]
-    assert res["semantic_hash"] == x["semantic_hash"] == semantic_hash(inst) == "acfa22c6e4"
+    unembargoed = copy.copy(inst); unembargoed.cfg = {**inst.cfg, "split": {**inst.cfg["split"], "embargo_weeks": "none"}}
+    assert res["semantic_hash"] == x["semantic_hash"] == semantic_hash(unembargoed) == "acfa22c6e4"   # v2 ran before M-1f
     assert {k: shap[k] for k in x["shap_summary"]} == x["shap_summary"]
     sens = res["sensitivity"]
     assert [round(sens[k], 4) for k in ("test_auroc", "test_auprc")] == [x["sensitivity"][0][k] for k in ("test_auroc", "test_auprc")]
