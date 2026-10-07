@@ -9,7 +9,7 @@ forecast** (SO-4). No data lives here, and nothing is fetched on import or in th
 cd what/atlantis_core && uv sync && .venv/bin/python -m pytest              # offline; the port checks skip without data/processed
 .venv/bin/python -m atlantis_core.selftest --instance ../exemplars/gulf_karenia_brevis   # SO-7 · writes the fetch gate's receipt
 .venv/bin/python -m atlantis_core.fetch --instance ../exemplars/gulf_karenia_brevis --verify   # pins re-hashed, no network
-.venv/bin/python -m atlantis_core.run --instance ../exemplars/gulf_karenia_brevis [--out outputs/atlantis_core_v2]   # → <out>/ (default outputs/atlantis_core)
+.venv/bin/python -m atlantis_core.run --instance ../exemplars/gulf_karenia_brevis [--out outputs/atlantis_core_v3]   # → <out>/ (default outputs/atlantis_core)
 .venv/bin/python -m atlantis_core.board --instance ../exemplars/gulf_karenia_brevis --version N --run-date YYYY-MM-DD [--outputs <out>] [--vs <entry>]
 ```
 
@@ -106,9 +106,9 @@ cd what/atlantis_core && uv sync && .venv/bin/python -m pytest              # of
 | `vitals.build` | registries + frames → table (grid rows, one column per vital in registry order) |
 | `label` | direction-aware label (`above`: future max ≥ thr · `below`: future min ≤ thr), already-in-event and unknown-outcome drops; the onset refractory `refractory_weeks` (M-2a-i; absent = 0, the same expression) widens the already-in-event drop to t−R…t; `finalize` reports both drop counts |
 | `selftest` | the all-stream leakage test (below); a green CLI run writes `outputs/atlantis_core/selftest_receipt.json` (semantic hash · streams · counts), the fetch gate — local and gitignored, re-earned by anyone because it needs no data; bound to the self-test's own code (a receipt from a weaker self-test is stale) |
-| `eval` | the temporal split from `atlantis.yaml`; **the learner is a config field** (`learners`: `xgboost` early-stopped on val then refit on train+val · `logistic` median-impute + missingness flags + standardise, every statistic fitted on training rows); `metrics` (alert budgets, calibration, climatology baseline); `lead` (direction-aware lead time on the full grid); ablations from vital groups; surveillance-only; the sensitivity threshold through `label.make`'s event override; `rolling` — rolling origin with **R7 honoured**: each fold's climatology eras end ≤ its train year and the moved vitals are rebuilt. `run` refuses to start with an unexecuted obligation. **F-8 (M-1e):** `eval.threshold_from: val` (default) fixes each budget's threshold on the selection model's out-of-sample val scores before test is scored and reports `realised_rate` beside `nominal_rate`; `eval.rolling_selection: per_fold` (default) early-stops each fold on its inner val year Y with eras clipped ≤ Y−1. Both are checked on what the learner actually received (a `FitRecorder` proxy; III M-1e F-1), and the eras against `clipped_eras(Y−1)`; the lead time records the threshold it read, and `_variant` refuses a result whose thresholds are not the ones fixed on validation (F-2). A stop year with < 5 positives skips its fold, and says so (`rolling_skipped`). `test` / `full_model` exist only so the port reproduces `hab` |
+| `eval` | the temporal split from `atlantis.yaml`; **the learner is a config field** (`learners`: `xgboost` early-stopped on val then refit on train+val · `logistic` median-impute + missingness flags + standardise, every statistic fitted on training rows); `metrics` (alert budgets, calibration, climatology baseline); `lead` (direction-aware lead time on the full grid); ablations from vital groups; surveillance-only; the sensitivity threshold through `label.make`'s event override; `rolling` — rolling origin with **R7 honoured**: each fold's climatology eras end ≤ its train year and the moved vitals are rebuilt. `run` refuses to start with an unexecuted obligation. **F-8 (M-1e):** `eval.threshold_from: val` (default) fixes each budget's threshold on the selection model's out-of-sample val scores before test is scored and reports `realised_rate` beside `nominal_rate`; `eval.rolling_selection: per_fold` (default) early-stops each fold on its inner val year Y with eras clipped ≤ Y−1. Both are checked on what the learner actually received (a `FitRecorder` proxy; III M-1e F-1), and the eras against `clipped_eras(Y−1)`; the lead time records the threshold it read, and `_variant` refuses a result whose thresholds are not the ones fixed on validation (F-2). A stop year with < 5 positives skips its fold, and says so (`rolling_skipped`). `test` / `full_model` exist only so the port reproduces `hab`. **Embargo (M-1f):** `split.embargo_weeks` (absent → the event horizon H; `none` → off, v2's reading, port only) drops from each fit / stop set the rows whose label window t+1…t+H reads the period that set must not see — selection-train → stop set, stop set → test, refit → test, main split and every fold; the train tail returns for the refit. `check_label_windows` checks every boundary on the frames the learner received, reading the event's H, never the setting. The result carries `embargo` (rows and positives dropped, latest window end, and the measured spill, `horizon_spill`) |
 | `explain` | interventional TreeExplainer over a train-only background, additivity a hard check, interactions; exact linear SHAP for `logistic`; sums by `group` and `tag` from `features.yaml`. `explain.whatif`: scenarios are config — a raw stream scaled over a period, the vitals re-derived through `vitals.build`, refused without a `lever` vital or across a climatology era; scaling a non-lever station is reported |
-| `board` | `project` → the **closed** `AtlEvaluation`, validated against the committed JSON Schema with its format checker; `emit` → a GREEN entry with `evaluation_extras` beside it; refuses unhonoured obligations, and (M-1e) any budget, lead time or swap whose threshold was not fixed on validation, a missing realised rate, or rolling folds not selected per fold (`assert_thresholds_fixed`); `assert_green` rejects per-patient content |
+| `board` | `project` → the **closed** `AtlEvaluation`, validated against the committed JSON Schema with its format checker; `emit` → a GREEN entry with `evaluation_extras` beside it; refuses unhonoured obligations, and (M-1e) any budget, lead time or swap whose threshold was not fixed on validation, a missing realised rate, or rolling folds not selected per fold (`assert_thresholds_fixed`); (M-1f) a result whose embargo is missing, off, shorter than the horizon, or unchecked at any boundary of the headline, a swap or a fold (`assert_embargo`) — `embargo_weeks` and the split text are written from the checked result; `assert_green` rejects per-patient content |
 | `lattice` · `runspec` · `datasets` | M-1d-ii, above |
 | `run` | the instance end to end → `--out` (default `outputs/atlantis_core/`; metrics · shap_summary · whatif · model · `learner_swap_<kind>.json`), processed tables → `data/processed/<basename of --out>/` |
 
@@ -238,26 +238,36 @@ own answer. Tampa's scenario scales gauge 02304500, which is not a lever; `hab` 
 ## Known limits of eval and explain (SO-9)
 
 Items 1–2 were inherited from `hab` (M-1b-ii-a III F-8), disclosed on board v1, and **fixed at M-1e** (board v2,
-`what/board/entries/2026-10-03_gulf_karenia_brevis_v2.json`). The `test` / `full_model` modes keep them reproducible for the port
+`what/board/entries/2026-10-03_gulf_karenia_brevis_v2.json`). Item 2b was found at M-1e's review and **fixed at M-1f** (board v3,
+`what/board/entries/2026-10-07_gulf_karenia_brevis_v3.json`; the figures below are v3's). The `test` / `full_model` modes keep them reproducible for the port
 only; the board refuses them. What remains is named under each.
 
 1. ~~**Alert thresholds are quantiles of the test scores.**~~ **Fixed:** each threshold is a quantile of the train-only selection
    model's validation scores, set before test is scored; lead time reads the same threshold. **Residual — drift.** The rate a fixed
    threshold actually flags moves with the event rate and the model. In the exemplar every realised test rate is below
-   nominal (0.0378 / 0.0811 / 0.1933 at 5 / 10 / 20%). The likely reasons are validation prevalence 0.101 against test's 0.077,
+   nominal (0.0409 / 0.0799 / 0.1921 at 5 / 10 / 20%; v2 0.0378 / 0.0811 / 0.1933). The likely reasons are validation prevalence 0.101 (0.104 on the embargoed stop set) against test's 0.077,
    and thresholds read from the selection model while test is scored by the train+val refit. **Neither is proven.** Compare
    budgets at matched realised rates, never at a shared nominal label.
 2. ~~**The rolling folds reuse the full model's tree count.**~~ **Fixed:** each fold early-stops on its own inner validation
    year (eras clipped ≤ Y−1), so no fold is tuned on its test year's rows. **Residual — noise.** One year is a small stopping set,
-   and the exemplar's fold counts range from 63 to 623 trees. The panel now measures the method as a steward would run it,
+   and the exemplar's fold counts range from 52 to 835 trees (v2: 63 to 623). The panel now measures the method as a steward would run it,
    selection included, and is not comparable fold for fold with v1's.
-2b. **The label horizon crosses every boundary (III M-1e F-6, disclosed; operator ruling 2026-10-03).** A week's label reads
-   t+1…t+H, so the last H weeks of a training or stopping set are labelled by onsets in the period after it. That holds for the main
-   split by construction (late-2019 rows can be labelled by early-2020 onsets, and the 141-tree early stop reads them; not yet measured there) and for each fold's stopping
-   year (e.g. stop year 2022: 10 of 31 positives labelled by 2023 onsets). The checks above test calendar years, which is a proxy
-   (C-018 class). Thresholds are unaffected, because they are quantiles of scores, not labels. **The fix is carded** as a horizon
-   embargo before every boundary: `how/backlog/idea_label_horizon_embargo.md`. It lands as its own board version, because it moves
-   the headline model.
+2b. ~~**The label horizon crosses every boundary.**~~ **Fixed (M-1f):** every fit and stop set drops the rows whose label window
+   t+1…t+H reads the period after it (`split.embargo_weeks`, default H), and each boundary is checked on the frames the learner
+   received against the event's H, not against row years (C-018, C-022). **Measured before the cut** (exemplar, H = 4):
+   - main split: 25 of 7,971 training region-weeks (3 of 920 positives) read 2017; 34 of 1,193 validation region-weeks (1 of
+     121 positives) read 2020;
+   - fold stop years: up to 10 of 31 positives (2022, read by 2023), as the M-1e review counted.
+
+   The headline moved little (141 → 146 trees; AUROC 0.8938 → 0.8950, AUPRC 0.5388 → 0.5414). `none` reproduces v2 in every number.
+
+   **Residuals:**
+   - **A seasonal hole at each boundary.** The last H weeks of each set (December, for H = 4 and year boundaries) are never
+     fitted or stopped on next to that boundary. How much that costs depends on where the ecosystem's season falls.
+   - **The check covers labels only.** That vitals read only the past is the self-test's proof (SO-7), not this check's.
+   - **Thresholds still read every validation week's scores.** This is deliberate (a budget is per year, and a score reads no
+     label). The embargoed rows still carry `split = train`/`val` in `all_scored`, so the SHAP background may sample a
+     training-tail row, which is features only.
 
 **Two limits on reading an explanation:**
 3. **Collinear vitals split attribution.** Read `group_net_mean_abs_shap` (|Σ φ| within a group) beside the abs-sums. Under

@@ -35,6 +35,10 @@ horizon embargo) have closed, so the instance's self-test receipt is earned once
 - **Patients:** FKNMS management zones (`unit_kind: mpa_zone`, parent WDPA:2347), reduced by the `CoralReefWatch` polygon
   mask. Rectangles are not used.
 - **Horizon:** H = 8, a single window t+1…t+8. Lead time shows how much warning comes 4 or more weeks ahead.
+- **Embargo (M-1f, landed 2026-10-07):** `split.embargo_weeks` defaults to H = 8, so it is left out of the fork. Each fit and
+  stop set loses the 8 weeks before the period after it: the last 8 weeks of a year (November–December, when DHW usually
+  decays after the late-summer peak) at every boundary. Read the `embargo` block in `metrics.json` (rows and positives dropped, and the spill) with the steward. If a stop year falls
+  under 5 positives, its fold is skipped and the run says so.
 
 ## Interview starting point (the steward rules each item; these are proposals)
 

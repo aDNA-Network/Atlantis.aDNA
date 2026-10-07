@@ -2,10 +2,10 @@
 type: backlog
 doc_id: idea_label_horizon_embargo
 title: "Embargo the label horizon at every split boundary (M-1e III F-6) → its own board version"
-status: carded   # → mission_m1f_label_horizon_embargo (placed 2026-10-06)
+status: done   # M-1f, 2026-10-07 → board v3 (was: carded → mission_m1f_label_horizon_embargo, placed 2026-10-06)
 priority: medium
 created: 2026-10-03
-updated: 2026-10-06
+updated: 2026-10-07
 last_edited_by: agent_proteus
 origin: mission_m1e_eval_thresholds_on_validation
 tags: [backlog, eval, leakage, split, horizon, so9, atlantis_core, atlantis]
@@ -47,3 +47,11 @@ own small lane.
 
 **Placed 2026-10-06 (operator, AskUserQuestion, M-2a planning):** its own lane, **M-1f**, between M-2a-i and M-2a-ii →
 `how/campaigns/campaign_atlantis_genesis/missions/mission_m1f_label_horizon_embargo.md`.
+
+**Done 2026-10-07 (M-1f).** `split.embargo_weeks` (default H) cuts every fit and stop set at every boundary, and
+`check_label_windows` checks each one on the frames the learner received. Board v3 is
+`what/board/entries/2026-10-07_gulf_karenia_brevis_v3.json`.
+- **The main split, measured:** 3 of 920 training positives and 1 of 121 validation positives crossed. The table above
+  reproduces exactly as the count of crossing positives.
+- **The headline:** 141 → 146 trees; AUROC 0.8938 → 0.8950. `none` reproduces v2 in every number.
+- **The AAR:** `how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m1f_label_horizon_embargo.md`.

@@ -11,6 +11,11 @@ monitoring programme can absorb. The explainer site walks the whole thing, inclu
 
 ## Results (S329 run, 2026-09-23)
 
+> **These are v0's numbers, kept as the record of the origin run.** The live record is the board
+> (`what/board/BOARD.md`). The latest version is **v3** (2026-10-07, M-1f), where every fit and stop set is cut with a 4-week
+> label-horizon embargo: 146 trees, test AUROC 0.8950, AUPRC 0.5414, on the same test set. Its limits are in
+> `what/atlantis_core/README.md` §Known limits.
+
 Modelling set: **10,804 region-weeks, 1,168 onsets (10.8%)** after dropping
 1,481 already-in-bloom weeks and 1,800 unknown-outcome weeks. Test = 2020–2023, scored once.
 
