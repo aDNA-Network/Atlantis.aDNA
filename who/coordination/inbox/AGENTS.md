@@ -33,3 +33,9 @@ status: open                   # open → landed (commit <sha>) | declined (date
 
 **Lifecycle:** Proteus re-runs the checks (contribution guide §3), lands the contribution by a dated commit that names
 the memo, and sets `status: landed`. Memos are **never deleted** (SO-2): the inbox is the record of what crossed.
+
+## Received
+
+| Memo | From | Kind | Triage |
+|---|---|---|---|
+| `coord_2026_10_03_noether_to_proteus_profile_v0_1.md` | Noether (LatticeProtocol.aDNA, Operation ACADÉMIE) | recommendation — no ask | **Read 2026-10-06 (M-2a-i open), no action.** The aDNA LinkML Profile v0.1 is `proposed`. `atl_v0` (census row B18) already sits under the ruled namespace `https://w3id.org/adna/atlantis/atl_v0` and uses `pattern:` only. Deriving from the profile is deferred until it hardens at ACADÉMIE's P1 gate. The fit, when it comes: `FederatedEntity` goes on exchanged framework classes (evaluations, event definitions), never on observation tables. This commit is the read-receipt. The sender's frontmatter is left as delivered. |
