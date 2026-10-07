@@ -99,11 +99,24 @@ def test_rolling_origin_obligation_recorded(exemplar_dir):
     lambda i: i.cfg["eval"].__setitem__("surveillance_only", "n_samples_t0"),
     lambda i: i.vitals[0].__setitem__("group", "other"),
     lambda i: i.cfg["learner"]["params"].__setitem__("max_depth", 5),
+    lambda i: i.cfg["split"].__setitem__("embargo_weeks", 6),                # M-1f
+    lambda i: i.cfg["split"].__setitem__("embargo_weeks", "none"),
+    lambda i: next(iter(i.events.values())).__setitem__("horizon", 6),      # the default embargo follows the horizon
 ])
 def test_semantic_hash_moves_on_training_change(exemplar_dir, fn):
     a = load_instance(exemplar_dir); h = semantic_hash(a)
     fn(a)
     assert semantic_hash(a) != h
+
+
+def test_semantic_hash_reads_the_resolved_embargo(exemplar_dir):
+    """M-1f: absent ≡ the horizon (4) ≡ an explicit 4; `none` ≡ 0 hashes as v2's split did (board v1/v2's acfa22c6e4)."""
+    def h(E=None):
+        a = load_instance(exemplar_dir)
+        if E is not None:
+            a.cfg["split"]["embargo_weeks"] = E
+        return semantic_hash(a)
+    assert h() == h(4) != h("none") == h(0) == "acfa22c6e4"
 
 
 def test_atlantis_yaml_matches_config_yaml(exemplar_dir):

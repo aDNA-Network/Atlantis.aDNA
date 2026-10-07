@@ -26,7 +26,8 @@ label:   # the machine half of the event (events.yaml carries the ruling in word
   presence: "weekly_count(value)" # 0 over t+1..t+H → outcome unknown
   last_known_weeks: {{last_known_weeks}}
 
-split:   # temporal; the test window is scored once (contract item 8)
+split:   # temporal; the test window is scored once (contract item 8). embargo_weeks (absent → the event horizon, H):
+         # each fit / stop set drops the rows whose label window t+1…t+H reads the period after it (M-1f); `none` is off
   {{split_block}}
 
 surveillance:   # contract item 5 (R8): declared present (a stream with surveillance_channel: true), or absent with a reason

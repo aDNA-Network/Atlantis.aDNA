@@ -102,6 +102,10 @@ def semantic_hash(inst: Instance, learner: dict | None = None) -> str:
     cfg = dict(inst.cfg)
     if learner is not None:
         cfg["learner"] = learner
+    if "split" in cfg:   # M-1f: the embargo as RESOLVED — absent means the event horizon, so absent must move the hash;
+        from atlantis_core.eval import embargo_weeks   # `none` (off) is hashed as v2's split was, so acfa22c6e4 re-derives
+        E = embargo_weeks(cfg["split"], inst.event["horizon"])
+        cfg["split"] = {**{k: v for k, v in cfg["split"].items() if k != "embargo_weeks"}, **({"embargo_weeks": E} if E else {})}
     payload = {
         "config": {k: (_strip_streams(cfg[k]) if k == "streams" else cfg[k]) for k in TRAINING_SECTIONS if k in cfg},
         "eval": {k: (cfg.get("eval") or {}).get(k) for k in EVAL_TRAINING_KEYS},

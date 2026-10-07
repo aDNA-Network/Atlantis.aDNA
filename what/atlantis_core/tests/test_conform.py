@@ -96,6 +96,8 @@ DEFECTS = [
     (8, edit("atlantis.yaml", lambda c: c["split"].__setitem__("val_start", 2016)), "not temporal"),
     (8, edit("atlantis.yaml", lambda c: c["split"].__setitem__("test_end", "2023")), "integer years"),
     (8, edit("atlantis.yaml", lambda c: c["split"].__setitem__("rolling_origin_years", [2021, 2023])), "test past test_end"),
+    (8, edit("atlantis.yaml", lambda c: c["split"].__setitem__("embargo_weeks", 1)), "partial embargo still spills"),   # M-1f
+    (8, edit("atlantis.yaml", lambda c: c["split"].__setitem__("embargo_weeks", "off")), "embargo_weeks 'off'"),
     # 11 — mapping
     (11, lambda d: (d / "mapping.yaml").unlink(), "mapping.yaml missing"),
     (11, edit("mapping.yaml", lambda m: m["fence"]["never_project"].remove("scored_table")), "scored_table"),

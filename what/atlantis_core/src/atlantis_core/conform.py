@@ -356,6 +356,13 @@ def check(root, items=None, stage: str = "declared", selftest: bool = True) -> d
             ro = sp.get("rolling_origin_years") or []
             if ro and max(ro) + 1 > sp["test_end"]:
                 fail(8, f"rolling_origin_years {ro} test past test_end {sp['test_end']}")
+        ev8 = inst.events.get((cfg.get("label") or {}).get("event")) or {}
+        if isinstance(ev8.get("horizon"), int):   # M-1f: absent → the horizon; a partial embargo still spills (item 2 owns H)
+            from atlantis_core.eval import embargo_weeks
+            try:
+                embargo_weeks(sp, ev8["horizon"])
+            except ValueError as e:
+                fail(8, str(e))
 
     # -- 9 board entries / 10 pages (after a run) ---------------------------------------------------------------
     if 9 in R:

@@ -141,7 +141,8 @@ def test_entries_instance_side_emit_index_and_item9_reader(instance_copy, capsys
     inst = load_instance(instance_copy)
     validate(ent["evaluation"]); assert_green(ent)
     assert ent["evaluation"]["unit_ref"] == inst.cfg["board"]["unit_ref"]
-    assert ent["evaluation_extras"]["semantic_hash"] == semantic_hash(inst)
+    # M-1f: v2's outputs predate the embargo; this instance's config resolves it, so item 9's reader sees them as stale
+    assert ent["evaluation_extras"]["semantic_hash"] == "acfa22c6e4" != semantic_hash(inst) == "7b789afded"
     assert main(["--instance", str(instance_copy), "--version", "1", "--run-date", RUN, "--entries", str(e), *V2]) == 1  # SO-2
 
 
