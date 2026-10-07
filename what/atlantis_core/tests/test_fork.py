@@ -401,3 +401,23 @@ def test_fork_renders_the_sensitivity_threshold_and_it_moves_the_hash(tmp_path):
     with_s, without = load_instance(tmp_path / "s"), load_instance(tmp_path / "n")
     assert with_s.cfg["eval"]["sensitivity_threshold"] == 1.0 and "sensitivity_threshold" not in without.cfg["eval"]
     assert semantic_hash(with_s) != semantic_hash(without)
+
+
+def test_selftest_without_a_climatology_says_c6_is_na(tmp_path):
+    """M-2a-ii: an instance that declares no climatology (FKNMS) raised KeyError 'in_era_week' at C6 — every fixture had one.
+    Now C6 is n/a, said on the console and on the receipt; a declared climatology without its week is refused by name."""
+    import conftest
+    a = conftest.persistent_answers(); a.pop("climatology")
+    d = tmp_path / "nc"
+    assert fork_into(d, a) == 0
+    inst = load_instance(d)
+    assert "in_era_week" not in inst.cfg["selftest"] and not inst.cfg.get("climatology")
+    res = st.run(inst, verbose=False)
+    assert res["C6"] == {} and res["C6_status"] == "n/a: no climatology declared"
+    rec = json.loads(st.write_receipt(inst, res).read_text())
+    assert rec["C6_status"] == "n/a: no climatology declared" and st.receipt_problem(inst) is None
+    d2 = tmp_path / "c"
+    assert fork_into(d2, conftest.persistent_answers()) == 0
+    inst2 = load_instance(d2); inst2.cfg["selftest"].pop("in_era_week")
+    with pytest.raises(ValueError, match="in_era_week missing"):
+        st.run(inst2, verbose=False)

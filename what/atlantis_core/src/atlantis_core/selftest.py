@@ -579,10 +579,20 @@ def run(inst: Instance, verbose: bool = True) -> dict:
     res["C5"] = "ok"
     res["C5_direction"] = mirror
 
-    # C6 — declared climatology dependence, reported
-    te = pd.Timestamp(st["in_era_week"]); res["C6"] = {}
+    # C6 — declared climatology dependence, reported. M-2a-ii: an instance with no climatology (FKNMS: CRW's anomaly is
+    # computed upstream, against CRW's own MMM) has no era normal to report; that is said, never a silent skip (C-015).
+    clim = inst.cfg.get("climatology") or {}
+    res["C6"] = {}
+    if not clim:
+        res["C6_status"] = "n/a: no climatology declared"
+        say("C6 – n/a: no climatology declared, so no vital reads an era normal built here (an upstream product's own "
+            "climatology is invisible to this check)")
+    elif not st.get("in_era_week"):
+        raise ValueError("selftest.in_era_week missing: a declared climatology needs a week inside every era for C6 (fork "
+                         "writes it from the eras)")
+    te = pd.Timestamp(st["in_era_week"]) if clim else None
     anomaly_vitals = {f for f, v in vit.items() if "anomaly" in grammar.functions_used(grammar.parse(v["transform"], consts))}
-    for sid in (inst.cfg.get("climatology") or {}):
+    for sid in clim:
         tab_e = B(perturb(frames, inst, sid, te + W(1)))
         mv = moved_table(base_tab, tab_e, feats, upto=te)
         stray = sorted(set(mv) - anomaly_vitals)
@@ -616,7 +626,7 @@ def write_receipt(inst: Instance, res: dict) -> Path:
     rec = {"receipt": "atlantis_core.selftest", "passed": True, "semantic_hash": semantic_hash(inst),
            "core_version": __version__, "selftest_code": selftest_code_hash(), "streams": sorted(inst.streams), "n_vitals": res["vitals"],
            "patients": res["patients"], "horizon": int(inst.event["horizon"]),
-           **{k: res[k] for k in ("event_series", "refractory_weeks", "C9") if k in res},   # what run() computed (M-2a-i, III F-3)
+           **{k: res[k] for k in ("event_series", "refractory_weeks", "C9", "C6_status") if k in res},   # what run() computed (M-2a-i, III F-3)
            "passed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
     tmp = out.with_suffix(".tmp"); tmp.write_text(json.dumps(rec, indent=1) + "\n"); tmp.rename(out)
     return out
