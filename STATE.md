@@ -1,15 +1,15 @@
 ---
 type: state
-status: p1_open
-phase: "P2 open — conditions (a) ✅ 2026-10-03 · (c) ✅ 2026-10-06; M-2a-i ✅ · M-1f ✅ · M-2a-ii ✅ · M-2b ✅ 2026-10-08 (FloridaKeysCoral trained · paged · on the board) → P2 gate ⏭ (fable, operator-summoned)"
+status: p3_open
+phase: "P3 open — P2 gate MET 2026-10-08, CONDITIONAL GO P3 (a) M-2c before M-3b · (b) P3 re-carded ≈2.3× · (c) M-3b off the exemplar · (d) P4 bar before P4; M-2c ⏭ (opus) · M-3a"
 campaigns: [campaign_atlantis_genesis]
-mission: p2_gate   # QUEUED (fable, operator-summoned); M-2b ✅ 2026-10-08 (board v2 · core 0.6.1 · atl_v0 0.7.0 · III 8/8); M-2a-ii ✅ 2026-10-08 (forked · fetched · conforms · III 9/9 · core 0.5.3); M-1f ✅ 2026-10-07 (board v3); M-2a-i ✅ 2026-10-06; M-2a split 2026-10-06; M-1e ✅ 2026-10-03 (board v2); P1 gate ✅ 2026-10-03 (conditional GO); M-1d-ii ✅ · M-1d-i ✅ · M-1b-ii-b ✅ 2026-10-03; M-1b-ii-a ✅ · M-1b-i ✅ · M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
+mission: m2c   # QUEUED (opus); P2 gate ✅ 2026-10-08 (conditional GO P3; opus decision brief + III review of the gate case, PASS-WITH-FINDINGS 0/6/4/2); M-2b ✅ 2026-10-08 (board v2 · core 0.6.1 · atl_v0 0.7.0 · III 8/8); M-2a-ii ✅ 2026-10-08 (forked · fetched · conforms · III 9/9 · core 0.5.3); M-1f ✅ 2026-10-07 (board v3); M-2a-i ✅ 2026-10-06; M-2a split 2026-10-06; M-1e ✅ 2026-10-03 (board v2); P1 gate ✅ 2026-10-03 (conditional GO); M-1d-ii ✅ · M-1d-i ✅ · M-1b-ii-b ✅ 2026-10-03; M-1b-ii-a ✅ · M-1b-i ✅ · M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
 persona: proteus   # RULED 2026-10-02 (ADR-001 ratified)
-last_session: session_stanley_20261008_172828_m2b_fknms_model_and_board (opus)
+last_session: session_stanley_20261008_215226_p2_gate_rulings (opus)
 created: 2026-09-23
 updated: 2026-10-08
 last_edited_by: agent_proteus
-tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_complete, m1b_ii_a_complete, m1b_ii_b_complete, m1d_i_complete, m1d_ii_complete, p1_gate_met, p2_conditional_go, m1e_complete, board_v2, atl_v0_0_4_0, m2a_split, m2a_i_complete, atl_v0_0_5_0, core_0_4_0, crw_built, m1f_complete, board_v3, atl_v0_0_6_0, core_0_5_0, m2a_ii_complete, core_0_5_1, core_0_5_2, core_0_5_3, floridakeyscoral_forked, floridakeyscoral_fetched, m2b_complete, core_0_6_0, core_0_6_1, atl_v0_0_7_0, floridakeyscoral_on_board, p2_gate_requested]
+tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_complete, m1b_ii_a_complete, m1b_ii_b_complete, m1d_i_complete, m1d_ii_complete, p1_gate_met, p2_conditional_go, m1e_complete, board_v2, atl_v0_0_4_0, m2a_split, m2a_i_complete, atl_v0_0_5_0, core_0_4_0, crw_built, m1f_complete, board_v3, atl_v0_0_6_0, core_0_5_0, m2a_ii_complete, core_0_5_1, core_0_5_2, core_0_5_3, floridakeyscoral_forked, floridakeyscoral_fetched, m2b_complete, core_0_6_0, core_0_6_1, atl_v0_0_7_0, floridakeyscoral_on_board, p2_gate_met, p3_conditional_go, p3_open]
 ---
 
 # STATE — Atlantis.aDNA
@@ -34,43 +34,80 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
 
 ## ⏭ QUEUED — Next Live Session
 
-**M-2b ✅ 2026-10-08. The second instance — the first MPA — is trained, explained, paged and on the board. The P2 gate is requested.**
+**P2 gate MET 2026-10-08: CONDITIONAL GO P3.** The operator ruled it by `AskUserQuestion`, after an opus decision brief
+and a fresh-context III review of the gate case. That review is `…/artifacts/p2_gate_iii_review.md`: PASS-WITH-FINDINGS,
+0 blocker, 6 major, 4 minor, 2 nit. **Recorded deviation:** the gate ran on opus, not fable, by the operator's ruling.
+This is the second time (P1, P2), and the charter is not amended.
 
-- **Board `2026-10-08_florida_keys_coral_v2`** (GREEN, atl_v0 0.7.0, `method_demonstration`; v1 superseded on provenance
-  alone, III F-6). Test 2019–25, base rate 0.150: model **0.937 / 0.690** · climatology **0.919 / 0.601** · trend 0.781 /
-  0.520 · persistence 0.751 / 0.358. **The calendar knows most of it.**
-- **The shift (ruling 16):** base rate 1.31 / 7.59 / 15.01%; CITL −0.045 → −0.097; thresholds fixed on validation flag
-  8.8 / 20.3 / 28.6% at 5 / 10 / 20% (1.4–2×). **Lead censored at H** (67 of 105 at 8 wk). **No lever.**
-- **Page** `~/aDNA/FloridaKeysCoral.aDNA/site/florida_keys_coral_v1.html` (instance only). `conform` → 12 pass.
-- **Core 0.6.0 → 0.6.1** (`9ac40cf` · `671808b` · `28e5af4`; 694 tests). **atl_v0 0.7.0** (65 controls). Exemplar v4
-  outputs ≡ v3 on every number. Instance `6e031f6` · `88685c7` (pin `28e5af4`, hash `c07b7c0288`).
-- **Theses** re-cut (`40f9b3a` + III): T1 two-instance; T3, T10 tested on FKNMS; **T9 weak form supported (zero instance
-  patches), strong form not met (nine P1 template changes)** — the gate's question.
-- III PASS-WITH-FINDINGS 8/8; steward rulings 19–26. AAR `missions/aar/aar_m2b_fknms_model_and_board.md`.
+- **T9: the exit bar is met as worded; drop-in is not demonstrated.**
+  - There were zero instance patches, but under the card's "do not patch locally" rule that weak form could not fail (C-009).
+  - FKNMS forced **≈ 13–15** Atlantis changes once the M-2a-i set is counted. That is P4's baseline.
+- **Theses, as ruled:**
+  - T1: supported by two instances.
+  - T3 and T10: tested on one instance.
+  - **T11: untested at its terms** (no climatology at a budget, C-034).
+  - **T4: untested on FKNMS.**
+  - T2: its P2 swap was never run (C-033).
+  - T5's absence case and T12's DHW ≥ 8 run are recorded.
+  - T8: untested.
+- **Conditions:**
+  - (a) **M-2c** comes before M-3b.
+  - (b) P3 is re-carded at ≈ 2.3× the card top, with the reviewer counted.
+  - (c) M-3b targets FKNMS or a new instance, not the exemplar.
+  - (d) "No template change" for P4 is defined before P4 opens.
+- **Push:** a board README note now says instance refs resolve in the instance. FloridaKeysCoral is local-only, so its
+  entry's refs are not yet public. After the note, Atlantis was pushed.
+- **III:** C-009 → 7, C-030 → 2, C-032 → 2, plus new C-033 and C-034. The graduation memo was redrafted for all six; C-015
+  is below the bar, because `accepted` was never set. The Hestia memo flags Atlantis's stale row.
 
-**Next: the P2 gate** (fable, operator-summoned). **Pending operator acts:** the push of origin/main..main (gitleaks
-first); the WI-20 graduation candidates (C-004 · C-005 · C-009 · C-010 · C-015 · C-023); Hestia's router row.
+**Next: M-2c** (opus): `missions/mission_m2c_commensurable_board.md`. **M-3a** (opus) may run beside it, since they share
+no files.
 
-**Next Session Prompt (self-contained, the P2 gate):**
+**Pending operator acts:**
+- Deliver the graduation memo into `III.aDNA/who/coordination/`.
+- Deliver the Hestia memo into `Home.aDNA/who/coordination/inbox/`.
+- C-015's acceptance (local).
+- FloridaKeysCoral's remote, which is the owner's ruling.
 
-> You are Proteus in `~/aDNA/Atlantis.aDNA`, at **fable**, summoned by the operator for the **P2 exit gate**. SO-1: the
-> gate is the operator's; you prepare and recommend, never self-advance. Read, in order:
-> 1. STATE; the charter's P2 section (`how/campaigns/campaign_atlantis_genesis/campaign_atlantis_genesis.md`: exit bar
->    "trained + explained + paged + on the board **without editing Atlantis code**; every deviation became a P1 template
->    change") and `artifacts/p2_second_instance_ruling.md`;
-> 2. the M-2b AAR (§The numbers, §Findings, §III review, §Change) and the M-2a-ii AAR;
-> 3. `artifacts/thesis_register.md` (the M-2b re-cut, esp. T9 and T3's restated falsifier) and `what/board/BOARD.md`;
-> 4. the instance page's §6 and §11 (`~/aDNA/FloridaKeysCoral.aDNA/site/florida_keys_coral_v1.html`, via a local server).
+**Next Session Prompt (self-contained, M-2c, opus):**
+
+> You are Proteus in `~/aDNA/Atlantis.aDNA`, on **opus**, opening **M-2c**, which is P2-gate condition (a). Read, in order:
+> 1. STATE.
+> 2. The charter's §P2 gate record (`how/campaigns/campaign_atlantis_genesis/campaign_atlantis_genesis.md`).
+> 3. The card `missions/mission_m2c_commensurable_board.md`.
+> 4. `artifacts/p2_gate_iii_review.md` (G-3, G-4, G-7, G-12).
+> 5. The register's rows T2, T10 and T11.
+> 6. `what/board/README.md`.
+> 7. `what/atlantis_core/README.md` (the eval section), and `eval/metrics.py`'s climatology and threshold-fixing code.
 >
-> Open a session lease. Then: run an adversarial pass of your own (a fresh-context III review of the *gate case*, not of
-> M-2b's code) and put the gate to the operator with `AskUserQuestion` (or an ISS, `skill_create_iss`): **GO / conditional
-> GO / NO-GO for P3**, with the rulings it needs — T9's weak form vs the exit bar's wording; the thesis statuses; whether the
-> exemplar is re-entered at 0.7.0 (T10's commensurability) and a climatology-at-budget row (T11) before P3; the WI-20
-> graduation; the push. Record the ruling in the charter and STATE; draft the P3 card set only on GO.
+> Then probe `how/sessions/active/` and open a lease. If the card is too big for one sitting, put its split line
+> (M-2c-i core + schema + exemplar v4 / M-2c-ii FKNMS v3 memo + swap) to the operator with `AskUserQuestion` before
+> building. Build plant-first:
+> - climatology at budget, with thresholds fixed on validation and a new atl_v0 0.8.0 slot plus controls;
+> - a season-block paired interval;
+> - the `BOARD.md` lead column;
+> - exemplar board v4.
 >
-> Budget: ~80–120 kT plus the reviewer. SITREP at +50%.
+> FKNMS v3 is built in the instance and arrives by steward memo. Run SO-7's self-test if vitals or label code moves.
+> Review through `iii/` in a fresh context. Write the AAR. SITREP at the +50% line.
+>
+> Budget: ≈ 350 kT plus a reviewer of ≈ 200 kT.
 
 ## What's in place
+
+### P2 gate (2026-10-08, opus decision brief; session `…_215226_p2_gate_rulings`)
+
+- **The rulings:** conditional GO P3 with conditions (a)–(d); thesis statuses as the reviewer amended them; a board README
+  note, then the push; ACCUMULATE; the graduation memo redrafted.
+- **The III review of the gate case** (`artifacts/p2_gate_iii_review.md`):
+  - **G-1:** the weak form of T9 holds by construction.
+  - **G-2:** the deviation count is ≈ 13–15, not nine.
+  - **G-3:** T11 has never been measured at its budget.
+  - **G-4:** the re-card dropped obligations the register had given P2.
+  - **G-5:** T4's causal clause is untested.
+  - **G-6:** the entry's refs point into a local-only instance.
+- **Push guards (run before the ruling):** 694 tests; ALL WORLDS AGREE; `board --index --check` ✅; gitleaks exit 0; no file
+  over 1 MB; no data files.
 
 ### M-2b (2026-10-08 — Atlantis `9ac40cf` · `671808b` · `94ee95f` · `40f9b3a` · `28e5af4` · `0a1dd2e` + close; instance `6e031f6` · `88685c7`)
 
@@ -347,7 +384,7 @@ first); the WI-20 graduation candidates (C-004 · C-005 · C-009 · C-010 · C-0
   placement, `storage.location`/`provider`, lineage keys). M-1d-ii fixes the template; the upstream note goes by memo.
 - WI-19 — *(P1 gate: NDBC dropped from M-2. **CRW BUILT 2026-10-06 (M-2a-i)**; NDBC, OBIS and GBIF remain declared.)* `NDBCStdmet` (and OBIS, GBIF, CRW) are declared, not built. The first instance with a buoy stream needs NDBC; it
   is built in `atlantis_core` (the P2 rule). M-2 (gridded-only) does not need it.
-- WI-20 — *(M-2a-ii: **C-010 (3)** joins, C-023 → 4; candidates C-004 · C-005 (4) · C-009 (5) · C-010 · C-015 · C-023 (4).)* *(M-1f: the candidates at frequency ≥ 3 are now **C-004 · C-005 (4) · C-009 (5) · C-015 · C-023 (3)**; M-2a-i had C-004 · C-005 · C-009 · C-015.)* **graduation proposed 2026-10-03** (C-009 reached frequency 4 at M-1e, which strengthens the memo) (P1 gate ruling: memo filed, awaiting Argus + Stanley co-ratification at III.aDNA). III learning store: C-004 and C-009 are at frequency 3, graduation candidates for the ADR-003 ceremony at
+- WI-20 — *(**P2 gate 2026-10-08:** ruled. The memo `who/coordination/coord_2026_10_08_proteus_to_argus_graduation_wi20.md` proposes C-004 · C-005 · C-009 (7) · C-010 · C-023, with C-015 listed below the bar because its `accepted` field was never set. It supersedes the undelivered 10-03 memo. Delivery is a peer write, `#needs-human`.)* *(M-2a-ii: **C-010 (3)** joins, C-023 → 4; candidates C-004 · C-005 (4) · C-009 (5) · C-010 · C-015 · C-023 (4).)* *(M-1f: the candidates at frequency ≥ 3 are now **C-004 · C-005 (4) · C-009 (5) · C-015 · C-023 (3)**; M-2a-i had C-004 · C-005 · C-009 · C-015.)* **graduation proposed 2026-10-03** (C-009 reached frequency 4 at M-1e, which strengthens the memo) (P1 gate ruling: memo filed, awaiting Argus + Stanley co-ratification at III.aDNA). III learning store: C-004 and C-009 are at frequency 3, graduation candidates for the ADR-003 ceremony at
   III.aDNA. Operator's call, at the P1 gate or after.
 - WI-21 — The exemplar is not a conformant instance (no `units.yaml`, `mapping.yaml` or posture pin). Optional: give it the
   first two, so that items 1 and 11 pass; its posture stays the ADR-002 §4 grandfathered exception.
@@ -368,4 +405,4 @@ first); the WI-20 graduation candidates (C-004 · C-005 · C-009 · C-010 · C-0
 
 ## Next steps
 
-1. ~~M-1a~~ ✅ → … → ~~M-1d-ii~~ ✅ → ~~**P1 gate**~~ ✅ 2026-10-03 (conditional GO) → ~~M-1e~~ ✅ 2026-10-03 → ~~M-2a-i~~ ✅ 2026-10-06 → ~~M-1f~~ ✅ 2026-10-07 → ~~M-2a-ii~~ ✅ 2026-10-08 → **M-2b** (opus) → **P2 gate** (fable). 2. M-2 FKNMS → **P2 gate**. 3. Memo to Hestia: router row category text → "reference implementation".
+1. ~~M-1a~~ ✅ → … → ~~M-1d-ii~~ ✅ → ~~**P1 gate**~~ ✅ 2026-10-03 (conditional GO) → ~~M-1e~~ ✅ 2026-10-03 → ~~M-2a-i~~ ✅ 2026-10-06 → ~~M-1f~~ ✅ 2026-10-07 → ~~M-2a-ii~~ ✅ 2026-10-08 → ~~M-2b~~ ✅ 2026-10-08 → ~~**P2 gate**~~ ✅ 2026-10-08 (conditional GO P3) → **M-2c** (opus) · M-3a → M-3b → **P3 gate** (fable). 2. M-2 FKNMS → **P2 gate**. 3. Memo to Hestia: router row category text → "reference implementation".

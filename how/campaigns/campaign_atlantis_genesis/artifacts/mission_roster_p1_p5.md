@@ -4,7 +4,7 @@ doc_id: mission_roster_p1_p5
 title: "Mission roster P1–P5 — Operation Tidewatch, re-chartered to the five layers (M-0 output)"
 status: active
 created: 2026-10-02
-updated: 2026-10-06
+updated: 2026-10-08
 last_edited_by: agent_proteus
 mission: mission_m0_atlantis_genesis_planning
 campaign_id: campaign_atlantis_genesis
@@ -37,12 +37,13 @@ go in each card's `token_budget_actual` at close.
 | ~~M-1f~~ ✅ 2026-10-07 | Label-horizon embargo at every split boundary (WI-23) → **board v3** (146 trees; 0.8950 / 0.5414; `none` ≡ v2); atl_v0 0.6.0; III 7/7 | P2 | opus | ≈ 300kT + reviewer | M-2a-i | `missions/mission_m1f_label_horizon_embargo.md` |
 | M-2a-ii ✅ | *completed 2026-10-08: forked · ADR-001 ratified · three CRW streams 1985–2025 fetched (15-day union spans) · conforms (fetched) · III 9/9 · core 0.5.1 → 0.5.3* — `FloridaKeysCoral.aDNA`: interview · fork · zone geometry (pointer + sha256) · posture + licence ruling · receipt · ratify · fetch · conform (fetched) · Hestia memo | P2 | opus | ~120-160kT + reviewer | M-2a-i, M-1f | `missions/mission_m2a_ii_fknms_fork_and_fetch.md` |
 | M-2b ✅ | `FloridaKeysCoral.aDNA`: train · eval (thresholds on validation) · explain · instance page · board entry by memo → P2 gate — **completed 2026-10-08** (board v2; core 0.6.1; atl_v0 0.7.0; ≈ 480 kT + reviewer) | P2 | opus | ~150-200kT | M-2a-ii | `missions/mission_m2b_fknms_model_and_board.md` |
-| M-3a | `skill_stream_discovery` — playbook §A as a runnable skill with the traps as checks | P3 | opus | 40-60kT | M-1d | `missions/mission_m3a_stream_discovery_skill.md` |
-| M-3b | Hypothesis ledger populated + `skill_feature_hypothesis_mining` + one literature-asserted driver tested by SHAP | P3 | opus | 100-150kT | M-2, M-3a | `missions/mission_m3b_hypothesis_ledger_and_mining.md` |
+| M-2c | **P2-gate condition (a)** (2026-10-08). Five things: (1) exemplar re-entered at atl_v0 0.7.0 (board v4); (2) climatology-at-budget slot and control (T11); (3) a season-block paired interval for model − climatology; (4) FKNMS re-run as v3 by steward memo, with T2's learner swap; (5) the `BOARD.md` lead column printing the realised rate (G-7) | P2→P3 | opus | ~150kT card top ×2.3 ≈ **350kT + reviewer ≈ 200kT**; may split at its planning sitting (operator's call) | M-2b, P2 gate | `missions/mission_m2c_commensurable_board.md` |
+| M-3a | `skill_stream_discovery` — playbook §A as a runnable skill with the traps as checks *(was "beside M-2"; slipped. Runs first in P3)* | P3 | opus | ~~40-60kT~~ → **≈ 140kT + reviewer ≈ 150kT** (re-carded at the P2 gate, ×2.3) | M-1d | `missions/mission_m3a_stream_discovery_skill.md` |
+| M-3b | Hypothesis ledger populated + `skill_feature_hypothesis_mining` + one literature-asserted driver tested by SHAP, **on FKNMS or a new instance, not the exemplar** (P2-gate condition (c), SO-3) | P3 | opus | ~~100-150kT~~ → **≈ 350kT + reviewer ≈ 200kT** (×2.3); likely splits at its planning sitting (SO-8) | M-2c, M-3a | `missions/mission_m3b_hypothesis_ledger_and_mining.md` |
 | M-4 | Instance contract v1, steward governance set, consumer register, Exchange listing, first outside steward | P4 | fable | 90-140kT | M-2, M-3b | `missions/mission_m4_federation_and_stewards.md` |
 | M-5 | Retrain + drift skill, Ray workload request template, campaign AAR | P5 | opus | 50-80kT | M-4 | `missions/mission_m5_steady_state.md` |
 
-**Totals:** 8 opus lanes ≈ 640–1,020 kT · 1 fable sitting (M-4) ≈ 90–140 kT · 5 fable gates (uncarded, ~20–40 kT each).
+**Totals (M-0 estimate; observed actuals have run ≈ 2.3× the card top plus a ≈ 150–260 kT reviewer — P2 gate, III G-10):** 8 opus lanes ≈ 640–1,020 kT · 1 fable sitting (M-4) ≈ 90–140 kT · 5 fable gates (uncarded, ~20–40 kT each).
 Calibrated campaign estimate: **12–18 sessions** (seed said 8–14 for the narrower remit).
 
 ## Phase exit bars (verbatim from the charter)
@@ -50,10 +51,10 @@ Calibrated campaign estimate: **12–18 sessions** (seed said 8–14 for the nar
 - **P1:** a fresh instance forks from templates alone, in one sitting, with its self-test green before any real data is fetched; `atlantis_core` reproduces the exemplar's metrics; `atl_v0` controls pass under both validators; III review via wrapper. **Operator GO.**
 - **P2:** `FloridaKeysCoral.aDNA` trained + explained + paged + on the board **without editing Atlantis code**; every deviation became a P1 template change. **Operator GO.**
 - **P3:** one instance's vitals extended from the hypothesis ledger with provenance; ≥ 1 literature-asserted driver tested by SHAP and written up either way. **Operator GO.**
-- **P4:** an instance built by someone who was not in this campaign, from the public repo alone, lands a board entry; contract v1 ratified. **Operator GO.**
+- **P4:** an instance built by someone who was not in this campaign, from the public repo alone, lands a board entry; contract v1 ratified. **Operator GO.** *(P2-gate condition (d): what "no template change" means for that instance is defined and ruled before P4 opens. Baseline: FKNMS forced ≈ 13–15 Atlantis changes.)*
 - **P5:** retrain/drift skill exists and ran once; campaign AAR; successor cards filed. **Campaign close.**
 
 ## Critical path
 
-M-0 ✅ → M-1a ✅ → M-1b-i ✅ → M-1b-ii-a ✅ → M-1b-ii-b ✅ → M-1d-i ✅ → M-1d-ii ✅ → **P1 gate ✅ (conditional GO)** → M-1e ✅ → M-2a-i ✅ → M-1f ✅ → M-2a-ii ✅ → M-2b ✅ → **P2 gate ⏭ (fable, operator-summoned)** → M-3b → **P3 gate** → M-4 → **P4 gate** → M-5.
-M-1c runs beside M-1a/M-1b; M-3a beside M-2.
+M-0 ✅ → M-1a ✅ → M-1b-i ✅ → M-1b-ii-a ✅ → M-1b-ii-b ✅ → M-1d-i ✅ → M-1d-ii ✅ → **P1 gate ✅ (conditional GO)** → M-1e ✅ → M-2a-i ✅ → M-1f ✅ → M-2a-ii ✅ → M-2b ✅ → **P2 gate ✅ 2026-10-08 (conditional GO; opus brief, recorded deviation)** → **M-2c ⏭** → M-3a → M-3b → **P3 gate** → M-4 → **P4 gate** → M-5.
+M-1c ran beside M-1a/M-1b. M-3a was meant to run beside M-2 and did not; it may run beside M-2c (no shared files) or after it.

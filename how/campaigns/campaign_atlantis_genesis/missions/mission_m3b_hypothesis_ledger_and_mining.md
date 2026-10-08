@@ -11,13 +11,13 @@ phase: P3
 campaign_phase: 3
 mission_class: implementation
 executor_tier: opus
-token_budget_estimated: "100-150kT"
+token_budget_estimated: "≈ 350 kT main + fresh-context III reviewer ≈ 200 kT (re-carded at the P2 gate 2026-10-08: 100-150kT × 2.3, III G-10). Likely splits at its planning sitting (SO-8); the split is the operator's call"
 token_budget_actual: ""
-depends_on: ['M-2', 'M-3a']
+depends_on: ['M-2c', 'M-3a']   # M-2c added by P2-gate condition (a)
 aar_path: how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m3b_hypothesis_ledger_and_mining.md
 session: TBD
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-08
 last_edited_by: agent_proteus
 home_vault: Atlantis.aDNA
 tags: [mission, m3b, p3, opus, atlantis, tidewatch]
@@ -26,7 +26,7 @@ tags: [mission, m3b, p3, opus, atlantis, tidewatch]
 # M-3b — Hypothesis ledger populated + `skill_feature_hypothesis_mining` + one literature-asserted driver tested by SHAP
 
 **Campaign:** `../campaign_atlantis_genesis.md` (Operation Tidewatch) · **Phase:** P3 — Knowledge lane ·
-**Tier:** opus · **Budget:** 100-150kT · **Depends on:** M-2, M-3a
+**Tier:** opus · **Budget:** ≈ 350 kT + reviewer (re-carded at the P2 gate) · **Depends on:** M-2c, M-3a · **Target ruled at the P2 gate (condition (c)):** FKNMS or a new instance, not the exemplar
 
 ## Objective
 
@@ -36,10 +36,13 @@ Make the literature a registry, not prose: populate `what/hypotheses/ledger/` fo
 
 - [ ] Corpus via `Ingest.aDNA` (compose; OpenAlex / Semantic Scholar / Europe PMC + agency bulletins) — or a documented standalone fetch if Demeter's intake is not ready for literature; `unreviewed/` discipline either way
 - [ ] `how/skills/skill_feature_hypothesis_mining.md`: paper → row (extraction target fixed by `what/hypotheses/README.md`); every row points at a sentence; tiers draft → reviewed
-- [ ] ≥ 25 rows for one ecosystem type (coral DHW drivers for FKNMS, or *K. brevis* drivers for the exemplar — ruled at M-3b open); index regenerated
+- [ ] ≥ 25 rows for one ecosystem type; index regenerated. **The target is FKNMS (coral DHW drivers) or a new instance** (P2 gate, 2026-10-08, condition (c), III G-8). A literature driver realised on the exemplar would put new bytes into Atlantis (SO-3, ADR-002 §4), so the exemplar is allowed only for a driver derivable from its three grandfathered parquets. *(Was: "coral DHW drivers for FKNMS, or* K. brevis *drivers for the exemplar — ruled at M-3b open".)*
 - [ ] ≥ 1 row realised as an `AtlVital` (`hypothesis_ref` set) in an instance, trained, SHAP-tested; `realisation.result` filled; write-up as a memo + board entry v1 — **supported or not, it is written**
 - [ ] ENVO binding revisited (crosswalk deferred row) for `ecosystem_type`
-- [ ] Thesis T7 T8 re-cut
+- [ ] Thesis T7 T8 re-cut. On FKNMS, T7's honest outcome may be "no lever, still" (P2 ruling); a driver that turns out to be a proxy is written up as one
+- [ ] *(P2 gate, C-033)* Before the AAR, re-read the register for any obligation it gives M-3b or P3. Each one is carried, dropped or recorded
+- [ ] Every comparison with the M-2c board entry is read at the same base rate and budget (C-031, C-034); there are no cross-base-rate AUPRC deltas
+- [ ] III review via `iii/` in a fresh context; SITREP at the +50% line
 
 ## Guardrails
 

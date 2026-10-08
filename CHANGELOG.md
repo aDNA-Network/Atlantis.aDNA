@@ -1,5 +1,35 @@
 # CHANGELOG — Atlantis.aDNA
 
+## 2026-10-08 — v0.13.0 · P2 gate MET: conditional GO P3 · thesis statuses ruled · M-2c carded · P3 re-carded
+
+- **The P2 exit gate was ruled by the operator** (`AskUserQuestion`) after an opus decision brief and a fresh-context III
+  review of the *gate case* (`artifacts/p2_gate_iii_review.md`: PASS-WITH-FINDINGS, 0 blocker · 6 major · 4 minor · 2 nit).
+  **Conditional GO P3.** The gate ran on opus, not fable, by the operator's ruling. This is recorded as a deviation (the
+  second, after P1), and the charter is not amended.
+- **T9: the exit bar is met as worded; drop-in is not demonstrated.**
+  - The weak form (no instance patch) cannot fail under the M-2 card's own escalation rule.
+  - Counted under one rule, the M-2a-i set included, FKNMS forced ≈ 13–15 Atlantis changes. That is P4's baseline.
+- **Register, ruled:**
+  - T11 is untested at its terms on both instances. Climatology has never been measured at a budget (C-034).
+  - T4 is untested on FKNMS, and its causal clause is withdrawn.
+  - T2's P2 swap was never run (C-033).
+  - T5's absence case and T12's DHW ≥ 8 run are recorded.
+  - T3's restated falsifier gets a number at its next test.
+- **Conditions:**
+  - (a) **M-2c** (card filed): climatology at budget · a season-block paired interval · exemplar board v4 at 0.7.0 · FKNMS
+    v3 by memo with its learner swap · the `BOARD.md` lead column.
+  - (b) M-3a and M-3b re-carded at ≈ 2.3× the card top, with the reviewer counted.
+  - (c) M-3b targets FKNMS or a new instance, not the exemplar (SO-3).
+  - (d) Before P4 opens, define what "no template change" means there.
+- **Board README:** an instance entry's refs resolve in the instance. FloridaKeysCoral is local-only, so the v1 and v2 refs
+  are not yet public (G-6).
+- **III, ACCUMULATE (local):** C-009 → 7, C-030 → 2, C-032 → 2. New: C-033 `recard_drops_register_obligation` and C-034
+  `status_supported_off_falsifier_operating_point`.
+- **Memos (outbound):** the graduation memo is redrafted for C-004 · C-005 · C-009 · C-010 · C-023, with C-015 below the bar
+  because its `accepted` field was never set. It supersedes the undelivered 10-03 memo. A second memo tells Hestia that
+  Atlantis's router row is stale (persona, phase; Rule 7).
+- **Push guards:** 694 tests; ALL WORLDS AGREE; `board --index --check` ✅; gitleaks exit 0.
+
 ## 2026-10-08 — v0.12.0 · M-2b ✅: FloridaKeysCoral.aDNA trained, paged and on the board · core 0.6.1 · atl_v0 0.7.0 · III 8/8 → P2 gate requested
 
 - **The second instance — the first MPA — is on the board.** `2026-10-08_florida_keys_coral_v2` (GREEN, closed, `method_demonstration`),

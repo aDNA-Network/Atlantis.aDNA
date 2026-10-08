@@ -11,13 +11,13 @@ phase: P3
 campaign_phase: 3
 mission_class: implementation
 executor_tier: opus
-token_budget_estimated: "40-60kT"
+token_budget_estimated: "≈ 140 kT main + fresh-context III reviewer ≈ 150 kT (re-carded at the P2 gate 2026-10-08: 40-60kT × 2.3, the observed ratio, III G-10)"
 token_budget_actual: ""
 depends_on: ['M-1d']
 aar_path: how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m3a_stream_discovery_skill.md
 session: TBD
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-08
 last_edited_by: agent_proteus
 home_vault: Atlantis.aDNA
 tags: [mission, m3a, p3, opus, atlantis, tidewatch]
@@ -26,7 +26,7 @@ tags: [mission, m3a, p3, opus, atlantis, tidewatch]
 # M-3a — `skill_stream_discovery` — playbook §A as a runnable skill with the traps as checks
 
 **Campaign:** `../campaign_atlantis_genesis.md` (Operation Tidewatch) · **Phase:** P3 — Knowledge lane ·
-**Tier:** opus · **Budget:** 40-60kT · **Depends on:** M-1d
+**Tier:** opus · **Budget:** ≈ 140 kT + reviewer (re-carded at the P2 gate) · **Depends on:** M-1d · *Was to run beside M-2 and slipped; it runs first in P3, and may run beside M-2c because they share no files.*
 
 ## Objective
 
@@ -38,6 +38,9 @@ Turn the data-discovery arc (portals → ERDDAP → gauges → buoys → bio/seq
 - [ ] Traps as checks: server count asserted · longitude distribution per unit · probe-before-believing-a-zero · samples-per-year before `min_train_year` · negative tidal flow clipped and noted · surveillance channel declared
 - [ ] Run once on the FKNMS instance and once on the exemplar; both `streams.yaml` validate against `atl_v0`
 - [ ] Playbook §A/§B re-pointed to the skill (playbook stays the narrative)
+- [ ] *(P2 gate, C-033)* Before the AAR, re-read the register for any obligation it gives M-3a or P3. Each one is carried, dropped or recorded, never silently lost
+- [ ] On the exemplar, discovery writes **pointer rows only** (SO-3, ADR-002 §4): no fetch, and no new bytes in Atlantis
+- [ ] III review via `iii/` in a fresh context; SITREP at the +50% line
 
 ## Guardrails
 

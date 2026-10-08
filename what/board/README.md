@@ -5,9 +5,9 @@ title: "what/board/ — the Atlantis evidence board (GREEN metrics only · NO AC
 status: draft
 schema: atl_board_entry_v1
 created: 2026-10-02
-updated: 2026-10-03
+updated: 2026-10-08
 last_edited_by: agent_proteus
-mission: mission_m0_atlantis_genesis_planning   # BOARD.md generator + --entries: mission_m1d_ii_lattice_and_registries · thresholds fixed beforehand: mission_m1e_eval_thresholds_on_validation
+mission: mission_m0_atlantis_genesis_planning   # instance-ref note: p2_gate · BOARD.md generator + --entries: mission_m1d_ii_lattice_and_registries · thresholds fixed beforehand: mission_m1e_eval_thresholds_on_validation
 precedent: RareArchive.aDNA/what/board/ (ra_board_entry_v1, GREEN-only, promotion-to-gold is human)
 tags: [board, evidence, metrics, green, atlantis, m0]
 ---
@@ -39,6 +39,14 @@ renders the schema:
 | `evaluation.config_hash`, `evaluation.data_pins[]` | the join keys to the instance's run; every pin carries a sha256 |
 | `evaluation.claim` | `method_demonstration` (default) \| `operational_by_owner_ruling` (+ `owner_ruling_ref`) |
 | `evaluation.limitations_ref` | required — no evaluation without its limits (SO-4) |
+
+**Where an entry's refs resolve.** `limitations_ref`, `shap_summary_ref`, `geometry_ref` and the like are paths
+**relative to the entry's source**. On an `exemplar` entry the source is this repository. On an `instance` entry the
+source is the instance's own repository: the refs resolve there, and they are public only once the instance's owner
+publishes it. Atlantis does not mirror the instance's page or outputs (SO-3). As of 2026-10-08,
+`FloridaKeysCoral.aDNA` is local-only with no remote, so the refs on `2026-10-08_florida_keys_coral_v1` and `…_v2`
+do not yet resolve publicly. The metrics on the entry stand on their own; the limits they point to are the instance's
+to publish. *(P2 gate ruling 3, III G-6.)*
 
 **Never on the board:** per-patient predictions or SHAP values · observations or labels · coordinates of partner or
 human-subject sites · trained binaries · credentials · anything from an instance whose data posture ruling forbids

@@ -2,7 +2,8 @@
 type: cross_vault_request
 doc_id: coord_2026_10_03_proteus_to_argus_graduation_c004_c009
 title: "Cross-Vault Request: Atlantis → III.aDNA — local C-004 + C-009 graduation proposals (ADR-003 § 3 ceremony)"
-status: open
+status: superseded   # 2026-10-08, P2 gate: never delivered; carried into coord_2026_10_08_proteus_to_argus_graduation_wi20
+superseded_by: coord_2026_10_08_proteus_to_argus_graduation_wi20
 direction: outbound (III.aDNA receives)
 requesting_vault: Atlantis.aDNA
 requesting_persona: proteus
@@ -10,7 +11,7 @@ receiving_vault: III.aDNA
 receiving_persona: argus_panoptes
 requesting_agent: agent_proteus
 created: "2026-10-03"
-updated: "2026-10-03"
+updated: "2026-10-08"
 ruled_by: "stanley — P1-exit gate, AskUserQuestion, 2026-10-03 ('send both')"
 delivery: "Filed here, in Atlantis's own who/coordination/ (outbound record). Delivery into III.aDNA/who/coordination/ is a peer-vault write — made by an operator-opened session, not by this one."
 artifact_request:

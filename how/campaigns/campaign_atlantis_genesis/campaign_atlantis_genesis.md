@@ -6,9 +6,9 @@ display_name: "Operation Tidewatch"
 owner: stanley
 persona: proteus            # RULED 2026-10-02 at the P0-exit gate (ADR-001 ratified)
 status: active
-phase: P1                   # P0 gate MET 2026-10-02 · P1 gate MET 2026-10-03 — CONDITIONAL GO P2; condition (a) M-1e ✅ 2026-10-03 → P2 open; M-2a-i ✅ 2026-10-06 · M-1f ✅ 2026-10-07 → M-2a-ii ✅ 2026-10-08 (FloridaKeysCoral forked, fetched, conforms; III 9/9) → M-2b ✅ 2026-10-08 (trained · paged · board v2 landed; comparators + segment base rates, atl_v0 0.7.0; III 8/8) → **P2 gate requested** → M-2b queued
+phase: P3                   # P0 gate MET 2026-10-02 · P1 gate MET 2026-10-03 (conditional GO P2) · P2 gate MET 2026-10-08 — CONDITIONAL GO P3 (a: M-2c before M-3b · b: P3 re-carded at ≈2.3× · c: M-3b off the exemplar · d: P4 bar defined before P4) → M-2c ⏭ (opus) · M-3a
 phase_count: 6
-mission_count: 10           # M-0 (done) + nine carded: M-1a M-1b M-1c M-1d · M-2 · M-3a M-3b · M-4 · M-5
+mission_count: 10           # M-0 (done) + nine carded: M-1a M-1b M-1c M-1d · M-2 · M-3a M-3b · M-4 · M-5 (splits and gate lanes — M-1e M-1f M-2c — in the roster)
 estimated_sessions: "12-18"
 calibrated_sessions: "12-18"   # re-cut at M-0 for the widened remit (seed: 8-14)
 estimation_class: content-novel
@@ -18,7 +18,7 @@ home_vault: Atlantis.aDNA
 remit_adr: who/governance/adr_002_remit_mpa_knowledge_system.md
 roster: artifacts/mission_roster_p1_p5.md
 created: 2026-09-23
-updated: 2026-10-02
+updated: 2026-10-08
 last_edited_by: agent_proteus
 tags: [campaign, atlantis, tidewatch, genesis, early_warning, oceans, mpa, ontology, evidence_board]
 ---
@@ -128,6 +128,28 @@ instance could not go green as carded without core changes, so:
 
 The same sitting ruled the patients (FKNMS zones plus a polygon reducer, not rectangles) and the horizon (H = 8, one window).
 
+M-2a-ii ✅ 2026-10-08 (forked · fetched · conforms) → M-2b ✅ 2026-10-08 (trained · explained · paged · board v2 by memo).
+**Gate MET 2026-10-08 — CONDITIONAL GO P3** (operator, `AskUserQuestion`, after an opus decision brief and a
+fresh-context III review of the gate case, `artifacts/p2_gate_iii_review.md`, PASS-WITH-FINDINGS 0/6/4/2). **Recorded
+deviation:** the gate ran at opus, not fable, by the operator's ruling at the sitting — the second time (P1, P2); the
+charter's fable rule is *not* amended. **The exit bar is met as worded; drop-in is not demonstrated** (T9): there were zero
+instance-local patches, but that weak form cannot fail under the M-2 card's own "do not patch locally" rule, and FKNMS
+forced ≈ 13–15 Atlantis changes once the M-2a-i set is counted. That count is P4's baseline. Conditions:
+- (a) **M-2c before M-3b.** It does five things:
+  - re-enters the exemplar at atl_v0 0.7.0 (board v4);
+  - adds a climatology-at-budget slot with a control (T11);
+  - re-runs FKNMS as v3 through the steward's memo;
+  - adds a season-block paired interval for model minus climatology;
+  - takes the register obligations the re-card dropped (T2's learner swap on FKNMS; G-7's lead column).
+- (b) **P3 re-carded** at ≈ 2.3× the card top, reviewer tokens included; M-3a → M-3b.
+- (c) **M-3b targets FKNMS or a new instance**, not the exemplar (SO-3). The exemplar is allowed only for a driver
+  derivable from its three grandfathered parquets.
+- (d) **Before P4 opens**, define and rule what "no template change" means for the third instance.
+
+Ruled in the same gate: the thesis statuses, as the reviewer amended them (register §Reading); a board README note on
+instance-relative refs, then the push; ACCUMULATE C-009 → 7, C-030 → 2, C-032 → 2, new C-033 and C-034; the graduation
+memo redrafted for all six candidates.
+
 ### P3 — Knowledge lane (opus)
 M-3a `skill_stream_discovery` (playbook §A/§B as checks) · M-3b hypothesis ledger populated (≥ 25 rows, one
 ecosystem type) + `skill_feature_hypothesis_mining` + ≥ 1 literature-asserted driver realised as a vital and tested by
@@ -169,11 +191,11 @@ AAR · successor cards. **Exit bar:** AAR in this file; Atlantis joins the fleet
 
 ## Status
 
-**P1 open — P0 gate MET 2026-10-02.** ADR-000/001/002 ratified, persona Proteus, GO P1 given by the operator at the
+**P3 open — P2 gate MET 2026-10-08 (conditional GO).** *(History follows.)* **P1 open — P0 gate MET 2026-10-02.** ADR-000/001/002 ratified, persona Proteus, GO P1 given by the operator at the
 gate. **M-1a complete 2026-10-02** (exemplar hygiene; AAR filed). **M-1c complete 2026-10-02** (`atl_v0` controls: 42, three
 worlds agree; `iii/` adopted, III review PASS-WITH-FINDINGS; AAR filed). **M-1b split** (operator, 2026-10-02) → **M-1b-i complete
 2026-10-02** (`atlantis_core` registries · fetch · grid · vitals · label · all-stream self-test; hab's SST row-lag defect found,
-calendar-correct ruled; III 11/11 fixed; AAR filed). M-1b-ii-a ✅ 2026-10-02 (eval · explain · board; port exact to 1e-12; board v1 0.8938 / 0.5388; T2 swap: ranking survives, explanation does not; III 8/8). M-1b-ii-b ✅ 2026-10-03 (site template with every word as instance copy; v1 page checked against its board entry field for field; `template_mapping_atl.yaml` + `--check`; `src/hab` archived in place, still the fetch path; III 10/10; ADR-002 A-1 proposed). M-1d split 2026-10-03 (operator ruling) → M-1d-i (fork from templates alone — the exit-bar path) + M-1d-ii (lattice · BOARD · dataset pairs · contribution guide). M-1d-i ✅ 2026-10-03 (atl_v0 0.3.0 · contract v0.2.0 · fetch gated on receipt + ratified posture · template_instance · fork · conform · skill · dry run: a fictional hypoxia instance forks from templates alone, items 1–8 and 11–12 green, no network; self-test made shape-general with C8; III 9/9; ≈ +130% over budget, operator ruled continue). M-1d-ii ✅ 2026-10-03 (pipeline lattice under three checks · closed-vocabulary runspec, plan only · BOARD.md generated, WI-8 closed · `board --entries` for instances · dataset-pair template fixed and three pairs, WI-18 closed · contribution guide draft; III 14/14; ≈ +77% over budget, operator ruled fix-all). **P1 gate MET 2026-10-03, conditional GO P2** (A-1 and the contribution guide ratified; C-004/C-009 graduation proposed). M-1e ✅ 2026-10-03 (board v2). **M-2a split 2026-10-06** → M-2a-i ✅ 2026-10-06 (NOAACRW authority · grid pin · onset refractory, R = H − 1 · persistent self-test world · CoralReefWatch built; III 8/8) → M-1f ✅ 2026-10-07 (label-horizon embargo at every boundary; board v3, 146 trees, AUROC 0.8950 / AUPRC 0.5414, `none` reproduces v2; atl_v0 0.6.0; III 7/7; ≈ +76%, operator ruled finish all) → M-2a-ii ✅ 2026-10-08 (`FloridaKeysCoral.aDNA` forked, ADR-001 ratified; three CRW streams 1985–2025 over 15-day union spans after CRW's ~10.3 s proxy cut; conforms at the fetched stage; WI-24 premise corrected; core 0.5.1 → 0.5.3; III 9/9; ≈ +300%, rulings 1–18) → M-2b ⏭ → P2 gate; condition (c) MET.
+calendar-correct ruled; III 11/11 fixed; AAR filed). M-1b-ii-a ✅ 2026-10-02 (eval · explain · board; port exact to 1e-12; board v1 0.8938 / 0.5388; T2 swap: ranking survives, explanation does not; III 8/8). M-1b-ii-b ✅ 2026-10-03 (site template with every word as instance copy; v1 page checked against its board entry field for field; `template_mapping_atl.yaml` + `--check`; `src/hab` archived in place, still the fetch path; III 10/10; ADR-002 A-1 proposed). M-1d split 2026-10-03 (operator ruling) → M-1d-i (fork from templates alone — the exit-bar path) + M-1d-ii (lattice · BOARD · dataset pairs · contribution guide). M-1d-i ✅ 2026-10-03 (atl_v0 0.3.0 · contract v0.2.0 · fetch gated on receipt + ratified posture · template_instance · fork · conform · skill · dry run: a fictional hypoxia instance forks from templates alone, items 1–8 and 11–12 green, no network; self-test made shape-general with C8; III 9/9; ≈ +130% over budget, operator ruled continue). M-1d-ii ✅ 2026-10-03 (pipeline lattice under three checks · closed-vocabulary runspec, plan only · BOARD.md generated, WI-8 closed · `board --entries` for instances · dataset-pair template fixed and three pairs, WI-18 closed · contribution guide draft; III 14/14; ≈ +77% over budget, operator ruled fix-all). **P1 gate MET 2026-10-03, conditional GO P2** (A-1 and the contribution guide ratified; C-004/C-009 graduation proposed). M-1e ✅ 2026-10-03 (board v2). **M-2a split 2026-10-06** → M-2a-i ✅ 2026-10-06 (NOAACRW authority · grid pin · onset refractory, R = H − 1 · persistent self-test world · CoralReefWatch built; III 8/8) → M-1f ✅ 2026-10-07 (label-horizon embargo at every boundary; board v3, 146 trees, AUROC 0.8950 / AUPRC 0.5414, `none` reproduces v2; atl_v0 0.6.0; III 7/7; ≈ +76%, operator ruled finish all) → M-2a-ii ✅ 2026-10-08 (`FloridaKeysCoral.aDNA` forked, ADR-001 ratified; three CRW streams 1985–2025 over 15-day union spans after CRW's ~10.3 s proxy cut; conforms at the fetched stage; WI-24 premise corrected; core 0.5.1 → 0.5.3; III 9/9; ≈ +300%, rulings 1–18) → M-2b ✅ 2026-10-08 (FKNMS trained · explained · paged · board v2; core 0.6.1; atl_v0 0.7.0; III 8/8; ≈ +140%) → **P2 gate MET 2026-10-08, conditional GO P3** (opus decision brief + III review of the gate case; T9: met as worded, drop-in not demonstrated; T11 untested at its terms; T4 untested on FKNMS) → **M-2c ⏭** (opus) → M-3a → M-3b → P3 gate.
 
 ## AAR (campaign — filled at P5)
 
