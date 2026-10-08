@@ -4,7 +4,7 @@ mission_id: M-2a-ii
 plan_id: mission_m2a_ii_fknms_fork_and_fetch
 title: "M-2a-ii — FloridaKeysCoral.aDNA: interview · fork · zone geometry (pointer + sha256) · posture + licence ruling · self-test receipt · ratify · fetch · conform (fetched) · Hestia memo"
 owner: stanley
-status: planned
+status: in_progress   # checkpointed 2026-10-08 at the fetch (CRW ERDDAP outage); steward ruling
 campaign: campaign_atlantis_genesis
 campaign_id: campaign_atlantis_genesis
 phase: P2
@@ -12,13 +12,13 @@ campaign_phase: 2
 mission_class: implementation
 executor_tier: opus
 token_budget_estimated: "~120-160kT main + fresh-context III reviewer (the CRW fetch itself is wall-clock, not tokens)"
-token_budget_actual: ""
+token_budget_actual: "sitting 1 ≈ 300kT main (≈ +88% on the card top; SITREP at +80%, steward ruled finish all, then checkpoint at the outage); III + sitting 2 to come"
 depends_on: ['M-2a-i', 'M-1f']
 split_from: mission_m2a_fknms_fork_and_fetch
 aar_path: how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m2a_ii_fknms_fork_and_fetch.md
-session: TBD
+session: session_stanley_20261007_154002_m2a_ii_fknms_fork_and_fetch   # sitting 1 of 2
 created: 2026-10-06
-updated: 2026-10-06
+updated: 2026-10-07
 last_edited_by: agent_proteus
 home_vault: Atlantis.aDNA
 tags: [mission, m2a_ii, p2, opus, fknms, coral, mpa, fork, fetch, atlantis, tidewatch]
@@ -58,15 +58,44 @@ horizon embargo) have closed, so the instance's self-test receipt is earned once
 - **Expect few onsets.** Every zone heats in the same years, so rolling folds will skip (< 5 positives). Say so and do not
   tune around it.
 
+## Progress of record (sitting 1, 2026-10-07 → 08; steward = Stanley, every ruling via AskUserQuestion)
+
+**Rulings:**
+- **zoning:** pre-Blueprint (the Blueprint took effect 2025-03-05 in federal waters only);
+- **geometry:** a declaration, fetched before ratification by a recorded recipe;
+- **grouping:** 21 patients (four cell-sharing pairs merged);
+- **streams:** OISST dropped; **raw CRW SST dropped**, because CRW's own `noaacrwsstDaily` carries the OSTIA 1985–2002 terms
+  (the WI-24 premise was wrong). DHW, HotSpot and SSTA run from 1985 under CRW's licence;
+- **split:** 1986–2013 / 2014–18 / 2019–25;
+- **vault:** licence MIT; persona deferred;
+- **review:** starter vitals and tags accepted; budgets 5/10/20, lead at 10%;
+- **ADR-001 ratified** (signed stanley, 2026-10-07).
+
+**Done:**
+- the fork at the workspace root;
+- declared stage **conforms** (items 1–8 and 11–12);
+- the receipt is green (`0d4d2bb19e`, core 0.5.1);
+- the fetch refused before ratification (demonstrated);
+- the Hestia memo delivered;
+- instance commits `d7f5e31` and `3e45b93`.
+
+**Atlantis-side changes** (642 tests):
+- `0e4154b`: fork `answers.eval.sensitivity_threshold`;
+- `f23e046`: the self-test C6 KeyError without a climatology;
+- `95ea8da`: the ERDDAP/CRW spec `start` date.
+
+**Stopped at:** the fetch. CRW's ERDDAP returned 502 on every request from ~23:13Z, 0 of 567 chunks. The PacIOOS mirror
+was rejected because its licence attribute is OSTIA. **Remaining:** the criteria below marked ⏳.
+
 ## Acceptance criteria
 
-- [ ] `FloridaKeysCoral.aDNA` forked by `skill_atlantis_instance_fork` at the workspace root, in **public** posture. The
+- [x] `FloridaKeysCoral.aDNA` forked by `skill_atlantis_instance_fork` at the workspace root, in **public** posture. The
       posture ADR carries the licence ruling, and its Ratification row is signed by the operator
-- [ ] `conform --stage declared` items 1–8 and 11–12 ✅. Self-test green, with the receipt earned under the M-1f code
-- [ ] `fetch` (receipt and posture gates) → provenance recorded → `fetch --verify` → `conform --stage fetched` ✅
-- [ ] **Router row via a Hestia memo** (workspace Rule 3; the skill step added at M-2a-i)
-- [ ] Zero instance-local patches to `atlantis_core`. Every deviation is an Atlantis-side change, listed in the AAR
-- [ ] III review via `iii/`, in a fresh context; AAR; then queue M-2b
+- [x] `conform --stage declared` items 1–8 and 11–12 ✅. Self-test green, with the receipt earned under the M-1f code
+- [ ] ⏳ `fetch` (receipt and posture gates) → provenance recorded → `fetch --verify` → `conform --stage fetched` ✅
+- [x] **Router row via a Hestia memo** (delivered; the row is Hestia's to land) (workspace Rule 3; the skill step added at M-2a-i)
+- [x] Zero instance-local patches to `atlantis_core`. Every deviation is an Atlantis-side change, listed in the AAR
+- [ ] ⏳ III review via `iii/`, in a fresh context; AAR; then queue M-2b
 
 ## Guardrails
 

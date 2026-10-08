@@ -35,7 +35,7 @@ go in each card's `token_budget_actual` at close.
 | ~~M-2a~~ | *split 2026-10-06 (operator ruling, M-2a planning) → M-2a-i + M-1f + M-2a-ii; condition (c) MET (CRW via `ERDDAPGriddap` on coastwatch.noaa.gov); card kept as superseded* | P2 | — | — | — | `missions/mission_m2a_fknms_fork_and_fetch.md` |
 | M-2a-i ✅ 2026-10-06 | atlantis_core for a persistent, polygon, gridded instance: CRW authority · grid sha256 pin · onset refractory · persistent self-test world (whole catalogue) · `CoralReefWatch` polygon fetcher · fork-skill Hestia step | P2 | opus | ~180-220kT + reviewer (actual ≈345 + III ≈235) | M-1e | `missions/mission_m2a_i_core_for_persistent_polygon_instances.md` |
 | ~~M-1f~~ ✅ 2026-10-07 | Label-horizon embargo at every split boundary (WI-23) → **board v3** (146 trees; 0.8950 / 0.5414; `none` ≡ v2); atl_v0 0.6.0; III 7/7 | P2 | opus | ≈ 300kT + reviewer | M-2a-i | `missions/mission_m1f_label_horizon_embargo.md` |
-| M-2a-ii | `FloridaKeysCoral.aDNA`: interview · fork · zone geometry (pointer + sha256) · posture + licence ruling · receipt · ratify · fetch · conform (fetched) · Hestia memo | P2 | opus | ~120-160kT + reviewer | M-2a-i, M-1f | `missions/mission_m2a_ii_fknms_fork_and_fetch.md` |
+| M-2a-ii ⏳ | *in progress: sitting 1 done 2026-10-08 (forked · conforms declared · ADR-001 ratified · 3 core fixes); fetch checkpointed on a CRW outage* — `FloridaKeysCoral.aDNA`: interview · fork · zone geometry (pointer + sha256) · posture + licence ruling · receipt · ratify · fetch · conform (fetched) · Hestia memo | P2 | opus | ~120-160kT + reviewer | M-2a-i, M-1f | `missions/mission_m2a_ii_fknms_fork_and_fetch.md` |
 | M-2b | `FloridaKeysCoral.aDNA`: train · eval (thresholds on validation) · explain · instance page · board entry by memo → P2 gate | P2 | opus | ~150-200kT | M-2a-ii | `missions/mission_m2b_fknms_model_and_board.md` |
 | M-3a | `skill_stream_discovery` — playbook §A as a runnable skill with the traps as checks | P3 | opus | 40-60kT | M-1d | `missions/mission_m3a_stream_discovery_skill.md` |
 | M-3b | Hypothesis ledger populated + `skill_feature_hypothesis_mining` + one literature-asserted driver tested by SHAP | P3 | opus | 100-150kT | M-2, M-3a | `missions/mission_m3b_hypothesis_ledger_and_mining.md` |
@@ -55,5 +55,5 @@ Calibrated campaign estimate: **12–18 sessions** (seed said 8–14 for the nar
 
 ## Critical path
 
-M-0 ✅ → M-1a ✅ → M-1b-i ✅ → M-1b-ii-a ✅ → M-1b-ii-b ✅ → M-1d-i ✅ → M-1d-ii ✅ → **P1 gate ✅ (conditional GO)** → M-1e ✅ → M-2a-i ✅ → M-1f ✅ → M-2a-ii → M-2b → **P2 gate** → M-3b → **P3 gate** → M-4 → **P4 gate** → M-5.
+M-0 ✅ → M-1a ✅ → M-1b-i ✅ → M-1b-ii-a ✅ → M-1b-ii-b ✅ → M-1d-i ✅ → M-1d-ii ✅ → **P1 gate ✅ (conditional GO)** → M-1e ✅ → M-2a-i ✅ → M-1f ✅ → M-2a-ii ⏳ (sitting 1 ✅, fetch pending) → M-2b → **P2 gate** → M-3b → **P3 gate** → M-4 → **P4 gate** → M-5.
 M-1c runs beside M-1a/M-1b; M-3a beside M-2.

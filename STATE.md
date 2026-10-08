@@ -1,15 +1,15 @@
 ---
 type: state
 status: p1_open
-phase: "P2 open — conditions (a) ✅ 2026-10-03 · (c) ✅ 2026-10-06; M-2a-i ✅ 2026-10-06 · M-1f ✅ 2026-10-07 (board v3) → M-2a-ii queued → M-2b → P2 gate"
+phase: "P2 open — conditions (a) ✅ 2026-10-03 · (c) ✅ 2026-10-06; M-2a-i ✅ · M-1f ✅ (board v3) · M-2a-ii IN PROGRESS (forked, ratified; fetch checkpointed on a CRW outage) → M-2b → P2 gate"
 campaigns: [campaign_atlantis_genesis]
-mission: mission_m2a_ii_fknms_fork_and_fetch   # queued (opus); M-1f ✅ 2026-10-07 (board v3); M-2a-i ✅ 2026-10-06; M-2a split 2026-10-06; M-1e ✅ 2026-10-03 (board v2); P1 gate ✅ 2026-10-03 (conditional GO); M-1d-ii ✅ 2026-10-03; M-1d-i ✅ · M-1b-ii-b ✅ 2026-10-03; M-1b-ii-a ✅ · M-1b-i ✅ · M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
+mission: mission_m2a_ii_fknms_fork_and_fetch   # IN PROGRESS (sitting 1 done 2026-10-08: forked · conforms declared · ADR-001 ratified; fetch blocked by a CRW ERDDAP outage); M-1f ✅ 2026-10-07 (board v3); M-2a-i ✅ 2026-10-06; M-2a split 2026-10-06; M-1e ✅ 2026-10-03 (board v2); P1 gate ✅ 2026-10-03 (conditional GO); M-1d-ii ✅ 2026-10-03; M-1d-i ✅ · M-1b-ii-b ✅ 2026-10-03; M-1b-ii-a ✅ · M-1b-i ✅ · M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
 persona: proteus   # RULED 2026-10-02 (ADR-001 ratified)
-last_session: session_stanley_20261007_110514_m1f_label_horizon_embargo (opus)
+last_session: session_stanley_20261007_154002_m2a_ii_fknms_fork_and_fetch (opus; sitting 1 of 2)
 created: 2026-09-23
-updated: 2026-10-07
+updated: 2026-10-08
 last_edited_by: agent_proteus
-tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_complete, m1b_ii_a_complete, m1b_ii_b_complete, m1d_i_complete, m1d_ii_complete, p1_gate_met, p2_conditional_go, m1e_complete, board_v2, atl_v0_0_4_0, m2a_split, m2a_i_complete, atl_v0_0_5_0, core_0_4_0, crw_built, m1f_complete, board_v3, atl_v0_0_6_0, core_0_5_0, m2a_ii_queued]
+tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_complete, m1b_ii_a_complete, m1b_ii_b_complete, m1d_i_complete, m1d_ii_complete, p1_gate_met, p2_conditional_go, m1e_complete, board_v2, atl_v0_0_4_0, m2a_split, m2a_i_complete, atl_v0_0_5_0, core_0_4_0, crw_built, m1f_complete, board_v3, atl_v0_0_6_0, core_0_5_0, m2a_ii_in_progress, core_0_5_1, floridakeyscoral_forked]
 ---
 
 # STATE — Atlantis.aDNA
@@ -23,7 +23,7 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
 4. The exemplar is at hygiene (M-1a): `what/exemplars/gulf_karenia_brevis/README.md` §Provenance · `uv sync && .venv/bin/python -m pytest` · self-test green.
 5. The ontology is controlled (M-1c; 0.3.0 at M-1d-i; 0.4.0 at M-1e; 0.5.0 at M-2a-i; 0.6.0 at M-1f): `what/schema/atl_v0/README.md` (proof table · known limits) · `LINKML_BIN=<scratch venv>/bin what/schema/atl_v0/fixtures/controls/run_controls.sh` → ALL WORLDS AGREE (56 controls).
 6. III review goes through `iii/` in a fresh context (SO-10).
-7. The core (M-1b-i + ii-a + ii-b + M-1d-i + M-1d-ii): `what/atlantis_core/README.md` · `cd what/atlantis_core && uv sync && .venv/bin/python -m pytest` (636, ~3.5 min unloaded) ·
+7. The core (M-1b-i + ii-a + ii-b + M-1d-i + M-1d-ii): `what/atlantis_core/README.md` · `cd what/atlantis_core && uv sync && .venv/bin/python -m pytest` (642, ~3.5 min unloaded; core 0.5.1) ·
    `.venv/bin/python -m atlantis_core.selftest --instance ../exemplars/gulf_karenia_brevis` (all-stream, SO-7) ·
    `python -m atlantis_core.run --instance …` (→ `outputs/atlantis_core/`, ~7 min) · `python -m atlantis_core.board …` (→ `what/board/entries/`) ·
    `python -m atlantis_core.site --instance …` (→ the instance's page, ~2 s) · `python -m atlantis_core.mapping --check <mapping.yaml>` ·
@@ -34,46 +34,53 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
 
 ## ⏭ QUEUED — Next Live Session
 
-**M-1f CLOSED 2026-10-07.** The label horizon is embargoed at every split boundary:
-- **atlantis_core 0.5.0:** `split.embargo_weeks`, default H, at six boundaries. The check reads the event's H on the frames
-  the learner received, and a raw-stream perturbation through `label.make` anchors it.
-- **Board v3**, emitted by code:
-  - 146 trees, AUROC 0.8950 / AUPRC 0.5414, base rate 0.0774;
-  - `none` reproduces v2 in every number;
-  - the board refuses any unembargoed published run.
-- **atl_v0 0.6.0**, 56 controls. The runner's grep blind spot is fixed. III PASS-WITH-FINDINGS, 7/7.
-- **WI-23 closed.**
+**M-2a-ii sitting 1 done (2026-10-07 → 08); checkpointed at the fetch by steward ruling.**
 
-**Next: M-2a-ii** (opus; the FKNMS fork and fetch) → M-2b → **P2 gate** (fable).
+- **Forked:** `~/aDNA/FloridaKeysCoral.aDNA` exists at the workspace root.
+  - 21 pre-Blueprint FKNMS zones, with the four cell-sharing pairs merged; zone file pinned at `919ff180…`.
+  - Event: DHW ≥ 4 Cel.wk, H = 8, R = 7, sensitivity at 8.
+  - Three CRW streams: DHW, HotSpot and SSTA, all from 1985.
+  - Split: 1986–2013 / 2014–18 / 2019–25.
+- **State:** it conforms at the declared stage. Receipt `0d4d2bb19e` (core 0.5.1). **ADR-001 is ratified** (stanley, 2026-10-07).
+- **Committed:** instance commits `d7f5e31` and `3e45b93`.
+- **Router memo:** in the Home drop-box (untracked, for Hestia's receipt).
+- **Atlantis-side changes**, each tested (642): `0e4154b` · `f23e046` · `95ea8da`.
+- **WI-24 re-ruled** (raw SST dropped).
+
+**Blocked:** CRW's ERDDAP (`coastwatch.noaa.gov`) returned **502 on every request from ~23:13Z** (index page included), with
+only brief windows. 0 of 567 chunks were fetched, and no bytes were written. The PacIOOS mirror was rejected: its licence
+attribute is OSTIA.
+
+**Next: M-2a-ii sitting 2** (opus) → M-2b → **P2 gate** (fable).
 **Pending operator acts:**
-- ~~the push~~ **done 2026-10-07** (operator ruling): `4d812f9..c553844` → `origin/main` (gitleaks over 8 commits clean, no data,
-  nothing > 1 MB). **Board v3 is now published**: corrections from here are a new version (SO-2);
-- the graduation candidates C-004, C-005, C-009, C-015 and **C-023** (WI-20).
+- the push of `4d812f9…` (now through this sitting's commits, unpushed); gitleaks first;
+- the graduation candidates (WI-20).
 
-**Next Session Prompt (self-contained, M-2a-ii):**
+**Next Session Prompt (self-contained, M-2a-ii sitting 2):**
 
-> You are Proteus in `~/aDNA/Atlantis.aDNA`. P2 is open. M-2a-i (the core for a persistent polygon instance) and M-1f (the
-> label-horizon embargo; board v3) are closed. Run **M-2a-ii: fork `FloridaKeysCoral.aDNA` and fetch its data**, at
-> **opus**. Read, in order:
+> You are Proteus in `~/aDNA/Atlantis.aDNA`. M-2a-ii is **in progress**. `FloridaKeysCoral.aDNA` is forked, conforms at the
+> declared stage, holds a green receipt, and its ADR-001 is ratified. Only the fetch remains, then review and close. At
+> **opus**, read:
 > 1. STATE;
-> 2. `how/campaigns/campaign_atlantis_genesis/missions/mission_m2a_ii_fknms_fork_and_fetch.md` (its rulings and acceptance
->    criteria govern);
-> 3. `how/skills/skill_atlantis_instance_fork.md` (the interview, the fork, the zone file pinned by sha256, the Hestia memo);
-> 4. the M-2a-i and M-1f AARs (CRW reduction and basis; R = H − 1 = 7; the embargo defaults to E = H = 8 and is not written
->    into the fork);
-> 5. `how/campaigns/campaign_atlantis_genesis/artifacts/instance_contract_v0.md`.
+> 2. the card `missions/mission_m2a_ii_fknms_fork_and_fetch.md` (§Progress of record; the ⏳ criteria govern);
+> 3. the sitting-1 session log in `how/sessions/history/2026-10/session_stanley_20261007_154002_*` (every ruling and finding);
+> 4. `~/aDNA/FloridaKeysCoral.aDNA/STATE.md` and its ADR-001.
 >
-> Open a session lease. **The steward (Stanley) rules, through `AskUserQuestion`:**
-> - the zoning version (pre- or post-Restoration-Blueprint) and the SPA grouping;
-> - the OSTIA licence question (WI-24): cite CRW-native with the caveat, or start the era in 2002;
-> - the posture ADR's Ratification row, before any network fetch.
+> Open a session lease. Then:
+> 1. **Probe CRW:** `curl -s -o /dev/null -w '%{http_code}' "https://coastwatch.noaa.gov/erddap/index.html"`. If it isn't 200,
+>    say so and stop; do not switch sources without a steward ruling (the PacIOOS mirror's licence conflicts with ADR-001).
+> 2. **Fetch:** `A=…/what/atlantis_core/.venv/bin/python; cd ~/aDNA/FloridaKeysCoral.aDNA; $A -m atlantis_core.fetch --instance .`
+>    in the background. The per-zone, per-chunk cache resumes after a failure, so re-run on 502s, gated on a probe that
+>    returns 200. Expect 567 requests.
+> 3. **Record and verify:** put each stream's printed `sha256` · `row_count` · `ingested_at` · `pipeline_version` in
+>    `streams.yaml`, then run `fetch --verify` and `conform --stage fetched`.
+> 4. **Review with the steward** (`AskUserQuestion`): the `reduction` blocks (`n_cells`, `fallback`, `shared_cells`;
+>    offline, 19 of 21 fall back and 0 share), and a descriptive per-year onset count. The split stays fixed: do not tune.
+> 5. **Commit the instance:** public posture, so `data/raw/` is committed; run gitleaks; no remote.
+> 6. **III review** via `iii/` in a fresh context (SO-10), over both the instance and the Atlantis diff `0e4154b..`; then the
+>    AAR, close, and queue M-2b.
 >
-> The instance is a **peer vault**, created at the workspace root by the fork skill. Atlantis adds no data (SO-3), and its
-> router row goes to Hestia by memo. The self-test receipt is earned under the M-1f code. Expect few onsets: folds will
-> skip on stop or test years with < 5 positives, and `rolling_skipped` says so. Do not tune around it.
->
-> Budget honestly (~120–160 kT; P1/P2 lanes ran +57% to +130%). At more than +50%, SITREP and ask. Run the III review via
-> `iii/` in a fresh context (SO-10), file the AAR, then queue M-2b.
+> Budget for sitting 2: ~60–90 kT plus the reviewer. Sitting 1 ran ~300 kT (≈ +88%, ruled).
 
 ## What's in place
 
@@ -267,7 +274,7 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
 
 ## Active blockers
 
-- None blocking M-2a.
+- **M-2a-ii fetch: CRW ERDDAP outage** (502 on every request from ~23:13Z 2026-10-07). Resume at sitting 2 after a 200 probe.
 - ~~push~~ **done 2026-10-03** (operator ruling, `AskUserQuestion`): `f07403e..9ac5e34` → `origin/main`, after gitleaks over the
   range (7 commits, exit 0), no file over 1 MB, no data files. **Board v2 is now published**: corrections from here are a new version (SO-2).
 - ~~push~~ **done 2026-10-03** (operator ruling): `cec155b..33fb62d` → `origin/main`, after gitleaks over the range
@@ -327,7 +334,7 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
 - ~~WI-23~~ **closed 2026-10-07 (M-1f): board v3**; every boundary is embargoed and checked. Original text follows. *(**placed 2026-10-06:** M-1f, its own lane between M-2a-i and M-2a-ii.)* **The label horizon crosses every split boundary** (M-1e III F-6; C-022). Disclosed on README 2b, the v2 page and board
   v2. The fix is carded: `how/backlog/idea_label_horizon_embargo.md` → board v3, its own cause. The operator places it, before
   the P2 gate compares the exemplar with FKNMS.
-- WI-24 — **M-2a-ii licence ruling (OSTIA).** The PacIOOS mirror of CoralTemp v3.1 carries an OSTIA academic-only clause for
+- ~~WI-24~~ **ruled 2026-10-07 (M-2a-ii):** CRW's *own* `noaacrwsstDaily` carries the OSTIA 1985–2002 terms too (premise below was wrong), so raw SST is dropped; DHW, HotSpot and SSTA from 1985 under CRW's licence, the CoralTemp residual disclosed in the instance's ADR-001. Original text follows. **M-2a-ii licence ruling (OSTIA).** The PacIOOS mirror of CoralTemp v3.1 carries an OSTIA academic-only clause for
   1985–2002, and CRW's own licence text does not. The steward rules on it at the posture ADR: cite CRW-native with the caveat
   noted, or start the era in 2002.
 - WI-9 — Memo candidates after the gate (peer vaults read-only): ASOAtlas — greedy `sed` in `run_controls.sh`, untyped-postcondition

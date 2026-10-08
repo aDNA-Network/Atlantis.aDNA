@@ -1,5 +1,19 @@
 # CHANGELOG — Atlantis.aDNA
 
+## 2026-10-08 — v0.11.1 · M-2a-ii sitting 1: FloridaKeysCoral.aDNA forked and ratified; fetch checkpointed
+
+- **The first instance exists:** `~/aDNA/FloridaKeysCoral.aDNA` (a peer vault). It conforms at the declared stage, its
+  self-test receipt is green, and its posture ADR was ratified by the steward. No data yet: CRW's ERDDAP was down
+  (502 on every request), so the fetch is checkpointed to sitting 2 by steward ruling.
+- **Three Atlantis-side fixes the fork surfaced** (atlantis_core **0.5.1**, 642 tests). Each fix's test fails without it:
+  - `fork` renders `answers.eval.sensitivity_threshold`, a closed vocabulary, which the card's Alert Level 2 needed;
+  - the self-test's C6 crashed (`KeyError: 'in_era_week'`) on any instance with no climatology. Every fixture had one. C6
+    is now said to be n/a, on the console and on the receipt;
+  - ERDDAP refuses a start before a dataset's first day (CRW DHW: 1985-03-25). The new optional spec `start` handles it.
+- **WI-24 corrected:** CRW's own SST product carries the OSTIA 1985–2002 terms, not only the PacIOOS mirror. Raw SST was
+  dropped (steward ruling).
+- **Router row** proposed to Hestia by drop-box memo. No data committed to Atlantis.
+
 ## 2026-10-07 — v0.11.0 · M-1f: the label-horizon embargo → board v3 · WI-23 closed
 
 - **Measured first.** The M-1e review's fold table reproduces exactly as crossing positives (up to 10 of 31, stop year
