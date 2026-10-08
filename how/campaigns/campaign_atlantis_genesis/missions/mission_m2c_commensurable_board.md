@@ -4,7 +4,7 @@ mission_id: M-2c
 plan_id: mission_m2c_commensurable_board
 title: "M-2c — a commensurable board: climatology at budget · a season-block paired interval · the exemplar at 0.7.0 (v4) · FKNMS v3 by memo, with its learner swap"
 owner: stanley
-status: planned
+status: split   # 2026-10-08, M-2c ruling 1 (operator, AskUserQuestion) → M-2c-i + M-2c-ii; kept as the parent card
 campaign: campaign_atlantis_genesis
 campaign_id: campaign_atlantis_genesis
 phase: P2→P3
