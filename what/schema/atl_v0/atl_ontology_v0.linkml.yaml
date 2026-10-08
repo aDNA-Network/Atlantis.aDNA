@@ -1,11 +1,13 @@
 # atl_ontology_v0.linkml.yaml — Atlantis.aDNA · the `atl_` ontology for ecosystem early warning, v0
 #
-# STATUS: draft (v0.6.0) — authored at M-0 (2026-10-02, fable); CONTROLLED at P1 M-1c (2026-10-02, opus); 0.3.0 at M-1d-i
+# STATUS: draft (v0.7.0) — authored at M-0 (2026-10-02, fable); CONTROLLED at P1 M-1c (2026-10-02, opus); 0.3.0 at M-1d-i
 # (2026-10-03, operator ruling): a stream may be DECLARED before it is fetched — `ingested_at` optional, and a hash ⇒ a fetch time.
 # 0.4.0 at M-1e (2026-10-03, operator ruling; F-8): an alert budget says where its threshold was fixed (`threshold_from`), and a
 # threshold fixed on validation ⇒ the REALISED test alert rate is stated beside the nominal `rate`. 0.5.0 at M-2a-i (2026-10-06):
 # `refractory_weeks` on an event. 0.6.0 at M-1f (2026-10-07, operator ruling): an evaluation may state the label-horizon
-# embargo its fit and stop sets were cut with (`embargo_weeks`). A constraint
+# embargo its fit and stop sets were cut with (`embargo_weeks`). 0.7.0 at M-2b (2026-10-08, steward rulings 19–20): two no-model
+# comparators beside climatology (`persistence_*`, `trend_*`) and the base rate and calibration-in-the-large per segment
+# (`base_rate_train`, `base_rate_validation`, `calibration_in_the_large_*`; ruling 16). A constraint
 # is claimed ONLY where a control in fixtures/controls/ proves it under all three worlds of run_controls.sh
 # (linkml-validate · the committed atl_ontology_v0.schema.json, descendants OFF · a scratch JSON Schema, descendants ON).
 # The control count and the known limits are in README.md. A constraint whose docstring names no control is NOT claimed.
@@ -36,7 +38,7 @@ description: >-
   (a feature with a tag and a lineage), an event definition (threshold · direction · horizon), and an evaluation
   (the measurement, always against its base rate). Observations, labels and predictions are table shapes, not
   entities, and never cross into Atlantis.
-version: 0.6.0
+version: 0.7.0
 license: https://opensource.org/licenses/MIT
 status: draft
 
@@ -237,6 +239,14 @@ slots:
   calibration_slope: {range: float}
   climatology_auroc: {range: float, minimum_value: 0, maximum_value: 1, description: "The cheapest baseline (T11). Required from M-1b on."}
   climatology_auprc: {range: float, minimum_value: 0, maximum_value: 1}
+  persistence_auroc: {range: float, minimum_value: 0, maximum_value: 1, description: "0.7.0 (M-2b, ruling 19). The no-model, no-fit comparator: test rows ranked by the event signal itself at t, carried forward as the label carries it (`last_known_weeks`) — the honest floor where the event variable is also a vital (DHW accumulates, so DHW(t) nearly decides DHW(t+k); SO-9). Optional: entries before 0.7.0 still validate. Controls: pos_evaluation_baselines_and_segments · neg_persistence_auroc_gt1. Nearest miss NOT caught: a persistence score that read s(t+1) (a leak is the emitter's and its tests', not a shape's)."}
+  persistence_auprc: {range: float, minimum_value: 0, maximum_value: 1, description: "0.7.0 (M-2b, ruling 19). As persistence_auroc. Controls: pos_evaluation_baselines_and_segments · neg_persistence_auprc_negative."}
+  trend_auroc:      {range: float, minimum_value: 0, maximum_value: 1, description: "0.7.0 (M-2b, ruling 19). A logistic fit on [s(t), s(t) − s(t−1)] — the signal and its last step — fitted on the rows the refit trains on (train ∪ embargoed val, as climatology), scored once on test. What the model adds beyond the event signal's own recent path. Controls: pos_evaluation_baselines_and_segments · neg_trend_auroc_gt1. Nearest miss NOT caught: a trend fitted on test rows (the emitter's plant test)."}
+  trend_auprc:      {range: float, minimum_value: 0, maximum_value: 1, description: "0.7.0 (M-2b, ruling 19). As trend_auroc. Controls: pos_evaluation_baselines_and_segments · neg_trend_auprc_gt1."}
+  base_rate_train:  {range: float, minimum_value: 0, maximum_value: 1, description: "0.7.0 (M-2b, ruling 16). Prevalence of the training years' modelling rows. With base_rate_validation and base_rate (test) it makes a non-stationary base rate visible: a threshold fixed on validation meets the test base rate, so a shift between segments moves every budget's realised precision (SO-9). Controls: pos_evaluation_baselines_and_segments · neg_base_rate_train_gt1. Nearest miss NOT caught: a rate ≠ that segment's positives / n (cross-field arithmetic is the emitter's)."}
+  base_rate_validation: {range: float, minimum_value: 0, maximum_value: 1, description: "0.7.0 (M-2b, ruling 16). Prevalence of the validation years' modelling rows (the years every threshold is fixed on). Controls: pos_evaluation_baselines_and_segments · neg_base_rate_validation_negative."}
+  calibration_in_the_large_validation: {range: float, minimum_value: -1, maximum_value: 1, description: "0.7.0 (M-2b, ruling 16). Mean predicted probability − observed prevalence on the validation stop set: 0 is calibrated in the large, > 0 over-predicts. Beside the test value it shows calibration under a base-rate shift. Controls: pos_evaluation_baselines_and_segments · neg_calibration_in_the_large_validation_gt1. Nearest miss NOT caught: a value that is not mean(p) − prevalence."}
+  calibration_in_the_large_test: {range: float, minimum_value: -1, maximum_value: 1, description: "0.7.0 (M-2b, ruling 16). Mean predicted probability − observed prevalence on test. Controls: pos_evaluation_baselines_and_segments · neg_calibration_in_the_large_test_lt_minus1."}
   alert_budgets:    {range: AtlAlertBudget, multivalued: true, inlined_as_list: true, required: true, minimum_cardinality: 1, description: "At least one (T6; SO-9 — operator ruling at M-1c to enforce now, not at M-1b). Controls: neg_evaluation_without_budget (absent) · neg_evaluation_empty_budgets (`[]`). Nearest miss NOT caught: a budget whose precision/recall were not measured at that rate."}
   lead_time:        {range: AtlLeadTime, inlined: true}
   ablations:        {range: AtlAblation, multivalued: true, inlined_as_list: true, description: "Surveillance ablation is REQUIRED where a surveillance channel is declared (T5)."}
@@ -357,7 +367,8 @@ classes:
       neg_document_extra_key (the root) prove closed-ness at the other two levels. Nearest miss NOT caught: per-patient values
       smuggled inside a declared free-text slot (e.g. `split`, `learner`) — a reviewer's catch, not a shape's.
     slots: [evaluation_id, event_ref, unit_ref, split, embargo_weeks, n_test, n_positives, base_rate, auroc, auprc, brier, calibration_slope,
-            climatology_auroc, climatology_auprc, alert_budgets, lead_time, ablations, learner, config_hash, data_pins,
+            climatology_auroc, climatology_auprc, persistence_auroc, persistence_auprc, trend_auroc, trend_auprc,
+            base_rate_train, base_rate_validation, calibration_in_the_large_validation, calibration_in_the_large_test, alert_budgets, lead_time, ablations, learner, config_hash, data_pins,
             shap_summary_ref, claim, owner_ruling_ref, limitations_ref]
     rules:
       - preconditions:

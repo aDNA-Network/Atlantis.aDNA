@@ -1,21 +1,21 @@
 ---
 type: schema_pack
 doc_id: atl_schema_v0_readme
-title: "what/schema/atl_v0/ — the Atlantis `atl_` ontology, v0 (draft · 56 controls under three worlds)"
+title: "what/schema/atl_v0/ — the Atlantis `atl_` ontology, v0 (draft · 65 controls under three worlds)"
 status: draft
-version: 0.6.0
+version: 0.7.0
 created: 2026-10-02
-updated: 2026-10-07
+updated: 2026-10-08
 last_edited_by: agent_proteus
-mission: mission_m1f_label_horizon_embargo   # 0.6.0; 0.5.0 at mission_m2a_i_core_for_persistent_polygon_instances; 0.4.0 at mission_m1e_eval_thresholds_on_validation; 0.3.0 at mission_m1d_i_fork_and_conformance; controlled at mission_m1c_linkml_controls; authored at mission_m0_atlantis_genesis_planning
+mission: mission_m2b_fknms_model_and_board   # 0.7.0; 0.6.0 at mission_m1f_label_horizon_embargo; 0.5.0 at mission_m2a_i_core_for_persistent_polygon_instances; 0.4.0 at mission_m1e_eval_thresholds_on_validation; 0.3.0 at mission_m1d_i_fork_and_conformance; controlled at mission_m1c_linkml_controls; authored at mission_m0_atlantis_genesis_planning
 authoring_idiom: "LinkML (aDNA.aDNA ADR-062, proposed — preferred-but-optional)"
 precedent: ASOAtlas.aDNA/what/schema/aso_v0/
 validation:
-  run_at: 2026-10-07   # M-1f (0.6.0, the M-2a-i scratch venv); M-2a-i (0.5.0, Python 3.13 scratch venv); M-1e (0.4.0) 2026-10-03; M-1d-i (0.3.0) 2026-10-03; M-1c 2026-10-02
+  run_at: 2026-10-08   # M-2b (0.7.0, the same scratch venv); M-1f (0.6.0, the M-2a-i scratch venv); M-2a-i (0.5.0, Python 3.13 scratch venv); M-1e (0.4.0) 2026-10-03; M-1d-i (0.3.0) 2026-10-03; M-1c 2026-10-02
   toolchain: "scratch uv venv · Python 3.12 · linkml 1.11.1 · jsonschema[format] + rfc3339-validator (nothing installed on the node; LINKML_BIN)"
   linkml_lint: "0 errors · 32 warnings (31 `recommended` — missing description on part/container slots; 1 `canonical_prefixes` — UCUM namespace) — accepted at v0"
   gen_json_schema: "gen-json-schema --closed (tree_root AtlDocument) → atl_ontology_v0.schema.json COMMITTED, draft 2019-09, 19 $defs (0.4.0: + ThresholdSource); byte-equality with a fresh generation is checked every run"
-  controls: "56 — 7 positive · 49 negative (19 at build + 23 from the M-1c III review + 3 at M-1d-i for the 0.3.0 stream rule + 1 positive and 4 negatives at M-1e for the 0.4.0 budget rule + 1 positive and 2 negatives at M-2a-i for the 0.5.0 refractory slot + 1 positive and 2 negatives at M-1f for the 0.6.0 embargo slot); each negative fails ONLY on its REJECTS_ON regex AT its REJECTS_AT path, in all three worlds (linkml-validate · committed JSON desc-OFF · scratch JSON desc-ON), FORMAT_CHECKER on"
+  controls: "65 — 8 positive · 57 negative (19 at build + 23 from the M-1c III review + 3 at M-1d-i for the 0.3.0 stream rule + 1 positive and 4 negatives at M-1e for the 0.4.0 budget rule + 1 positive and 2 negatives at M-2a-i for the 0.5.0 refractory slot + 1 positive and 2 negatives at M-1f for the 0.6.0 embargo slot + 1 positive and 8 negatives at M-2b, one per 0.7.0 slot); each negative fails ONLY on its REJECTS_ON regex AT its REJECTS_AT path, in all three worlds (linkml-validate · committed JSON desc-OFF · scratch JSON desc-ON), FORMAT_CHECKER on"
   instrument_proven: "three deliberate sabotages each turned the run red (rule weakened · committed JSON hand-edited · a negative naming the wrong reason) + per-arm isolation: removing each of the 7 geometry/anchor arms reddens exactly its own control(s) — M-1c AAR. 0.3.0 (M-1d-i): rule removed → its 2 negatives red in all three worlds; all_of arm removed → only the null twin red. 0.4.0 (M-1e): rule removed → both new negatives pass (validate) under linkml-validate and the generated JSON; a bare `required` (all_of removed) → the null twin passes — the M-1c hole, reproduced on the new rule. 0.5.0 (M-2a-i): minimum_value removed from refractory_weeks → neg_event_refractory_negative validates in linkml-validate and the scratch world, and the committed JSON is caught STALE. 0.6.0 (M-1f): a negative naming the wrong reason (`-7 is WRONG`) PASSED linkml-validate — a REJECTS_ON starting with `-` was read as a grep option, so that world never tested the reason (vacuous since 0.5.0's neg_event_refractory_negative; the two JSON worlds caught it). Fixed (`grep -e`); the same sabotage now reddens all three worlds"
   iii_review: "PASS-WITH-FINDINGS (fresh-context reviewer via iii/ wrapper, III v0.6.0); 12 findings, 11 fixed at M-1c, 1 carried (WI-8) — M-1c AAR §III review"
   flag_proof: "Rule 4 asserted by the runner: 9 range classes, no concrete descendants"
@@ -25,7 +25,7 @@ tags: [schema, ontology, linkml, atl, atlantis, draft, m0]
 
 # `atl_v0` — the Atlantis ontology
 
-> ✅ **56 controls · three worlds · committed JSON == fresh** (M-1c 2026-10-02; 0.3.0 at M-1d-i 2026-10-03; 0.4.0 at M-1e 2026-10-03; 0.5.0 at M-2a-i 2026-10-06; 0.6.0 at M-1f 2026-10-07). A constraint is claimed here **only**
+> ✅ **65 controls · three worlds · committed JSON == fresh** (M-1c 2026-10-02; 0.3.0 at M-1d-i 2026-10-03; 0.4.0 at M-1e 2026-10-03; 0.5.0 at M-2a-i 2026-10-06; 0.6.0 at M-1f 2026-10-07; 0.7.0 at M-2b 2026-10-08). A constraint is claimed here **only**
 > where a fixture in `fixtures/controls/` proves it under `linkml-validate`, the committed `atl_ontology_v0.schema.json`
 > (descendants OFF) and a scratch JSON Schema (descendants ON) — ASOAtlas rule 1. Everything else the schema *says* is
 > documentation. Status stays `draft`; what the controls do **not** prove is listed under **Known limits** below.
@@ -79,7 +79,7 @@ Chosen by the three tests in `context_adna_core_ontology_workshop` (instance · 
 5. Referential integrity (does `stream_ref` resolve? does the ruling path exist?), uniqueness and cross-object
    equality are a **validator's** job, not the schema's — named here as known limits, never implied.
 
-## What the controls prove (M-1c · 0.3.0 at M-1d-i · 0.4.0 at M-1e · 0.5.0 at M-2a-i · 0.6.0 at M-1f)
+## What the controls prove (M-1c · 0.3.0 at M-1d-i · 0.4.0 at M-1e · 0.5.0 at M-2a-i · 0.6.0 at M-1f · 0.7.0 at M-2b)
 
 | Constraint | Positive | Negative(s) — rejected only on this, at this path | Nearest miss NOT caught |
 |---|---|---|---|
@@ -93,6 +93,7 @@ Chosen by the three tests in `context_adna_core_ontology_workshop` (instance · 
 | A threshold fixed on validation states its realised rate: `threshold_from = validation` ⇒ `realised_rate` (rule, typed `all_of`; 0.4.0 — F-8) | `pos_budget_fixed_on_validation` | `neg_budget_validation_without_realised_rate` · `neg_budget_realised_rate_null` · `neg_realised_rate_gt1` (range) · `neg_unknown_threshold_from` (enum) | a budget that omits `threshold_from` (the grandfathered v0/v1 shape — the board emitter refuses it for new entries); a `threshold_from` that misstates where the threshold was computed (`tests/test_f8.py::test_eval_thresholds_do_not_move_with_test` tests that by effect; `board.assert_thresholds_fixed` checks realised = n_alerts / n_test) |
 | An onset refractory is a whole number of steps ≥ 0 (`refractory_weeks`, optional; 0.5.0 — the persistent-event onset, T3) | `pos_event_refractory` | `neg_event_refractory_negative` (minimum) · `neg_event_refractory_float` (integer) | a refractory that is the wrong length for the ecosystem; one that reads the future in code — the self-test's C9 (`atlantis_core.selftest`) proves the label's implementation reads only t−R … t |
 | An evaluation's label-horizon embargo is a whole number of steps ≥ 0 (`embargo_weeks`, optional; 0.6.0 — the fit/stop sets were cut so no label reads the next period, III M-1e F-6) | `pos_evaluation_embargo` | `neg_evaluation_embargo_negative` (minimum) · `neg_evaluation_embargo_float` (integer) | an embargo shorter than the event horizon (H lives on the event) and one that was not actually applied — `atlantis_core.eval.check_label_windows` proves the frames the learner received, and the board writes the slot from those checks |
+| The no-model comparators and the shift are bounded numbers (`persistence_auroc/auprc` · `trend_auroc/auprc` · `base_rate_train` · `base_rate_validation` in [0, 1]; `calibration_in_the_large_validation/test` in [−1, 1]; all optional; 0.7.0 — rulings 16, 19) | `pos_evaluation_baselines_and_segments` | `neg_persistence_auroc_gt1` · `neg_persistence_auprc_negative` · `neg_trend_auroc_gt1` · `neg_trend_auprc_gt1` · `neg_base_rate_train_gt1` · `neg_base_rate_validation_negative` · `neg_calibration_in_the_large_validation_gt1` · `neg_calibration_in_the_large_test_lt_minus1` (one per slot, range) | a persistence score that read s(t+1), a trend fitted on test rows, a segment rate ≠ its positives / n, a CITL ≠ mean(p) − prevalence — `atlantis_core`'s (`tests/test_baselines.py` plants; the board writes the slots from the run) |
 | `atl_<kind>_` id prefixes — **all five** id slots | all | `neg_bad_id_prefix` (stream) · `neg_unit_id_prefix` · `neg_vital_id_prefix` · `neg_event_id_prefix` · `neg_eval_id_prefix` | duplicate ids; dangling `*_ref`s |
 | `sha256` = lowercase hex64, no trailing newline | exemplar (3 pins) | `neg_sha256_not_hex64` · `neg_sha256_trailing_newline` | a well-formed hash of the wrong bytes |
 | `geometry_ref` is a pointer (denylist — operator ruling) — **one control per arm** | exemplar rule strings · `pos_mpa_zone_wdpa` paths | arms: `neg_geometry_arm_{brace,wkt,ewkt_case,pair,pair_hemisphere,blank}`; composites: `neg_inline_geometry_{wkt,geojson,bbox}` | integer / DMS / query-string / UTM coordinates (and named false rejects — schema docstring) |
@@ -156,6 +157,10 @@ Named so that nobody reads them as implied:
     it to the event's `horizon` (another object) or shows the rows were dropped. Both are `atlantis_core`'s:
     `eval.check_label_windows` reads H on the frames the learner received, and the board writes the slot from those
     checked boundaries and refuses an unembargoed result.
+16. **The comparators are stated, not proven, by the schema (0.7.0).** The four baseline slots and the four segment slots
+    are bounded floats; nothing here shows a persistence score read only the past, a trend was fitted off test, or a
+    segment's rate is its own positives / n. Those are `atlantis_core.eval`'s, proven by the plants in
+    `tests/test_baselines.py`; the board writes the slots from the run and never retypes them.
 
 ## Validation history
 

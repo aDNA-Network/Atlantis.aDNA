@@ -275,10 +275,16 @@ def test_v2_results_are_refused_for_the_embargo(v2):
         _emit(*v2, version=2)
 
 
-def test_v3_emits(v3):
-    e = _emit(*v3)
-    assert all(b["threshold_from"] == "validation" and 0 <= b["realised_rate"] <= 1 for b in e["evaluation"]["alert_budgets"])
-    assert e["evaluation"]["lead_time"]["threshold_from"] == "validation"
+def test_v3_holds_f8_and_is_refused_only_for_the_comparators(v3):
+    """M-2b: v3's results predate the persistence/trend comparators and the per-segment base rate (rulings 16, 19), so a
+    re-emission is refused for them by name — as v2's were for the embargo. Its F-8 shape still holds."""
+    inst, res, shap, swaps = v3
+    ev = project(res, inst, version=3, recorded_at="2026-10-07T00:00:00Z")
+    assert_thresholds_fixed(ev, res, swaps)
+    assert all(b["threshold_from"] == "validation" and 0 <= b["realised_rate"] <= 1 for b in ev["alert_budgets"])
+    assert ev["lead_time"]["threshold_from"] == "validation"
+    with pytest.raises(BoardError, match=r"comparators \(M-2b\): persistence_baseline_test missing"):
+        _emit(*v3)
 
 
 @pytest.mark.parametrize("plant, match", [

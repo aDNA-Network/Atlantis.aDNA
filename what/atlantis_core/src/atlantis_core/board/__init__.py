@@ -33,7 +33,7 @@ MAX_STRING_NUMBERS = 40   # numbers inside one string — notes are prose, not a
 EXTRAS_KEYS = {"rolling_selection", "rolling_skipped", "event", "patient", "modelling_rows", "modelling_positives", "modelling_prevalence",
                "dropped_already_in_event", "dropped_outcome_unknown", "n_trees", "n_vitals", "vital_groups",
                "sensitivity", "rolling_origin", "obligations", "shap_summary", "semantic_hash", "config_bytes_md5",
-               "data_pins", "learner_swaps", "delta_vs", "regenerated", "embargo"}
+               "data_pins", "learner_swaps", "delta_vs", "regenerated", "embargo", "baselines"}
 
 
 class BoardError(ValueError):
@@ -96,6 +96,15 @@ def project(res: dict, inst, *, version: int, recorded_at: str, recorded_by: str
           "calibration_slope": _r(t["calibration_slope"], 2),
           "climatology_auroc": _r(res["climatology_baseline_test"]["auroc"]),
           "climatology_auprc": _r(res["climatology_baseline_test"]["auprc"]),
+          # atl_v0 0.7.0 (M-2b, rulings 16 and 19) — absent from a result that predates them, so v0–v3 re-project unchanged
+          "persistence_auroc": _r((res.get("persistence_baseline_test") or {}).get("auroc")),
+          "persistence_auprc": _r((res.get("persistence_baseline_test") or {}).get("auprc")),
+          "trend_auroc": _r((res.get("trend_baseline_test") or {}).get("auroc")),
+          "trend_auprc": _r((res.get("trend_baseline_test") or {}).get("auprc")),
+          "base_rate_train": _r(res["splits"]["train"].get("base_rate")),
+          "base_rate_validation": _r(res["splits"]["val"].get("base_rate")),
+          "calibration_in_the_large_validation": _r(full["val"].get("calibration_in_the_large")),
+          "calibration_in_the_large_test": _r(t.get("calibration_in_the_large")),
           "alert_budgets": [_budget(r, t["alert_rates"][rate_key(r)]) for r in e["alert_rates"]],
           "lead_time": {"budget_rate": budget, "n_onsets": int(lt["n_onsets"]),
                         "flagged_fraction": _r(lt["detected_fraction"]), "median_lead": lt["median_lead_weeks"],
@@ -223,6 +232,51 @@ def assert_embargo(res: dict, inst, swaps: dict | None = None) -> None:
         raise BoardError("refusing to emit — label windows cross a boundary (M-1f, C-022): " + "; ".join(bad))
 
 
+BASELINES = ("persistence_baseline_test", "trend_baseline_test")
+
+
+def assert_comparators(ev: dict, res: dict) -> None:
+    """M-2b (rulings 16 and 19): no new entry without the event signal's own comparators and the base rate per segment, and
+    each is checked by arithmetic on the RESULT (C-023), not taken from its label: a segment's rate is its positives / n;
+    each comparator scored exactly the test rows; the trend was fitted on years before test."""
+    bad = []
+    for k in BASELINES:
+        if k not in res:
+            bad.append(f"{k} missing — a headline without the persistence/trend comparator overstates the model (SO-9)")
+    sp, n_test, t0 = res["splits"], res["full"]["test"]["n"], inst_test_start(res)
+    for seg, slot in (("train", "base_rate_train"), ("val", "base_rate_validation"), ("test", "base_rate")):
+        v = sp[seg]
+        if "base_rate" not in v:
+            bad.append(f"splits.{seg}: no base rate"); continue
+        want = v["positives"] / v["n"]
+        if abs(v["base_rate"] - want) > 1e-12:
+            bad.append(f"splits.{seg}: base rate {v['base_rate']} is not its positives / n ({v['positives']}/{v['n']})")
+        if ev.get(slot) != _r(want):
+            bad.append(f"{slot} {ev.get(slot)} is not {seg}'s positives / n ({_r(want)})")
+    for k in BASELINES:
+        b = res.get(k) or {}
+        if b and b.get("n_test") != n_test:
+            bad.append(f"{k}: scored {b.get('n_test')} rows, not the {n_test} test rows")
+    fy = (res.get("trend_baseline_test") or {}).get("fit_years")
+    if fy and t0 is not None and fy[1] >= t0:
+        bad.append(f"trend_baseline_test: fitted on rows through {fy[1]} — test starts {t0}")
+    if bad:
+        raise BoardError("comparators (M-2b): " + "; ".join(bad))
+
+
+def inst_test_start(res: dict):
+    return (res.get("splits") or {}).get("test", {}).get("years", [None])[0]
+
+
+def baselines_extras(res: dict) -> dict:
+    """How each comparator was scored — counts, never rows: what it read, how many test rows needed an imputed signal."""
+    out = {"climatology": {"score": "week-of-year onset rate, train ∪ embargoed val"}}
+    for name, k in (("persistence", "persistence_baseline_test"), ("trend", "trend_baseline_test")):
+        b = res[k]
+        out[name] = {f: b[f] for f in ("score", "n_test", "n_imputed", "n_fit", "fit_years") if f in b}
+    return out
+
+
 def embargo_extras(res: dict) -> dict:
     """The headline's embargo, and per fold what was dropped and the spill it removed — counts, never rows."""
     e = res["embargo"]
@@ -281,7 +335,7 @@ def _swap_summary(sw: dict) -> dict:
                                   **({"realised_rate": _r(v.get("realised_rate")), "threshold_from": SOURCE.get(v["threshold_from"], v["threshold_from"])}
                                      if "threshold_from" in v else {})} for k, v in t["alert_rates"].items()},
             "lead_time": {"flagged_fraction": _r(lt["detected_fraction"]), "median_lead": lt["median_lead_weeks"], "n_onsets": lt["n_onsets"]},
-            "rolling_origin_auroc_range": [_r(min(ro)), _r(max(ro))],
+            "rolling_origin_auroc_range": [_r(min(ro)), _r(max(ro))] if ro else None,
             "top6": sw.get("shap_summary", {}).get("top6"),
             "group_mean_abs_shap": sw.get("shap_summary", {}).get("group_mean_abs_shap"),
             "group_net_mean_abs_shap": sw.get("shap_summary", {}).get("group_net_mean_abs_shap"),
@@ -301,6 +355,7 @@ def emit(res: dict, inst, *, version: int, run_date: str, recorded_at: str, shap
     ev = project(res, inst, version=version, recorded_at=recorded_at, shap_summary_ref=shap_summary_ref)
     assert_thresholds_fixed(ev, res, swaps)   # before the schema, so the refusal names F-8 rather than a slot
     assert_embargo(res, inst, swaps)          # and M-1f's, by name
+    assert_comparators(ev, res)               # and M-2b's
     validate(ev)
     event = inst.event
     rep = res["features_report"]
@@ -326,6 +381,7 @@ def emit(res: dict, inst, *, version: int, run_date: str, recorded_at: str, shap
                       for sid, s in inst.streams.items() if s.get("sha256")],
         "learner_swaps": [_swap_summary(sw) for sw in (swaps or {}).values()],
         "embargo": embargo_extras(res),
+        "baselines": baselines_extras(res),
     }
     if delta_vs:
         extras["delta_vs"] = delta_vs
@@ -342,7 +398,9 @@ def emit(res: dict, inst, *, version: int, run_date: str, recorded_at: str, shap
 
 def delta(new_ev: dict, old_entry: dict) -> dict:
     o = old_entry["evaluation"]
-    keys = ("n_test", "n_positives", "base_rate", "auroc", "auprc", "brier", "calibration_slope", "climatology_auroc", "climatology_auprc")
+    keys = ("n_test", "n_positives", "base_rate", "auroc", "auprc", "brier", "calibration_slope", "climatology_auroc", "climatology_auprc",
+            "persistence_auroc", "persistence_auprc", "trend_auroc", "trend_auprc", "base_rate_train", "base_rate_validation",
+            "calibration_in_the_large_validation", "calibration_in_the_large_test")
     d = {k: {"was": o.get(k), "now": new_ev.get(k), "change": (None if o.get(k) is None or new_ev.get(k) is None else _r(new_ev[k] - o[k]))}
          for k in keys}
     d["lead_time"] = {"was": o.get("lead_time"), "now": new_ev.get("lead_time")}

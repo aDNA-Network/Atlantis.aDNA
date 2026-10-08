@@ -277,9 +277,45 @@
                     "minimum": 0,
                     "type": "number"
                 },
+                "base_rate_train": {
+                    "description": "0.7.0 (M-2b, ruling 16). Prevalence of the training years' modelling rows. With base_rate_validation and base_rate (test) it makes a non-stationary base rate visible: a threshold fixed on validation meets the test base rate, so a shift between segments moves every budget's realised precision (SO-9). Controls: pos_evaluation_baselines_and_segments \u00b7 neg_base_rate_train_gt1. Nearest miss NOT caught: a rate \u2260 that segment's positives / n (cross-field arithmetic is the emitter's).",
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "base_rate_validation": {
+                    "description": "0.7.0 (M-2b, ruling 16). Prevalence of the validation years' modelling rows (the years every threshold is fixed on). Controls: pos_evaluation_baselines_and_segments \u00b7 neg_base_rate_validation_negative.",
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
                 "brier": {
                     "maximum": 1,
                     "minimum": 0,
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "calibration_in_the_large_test": {
+                    "description": "0.7.0 (M-2b, ruling 16). Mean predicted probability \u2212 observed prevalence on test. Controls: pos_evaluation_baselines_and_segments \u00b7 neg_calibration_in_the_large_test_lt_minus1.",
+                    "maximum": 1,
+                    "minimum": -1,
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "calibration_in_the_large_validation": {
+                    "description": "0.7.0 (M-2b, ruling 16). Mean predicted probability \u2212 observed prevalence on the validation stop set: 0 is calibrated in the large, > 0 over-predicts. Beside the test value it shows calibration under a base-rate shift. Controls: pos_evaluation_baselines_and_segments \u00b7 neg_calibration_in_the_large_validation_gt1. Nearest miss NOT caught: a value that is not mean(p) \u2212 prevalence.",
+                    "maximum": 1,
+                    "minimum": -1,
                     "type": [
                         "number",
                         "null"
@@ -392,6 +428,24 @@
                         "null"
                     ]
                 },
+                "persistence_auprc": {
+                    "description": "0.7.0 (M-2b, ruling 19). As persistence_auroc. Controls: pos_evaluation_baselines_and_segments \u00b7 neg_persistence_auprc_negative.",
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "persistence_auroc": {
+                    "description": "0.7.0 (M-2b, ruling 19). The no-model, no-fit comparator: test rows ranked by the event signal itself at t, carried forward as the label carries it (`last_known_weeks`) \u2014 the honest floor where the event variable is also a vital (DHW accumulates, so DHW(t) nearly decides DHW(t+k); SO-9). Optional: entries before 0.7.0 still validate. Controls: pos_evaluation_baselines_and_segments \u00b7 neg_persistence_auroc_gt1. Nearest miss NOT caught: a persistence score that read s(t+1) (a leak is the emitter's and its tests', not a shape's).",
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
                 "recorded_at": {
                     "format": "date-time",
                     "type": [
@@ -419,6 +473,24 @@
                 },
                 "tier": {
                     "$ref": "#/$defs/EvidenceTier"
+                },
+                "trend_auprc": {
+                    "description": "0.7.0 (M-2b, ruling 19). As trend_auroc. Controls: pos_evaluation_baselines_and_segments \u00b7 neg_trend_auprc_gt1.",
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "trend_auroc": {
+                    "description": "0.7.0 (M-2b, ruling 19). A logistic fit on [s(t), s(t) \u2212 s(t\u22121)] \u2014 the signal and its last step \u2014 fitted on the rows the refit trains on (train \u222a embargoed val, as climatology), scored once on test. What the model adds beyond the event signal's own recent path. Controls: pos_evaluation_baselines_and_segments \u00b7 neg_trend_auroc_gt1. Nearest miss NOT caught: a trend fitted on test rows (the emitter's plant test).",
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": [
+                        "number",
+                        "null"
+                    ]
                 },
                 "unit_ref": {
                     "description": "The patient population the evaluation covers (the parent unit when many).",
@@ -1134,6 +1206,6 @@
     },
     "title": "atl_ontology_v0",
     "type": "object",
-    "version": "0.6.0"
+    "version": "0.7.0"
 }
 

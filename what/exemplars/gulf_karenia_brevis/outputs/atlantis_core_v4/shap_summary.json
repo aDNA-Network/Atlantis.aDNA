@@ -1,0 +1,111 @@
+{
+ "learner_kind": "xgboost",
+ "base_logit": -2.80532162685667,
+ "base_p": 0.05703728174565531,
+ "additivity_max_gap": 3.4324311624089887e-06,
+ "mean_abs_shap": {
+  "roll_max_4w": 0.40478,
+  "woy_sin": 0.33013,
+  "roll_max_8w": 0.24894,
+  "weeks_since_bloom": 0.23353,
+  "sst_delta_4w": 0.19009,
+  "discharge_anom_t0": 0.18582,
+  "sst_t0": 0.14479,
+  "n_samples_4w": 0.11754,
+  "sst_anom_t2": 0.08598,
+  "log_max_t0": 0.08517,
+  "log_max_t1": 0.07096,
+  "sst_anom_t4": 0.06185,
+  "woy_cos": 0.06115,
+  "n_samples_t0": 0.05469,
+  "discharge_30d_t3": 0.048,
+  "log_p90_t0": 0.04475,
+  "weeks_since_detect": 0.04197,
+  "discharge_30d_t0": 0.03935,
+  "log_max_t2": 0.01735,
+  "sst_anom_t0": 0.01572,
+  "log_max_t3": 0.01105,
+  "growth_1w": 0.00842,
+  "growth_2w": 0.0073,
+  "weeks_since_sample": 0.00127,
+  "log_med_t0": 2e-05
+ },
+ "group_mean_abs_shap": {
+  "counts": 1.17552,
+  "sst": 0.49842,
+  "season": 0.39128,
+  "discharge": 0.27317,
+  "surveillance": 0.17223
+ },
+ "tag_mean_abs_shap": {
+  "state": 1.17425,
+  "proxy": 0.8897,
+  "lever": 0.27317,
+  "artifact": 0.1735
+ },
+ "group_net_mean_abs_shap": {
+  "counts": 0.85344,
+  "season": 0.34906,
+  "sst": 0.24866,
+  "discharge": 0.21084,
+  "surveillance": 0.16829
+ },
+ "columns": [
+  "log_max_t0",
+  "log_max_t1",
+  "log_max_t2",
+  "log_max_t3",
+  "log_med_t0",
+  "log_p90_t0",
+  "roll_max_4w",
+  "roll_max_8w",
+  "growth_1w",
+  "growth_2w",
+  "weeks_since_bloom",
+  "weeks_since_detect",
+  "weeks_since_sample",
+  "n_samples_t0",
+  "n_samples_4w",
+  "woy_sin",
+  "woy_cos",
+  "sst_t0",
+  "sst_anom_t0",
+  "sst_anom_t2",
+  "sst_anom_t4",
+  "sst_delta_4w",
+  "discharge_30d_t0",
+  "discharge_30d_t3",
+  "discharge_anom_t0"
+ ],
+ "top6": [
+  "roll_max_4w",
+  "woy_sin",
+  "roll_max_8w",
+  "weeks_since_bloom",
+  "sst_delta_4w",
+  "discharge_anom_t0"
+ ],
+ "perturbation": "interventional",
+ "background_n": 1000,
+ "background_from": "train rows only",
+ "n_test_rows": 1640,
+ "levers": {
+  "discharge_30d_t0": "the release schedulers for the Caloosahatchee at S-79 (gauge 02292900, config.yaml lever: true) \u2014 the Army Corps and the South Florida Water Management District, as the exemplar page names them",
+  "discharge_30d_t3": "the release schedulers for the Caloosahatchee at S-79 (gauge 02292900, config.yaml lever: true) \u2014 the Army Corps and the South Florida Water Management District, as the exemplar page names them",
+  "discharge_anom_t0": "the release schedulers for the Caloosahatchee at S-79 (gauge 02292900, config.yaml lever: true) \u2014 the Army Corps and the South Florida Water Management District, as the exemplar page names them"
+ },
+ "caveat": "SHAP attributes the model's score to its inputs. It is not a cause, and a lever's SHAP is not the effect of pulling it.",
+ "dependence_partners": {
+  "roll_max_4w": "log_max_t0",
+  "woy_sin": "roll_max_8w",
+  "roll_max_8w": "woy_sin",
+  "weeks_since_bloom": "woy_sin",
+  "sst_delta_4w": "roll_max_8w",
+  "discharge_anom_t0": "roll_max_8w"
+ },
+ "top_interaction_pair": {
+  "a": "roll_max_8w",
+  "b": "woy_sin",
+  "mean_abs_interaction": 0.03294951468706131
+ }
+}

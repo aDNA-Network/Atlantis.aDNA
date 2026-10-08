@@ -92,6 +92,9 @@ climatology:   # optional — stream → [first_year, last_year]; each era ends 
   atl_stream_example_sst_daily: [1991, 2010]
 
 split: {min_train_year: 2005, train_end: 2016, val_start: 2017, val_end: 2019, test_start: 2020, test_end: 2023}
+# split.rolling_origin_years (optional, M-2b): [Y, …] → one fold per Y, trained through Y and scored on Y+1 (per-year AUROC and
+# prevalence — how the model holds as the base rate moves). Absent → no folds; a fold with < 5 onsets in its stop or test year is
+# skipped and says so. A training key: it moves the semantic hash. e.g. rolling_origin_years: [2016, 2017, 2018, 2019, 2020, 2021, 2022]
 
 surveillance: {}   # a stream declares surveillance_channel: true above; with none, give {declared: absent, reason: …}
 

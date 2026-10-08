@@ -21,6 +21,14 @@
 
 *Status is derived, never written into an entry (SO-2): within one source, instance and stem, the highest version supersedes the lower ones. A superseded entry stays on the board.*
 
+## Comparators and the shift
+
+*atl_v0 0.7.0 (M-2b). Where the event variable is also a vital, the model is read against the signal itself: **Persistence** ranks test weeks by the event signal at t (no model); **Trend** is a logistic fit on that signal and its last step. **Base rate** is per segment (train / validation / test): thresholds are fixed on validation and meet the test base rate. **Mean p − prevalence** is calibration in the large (> 0 over-predicts). Entries before 0.7.0 carry none of these and are not listed.*
+
+| Entry | Base rate train / val / test | Persistence AUROC / AUPRC | Trend AUROC / AUPRC | Mean p − prevalence val / test |
+|---|---|---|---|---|
+| *none yet* | | | | |
+
 ## Alert budgets
 
 *Precision and recall when the steward can staff alerts on this fraction of patient-weeks. **Budget** is nominal; **Realised** is the share of test patient-weeks a threshold fixed beforehand actually flagged (atl_v0 0.4.0). A threshold chosen on the test years themselves (before M-1e) has no realised rate: its precision and recall are after the fact (F-8).*

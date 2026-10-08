@@ -132,11 +132,14 @@ def test_entries_instance_side_emit_index_and_item9_reader(instance_copy, capsys
     V2 = ["--outputs", "outputs/atlantis_core_v2"]   # M-1f: v2's outputs predate the embargo and are refused by name
     assert main(["--instance", str(instance_copy), "--version", "1", "--run-date", RUN, "--entries", str(e), *V2]) == 1
     assert "label windows cross a boundary (M-1f, C-022): headline: no embargo recorded" in capsys.readouterr().out
-    V3 = ["--outputs", "outputs/atlantis_core_v3"]   # (M-1e: v1's outputs predate F-8's fix and are refused, test_f8)
-    assert main(["--instance", str(instance_copy), "--version", "1", "--run-date", RUN, "--entries", str(e), *V3]) == 0
+    V3 = ["--outputs", "outputs/atlantis_core_v3"]   # M-2b: v3's outputs predate the comparators and are refused by name
+    assert main(["--instance", str(instance_copy), "--version", "1", "--run-date", RUN, "--entries", str(e), *V3]) == 1
+    assert "comparators (M-2b): persistence_baseline_test missing" in capsys.readouterr().out
+    V4 = ["--outputs", "outputs/atlantis_core_v4"]   # (M-1e: v1's outputs predate F-8's fix and are refused, test_f8)
+    assert main(["--instance", str(instance_copy), "--version", "1", "--run-date", RUN, "--entries", str(e), *V4]) == 0
     [f] = list(e.glob("*.json"))
     ent = json.loads(f.read_text())
-    assert ent["provenance"]["metrics_file"] == "outputs/atlantis_core_v3/metrics.json"    # relative to the instance repo
+    assert ent["provenance"]["metrics_file"] == "outputs/atlantis_core_v4/metrics.json"    # relative to the instance repo
     assert not list(ENTRIES.glob(f"{RUN}_*"))                                          # nothing landed in Atlantis
     assert main(["--index", "--entries", str(e)]) == 0 and (instance_copy / "what/board/BOARD.md").exists()
     # conform item 9's reader, as it runs it: closed · green · this instance's unit_ref and semantic_hash
@@ -146,7 +149,7 @@ def test_entries_instance_side_emit_index_and_item9_reader(instance_copy, capsys
     validate(ent["evaluation"]); assert_green(ent)
     assert ent["evaluation"]["unit_ref"] == inst.cfg["board"]["unit_ref"]
     assert ent["evaluation_extras"]["semantic_hash"] == semantic_hash(inst) == "7b789afded"   # M-1f: the embargoed config
-    assert main(["--instance", str(instance_copy), "--version", "1", "--run-date", RUN, "--entries", str(e), *V3]) == 1  # SO-2
+    assert main(["--instance", str(instance_copy), "--version", "1", "--run-date", RUN, "--entries", str(e), *V4]) == 1  # SO-2
 
 
 def test_an_outside_instance_cannot_write_atlantis_board(instance_copy, capsys):
@@ -224,7 +227,7 @@ def test_f3_regenerate_fails_closed(instance_copy, tmp_path, capsys):
     """F-3 (C-021): origin/main was hard-coded and a git error read as 'never published'."""
     e = instance_copy / "what" / "board" / "entries"
     args = ["--instance", str(instance_copy), "--version", "1", "--run-date", RUN, "--entries", str(e),
-            "--outputs", "outputs/atlantis_core_v3"]   # M-1f: the embargoed run (v2's outputs are refused)
+            "--outputs", "outputs/atlantis_core_v4"]   # M-2b: the run with comparators (v2's, v3's outputs are refused)
     assert main(args) == 0
     assert main(args + ["--regenerate", "probe"]) == 1                     # not a git repo: cannot tell → refuse
     assert "cannot tell" in capsys.readouterr().out

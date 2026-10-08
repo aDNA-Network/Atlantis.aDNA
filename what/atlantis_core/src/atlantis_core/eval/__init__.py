@@ -33,7 +33,8 @@ from sklearn.metrics import average_precision_score, roc_auc_score
 from atlantis_core.config import feature_name
 from atlantis_core.eval.lead import lead_time
 from atlantis_core.eval.learners import learner
-from atlantis_core.eval.metrics import THRESHOLD_FROM, climatology_baseline, evaluate, quantile_thresholds, rate_key
+from atlantis_core.eval.metrics import (THRESHOLD_FROM, climatology_baseline, evaluate, persistence_baseline,
+                                        quantile_thresholds, rate_key, signal_history, trend_baseline)
 from atlantis_core.eval.rolling import clipped_eras
 
 __all__ = ["run", "split", "groups", "ObligationError", "check_fold_selection", "eval_modes", "embargo_weeks", "embargo",
@@ -254,7 +255,8 @@ def run(inst, model_df: pd.DataFrame, panel: pd.DataFrame, *, fold_tables=None, 
     E, H = _embargo_of(inst)
     res = {"learner_kind": spec["kind"], "features": feats, "feature_groups": grp,
            "splits": {k: {"years": [int(v["week"].dt.year.min()), int(v["week"].dt.year.max())], "n": int(len(v)),
-                          "positives": int(v["y"].sum())} for k, v in [("train", train), ("val", val), ("test", test)]}}
+                          "positives": int(v["y"].sum()), "base_rate": float(v["y"].mean())}   # ruling 16: per segment
+                      for k, v in [("train", train), ("val", val), ("test", test)]}}
     art = {}
     variants = {"full": feats}
     for ab in ecfg.get("ablations", []) or []:
@@ -283,6 +285,17 @@ def run(inst, model_df: pd.DataFrame, panel: pd.DataFrame, *, fold_tables=None, 
     # the baseline is fitted on the refit's rows: the embargo is the model's, so the comparison stays like for like
     res["climatology_baseline_test"] = climatology_baseline(pd.concat([train, embargo(val, s["test_start"], E)]), test)
     ev = inst.event
+    # M-2b (ruling 19): the event signal's own comparators, fitted on those same rows. The rows the trend actually received
+    # are checked like any fit (C-022 on the frame received, H from the event), so a fit that read test is refused by name
+    base_fit = pd.concat([train, embargo(val, s["test_start"], E)])
+    hist = signal_history(panel, unit_col, int(inst.cfg["label"]["last_known_weeks"]))
+    res["persistence_baseline_test"] = persistence_baseline(base_fit, test, hist, unit_col=unit_col, direction=ev["direction"])
+    res["trend_baseline_test"] = trend_baseline(base_fit, test, hist, unit_col=unit_col)
+    fy = res["trend_baseline_test"]["fit_years"]
+    if fy[1] >= s["test_start"]:
+        raise ObligationError(f"baselines: the trend was fitted on rows through {fy[1]} — test starts {s['test_start']}")
+    if E:
+        check_label_windows("baselines fit→test", base_fit, s["test_start"], H)
     res["embargo"] = {"weeks": E, "horizon": H, "checked": bool(E), "boundaries": res["full"]["embargo"],
                       "spill": {"train→val": horizon_spill(train, panel, unit_col, s["val_start"], ev),
                                 "val→test": horizon_spill(val, panel, unit_col, s["test_start"], ev)}}
@@ -305,7 +318,7 @@ def run(inst, model_df: pd.DataFrame, panel: pd.DataFrame, *, fold_tables=None, 
             raise ObligationError(f"R7 fold {Y}→{Y + 1}: needs eras {need}, got {eras} (rebuilt={rebuilt}) — obligation not executed")
         return fdf, eras, rebuilt
 
-    for Y in s["rolling_origin_years"]:
+    for Y in s.get("rolling_origin_years") or []:   # optional, as registry R7 and conform item 8 read it (M-2b: the fork writes none)
         fdf, eras, rebuilt = fold(Y)
         tr, te = fdf[fdf.week.dt.year <= Y], fdf[fdf.week.dt.year == Y + 1]
         if te["y"].sum() < 5:   # III M-1f F-7: said, as the inner-year skip is (a rare-event instance meets this)

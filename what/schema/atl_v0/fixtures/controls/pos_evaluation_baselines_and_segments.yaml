@@ -1,0 +1,24 @@
+# POSITIVE — M-2b (atl_v0 0.7.0). Persistence + trend comparators, per-segment base rates (train · validation; test is
+# base_rate) and calibration-in-the-large on validation and test, a negative one (under-prediction under a rising base rate). MUST VALIDATE.
+evaluations:
+  - evaluation_id: atl_eval_example
+    event_ref: atl_event_example
+    split: "train 2000-2015 · val 2016-2017 · test 2018-2020, scored once; label-horizon embargo 4 wk"
+    embargo_weeks: 4
+    n_test: 100
+    n_positives: 15
+    base_rate: 0.15
+    climatology_auroc: 0.6
+    climatology_auprc: 0.2
+    persistence_auroc: 0.8
+    persistence_auprc: 0.4
+    trend_auroc: 0.85
+    trend_auprc: 0.45
+    base_rate_train: 0.013
+    base_rate_validation: 0.076
+    calibration_in_the_large_validation: -0.01
+    calibration_in_the_large_test: -0.06
+    alert_budgets: [{rate: 0.1, precision: 0.5, recall: 0.4, n_alerts: 8, threshold_from: validation, realised_rate: 0.08}]
+    config_hash: "0000000000"
+    claim: method_demonstration
+    limitations_ref: "site/example.html#limits"

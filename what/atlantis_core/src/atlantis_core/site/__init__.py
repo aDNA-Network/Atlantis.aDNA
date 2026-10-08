@@ -76,6 +76,13 @@ def check_copy(copy: dict, data: dict, tpl: str, site: dict) -> None:
     keys = {s["key"] for s in site.get("strips", []) or []}
     errs += [f"copy.strips.{k}: no such strip in site.yaml" for k in (copy.get("strips") or {}) if k not in keys]
     errs += [f"site.yaml strip {k!r}: no words in copy.strips" for k in keys if k not in (copy.get("strips") or {})]
+    # M-2b: a comparator or the calibration shift the run made is drawn only in the instance's words (the template has none)
+    m, st = data.get("metrics") or {}, copy.get("strings") or {}
+    cr = st.get("compare_rows") or {}
+    errs += [f"copy.strings.compare_rows: no words for the {k} comparator the run made" for k, mk in
+             (("persistence", "persistence_baseline_test"), ("trend", "trend_baseline_test")) if mk in m and k not in cr]
+    if "calibration_in_the_large" in m and "citl" not in st:
+        errs.append("copy.strings: no 'citl' words (the run reports calibration in the large per segment)")
     tp = (copy.get("strings") or {}).get("trace_panels") or {}
     errs += [f"copy.strings.trace_panels: no words for trace panel {p!r}" for p in ((site.get("trace") or {}).get("panels") or []) if p not in tp]
     if errs:

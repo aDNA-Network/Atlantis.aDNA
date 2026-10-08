@@ -108,9 +108,13 @@ def _metrics(inst, m: dict) -> dict:
     full.pop("gain_importance", None)
     abl = [{"group": a["drop_group"], **{k: m[f"no_{a['drop_group']}"][k] for k in ("n_trees", "test")}}
            for a in inst.cfg["eval"].get("ablations", []) or []]
-    keep = ("splits", "climatology_baseline_test", "surveillance_only_test_auroc", "surveillance_only_vital",
+    keep = ("splits", "climatology_baseline_test", "persistence_baseline_test", "trend_baseline_test",
+            "surveillance_only_test_auroc", "surveillance_only_vital",
             "rolling_origin", "obligations", "mode", "sensitivity", "semantic_hash", "features_report", "atlantis_core")
     out = {k: m[k] for k in keep if k in m}
+    if "calibration_in_the_large" in full.get("test", {}):   # ruling 16: val beside test, so the shift is on the page
+        out["calibration_in_the_large"] = {"val": (full.get("val") or {}).get("calibration_in_the_large"),
+                                           "test": full["test"]["calibration_in_the_large"]}
     for blk in ("val",):
         full.pop(blk, None)
     out.update(full=full, ablations=abl)
