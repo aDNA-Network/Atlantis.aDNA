@@ -1,5 +1,31 @@
 # CHANGELOG — Atlantis.aDNA
 
+## 2026-10-08 — v0.12.0 · M-2b ✅: FloridaKeysCoral.aDNA trained, paged and on the board · core 0.6.1 · atl_v0 0.7.0 · III 8/8 → P2 gate requested
+
+- **The second instance — the first MPA — is on the board.** `2026-10-08_florida_keys_coral_v2` (GREEN, closed, `method_demonstration`),
+  landed by memo after Atlantis re-checked it; v1 is superseded on provenance alone (III F-6). The page lives in the instance.
+  Test 2019–25 at a 15.0% base rate: model 0.937 / 0.690 against climatology 0.919 / 0.601, trend 0.781 / 0.520 and
+  persistence 0.751 / 0.358. **The calendar knows most of a summer heat event.**
+- **Core 0.6.0:** the event signal's own comparators — *persistence* (s(t) as the label carries it, no fit) and *trend*
+  (logistic on s(t) and its last step, fitted on climatology's rows); the base rate per segment and calibration in the large
+  (ruling 16: 1.31 / 7.59 / 15.01%; −0.045 → −0.097; validation-fixed thresholds flag 1.4–2× their budget on test);
+  `assert_comparators`; `rolling_origin_years` optional. **atl_v0 0.7.0:** eight optional slots, 65 controls. Exemplar re-run
+  into `outputs/atlantis_core_v4` ≡ v3 on every number; v3 is refused for the comparators by name.
+- **Three defects only a real core-built page reached (`671808b`):** a `//` comment in a one-line IIFE killed the page while
+  every test passed (now `node --check` with the defect planted back); polygon zone names; conform item 10 could not pass any
+  `atlantis_core.site` page.
+- **Core 0.6.1, the III fixes (694 tests):** the trend's step-input plant (F-1); item 10 needs the section renderer and a
+  script that parses (F-2, ruling 25); `assert_comparators` documented as a tamper check, with slot ↔ result equality (F-5);
+  the board refuses config bytes edited after the run (F-6, rulings 24 and 26); the "Positives" column and val's stop-set
+  denominator (F-7). Register: T3's lift and restated falsifier (F-3); the roll-up matches the rows (F-4).
+- **Theses re-cut:** T1 two-instance; T3 and T10 tested on FKNMS (T3's falsifier measured in scratch: the persistence comparator
+  closes from 52% to 88% of the model's AUPRC under a persistence-inclusive label); **T9 weak form supported, strong form not
+  met** (zero instance patches; nine P1 template changes).
+- **III** PASS-WITH-FINDINGS, 8/8. Local store: C-007 → 2, C-009 → 6, C-011 → 2, C-023 → 5; new C-031
+  `metric_compared_across_base_rates`, C-032 `register_summary_outruns_rows`. Steward rulings 19–26.
+- **Card completed.** AAR filed. Roster, charter and STATE updated; **the P2 gate is requested** (fable, operator-summoned).
+  Budget ≈ +140% on the card, estimated; the SITREP was raised at the +50% line (ruling 23).
+
 ## 2026-10-08 — v0.11.2 · M-2a-ii ✅: FloridaKeysCoral.aDNA fetched and conforming · core 0.5.3 · III 9/9
 
 - **The first MPA instance holds its data.** It has three CRW streams (DHW, HotSpot, SSTA), daily over 1985 → 2025 for 21

@@ -6,7 +6,7 @@ display_name: "Operation Tidewatch"
 owner: stanley
 persona: proteus            # RULED 2026-10-02 at the P0-exit gate (ADR-001 ratified)
 status: active
-phase: P1                   # P0 gate MET 2026-10-02 · P1 gate MET 2026-10-03 — CONDITIONAL GO P2; condition (a) M-1e ✅ 2026-10-03 → P2 open; M-2a-i ✅ 2026-10-06 · M-1f ✅ 2026-10-07 → M-2a-ii ✅ 2026-10-08 (FloridaKeysCoral forked, fetched, conforms; III 9/9) → M-2b queued
+phase: P1                   # P0 gate MET 2026-10-02 · P1 gate MET 2026-10-03 — CONDITIONAL GO P2; condition (a) M-1e ✅ 2026-10-03 → P2 open; M-2a-i ✅ 2026-10-06 · M-1f ✅ 2026-10-07 → M-2a-ii ✅ 2026-10-08 (FloridaKeysCoral forked, fetched, conforms; III 9/9) → M-2b ✅ 2026-10-08 (trained · paged · board v2 landed; comparators + segment base rates, atl_v0 0.7.0; III 8/8) → **P2 gate requested** → M-2b queued
 phase_count: 6
 mission_count: 10           # M-0 (done) + nine carded: M-1a M-1b M-1c M-1d · M-2 · M-3a M-3b · M-4 · M-5
 estimated_sessions: "12-18"

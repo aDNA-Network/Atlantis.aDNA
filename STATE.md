@@ -1,15 +1,15 @@
 ---
 type: state
 status: p1_open
-phase: "P2 open — conditions (a) ✅ 2026-10-03 · (c) ✅ 2026-10-06; M-2a-i ✅ · M-1f ✅ (board v3) · M-2a-ii ✅ 2026-10-08 (FloridaKeysCoral forked · fetched · conforms) → M-2b ⏭ → P2 gate"
+phase: "P2 open — conditions (a) ✅ 2026-10-03 · (c) ✅ 2026-10-06; M-2a-i ✅ · M-1f ✅ · M-2a-ii ✅ · M-2b ✅ 2026-10-08 (FloridaKeysCoral trained · paged · on the board) → P2 gate ⏭ (fable, operator-summoned)"
 campaigns: [campaign_atlantis_genesis]
-mission: mission_m2b_fknms_model_and_board   # QUEUED (opus); M-2a-ii ✅ 2026-10-08 (forked · fetched · conforms · III 9/9 · core 0.5.3); M-1f ✅ 2026-10-07 (board v3); M-2a-i ✅ 2026-10-06; M-2a split 2026-10-06; M-1e ✅ 2026-10-03 (board v2); P1 gate ✅ 2026-10-03 (conditional GO); M-1d-ii ✅ · M-1d-i ✅ · M-1b-ii-b ✅ 2026-10-03; M-1b-ii-a ✅ · M-1b-i ✅ · M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
+mission: p2_gate   # QUEUED (fable, operator-summoned); M-2b ✅ 2026-10-08 (board v2 · core 0.6.1 · atl_v0 0.7.0 · III 8/8); M-2a-ii ✅ 2026-10-08 (forked · fetched · conforms · III 9/9 · core 0.5.3); M-1f ✅ 2026-10-07 (board v3); M-2a-i ✅ 2026-10-06; M-2a split 2026-10-06; M-1e ✅ 2026-10-03 (board v2); P1 gate ✅ 2026-10-03 (conditional GO); M-1d-ii ✅ · M-1d-i ✅ · M-1b-ii-b ✅ 2026-10-03; M-1b-ii-a ✅ · M-1b-i ✅ · M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
 persona: proteus   # RULED 2026-10-02 (ADR-001 ratified)
-last_session: session_stanley_20261008_013843_m2a_ii_sitting2_fetch_and_close (opus; sitting 2 of 2)
+last_session: session_stanley_20261008_172828_m2b_fknms_model_and_board (opus)
 created: 2026-09-23
 updated: 2026-10-08
 last_edited_by: agent_proteus
-tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_complete, m1b_ii_a_complete, m1b_ii_b_complete, m1d_i_complete, m1d_ii_complete, p1_gate_met, p2_conditional_go, m1e_complete, board_v2, atl_v0_0_4_0, m2a_split, m2a_i_complete, atl_v0_0_5_0, core_0_4_0, crw_built, m1f_complete, board_v3, atl_v0_0_6_0, core_0_5_0, m2a_ii_complete, core_0_5_1, core_0_5_2, core_0_5_3, floridakeyscoral_forked, floridakeyscoral_fetched]
+tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_complete, m1b_ii_a_complete, m1b_ii_b_complete, m1d_i_complete, m1d_ii_complete, p1_gate_met, p2_conditional_go, m1e_complete, board_v2, atl_v0_0_4_0, m2a_split, m2a_i_complete, atl_v0_0_5_0, core_0_4_0, crw_built, m1f_complete, board_v3, atl_v0_0_6_0, core_0_5_0, m2a_ii_complete, core_0_5_1, core_0_5_2, core_0_5_3, floridakeyscoral_forked, floridakeyscoral_fetched, m2b_complete, core_0_6_0, core_0_6_1, atl_v0_0_7_0, floridakeyscoral_on_board, p2_gate_requested]
 ---
 
 # STATE — Atlantis.aDNA
@@ -21,9 +21,9 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
    `artifacts/mission_roster_p1_p5.md`.
 3. The three ADRs in `who/governance/` (all **ratified 2026-10-02**).
 4. The exemplar is at hygiene (M-1a): `what/exemplars/gulf_karenia_brevis/README.md` §Provenance · `uv sync && .venv/bin/python -m pytest` · self-test green.
-5. The ontology is controlled (M-1c; 0.3.0 at M-1d-i; 0.4.0 at M-1e; 0.5.0 at M-2a-i; 0.6.0 at M-1f): `what/schema/atl_v0/README.md` (proof table · known limits) · `LINKML_BIN=<scratch venv>/bin what/schema/atl_v0/fixtures/controls/run_controls.sh` → ALL WORLDS AGREE (56 controls).
+5. The ontology is controlled (M-1c; 0.3.0 at M-1d-i; 0.4.0 at M-1e; 0.5.0 at M-2a-i; 0.6.0 at M-1f): `what/schema/atl_v0/README.md` (proof table · known limits) · `LINKML_BIN=<scratch venv>/bin what/schema/atl_v0/fixtures/controls/run_controls.sh` → ALL WORLDS AGREE (65 controls; 0.7.0 at M-2b).
 6. III review goes through `iii/` in a fresh context (SO-10).
-7. The core (M-1b-i + ii-a + ii-b + M-1d-i + M-1d-ii): `what/atlantis_core/README.md` · `cd what/atlantis_core && uv sync && .venv/bin/python -m pytest` (660, ~3.5 min unloaded; core 0.5.3) ·
+7. The core (M-1b-i + ii-a + ii-b + M-1d-i + M-1d-ii): `what/atlantis_core/README.md` · `cd what/atlantis_core && uv sync && .venv/bin/python -m pytest` (694, ~3.5 min unloaded; core 0.6.1; `node` on PATH for the page-script checks) ·
    `.venv/bin/python -m atlantis_core.selftest --instance ../exemplars/gulf_karenia_brevis` (all-stream, SO-7) ·
    `python -m atlantis_core.run --instance …` (→ `outputs/atlantis_core/`, ~7 min) · `python -m atlantis_core.board …` (→ `what/board/entries/`) ·
    `python -m atlantis_core.site --instance …` (→ the instance's page, ~2 s) · `python -m atlantis_core.mapping --check <mapping.yaml>` ·
@@ -34,57 +34,58 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
 
 ## ⏭ QUEUED — Next Live Session
 
-**M-2a-ii ✅ 2026-10-08. The first MPA instance holds its data and conforms at the fetched stage.**
+**M-2b ✅ 2026-10-08. The second instance — the first MPA — is trained, explained, paged and on the board. The P2 gate is requested.**
 
-- **`~/aDNA/FloridaKeysCoral.aDNA`:**
-  - 21 pre-Blueprint FKNMS zones; event DHW ≥ 4 Cel.wk, H = 8, R = 7, sensitivity at 8; split 1986–2013 / 2014–18 / 2019–25.
-  - Three CRW streams, daily 1985 → 2025: DHW 312,711 rows (`04127678…`) · HotSpot 314,475 (`307f7f01…`) ·
-    SSTA 314,475 (`80076fdd…`).
-  - Fetched in 15-day union spans (rulings 14–15). `fetch --verify` ✅ ×3, and it conforms at the fetched stage.
-  - Receipt `0d4d2bb19e`. Instance commits `d7f5e31` · `3e45b93` · `07df953` · `345ae7f`. No remote.
-- **Data review (ruling 16):** onsets 49 / 45 / 105 by segment, a positive rate of 1.31% → 7.59% → 15.01%.
-- **Limitations of record:**
-  - 19/21 zones read through one cell, zone 17 among them;
-  - DHW lacks 1999-05-01 (ruling 17);
-  - the rise is consistent with warming, but not separated from CoralTemp's 2002 input change or the fixed MMM.
-- **Core 0.5.1 → 0.5.3** (660 tests). III PASS-WITH-FINDINGS 9/9. AAR `missions/aar/aar_m2a_ii_fknms_fork_and_fetch.md`.
+- **Board `2026-10-08_florida_keys_coral_v2`** (GREEN, atl_v0 0.7.0, `method_demonstration`; v1 superseded on provenance
+  alone, III F-6). Test 2019–25, base rate 0.150: model **0.937 / 0.690** · climatology **0.919 / 0.601** · trend 0.781 /
+  0.520 · persistence 0.751 / 0.358. **The calendar knows most of it.**
+- **The shift (ruling 16):** base rate 1.31 / 7.59 / 15.01%; CITL −0.045 → −0.097; thresholds fixed on validation flag
+  8.8 / 20.3 / 28.6% at 5 / 10 / 20% (1.4–2×). **Lead censored at H** (67 of 105 at 8 wk). **No lever.**
+- **Page** `~/aDNA/FloridaKeysCoral.aDNA/site/florida_keys_coral_v1.html` (instance only). `conform` → 12 pass.
+- **Core 0.6.0 → 0.6.1** (`9ac40cf` · `671808b` · `28e5af4`; 694 tests). **atl_v0 0.7.0** (65 controls). Exemplar v4
+  outputs ≡ v3 on every number. Instance `6e031f6` · `88685c7` (pin `28e5af4`, hash `c07b7c0288`).
+- **Theses** re-cut (`40f9b3a` + III): T1 two-instance; T3, T10 tested on FKNMS; **T9 weak form supported (zero instance
+  patches), strong form not met (nine P1 template changes)** — the gate's question.
+- III PASS-WITH-FINDINGS 8/8; steward rulings 19–26. AAR `missions/aar/aar_m2b_fknms_model_and_board.md`.
 
-**Next: M-2b** (opus) → **the P2 gate** (fable, operator-summoned).
+**Next: the P2 gate** (fable, operator-summoned). **Pending operator acts:** the push of origin/main..main (gitleaks
+first); the WI-20 graduation candidates (C-004 · C-005 · C-009 · C-010 · C-015 · C-023); Hestia's router row.
 
-**Pending operator acts:**
-- the push of origin/main..main (gitleaks first);
-- the WI-20 graduation candidates (now C-004 · C-005 · C-009 · C-010 · C-015 · C-023);
-- the Hestia router row (Hestia's).
+**Next Session Prompt (self-contained, the P2 gate):**
 
-**Next Session Prompt (self-contained, M-2b):**
-
-> You are Proteus in `~/aDNA/Atlantis.aDNA`. M-2a-ii is complete. `FloridaKeysCoral.aDNA` holds three CRW streams
-> (1985–2025, 21 zones), conforms at the fetched stage and holds a green receipt. At **opus**, read:
-> 1. STATE;
-> 2. the card `missions/mission_m2b_fknms_model_and_board.md` (every criterion, including ruling 16's);
-> 3. the M-2a-ii AAR (§The numbers, §Findings, §III review);
-> 4. `~/aDNA/FloridaKeysCoral.aDNA/STATE.md`, `atlantis.yaml` and ADR-001.
+> You are Proteus in `~/aDNA/Atlantis.aDNA`, at **fable**, summoned by the operator for the **P2 exit gate**. SO-1: the
+> gate is the operator's; you prepare and recommend, never self-advance. Read, in order:
+> 1. STATE; the charter's P2 section (`how/campaigns/campaign_atlantis_genesis/campaign_atlantis_genesis.md`: exit bar
+>    "trained + explained + paged + on the board **without editing Atlantis code**; every deviation became a P1 template
+>    change") and `artifacts/p2_second_instance_ruling.md`;
+> 2. the M-2b AAR (§The numbers, §Findings, §III review, §Change) and the M-2a-ii AAR;
+> 3. `artifacts/thesis_register.md` (the M-2b re-cut, esp. T9 and T3's restated falsifier) and `what/board/BOARD.md`;
+> 4. the instance page's §6 and §11 (`~/aDNA/FloridaKeysCoral.aDNA/site/florida_keys_coral_v1.html`, via a local server).
 >
-> Open a session lease. Then:
-> 1. **The persistence/trend baseline first.** It is an Atlantis-side eval change beside `climatology_baseline`
->    (`eval/metrics.py`), tested with a plant. DHW is both the event and a vital, so without this comparator the headline
->    overstates the model (SO-9).
-> 2. **The per-segment base rate and calibration under the shift** (ruling 16). Report each segment's base rate
->    (1.31 / 7.59 / 15.01%) and a calibration check on test, where thresholds fixed on validation meet the higher base rate.
->    **Do not tune the split.**
-> 3. **`atlantis_core.run --instance ~/aDNA/FloridaKeysCoral.aDNA`.** Train and evaluate at alert budgets, with thresholds
->    on validation and realised rates reported. Then lead time, explain, tag. Levers are likely none: say so.
-> 4. **The instance page** (`atlantis_core.site`) **in the instance.** Its Limitations carry the single-cell zones, the
->    1999-05-01 gap and the non-stationary base rate.
-> 5. **The board entry.** Run `board --entries` in the instance (GREEN, `claim: method_demonstration`, conform item 9).
->    It travels as a coordination memo to `who/coordination/inbox/`; land it in an operator-opened sitting, then
->    `board --index`.
-> 6. **Re-cut the theses** T1, T3, T9 and T10. Then III via `iii/` in a fresh context, the AAR, and **request the P2 gate**
->    (fable). SO-1: never self-advance.
+> Open a session lease. Then: run an adversarial pass of your own (a fresh-context III review of the *gate case*, not of
+> M-2b's code) and put the gate to the operator with `AskUserQuestion` (or an ISS, `skill_create_iss`): **GO / conditional
+> GO / NO-GO for P3**, with the rulings it needs — T9's weak form vs the exit bar's wording; the thesis statuses; whether the
+> exemplar is re-entered at 0.7.0 (T10's commensurability) and a climatology-at-budget row (T11) before P3; the WI-20
+> graduation; the push. Record the ruling in the charter and STATE; draft the P3 card set only on GO.
 >
-> Budget: ~150–200 kT plus the reviewer. SITREP at +50%.
+> Budget: ~80–120 kT plus the reviewer. SITREP at +50%.
 
 ## What's in place
+
+### M-2b (2026-10-08 — Atlantis `9ac40cf` · `671808b` · `94ee95f` · `40f9b3a` · `28e5af4` · `0a1dd2e` + close; instance `6e031f6` · `88685c7`)
+
+- **Rulings 19–26** (AskUserQuestion): 19 persistence + trend comparators; 20 as atl_v0 0.7.0 slots; 21 FKNMS rolling origin
+  2013–2024 (hash → `c07b7c0288`); 22 land the entry here; 23 continue past the +50% line; 24 re-run for F-6; 25 item 10 =
+  renderer + `node --check`; 26 v2 supersedes v1 (SO-2 refuses to regenerate).
+- **Core 0.6.0:** `signal_history` · `persistence_baseline` · `trend_baseline` · per-segment `base_rate` ·
+  `calibration_in_the_large` · `assert_comparators` · `rolling_origin_years` optional · BOARD.md "Comparators and the shift".
+  **`671808b`:** the page script parses (node test) · polygon zone names · conform item 10 reads core-built pages.
+  **0.6.1 (III):** step-input plant · item 10 renderer + node · slot ↔ result · stale config bytes refused · "Positives".
+- **Findings:** the calendar knows most of a summer heat event; a validation-fixed threshold over-alerts 1.4–2× under the
+  shift; lead is censored at H when the signal accumulates; two checks had never met a core-built artifact (item 10, the
+  rolling-origin KeyError); a build that checks words is not a build that checks the page runs.
+- **III:** PASS-WITH-FINDINGS 8/8. Store: C-007 → 2 · C-009 → 6 · C-011 → 2 · C-023 → 5; new C-031, C-032.
+
 
 ### M-2a-ii (2026-10-07 → 08 — Atlantis `0e4154b` · `f23e046` · `95ea8da` · `3c8d11a` · `bf073b8` + close; instance `d7f5e31` · `3e45b93` · `07df953` · `345ae7f`)
 

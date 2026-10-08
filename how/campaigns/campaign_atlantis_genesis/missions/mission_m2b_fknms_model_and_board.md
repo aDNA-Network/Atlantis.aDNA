@@ -4,7 +4,7 @@ mission_id: M-2b
 plan_id: mission_m2b_fknms_model_and_board
 title: "M-2b — FloridaKeysCoral.aDNA: train · evaluate (thresholds on validation) · explain · page · board entry by memo → P2 gate"
 owner: stanley
-status: planned
+status: completed
 campaign: campaign_atlantis_genesis
 campaign_id: campaign_atlantis_genesis
 phase: P2
@@ -12,11 +12,11 @@ campaign_phase: 2
 mission_class: implementation
 executor_tier: opus
 token_budget_estimated: "~150-200kT main + fresh-context III reviewer"
-token_budget_actual: ""
+token_budget_actual: "≈ 480 kT main (estimated, not metered) + III reviewer ≈ 192 kT — ≈ +140% on the card top; SITREP at the +50% line, steward ruling 23"
 depends_on: ['M-2a-ii']
 split_from: mission_m2_fknms_coral_instance
 aar_path: how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m2b_fknms_model_and_board.md
-session: TBD
+session: session_stanley_20261008_172828_m2b_fknms_model_and_board
 created: 2026-10-03
 updated: 2026-10-08
 last_edited_by: agent_proteus
@@ -31,25 +31,26 @@ tags: [mission, m2b, p2, opus, fknms, coral, mpa, eval, board, atlantis, tidewat
 
 ## Acceptance criteria
 
-- [ ] `atlantis_core.run` in the instance: trained; evaluated at alert budgets with **thresholds fixed on validation**
+- [x] `atlantis_core.run` in the instance: trained; evaluated at alert budgets with **thresholds fixed on validation**
       (M-1e) and realised rates reported; lead time; climatology baseline; explained; tagged. Levers are likely none: say so
-- [ ] **A persistence/trend baseline beside `climatology_baseline`** (`eval/metrics.py`) — added 2026-10-06 at M-2a
+- [x] **A persistence/trend baseline beside `climatology_baseline`** (`eval/metrics.py`) — added 2026-10-06 at M-2a
       planning. DHW is both the event and a vital, and it accumulates, so DHW(t) plus HotSpot(t) nearly determine
       DHW(t+k). Without a "no model, just persistence" comparator, the headline AUROC overstates the model's value
       (SO-9). This is an Atlantis-side eval change, with a plant
-- [ ] **Steward ruling 16 (M-2a-ii, 2026-10-08):** report the base rate **per segment** (train 1.31% · val 7.59% · test
+- [x] **Steward ruling 16 (M-2a-ii, 2026-10-08):** report the base rate **per segment** (train 1.31% · val 7.59% · test
       15.01%; 49 / 45 / 105 onsets) and check calibration under that shift. The split is unchanged, and nothing is tuned to it.
       Limitations carry: 19/21 zones read through one cell (zone 17, ~30 km², among them); DHW lacks 1999-05-01 (ruling
       17); the rise is consistent with warming but not separated from CoralTemp's 2002 input change or the fixed MMM
-- [ ] The instance's page, with Limitations (`atlantis_core.site`), lives **in the instance**. No instance page enters
+- [x] The instance's page, with Limitations (`atlantis_core.site`), lives **in the instance**. No instance page enters
       Atlantis (ADR-002 §4 A-1)
-- [ ] Board entry via `board --entries <instance>/what/board/entries`: closed, GREEN, `claim: method_demonstration`.
+- [x] Board entry via `board --entries <instance>/what/board/entries`: closed, GREEN, `claim: method_demonstration`.
       `conform` item 9 ✅. It travels by **coordination memo** to `Atlantis.aDNA/who/coordination/inbox/` and is landed
       by a dated commit in an operator-opened session (contribution guide 0.1.1); then `board --index`
-- [ ] Thesis T1, T3, T9 and T10 re-cut in `artifacts/thesis_register.md`
-- [ ] Zero instance-local patches to `atlantis_core`; every deviation is a P1 template change, listed in the AAR
-- [ ] III review via `iii/`, fresh context; AAR; **request the P2 gate** (fable)
+- [x] Thesis T1, T3, T9 and T10 re-cut in `artifacts/thesis_register.md`
+- [x] Zero instance-local patches to `atlantis_core`; every deviation is a P1 template change, listed in the AAR
+- [x] III review via `iii/`, fresh context; AAR; **request the P2 gate** (fable)
 
 ## AAR
 
-*Mandatory before `status: completed` (SO-6).* → `aar_path`.
+*Mandatory before `status: completed` (SO-6).* → `aar_path` — **filed 2026-10-08.** Board `2026-10-08_florida_keys_coral_v2`
+(v1 superseded, III F-6); core 0.6.0 → 0.6.1; atl_v0 0.7.0; steward rulings 19–26; III PASS-WITH-FINDINGS 8/8. **The P2 gate is requested.**
