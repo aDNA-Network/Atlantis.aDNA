@@ -352,3 +352,88 @@ def test_union_in_day_spans_equals_per_zone(tmp_path):
     pd.testing.assert_frame_equal(dz.sort_values(["seg", "date"]).reset_index(drop=True), du.sort_values(["seg", "date"]).reset_index(drop=True))
     assert fz.reduction == fu.reduction and len(du) == 4 and len(us.calls) == 25 and len(zs.calls) == 50   # 366 days / 15
     assert fu.request == {"envelope": "union", "chunk": {"chunk_days": 15}, "n_chunks": 25}
+
+
+# ── M-2a-ii III review: a new base is a new cache (F-1) · missing days are said (F-2) · edge ties keep the cells (F-5) ─────
+def test_a_new_base_never_reads_the_old_sources_cells(tmp_path):
+    """F-1: the cache key held grid, pad and variable but not the base, so deleting the artifact and changing the base
+    re-read the old source's cells under the new base's stamp. Both envelopes, and the generic ERDDAP fetcher too."""
+    from atlantis_core.fetch import ERDDAPGriddap
+    other = SPEC["base"].replace("coastwatch.noaa.gov", "mirror.example.org")
+    for env in ("zone", "union"):
+        d = tmp_path / env
+        crw(d, [SEG1]).fetch({**SPEC, "envelope": env})
+        (d / "dhw.parquet").unlink(); (d / "dhw_fetch_summary.json").unlink()
+        sess = FakeERDDAP()
+        f2 = crw(d, [SEG1], session=sess); f2.fetch({**SPEC, "base": other, "envelope": env})
+        assert sess.calls and all(c.startswith(other) for c in sess.calls), env
+        assert f2.reduction["base"] == other
+    g = {"base": SPEC["base"], "variable": SPEC["variable"], "years": [2020, 2020], "boxes": {1: [35.2, 35.5, -76.6, -76.2]}}
+    ERDDAPGriddap(tmp_path / "g", "s.parquet", "s.json", session=FakeERDDAP()).fetch(g)
+    for p in ("s.parquet", "s.json"):
+        (tmp_path / "g" / p).unlink()
+    for change in ({"base": other}, {"boxes": {1: [35.6, 35.9, -76.6, -76.2]}}, {"variable": "hotspot"}):
+        sess = FakeERDDAP()
+        ERDDAPGriddap(tmp_path / "g", "s.parquet", "s.json", session=sess).fetch({**g, **change})
+        assert sess.calls, change
+        for p in ("s.parquet", "s.json"):
+            (tmp_path / "g" / p).unlink()
+
+
+def test_plant_a_key_without_the_base_is_caught(tmp_path, monkeypatch):
+    """C-009: the test above must fail if the key ignores the base again."""
+    monkeypatch.setattr(crw_mod, "basis_tag", lambda *parts: "same")
+    crw(tmp_path, [SEG1]).fetch(SPEC)
+    (tmp_path / "dhw.parquet").unlink(); (tmp_path / "dhw_fetch_summary.json").unlink()
+    sess = FakeERDDAP()
+    crw(tmp_path, [SEG1], session=sess).fetch({**SPEC, "base": SPEC["base"].replace("coastwatch.noaa.gov", "m.example.org")})
+    assert sess.calls == []                                                       # the defect, reproduced under the plant
+
+
+def test_summary_counts_calendar_days_and_names_a_missing_one(tmp_path, monkeypatch):
+    """F-2: FKNMS DHW lacks 1999-05-01 (CRW's own axis); a null count saw nothing. The summary now says it."""
+    f = crw(tmp_path / "full", [SEG1, SEG2]); f.fetch(SPEC)
+    c = json.loads((tmp_path / "full" / "dhw_fetch_summary.json").read_text())["completeness"]
+    assert c == {"calendar_days": 2, "n_dates": 2, "n_missing": 0, "missing_dates": [], "dates_per_unit": {"min": 2, "max": 2}}
+    monkeypatch.setitem(globals(), "DAYS", ["2020-07-01T12:00:00Z", "2020-07-03T12:00:00Z"])     # the source skips 07-02
+    crw(tmp_path / "gap", [SEG1, SEG2]).fetch(SPEC)
+    s = json.loads((tmp_path / "gap" / "dhw_fetch_summary.json").read_text())
+    assert s["completeness"]["n_missing"] == 1 and s["completeness"]["missing_dates"] == ["2020-07-02"]
+    assert s["reduction"]["zones"]["1"]["n_cells"] > 0                            # the reduction block is still there
+
+
+def test_daily_completeness_sees_a_unit_short_of_a_day():
+    from atlantis_core.fetch.provenance import daily_completeness
+    df = pd.DataFrame({"date": pd.to_datetime(["2020-01-01", "2020-01-02", "2020-01-01"]), "seg": [1, 1, 2]})
+    c = daily_completeness(df, "date", "seg")
+    assert c["n_missing"] == 0 and c["dates_per_unit"] == {"min": 1, "max": 2}
+    assert daily_completeness(df.iloc[:0], "date", "seg")["calendar_days"] == 0
+
+
+def test_verify_says_which_days_a_daily_artifact_lacks(persistent_master, tmp_path, capsys, monkeypatch):
+    from atlantis_core.fetch.__main__ import main
+    d = tmp_path / "inst"; shutil.copytree(persistent_master, d)
+    inst = load_instance(d); sid = "atl_stream_example_dhw_daily"
+    monkeypatch.setitem(globals(), "DAYS", ["2020-07-01T12:00:00Z", "2020-07-03T12:00:00Z"])
+    f = fetcher_for(inst, sid, session=FakeERDDAP()); f.fetch(inst.stream_spec(sid)["fetch"] | {"years": [2020, 2020]})
+    main(["--instance", str(d), "--stream", sid, "--verify"])
+    assert f"ⓘ {sid}: 2 of 3 calendar days present; missing 1: 2020-07-02" in capsys.readouterr().out
+
+
+def test_an_edge_tie_flips_cells_in_envelope_never_the_kept_cells():
+    """F-5: FKNMS zones 20 and 21 have vertices on the 0.05° lattice, so a padded bound lands on a cell EDGE, and which side
+    ERDDAP takes is float noise. Either side keeps the same cells (an edge cell's centre is half a cell outside the
+    polygon); only cells_in_envelope moves. Every one of the 16 tie resolutions is tried, and at least one must move it."""
+    import itertools
+    raw = pd.DataFrame([(DAYS[0], la, lo, value(la, lo, 0)) for la in LATS for lo in LONS],
+                       columns=["time", "latitude", "longitude", "dhw"])
+    for zone in (SEG1, MULTI, HOLED):
+        box, kept, sizes = crw_mod.envelope(zone["geometry"], 0.05), set(), set()
+        for signs in itertools.product((-1e-6, 1e-6), repeat=4):
+            sub = crw_mod.in_box(raw, [b + s for b, s in zip(box, signs)])
+            cells = sub[["latitude", "longitude"]].drop_duplicates().reset_index(drop=True)
+            sel, fb = crw_mod.select_cells(zone["geometry"], cells)
+            kept.add(frozenset(map(tuple, sel[["latitude", "longitude"]].to_numpy()))); sizes.add(len(cells))
+            assert not fb
+        assert len(kept) == 1, zone["properties"]["seg"]
+        assert len(sizes) > 1, "no tie flipped: the test is not exercising an edge"

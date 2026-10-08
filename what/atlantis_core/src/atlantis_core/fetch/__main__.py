@@ -62,6 +62,28 @@ def verify(inst, sid: str) -> list[str]:
     return out
 
 
+def completeness_note(inst, sid: str) -> str | None:
+    """For a daily fetcher, the calendar days its cached artifact lacks, or None (III F-2). Said, never a failure: a source
+    may skip a day, and the record must say so rather than read as complete."""
+    import pandas as pd
+    spec = inst.stream_spec(sid)
+    art = inst.path(spec["artifact"])
+    try:
+        f = fetcher_for(inst, sid, offline=True)
+    except Exception:  # noqa: BLE001 — verify() has already said why a fetcher cannot bind
+        return None
+    if not (getattr(f, "daily", False) and art.exists()):
+        return None
+    c = provenance.daily_completeness(pd.read_parquet(art), f.date_col, f.unit_column(spec.get("fetch") or {}))
+    short = c.get("dates_per_unit", {}).get("min", c["n_dates"]) < c["n_dates"]
+    if not (c["n_missing"] or short):
+        return None
+    days = ", ".join(c["missing_dates"]) + (" …" if c["n_missing"] > len(c["missing_dates"]) else "")
+    return (f"{sid}: {c['n_dates']} of {c['calendar_days']} calendar days present"
+            + (f"; missing {c['n_missing']}: {days}" if c["n_missing"] else "")
+            + (f"; a unit has only {c['dates_per_unit']['min']} of them" if short else ""))
+
+
 def posture_problem(root: Path) -> str | None:
     """None if the instance's OWN posture ruling (inside it, declaring the pin's class) carries a signed Ratification row
     and a frontmatter that agrees; else why not. One reading, shared with conform item 7 (M-1d-i III F-3)."""
@@ -92,6 +114,9 @@ def main(argv=None, session=None) -> int:
         for sid in sids:
             if not any(p.startswith(f"{sid}:") for p in probs):
                 print(f"✅ {sid}: cached bytes == fetch summary == streams.yaml sha256")
+            note = completeness_note(inst, sid)
+            if note:
+                print(f"ⓘ {note}")
         for p in probs:
             print(f"✗ {p}")
         return 1 if probs else 0

@@ -50,6 +50,23 @@ def summarise(artifact: Path, summary_path: Path, date_col: str, extras=None, fe
     return summary
 
 
+def daily_completeness(df, date_col: str, unit_col: str | None = None, listed: int = 20) -> dict:
+    """Distinct days present against the calendar span of a daily artifact (M-2a-ii III F-2). A day the source never sent is
+    not a null, so a null count cannot see it (FKNMS DHW has no 1999-05-01: CRW's own axis skips it). `dates_per_unit`
+    says whether every unit has every day the artifact has. At most `listed` missing days are named; `n_missing` counts all."""
+    d = pd.to_datetime(df[date_col]).dt.normalize()
+    if d.empty:
+        return {"calendar_days": 0, "n_dates": 0, "n_missing": 0, "missing_dates": []}
+    cal, have = pd.date_range(d.min(), d.max(), freq="D"), pd.DatetimeIndex(d.unique())
+    miss = cal.difference(have)
+    out = {"calendar_days": int(len(cal)), "n_dates": int(len(have)), "n_missing": int(len(miss)),
+           "missing_dates": [str(x.date()) for x in miss[:listed]]}
+    if unit_col and unit_col in df.columns:
+        per = d.groupby(df[unit_col].to_numpy()).nunique()
+        out["dates_per_unit"] = {"min": int(per.min()), "max": int(per.max())}
+    return out
+
+
 def verify(artifact: Path, summary_path: Path) -> tuple[bool, str, str]:
     """Re-hash the cached bytes against the recorded pin. A well-formed pin of the wrong bytes is only caught here."""
     recorded = json.loads(Path(summary_path).read_text())["sha256"]

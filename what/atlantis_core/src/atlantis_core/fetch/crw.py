@@ -39,8 +39,9 @@ The fetch summary's `reduction` block records what the reduction was computed ov
 `shared_cells` (cells also kept by another zone). These values are **computed by this download** (C-023). A cache hit
 whose summary is missing says that the reduction was not recomputed, instead of inventing one.
 
-**Stale data is refused (M-2a-i III F-1).** The per-zone CSV cache is keyed by the grid pin, pad and variable, so a re-pinned
-zone file never reads the old zones' cells. A cached artifact whose recorded reduction was computed over a different
+**Stale data is refused (M-2a-i III F-1).** The CSV cache is keyed by the grid pin, pad, variable and base (the base, with
+any zlev, since M-2a-ii III F-1: it had been left out, so a new base after a deleted artifact read the old source's cells
+and stamped the new base on them), so a re-pinned zone file or a new source never reads old cells. A cached artifact whose recorded reduction was computed over a different
 zone file, pad, variable or base is refused by `fetch`, by `fetch --verify` and so by conform item 3 at the fetched stage.
 The message names the mismatch, and the remedy is to delete the artifact and re-fetch. Zone ids must be unique (III F-2):
 `PolygonGrid` refuses a duplicate, so dissolve a multi-part zone into one MultiPolygon feature first.
@@ -50,7 +51,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from atlantis_core.fetch.erddap import CHUNK_KEYS, ERDDAPGriddap, _empty, chunk_label, chunks
+from atlantis_core.fetch.erddap import CHUNK_KEYS, ERDDAPGriddap, _empty, basis_tag, chunk_label, chunks
 from atlantis_core.grid.polygons import PolygonGrid, geometry_contains
 
 
@@ -75,8 +76,12 @@ def vertex_mean(geom: dict) -> tuple[float, float]:
 
 def snap(axis, lo: float, hi: float) -> np.ndarray:
     """Boolean mask over a sorted `axis` of grid centres: the run between the centres NEAREST `lo` and `hi`, inclusive.
-    This is what ERDDAP's griddap returns for an off-grid `[(lo):1:(hi)]`. On a tie the lower centre is taken. The live parity
-    check at M-2a-ii compared it with a real per-zone request."""
+    For bounds inside the axis this is what ERDDAP's griddap returns for an off-grid `[(lo):1:(hi)]`; a bound outside it is
+    clamped here, where ERDDAP refuses it with a 404 (III F-8), which is harmless because every zone box lies inside the
+    union box. On an exact tie the lower centre is taken. A bound on a cell EDGE is such a tie, and FKNMS zones 20 and 21
+    sit within ~4e-6° of one (their vertices lie on the 0.05° lattice), so ERDDAP's side is reprojection noise. Either side
+    keeps the same cells: an edge cell's centre lies at least half a cell outside the polygon. Only `cells_in_envelope`
+    can move (III F-5; tested). The live parity check at M-2a-ii compared `snap` with a real per-zone request."""
     a = np.asarray(axis, dtype=float)
     i0, i1 = int(np.abs(a - lo).argmin()), int(np.abs(a - hi).argmin())
     i0, i1 = min(i0, i1), max(i0, i1)
@@ -124,8 +129,11 @@ class CoralReefWatch(ERDDAPGriddap):
                              f"{inst.cfg['grid']['kind']!r}")
         self.grid, self.columns = g, dict(inst.stream_spec(sid)["columns"])
         self.grid_sha256 = str(inst.cfg["grid"]["sha256"])           # make_grid has just checked the bytes against it
-        self.date_col = self.columns["date"]
+        self.date_col, self._unit_col = self.columns["date"], self.columns["unit"]
         self.reduction: dict = {}
+
+    def unit_column(self, spec) -> str:
+        return self.columns["unit"] if self.columns else super().unit_column(spec)
 
     def basis(self, spec) -> dict:
         """What a reduction is computed over. A cached artifact is valid only for the same basis."""
@@ -172,7 +180,8 @@ class CoralReefWatch(ERDDAPGriddap):
         pad, spans = float(spec.get("pad_deg", 0.05)), chunks(spec)
         var, frames, kept = spec["variable"], [], {}
         b = self.basis(spec)
-        key = f"g{b['grid_sha256'][:12]}_p{b['pad_deg']}_{var}"       # III F-1: a re-pin, a new pad or variable never reads old cells
+        key = (f"g{b['grid_sha256'][:12]}_p{b['pad_deg']}_{var}"        # III F-1: a re-pin, a new pad, variable or base
+               f"_b{basis_tag(b['base'], spec.get('zlev'))}")             # never reads old cells (base: M-2a-ii III F-1)
         empty = pd.DataFrame(columns=["time", "latitude", "longitude", var])
         boxes = {uid: envelope(geom, pad) for uid, _name, geom in self.grid.units}
         if mode == "union":
@@ -207,10 +216,10 @@ class CoralReefWatch(ERDDAPGriddap):
         return pd.concat(frames, ignore_index=True)
 
     def extras(self, df) -> dict:
-        red = getattr(self, "reduction", None)
+        red, done = getattr(self, "reduction", None), super().extras(df)
         if not red:
             return {"reduction": None, "reduction_note": "cache hit without a summary: the per-zone reduction was not "
-                                                         "recomputed here (re-fetch to record it)"}
-        return {"reduction": red, "reduction_rule": "cell centre in polygon, per feature; else the nearest data cell to "
+                                                         "recomputed here (re-fetch to record it)", **done}
+        return {**done, "reduction": red, "reduction_rule": "cell centre in polygon, per feature; else the nearest data cell to "
                                                     "the zone's vertex mean (cos-lat scaled)",
                 "request": getattr(self, "request", None)}

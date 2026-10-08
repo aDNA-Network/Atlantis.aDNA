@@ -84,3 +84,11 @@ def test_exemplar_pins_rehash(exemplar_dir):
         ok, actual, recorded = provenance.verify(inst.path(spec["artifact"]), inst.path(spec["summary"]))
         assert ok, f"{sid}: {actual} != {recorded}"
         assert inst.streams[sid]["sha256"] == actual
+
+
+def test_a_start_moved_year_chunk_names_its_first_day():
+    """M-2a-ii III F-6: in year mode the label ignored `start`, so adding one re-read a chunk fetched from 1 January."""
+    from atlantis_core.fetch.erddap import chunk_label, chunks
+    plain, moved = {"years": [1985, 1994]}, {"years": [1985, 1994], "start": "1985-03-25"}
+    assert [chunk_label(plain, *c) for c in chunks(plain)] == ["1985_1989", "1990_1994"]          # unchanged names
+    assert [chunk_label(moved, *c) for c in chunks(moved)] == ["1985-03-25_1989", "1990_1994"]
