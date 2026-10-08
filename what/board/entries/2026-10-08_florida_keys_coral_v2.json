@@ -1,80 +1,16 @@
----
-type: coordination
-coord_id: coord_2026_10_08_floridakeyscoral_to_proteus_board_entry
-kind: board_entry
-title: "Board entry — FloridaKeysCoral.aDNA v1 (FKNMS coral heat-stress onset, DHW ≥ 4 within 8 wk): GREEN, method_demonstration"
-from: steward of FloridaKeysCoral.aDNA (stanley; written by agent_proteus in the instance's M-2b sitting)
-to: proteus (Atlantis.aDNA)
-created: 2026-10-08
-updated: 2026-10-08
-last_edited_by: agent_proteus
-status: landed   # 2026-10-08, operator-opened Atlantis M-2b session (steward ruling 22): sha256, validate, assert_green, unit_ref, semantic_hash re-checked; entry copied unedited; BOARD.md regenerated
-federation_ref: {source_vault: Atlantis.aDNA, source_commit: 671808b4a16ddec6c52432fb8ac44c68ebdcab13, runs_under: 9ac40cf8064dc25bed28b5151ba045f68c66c7c9, contract: instance_contract_v0 v0.3.0}
-instance_commit: 6e031f6
-posture_class: public   # FloridaKeysCoral.aDNA ADR-001 (ratified 2026-10-07)
-nothing_never_crosses: true
-superseded_by: coord_2026_10_08_floridakeyscoral_to_proteus_board_entry_v2   # 2026-10-08, III M-2b F-6 (config_bytes_md5 named uncommitted bytes); v1 stays on the board, superseded (SO-2)
-entry_file: what/board/entries/2026-10-08_florida_keys_coral_v1.json
-entry_sha256: de1540fe18c39e26344ce9e7b38e7a658861cadb41e691ae854ff729ea0be7ea
-semantic_hash: c07b7c0288
-tags: [coordination, board_entry, floridakeyscoral, fknms, coral, m2b, p2]
----
-
-# Board entry — FloridaKeysCoral.aDNA v1
-
-**What:** a board entry (contribution guide §2a, contract §D). **From:** `FloridaKeysCoral.aDNA`, federating Atlantis at
-`671808b` (the numbers were run under core 0.6.0 at `9ac40cf`; `671808b` changed only the page build and conform item 10).
-
-**The entry** is the JSON `python -m atlantis_core.board --instance <FloridaKeysCoral.aDNA> --version 1 --run-date 2026-10-08
---entries <FloridaKeysCoral.aDNA>/what/board/entries` wrote, **unedited** (sha256 `de1540fe18c39e26344ce9e7b38e7a658861cadb41e691ae854ff729ea0be7ea`; inline below).
-
-**Checks.**
-- Self-test receipt `semantic_hash` **`c07b7c0288`** = the entry's `config_hash` (steward ruling 21 moved it from `0d4d2bb19e`:
-  `split.rolling_origin_years` declared).
-- `python -m atlantis_core.conform --instance <FloridaKeysCoral.aDNA>` (full; item 9 ✅, item 10 ✅):
-
-```
-instance contract v0.3.0 · FloridaKeysCoral.aDNA · stage declared
-✅  1 Patient defined (units · grid · geometry by pointer)  [units.yaml · atlantis.yaml · what/geometry/fknms_zones_pre_blueprint.geojson]
-✅  2 Event defined (authority · threshold + unit · direction · horizon · onset rule)  [events.yaml · atlantis.yaml · streams.yaml]
-✅  3 Streams registered with Rule-5 provenance  [streams.yaml]
-✅  4 Every vital tagged, with stream_ref and lag/window; levers name an owner  [features.yaml]
-✅  5 Surveillance channel declared, or declared absent with the reason  [atlantis.yaml · streams.yaml · features.yaml]
-✅  6 Self-test green (before any real data is fetched)  []
-      re-run here on the synthetic world (no data)
-✅  7 Data posture ruled in the instance's own ADR  [how/federation/atlantis/CLAUDE.md · who/governance/adr_001_data_posture.md]
-✅  8 Split is temporal  [atlantis.yaml]
-✅  9 Board entry carries base rate, budgets, lead time, ablations, hash, pins, claim  [what/board/entries/2026-10-08_florida_keys_coral_v1.json]
-✅ 10 Published page has a Limitations section  [site/florida_keys_coral_v1.html]
-✅ 11 mapping.yaml present and held to atl_v0  [mapping.yaml]
-✅ 12 Credentials by name only (gitleaks)  [gitleaks detect --no-git FloridaKeysCoral.aDNA]
-✅ conforms: 12 pass · 0 n/a (none) · 0 outstanding (none)
-```
-
-**Posture.** `public` (ADR-001). Nothing in this memo is from the right-hand column of the guide: no observations, labels,
-per-patient predictions, partner coordinates or credentials — metrics only, as `assert_green` checked at emit.
-
-**What a reader should take from it** (the entry's own notes say the same): the model (0.937 / 0.690 at a 15.0% base rate)
-beats every no-model comparator, but **week-of-year climatology nearly matches it** (0.919 / 0.601); the base rate is
-non-stationary (1.31 → 7.59 → 15.01%), so thresholds fixed on 2014–18 flag about **twice their budget** on 2019–25; lead
-time is censored at the 8-week horizon; no vital is a lever. Limits: `site/florida_keys_coral_v1.html#limits` in the instance.
-
-## The entry (unedited)
-
-```json
 {
  "board_entry_schema": "atl_board_entry_v1",
  "tier": "GREEN",
  "accuracy_claim": "NONE — method demonstration on public data; not an operational forecast (SO-4)",
- "entry_id": "2026-10-08_florida_keys_coral_v1",
+ "entry_id": "2026-10-08_florida_keys_coral_v2",
  "source": "instance",
  "instance": "FloridaKeysCoral.aDNA",
- "method_version": "pattern_ecosystem_early_warning 0.1 · atlantis_core 0.6.0",
+ "method_version": "pattern_ecosystem_early_warning 0.1 · atlantis_core 0.6.1",
  "recorded_by": "agent_proteus",
- "recorded_at": "2026-10-08T19:52:50Z",
+ "recorded_at": "2026-10-08T21:26:00Z",
  "run_date": "2026-10-08",
  "evaluation": {
-  "evaluation_id": "atl_eval_florida_keys_coral_v1",
+  "evaluation_id": "atl_eval_florida_keys_coral_v2",
   "event_ref": "atl_event_florida_keys_coral_onset",
   "unit_ref": "atl_unit_florida_keys_coral_all",
   "split": "train 1986-2013 · val 2014-2018 · test 2019-2025, scored once; rolling origin 2014->2025; label-horizon embargo 8 wk at every boundary",
@@ -150,7 +86,7 @@ time is censored at the 8-week horizon; no vital is a lever. Limits: `site/flori
   "claim": "method_demonstration",
   "limitations_ref": "site/florida_keys_coral_v1.html#limits",
   "recorded_by": "agent_proteus",
-  "recorded_at": "2026-10-08T19:52:50Z"
+  "recorded_at": "2026-10-08T21:26:00Z"
  },
  "evaluation_extras": {
   "event": {
@@ -419,7 +355,7 @@ time is censored at the 8-week horizon; no vital is a lever. Limits: `site/flori
   },
   "semantic_hash": "c07b7c0288",
   "config_bytes_md5": {
-   "atlantis.yaml": "f7ae118822"
+   "atlantis.yaml": "dc595f28ff"
   },
   "data_pins": [
    {
@@ -677,6 +613,348 @@ time is censored at the 8-week horizon; no vital is a lever. Limits: `site/flori
      2018
     ]
    }
+  },
+  "delta_vs": {
+   "entry": "2026-10-08_florida_keys_coral_v1",
+   "fields": {
+    "n_test": {
+     "was": 5595,
+     "now": 5595,
+     "change": 0.0
+    },
+    "n_positives": {
+     "was": 840,
+     "now": 840,
+     "change": 0.0
+    },
+    "base_rate": {
+     "was": 0.1501,
+     "now": 0.1501,
+     "change": 0.0
+    },
+    "auroc": {
+     "was": 0.937,
+     "now": 0.937,
+     "change": 0.0
+    },
+    "auprc": {
+     "was": 0.6903,
+     "now": 0.6903,
+     "change": 0.0
+    },
+    "brier": {
+     "was": 0.1005,
+     "now": 0.1005,
+     "change": 0.0
+    },
+    "calibration_slope": {
+     "was": 1.99,
+     "now": 1.99,
+     "change": 0.0
+    },
+    "climatology_auroc": {
+     "was": 0.9194,
+     "now": 0.9194,
+     "change": 0.0
+    },
+    "climatology_auprc": {
+     "was": 0.6012,
+     "now": 0.6012,
+     "change": 0.0
+    },
+    "persistence_auroc": {
+     "was": 0.7505,
+     "now": 0.7505,
+     "change": 0.0
+    },
+    "persistence_auprc": {
+     "was": 0.3583,
+     "now": 0.3583,
+     "change": 0.0
+    },
+    "trend_auroc": {
+     "was": 0.7809,
+     "now": 0.7809,
+     "change": 0.0
+    },
+    "trend_auprc": {
+     "was": 0.5201,
+     "now": 0.5201,
+     "change": 0.0
+    },
+    "base_rate_train": {
+     "was": 0.0131,
+     "now": 0.0131,
+     "change": 0.0
+    },
+    "base_rate_validation": {
+     "was": 0.0759,
+     "now": 0.0759,
+     "change": 0.0
+    },
+    "calibration_in_the_large_validation": {
+     "was": -0.0453,
+     "now": -0.0453,
+     "change": 0.0
+    },
+    "calibration_in_the_large_test": {
+     "was": -0.0974,
+     "now": -0.0974,
+     "change": 0.0
+    },
+    "lead_time": {
+     "was": {
+      "budget_rate": 0.1,
+      "n_onsets": 105,
+      "flagged_fraction": 1.0,
+      "median_lead": 8.0,
+      "threshold_from": "validation"
+     },
+     "now": {
+      "budget_rate": 0.1,
+      "n_onsets": 105,
+      "flagged_fraction": 1.0,
+      "median_lead": 8.0,
+      "threshold_from": "validation"
+     }
+    },
+    "split": {
+     "was": "train 1986-2013 · val 2014-2018 · test 2019-2025, scored once; rolling origin 2014->2025; label-horizon embargo 8 wk at every boundary",
+     "now": "train 1986-2013 · val 2014-2018 · test 2019-2025, scored once; rolling origin 2014->2025; label-horizon embargo 8 wk at every boundary"
+    },
+    "embargo_weeks": {
+     "was": 8,
+     "now": 8
+    },
+    "learner": {
+     "was": "xgboost 3.4.1 · binary:logistic · depth 4 · eta 0.03 · early-stop logloss (100 rounds) · 108 trees · no scale_pos_weight · monotone on none",
+     "now": "xgboost 3.4.1 · binary:logistic · depth 4 · eta 0.03 · early-stop logloss (100 rounds) · 108 trees · no scale_pos_weight · monotone on none"
+    },
+    "alert_budgets": {
+     "5pct": {
+      "precision": {
+       "was": 0.7424,
+       "now": 0.7424
+      },
+      "recall": {
+       "was": 0.4357,
+       "now": 0.4357
+      },
+      "n_alerts": {
+       "was": 493,
+       "now": 493
+      },
+      "realised_rate": {
+       "was": 0.0881,
+       "now": 0.0881
+      },
+      "threshold_from": {
+       "was": "validation",
+       "now": "validation"
+      }
+     },
+     "10pct": {
+      "precision": {
+       "was": 0.5677,
+       "now": 0.5677
+      },
+      "recall": {
+       "was": 0.769,
+       "now": 0.769
+      },
+      "n_alerts": {
+       "was": 1138,
+       "now": 1138
+      },
+      "realised_rate": {
+       "was": 0.2034,
+       "now": 0.2034
+      },
+      "threshold_from": {
+       "was": "validation",
+       "now": "validation"
+      }
+     },
+     "20pct": {
+      "precision": {
+       "was": 0.4828,
+       "now": 0.4828
+      },
+      "recall": {
+       "was": 0.9202,
+       "now": 0.9202
+      },
+      "n_alerts": {
+       "was": 1601,
+       "now": 1601
+      },
+      "realised_rate": {
+       "was": 0.2861,
+       "now": 0.2861
+      },
+      "threshold_from": {
+       "was": "validation",
+       "now": "validation"
+      }
+     }
+    }
+   },
+   "rolling_origin": {
+    "2015": {
+     "auroc": {
+      "was": 0.9512,
+      "now": 0.9512
+     },
+     "auprc": {
+      "was": 0.7983,
+      "now": 0.7983
+     },
+     "selected_on": [
+      2014
+     ],
+     "n_trees": 108
+    },
+    "2016": {
+     "auroc": {
+      "was": 0.8994,
+      "now": 0.8994
+     },
+     "auprc": {
+      "was": 0.1897,
+      "now": 0.1897
+     },
+     "selected_on": [
+      2015
+     ],
+     "n_trees": 228
+    },
+    "2017": {
+     "auroc": {
+      "was": 0.9608,
+      "now": 0.9608
+     },
+     "auprc": {
+      "was": 0.1325,
+      "now": 0.1325
+     },
+     "selected_on": [
+      2016
+     ],
+     "n_trees": 114
+    },
+    "2018": {
+     "auroc": {
+      "was": 0.8414,
+      "now": 0.8414
+     },
+     "auprc": {
+      "was": 0.1312,
+      "now": 0.1312
+     },
+     "selected_on": [
+      2017
+     ],
+     "n_trees": 13
+    },
+    "2019": {
+     "auroc": {
+      "was": 0.9171,
+      "now": 0.9171
+     },
+     "auprc": {
+      "was": 0.381,
+      "now": 0.381
+     },
+     "selected_on": [
+      2018
+     ],
+     "n_trees": 14
+    },
+    "2020": {
+     "auroc": {
+      "was": 0.9642,
+      "now": 0.9642
+     },
+     "auprc": {
+      "was": 0.8079,
+      "now": 0.8079
+     },
+     "selected_on": [
+      2019
+     ],
+     "n_trees": 80
+    },
+    "2021": {
+     "auroc": {
+      "was": 0.9502,
+      "now": 0.9502
+     },
+     "auprc": {
+      "was": 0.3687,
+      "now": 0.3687
+     },
+     "selected_on": [
+      2020
+     ],
+     "n_trees": 177
+    },
+    "2022": {
+     "auroc": {
+      "was": 0.9206,
+      "now": 0.9206
+     },
+     "auprc": {
+      "was": 0.6791,
+      "now": 0.6791
+     },
+     "selected_on": [
+      2021
+     ],
+     "n_trees": 205
+    },
+    "2023": {
+     "auroc": {
+      "was": 0.9944,
+      "now": 0.9944
+     },
+     "auprc": {
+      "was": 0.9897,
+      "now": 0.9897
+     },
+     "selected_on": [
+      2022
+     ],
+     "n_trees": 110
+    },
+    "2024": {
+     "auroc": {
+      "was": 0.9347,
+      "now": 0.9347
+     },
+     "auprc": {
+      "was": 0.8032,
+      "now": 0.8032
+     },
+     "selected_on": [
+      2023
+     ],
+     "n_trees": 88
+    },
+    "2025": {
+     "auroc": {
+      "was": 0.9361,
+      "now": 0.9361
+     },
+     "auprc": {
+      "was": 0.806,
+      "now": 0.806
+     },
+     "selected_on": [
+      2024
+     ],
+     "n_trees": 156
+    }
+   }
   }
  },
  "provenance": {
@@ -686,11 +964,11 @@ time is censored at the 8-week horizon; no vital is a lever. Limits: `site/flori
   "generated_by": "atlantis_core.board (emit → closed AtlEvaluation validated against the committed atl_ontology_v0.schema.json + assert_green); numbers are not retyped"
  },
  "notes": [
+  "v2 supersedes v1 on provenance alone (III M-2b F-6, steward rulings 24 and 26): v1's config_bytes_md5 named atlantis.yaml bytes no commit holds (board.limitations_ref was edited after the run). Re-run from the committed config under atlantis_core 0.6.1; every number is v1's.",
   "Method demonstration on public NOAA Coral Reef Watch products (DHW, HotSpot, SST anomaly; CRW v3.1, Skirving et al. 2020, doi 10.3390/rs12233856); not an operational forecast and not a bleaching forecast — CRW's own Bleaching Alert products are the operational system (SO-4).",
   "The calendar knows most of it: week-of-year climatology nearly matches the model on test. Read the model against climatology, persistence and trend before reading its AUROC (SO-9).",
-  "The base rate is non-stationary across the fixed split (train, validation, test): thresholds fixed on validation flag about twice their nominal budget on test, and the model under-predicts the high-rate years (calibration in the large). Consistent with warming; not separated from CoralTemp's 2002 input change or DHW's fixed MMM climatology.",
-  "Lead time is censored at the horizon: most test onsets were first flagged at the earliest week the window allows. No vital is a lever (DHW is state; HotSpot and SST anomaly are proxies) — this is surveillance, not intervention guidance.",
+  "The base rate is non-stationary across the fixed split (train, validation, test): thresholds fixed on validation flag 1.4 to 2 times their nominal budget on test, and the model under-predicts the high-rate years (calibration in the large). Consistent with warming; not separated from CoralTemp's 2002 input change or DHW's fixed MMM climatology.",
+  "Lead time is censored at the horizon, and is read at the 10% budget's validation-fixed threshold, which flagged about a fifth of test zone-weeks: most test onsets were first flagged at the earliest week the window allows. No vital is a lever (DHW is state; HotSpot and SST anomaly are proxies) — this is surveillance, not intervention guidance.",
   "19 of 21 zones are read through a single 5 km cell (no cell centre inside the zone); zones 20 and 21 sit at a cell-edge tie (disclosed, tested). DHW lacks 1999-05-01 for every zone (CRW's own axis)."
  ]
 }
-```
