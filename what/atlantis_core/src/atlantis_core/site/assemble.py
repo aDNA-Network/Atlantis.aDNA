@@ -53,7 +53,14 @@ def _ge(values: pd.Series, thr: float, direction: str) -> pd.Series:
 
 
 def unit_names(inst: Instance) -> dict:
-    return {r["id"]: r["name"] for r in inst.cfg["grid"].get("rules", []) or []}
+    """Display names per unit: a rule grid's `name`s; a polygon grid's `name_property` (M-2b — the FKNMS page labelled its
+    zones 1…21 because only rules were read). Ids are cast to the grid's unit dtype, as the patient grid's are."""
+    g = inst.cfg["grid"]
+    if g.get("kind") == "polygons" and g.get("name_property"):
+        from atlantis_core.grid import make_grid
+        cast = int if g.get("unit_dtype") == "int" else (lambda v: v)
+        return {cast(u): n for u, n in make_grid(inst).names().items()}
+    return {r["id"]: r["name"] for r in g.get("rules", []) or []}
 
 
 BOARD_META = {"recorded_at", "recorded_by", "learner", "limitations_ref", "split", "shap_summary_ref", "evaluation_id",

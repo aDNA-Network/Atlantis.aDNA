@@ -395,6 +395,21 @@ def check(root, items=None, stage: str = "declared", selftest: bool = True) -> d
             html = re.sub(r"<!--.*?-->", "", p.read_text(errors="replace"), flags=re.S)        # a comment is not a section
             m = re.search(r"""<(section|div|article)\b[^>]*\bid=["']limits["'][^>]*>(.*?)</\1>""", html, re.S)
             text = re.sub(r"<[^>]+>|\s+", " ", m.group(2)).strip() if m else ""
+            # M-2b: an atlantis_core.site page draws its sections in the browser, from the copy embedded in the page
+            # (`<script id="site-copy">`, rendered as `<section id="{id}">` by the template — tests/test_conform.py holds the
+            # template to that). Item 10 was written for the static v0 page and no core-built page could pass it.
+            cp = re.search(r"""<script\b[^>]*\bid=["']site-copy["'][^>]*>(.*?)</script>""", html, re.S)
+            if not m and cp:
+                try:
+                    copy = json.loads(cp.group(1))
+                except ValueError:
+                    copy = {}
+                lim = [x for x in copy.get("sections") or [] if isinstance(x, dict) and x.get("id") == "limits"]
+                if lim:
+                    m = True
+                    text = re.sub(r"<[^>]+>|\s+", " ", str(lim[0].get("body") or "")).strip()
+                html = html + " " + " ".join(str(x.get("body", "")) + " " + str(x.get("title", ""))
+                                             for x in copy.get("sections") or [] if isinstance(x, dict))
             if not m:
                 fail(10, f"{p.name}: no #limits section element")
             elif len(text) < 80:

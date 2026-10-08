@@ -211,6 +211,20 @@ def test_items_9_10_after_a_run(forked, exemplar_dir):
     assert check(forked, [9], selftest=False)[9]["status"] == "fail"
 
 
+def CORE_PAGE(sid: str, body: str) -> str:
+    """A page as atlantis_core.site writes it: the sections live in the embedded copy (json escapes `</` as the build does)."""
+    copy = {"title": "t", "sections": [{"id": sid, "nav": "n", "eyebrow": "e", "title": "Limits", "body": f"<p>{body}</p>"}]}
+    return f'<script id="site-copy" type="application/json">{json.dumps(copy).replace("</", "<\\/")}</script>'
+
+
+def test_core_template_draws_sections_by_their_copy_id():
+    """Item 10 reads the embedded copy because the template renders each copy section as <section id="{id}">."""
+    from atlantis_core.site import TEMPLATE
+    t = TEMPLATE.read_text()
+    assert '<script id="site-copy" type="application/json">__SITE_COPY__</script>' in t
+    assert '<section id="${s.id}">' in t
+
+
 LIMITS = ("<section id=\"limits\"><h2>Limitations</h2><p>Method demonstration on public data; the alert thresholds are "
           "test quantiles; where the analogy breaks: an estuary is not a patient.</p></section>")
 
@@ -221,6 +235,12 @@ LIMITS = ("<section id=\"limits\"><h2>Limitations</h2><p>Method demonstration on
     ('<section id="limits"></section><p>analogy</p>', False),                 # empty
     (LIMITS.replace("where the analogy breaks", "and so on"), False),         # no analogy discussion
     (LIMITS, True),
+    # M-2b: an atlantis_core.site page carries its sections as embedded copy, drawn in the browser
+    (CORE_PAGE("limits", "Where the analogy breaks: a reef is not a patient, and lead time is censored at the horizon."), True),
+    (CORE_PAGE("limits", "Short."), False),                                   # written, not implied
+    (CORE_PAGE("method", "Where the analogy breaks: a reef is not a patient, and lead time is censored at the horizon."), False),
+    (CORE_PAGE("limits", "A reef is not a patient, and lead time is censored at the horizon, and so on and on."), False),   # no analogy
+    ('<script id="site-copy" type="application/json">{not json</script>', False),
 ])
 def test_item10_limits_section(forked, page, ok):
     (forked / "site").mkdir()

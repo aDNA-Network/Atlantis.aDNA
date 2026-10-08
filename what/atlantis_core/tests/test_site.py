@@ -236,3 +236,45 @@ def test_v2_run_against_v1_entry_is_refused(built_v2, exemplar_dir):
     v1 = json.loads((exemplar_dir.parents[1] / "board" / "entries" / "2026-10-02_gulf_karenia_brevis_v1.json").read_text())
     with pytest.raises(SiteError, match="alert_budgets"):
         board_check(m, v1, inst)
+
+
+# ── M-2b: the build checks words and tokens, never that the page's script parses. A `//` comment on a one-line IIFE
+# swallowed the rest of it, every chart on the page died, and 676 tests passed. node --check closes that hole. ──────────
+import re as _re, shutil as _shutil, subprocess as _subprocess
+
+
+def _script(tpl: str) -> str:
+    return max(_re.findall(r"<script(?:\s[^>]*)?>(.*?)</script>", tpl, _re.S), key=len)
+
+
+def _node_check(js: str, tmp_path) -> _subprocess.CompletedProcess:
+    f = tmp_path / "page.js"; f.write_text(js)
+    return _subprocess.run([_shutil.which("node"), "--check", str(f)], capture_output=True, text=True)
+
+
+@pytest.mark.skipif(_shutil.which("node") is None, reason="node not on PATH — the template's script cannot be syntax-checked")
+def test_template_script_parses(tmp_path):
+    assert _node_check(_script(TEMPLATE.read_text()), tmp_path).returncode == 0
+
+
+@pytest.mark.skipif(_shutil.which("node") is None, reason="node not on PATH")
+def test_script_check_can_fail(tmp_path):
+    """C-009: the M-2b defect, planted back — a line comment inside a one-line function."""
+    js = _script(TEMPLATE.read_text())
+    a = "const CI=D.metrics.calibration_in_the_large; /* M-2b, ruling 16 */"
+    assert js.count(a) == 1
+    assert _node_check(js.replace(a, "const CI=D.metrics.calibration_in_the_large; // M-2b, ruling 16"), tmp_path).returncode != 0
+
+
+def test_polygon_unit_names_come_from_the_grid(monkeypatch):
+    """M-2b: a polygon grid's `name_property` names the page's units (the FKNMS page first said 1…21); rules unchanged."""
+    import types
+    import atlantis_core.grid as grid_mod
+    from atlantis_core.site.assemble import unit_names
+    monkeypatch.setattr(grid_mod, "make_grid", lambda inst: types.SimpleNamespace(names=lambda: {1: "Carysfort", 15: "Looe Key"}))
+    poly = types.SimpleNamespace(cfg={"grid": {"kind": "polygons", "name_property": "name", "unit_dtype": "int"}})
+    assert unit_names(poly) == {1: "Carysfort", 15: "Looe Key"}
+    rules = types.SimpleNamespace(cfg={"grid": {"kind": "rules", "rules": [{"id": 7, "name": "Lee-Collier"}]}})
+    assert unit_names(rules) == {7: "Lee-Collier"}
+    bare = types.SimpleNamespace(cfg={"grid": {"kind": "polygons"}})
+    assert unit_names(bare) == {}

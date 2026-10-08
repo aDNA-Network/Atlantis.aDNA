@@ -305,7 +305,7 @@ ${pts.slice(back).map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="var(--bl
 <text x="${W-20}" y="134" class="sm" text-anchor="end">${w.crossed||''}</text></svg>`; })();
 
 // ---------- model ----------
-(function(){ const tb=document.getElementById('t_splits'); if(!tb) return; const CI=D.metrics.calibration_in_the_large;   // M-2b, ruling 16 ['train','val','test'].forEach(k=>{const s=D.metrics.splits[k]; const tr=document.createElement('tr'); tr.innerHTML=`<td>${k}</td><td class="num">${s.years[0]}–${s.years[1]}</td><td class="r num">${s.n.toLocaleString('en-US')}</td><td class="r num">${s.positives.toLocaleString('en-US')}</td><td class="r num">${(100*s.positives/s.n).toFixed(1)}%</td>`+(CI?`<td class="r num">${CI[k]==null?'—':(CI[k]>0?'+':'')+CI[k].toFixed(3)}</td>`:''); tb.appendChild(tr);}); })();
+(function(){ const tb=document.getElementById('t_splits'); if(!tb) return; const CI=D.metrics.calibration_in_the_large; /* M-2b, ruling 16 */ ['train','val','test'].forEach(k=>{const s=D.metrics.splits[k]; const tr=document.createElement('tr'); tr.innerHTML=`<td>${k}</td><td class="num">${s.years[0]}–${s.years[1]}</td><td class="r num">${s.n.toLocaleString('en-US')}</td><td class="r num">${s.positives.toLocaleString('en-US')}</td><td class="r num">${(100*s.positives/s.n).toFixed(1)}%</td>`+(CI?`<td class="r num">${CI[k]==null?'—':(CI[k]>0?'+':'')+CI[k].toFixed(3)}</td>`:''); tb.appendChild(tr);}); })();
 reg(()=>{ const t=tok(); const s=D.metrics.splits; const col={train:t.water,val:t.seq[2],test:t.bloom};
   plot('c_split',['train','val','test'].map(k=>({type:'bar',orientation:'h',y:['years'],x:[s[k].years[1]-s[k].years[0]+1],base:[s[k].years[0]],name:k,marker:{color:col[k]},text:k+' '+s[k].years[0]+'–'+s[k].years[1],textposition:'inside',insidetextanchor:'middle',textfont:{color:'#fff',size:11},hovertemplate:k+': %{base}–'+s[k].years[1]+'<extra></extra>'})),
     L({barmode:'stack',margin:{l:10,r:10,t:6,b:30},height:110,yaxis:{visible:false},xaxis:{range:[y0,sp.test_end+1],gridcolor:t.line,tickfont:{color:t.ink3},dtick:5}}));
@@ -337,10 +337,10 @@ reg(()=>{ const t=tok(); const s=D.metrics.splits; const col={train:t.water,val:
     rows.forEach(([n,m,tr])=>{const r=document.createElement('tr'); r.innerHTML=`<td>${n}</td><td class="r num">${m.auroc.toFixed(3)}</td><td class="r num">${m.auprc.toFixed(3)}</td><td class="r num">${m.brier.toFixed(4)}</td><td class="r num">${m.calibration_slope.toFixed(2)}</td><td class="r num">${tr}</td>`; tb.appendChild(r);});
     const c=D.metrics.climatology_baseline_test, so=D.metrics.surveillance_only_test_auroc, pv=D.metrics.full.test.prevalence;
     // M-2b (ruling 19): the event signal's own comparators, where the run made them; a row with no number is not drawn
-    const ps=D.metrics.persistence_baseline_test, tr=D.metrics.trend_baseline_test;
+    const ps=D.metrics.persistence_baseline_test, td=D.metrics.trend_baseline_test;
     [[R.climatology,c.auroc,c.auprc],
      ...(ps?[[R.persistence,ps.auroc,ps.auprc]]:[]),
-     ...(tr?[[R.trend,tr.auroc,tr.auprc]]:[]),
+     ...(td?[[R.trend,td.auroc,td.auprc]]:[]),
      ...(so!=null?[[R.surveillance_only,so,null]]:[]),[R.base_rate,0.5,pv]].forEach(([n,a,p])=>{const r=document.createElement('tr'); r.innerHTML=`<td>${n}</td><td class="r num">${a.toFixed(3)}</td><td class="r num">${p==null?'—':p.toFixed(3)}</td><td class="r">—</td><td class="r">—</td><td class="r">—</td>`; tb.appendChild(r);}); }
   const ta=document.getElementById('t_alerts'); if(ta){ const AR=Object.entries(D.metrics.full.test.alert_rates);
     // M-1e (F-8): a threshold fixed beforehand reports what it actually flagged beside the nominal budget. Older runs (no
