@@ -187,7 +187,7 @@ const ctl = id => `<div class="ctl"><span class="eyebrow">${S.episode}</span><di
 const FIGS = {
   peryear:'<div id="c_peryear" class="chart short"></div>', map:'<div id="c_map" class="chart short"></div>', cov:'<div id="c_cov" class="heat"></div>',
   trace:'<div id="c_trace" class="chart tall"></div>', label_diagram:'<div id="c_label"></div>',
-  split:`<div id="c_split" class="chart short" style="min-height:150px"></div><div class="tblwrap"><table class="tbl" id="t_splits"><tr><th>Split</th><th>Years</th><th class="r">${S.unit_weeks}</th><th class="r">Onsets</th><th class="r">Prevalence</th>${D.metrics.calibration_in_the_large?`<th class="r">${S.citl}</th>`:''}</tr></table></div>`,
+  split:`<div id="c_split" class="chart short" style="min-height:150px"></div><div class="tblwrap"><table class="tbl" id="t_splits"><tr><th>Split</th><th>Years</th><th class="r">${S.unit_weeks}</th><th class="r">Positives</th><th class="r">Prevalence</th>${D.metrics.calibration_in_the_large?`<th class="r">${S.citl}</th>`:''}</tr></table></div>`,
   pr:'<div id="c_pr" class="chart short"></div>', roc:'<div id="c_roc" class="chart short"></div>', cal:'<div id="c_cal" class="chart short"></div>',
   alerts:'<div class="tblwrap"><table class="tbl" id="t_alerts"><tr><th>Alert rate</th><th class="r">Threshold</th><th class="r">Precision</th><th class="r">Recall</th><th class="r">Alerts</th></tr></table></div>',
   lead:'<div id="c_lead" class="chart short"></div>', roll:'<div id="c_roll" class="chart short"></div>',

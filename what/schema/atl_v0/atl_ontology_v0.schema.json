@@ -484,7 +484,7 @@
                     ]
                 },
                 "trend_auroc": {
-                    "description": "0.7.0 (M-2b, ruling 19). A logistic fit on [s(t), s(t) \u2212 s(t\u22121)] \u2014 the signal and its last step \u2014 fitted on the rows the refit trains on (train \u222a embargoed val, as climatology), scored once on test. What the model adds beyond the event signal's own recent path. Controls: pos_evaluation_baselines_and_segments \u00b7 neg_trend_auroc_gt1. Nearest miss NOT caught: a trend fitted on test rows (the emitter's plant test).",
+                    "description": "0.7.0 (M-2b, ruling 19). A logistic fit on [s(t), s(t) \u2212 s(t\u22121)] \u2014 the signal and its last step \u2014 fitted on the rows the refit trains on (train \u222a embargoed val, as climatology), scored once on test. What the model adds beyond the event signal's own recent path. Controls: pos_evaluation_baselines_and_segments \u00b7 neg_trend_auroc_gt1. Nearest miss NOT caught: a trend fitted on test rows, or a step input that read s(t+1) (atlantis_core's: eval's fit_years and check_label_windows; plants B1 and S3 in tests/test_baselines.py, III M-2b F-1).",
                     "maximum": 1,
                     "minimum": 0,
                     "type": [

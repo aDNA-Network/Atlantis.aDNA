@@ -120,8 +120,9 @@ def _metrics(inst, m: dict) -> dict:
             "rolling_origin", "obligations", "mode", "sensitivity", "semantic_hash", "features_report", "atlantis_core")
     out = {k: m[k] for k in keep if k in m}
     if "calibration_in_the_large" in full.get("test", {}):   # ruling 16: val beside test, so the shift is on the page
-        out["calibration_in_the_large"] = {"val": (full.get("val") or {}).get("calibration_in_the_large"),
-                                           "test": full["test"]["calibration_in_the_large"]}
+        v = full.get("val") or {}   # III M-2b F-7: val's CITL is on the embargoed stop set — its own n and prevalence travel with it
+        out["calibration_in_the_large"] = {"val": v.get("calibration_in_the_large"), "test": full["test"]["calibration_in_the_large"],
+                                           "val_n": v.get("n"), "val_prevalence": v.get("prevalence")}
     for blk in ("val",):
         full.pop(blk, None)
     out.update(full=full, ablations=abl)

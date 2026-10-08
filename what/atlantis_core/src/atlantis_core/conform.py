@@ -408,6 +408,26 @@ def check(root, items=None, stage: str = "declared", selftest: bool = True) -> d
                 if lim:
                     m = True
                     text = re.sub(r"<[^>]+>|\s+", " ", str(lim[0].get("body") or "")).strip()
+                    # III M-2b F-2 (C-011; steward ruling 25): copy is what WOULD be drawn. The page must carry the
+                    # template's section renderer, and its main script must parse — a script that throws draws nothing
+                    # (the 671808b defect). node --check when node is present; otherwise said, not assumed.
+                    if '<section id="${s.id}">' not in html:
+                        fail(10, f"{p.name}: embedded copy has a limits section, but the page has no section renderer — it is never drawn")
+                    scripts = [x for x in re.findall(r"<script(?:\s[^>]*)?>(.*?)</script>", html, re.S)
+                               if x.strip() and not x.lstrip().startswith(("{", "["))]
+                    node = shutil.which("node")
+                    if not scripts:
+                        fail(10, f"{p.name}: no page script — the embedded copy is never drawn")
+                    elif node:
+                        import tempfile
+                        with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False) as tf:
+                            tf.write(max(scripts, key=len))
+                        rc = subprocess.run([node, "--check", tf.name], capture_output=True, text=True)
+                        Path(tf.name).unlink(missing_ok=True)
+                        if rc.returncode != 0:
+                            fail(10, f"{p.name}: the page script does not parse (node --check) — nothing on it is drawn")
+                    else:
+                        R[10]["reasons"].append(f"{p.name}: limits read from the embedded copy; render unverified (node absent)")
                 html = html + " " + " ".join(str(x.get("body", "")) + " " + str(x.get("title", ""))
                                              for x in copy.get("sections") or [] if isinstance(x, dict))
             if not m:

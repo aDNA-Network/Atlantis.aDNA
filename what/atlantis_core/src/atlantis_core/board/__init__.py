@@ -236,9 +236,12 @@ BASELINES = ("persistence_baseline_test", "trend_baseline_test")
 
 
 def assert_comparators(ev: dict, res: dict) -> None:
-    """M-2b (rulings 16 and 19): no new entry without the event signal's own comparators and the base rate per segment, and
-    each is checked by arithmetic on the RESULT (C-023), not taken from its label: a segment's rate is its positives / n;
-    each comparator scored exactly the test rows; the trend was fitted on years before test."""
+    """M-2b (rulings 16 and 19): no new entry without the event signal's own comparators and the base rate per segment.
+    A TAMPER check on the result dict and the projection (III M-2b F-5, C-009): for any result the real eval wrote, these
+    hold by construction — a segment's rate is its positives / n, each comparator scored the test rows, the trend's fit
+    years precede test, and every 0.7.0 slot equals the result it was projected from. What proves the comparators read only
+    the past and were fitted off test is eval's own checks on the frames received (fit_years, check_label_windows) and
+    tests/test_baselines.py's plants (S1–S3, B1–B2), not this function."""
     bad = []
     for k in BASELINES:
         if k not in res:
@@ -257,11 +260,36 @@ def assert_comparators(ev: dict, res: dict) -> None:
         b = res.get(k) or {}
         if b and b.get("n_test") != n_test:
             bad.append(f"{k}: scored {b.get('n_test')} rows, not the {n_test} test rows")
+    slots = {"persistence_auroc": ("persistence_baseline_test", "auroc"), "persistence_auprc": ("persistence_baseline_test", "auprc"),
+             "trend_auroc": ("trend_baseline_test", "auroc"), "trend_auprc": ("trend_baseline_test", "auprc")}
+    for slot, (k, f) in slots.items():
+        if k in res and ev.get(slot) != _r(res[k][f]):
+            bad.append(f"{slot} {ev.get(slot)} is not the result's {k}.{f} ({_r(res[k][f])})")
+    for slot, blk in (("calibration_in_the_large_validation", "val"), ("calibration_in_the_large_test", "test")):
+        v = res["full"][blk].get("calibration_in_the_large")
+        if v is None:
+            bad.append(f"full.{blk}: no calibration_in_the_large (ruling 16)")
+        elif ev.get(slot) != _r(v):
+            bad.append(f"{slot} {ev.get(slot)} is not the result's full.{blk}.calibration_in_the_large ({_r(v)})")
     fy = (res.get("trend_baseline_test") or {}).get("fit_years")
     if fy and t0 is not None and fy[1] >= t0:
         bad.append(f"trend_baseline_test: fitted on rows through {fy[1]} — test starts {t0}")
     if bad:
         raise BoardError("comparators (M-2b): " + "; ".join(bad))
+
+
+def assert_config_bytes(res: dict, inst) -> None:
+    """III M-2b F-6 (C-023): `config_bytes_md5` is stamped at run time; an entry emitted after the config file was edited
+    names bytes no commit holds (the semantic hash need not move — a board-block edit is outside it). Refused: re-run."""
+    import hashlib
+    bad = []
+    for name, md5 in (res.get("config_bytes_md5") or {}).items():
+        p = inst.root / name
+        now = hashlib.md5(p.read_bytes()).hexdigest()[:10] if p.exists() else None
+        if now != md5:
+            bad.append(f"{name}: the run read bytes {md5}, the file is now {now}")
+    if bad:
+        raise BoardError("config bytes changed since the run (III M-2b F-6) — re-run before emitting: " + "; ".join(bad))
 
 
 def inst_test_start(res: dict):
@@ -356,6 +384,7 @@ def emit(res: dict, inst, *, version: int, run_date: str, recorded_at: str, shap
     assert_thresholds_fixed(ev, res, swaps)   # before the schema, so the refusal names F-8 rather than a slot
     assert_embargo(res, inst, swaps)          # and M-1f's, by name
     assert_comparators(ev, res)               # and M-2b's
+    assert_config_bytes(res, inst)            # and III M-2b F-6's: the entry names the bytes that ran
     validate(ev)
     event = inst.event
     rep = res["features_report"]

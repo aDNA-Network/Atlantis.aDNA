@@ -26,6 +26,10 @@ METRICS_PLANTS = {
     "S2_carry_unlimited": ('s_t = g.groupby(unit_col)["signal"].ffill(limit=L) if L else g["signal"].copy()',
                            's_t = g.groupby(unit_col)["signal"].ffill()'),
 }
+# III M-2b F-1: the trend's second input. s_prev read one week ahead makes the step s(t+1) − s(t) — the future in the
+# untested sibling input (C-007)
+STEP_PLANT = {"S3_step_reads_next_week": ("s_prev = s_t.groupby(g[unit_col]).shift(1)",
+                                          "s_prev = s_t.groupby(g[unit_col]).shift(-1)")}
 EVAL_PLANTS = {
     "B1_trend_fit_on_test": ('res["trend_baseline_test"] = trend_baseline(base_fit, test, hist, unit_col=unit_col)',
                              'res["trend_baseline_test"] = trend_baseline(test, test, hist, unit_col=unit_col)'),
@@ -101,6 +105,15 @@ def test_imputation_is_counted_not_hidden():
     assert t["n_imputed"] == int((h["s_t"].isna() | h["s_prev"].isna()).sum()) > len(drop)   # t−1 missing counts too
 
 
+def test_trend_step_cannot_see_ahead():
+    """III M-2b F-1 (C-007): the trend's step input is planted to read s(t+1); on the next-week world it must jump."""
+    panel, fit, test = _world()
+    clean = trend_baseline(fit, test, signal_history(panel, "unit", 4), unit_col="unit")
+    leak = planted(met_mod, STEP_PLANT, "S3_step_reads_next_week")
+    bad = leak.trend_baseline(fit, test, leak.signal_history(panel, "unit", 4), unit_col="unit")
+    assert clean["auroc"] < 0.95 and bad["auroc"] > 0.99, (clean["auroc"], bad["auroc"])
+
+
 def test_trend_reports_what_it_was_fitted_on():
     panel, fit, test = _world()
     t = trend_baseline(fit, test, signal_history(panel, "unit", 4), unit_col="unit")
@@ -140,6 +153,29 @@ def test_persistence_signal_is_the_labels_last_known_signal(built):
     for name in METRICS_PLANTS:   # each plant must break the identity (C-009: the control can fail)
         bad = _carried(planted(met_mod, METRICS_PLANTS, name), inst, m, panel)
         assert not np.allclose(bad, want, equal_nan=True, rtol=0, atol=0), f"{name} went unnoticed"
+
+
+@pytest.fixture(scope="module")
+def labelled_table(built):
+    inst, frames, _, _ = built
+    table, _ = build(inst, frames)   # every unit-week, the label's own columns included (before the modelling filters)
+    return table
+
+
+def test_step_input_is_the_labels_carried_signal_one_week_earlier(built, labelled_table):
+    """III M-2b F-1: s_prev(u, t) = the label's last_known_signal at (u, t − 1 wk), on every unit-week of the exemplar;
+    the S3 plant breaks it (C-009)."""
+    inst, _, _, panel = built
+    ucol = inst.cfg["grid"].get("unit_column", "unit")
+    lk = labelled_table[[ucol, "week", "last_known_signal"]].assign(week=lambda d: d["week"] + pd.Timedelta(weeks=1))
+    def got(mod):
+        h = mod.signal_history(panel, ucol, int(inst.cfg["label"]["last_known_weeks"]))
+        j = h.merge(lk, on=[ucol, "week"], how="inner")
+        return j["s_prev"].astype(float), j["last_known_signal"].astype(float)
+    a, want = got(met_mod)
+    assert len(a) > 1000 and a.notna().sum() > 0 and np.allclose(a, want, equal_nan=True, rtol=0, atol=0)
+    b, want = got(planted(met_mod, STEP_PLANT, "S3_step_reads_next_week"))
+    assert not np.allclose(b, want, equal_nan=True, rtol=0, atol=0), "S3 went unnoticed"
 
 
 LOGISTIC = {"kind": "logistic", "C_grid": [1.0], "max_iter": 2000}
@@ -193,7 +229,19 @@ RESULT_PLANTS = [
     (lambda r: r.pop("persistence_baseline_test"), "persistence_baseline_test missing"),
     (lambda r: r["trend_baseline_test"].__setitem__("n_test", 1), "trend_baseline_test: scored 1 rows"),
     (lambda r: r["trend_baseline_test"].__setitem__("fit_years", [1990, 2030]), "fitted on rows through 2030"),
+    (lambda r: r["full"]["test"].pop("calibration_in_the_large"), "full.test: no calibration_in_the_large"),
 ]
+
+
+@pytest.mark.parametrize("slot,val,match", [("persistence_auroc", 0.5, "persistence_auroc 0.5 is not the result's"),
+                                            ("trend_auprc", 0.01, "trend_auprc 0.01 is not the result's"),
+                                            ("calibration_in_the_large_test", 0.2, "calibration_in_the_large_test 0.2 is not")])
+def test_board_refuses_a_slot_that_is_not_the_result(clean_res, built, slot, val, match):
+    """III M-2b F-5: a projected slot doctored after projection is refused (slot ↔ result equality)."""
+    ev = project(clean_res, _noabl(built[0]), version=99, recorded_at="2026-10-08T00:00:00Z", config_hash="0" * 10)
+    ev[slot] = val
+    with pytest.raises(BoardError, match=match):
+        assert_comparators(ev, clean_res)
 
 
 @pytest.mark.parametrize("mutate,match", RESULT_PLANTS)
@@ -236,3 +284,19 @@ def test_exemplar_v4_differs_from_v3_by_the_comparators_alone(exemplar_dir):
     assert "calibration_in_the_large" in b["full"]["test"]
     for f in ("model.json", "shap_summary.json", "whatif.json"):
         assert (o / "atlantis_core_v3" / f).read_bytes() == (o / "atlantis_core_v4" / f).read_bytes(), f
+
+
+def test_emit_refuses_config_bytes_edited_after_the_run(exemplar_dir, tmp_path):
+    """III M-2b F-6: the run's config_bytes_md5 must name the bytes on disk at emit (a board-block edit after the run
+    moved the bytes, not the semantic hash)."""
+    import json, shutil
+    from atlantis_core.board import assert_config_bytes
+    d = tmp_path / "inst"; d.mkdir()
+    for f in ("atlantis.yaml", "config.yaml"):                       # the exemplar pins both
+        shutil.copy(exemplar_dir / f, d / f)
+    res = json.loads((exemplar_dir / "outputs" / "atlantis_core_v4" / "metrics.json").read_text())
+    inst = types.SimpleNamespace(root=d)
+    assert_config_bytes(res, inst)                                   # v4 ran on these bytes
+    (d / "atlantis.yaml").write_text((d / "atlantis.yaml").read_text() + "\n# edited after the run\n")
+    with pytest.raises(BoardError, match="config bytes changed since the run"):
+        assert_config_bytes(res, inst)
