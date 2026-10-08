@@ -13,14 +13,22 @@ Latitude is stored descending. The ascending `[(lat0):1:(lat1)]` query that `ERD
 checked live at planning. The licence reads "available for use without restriction; credit NOAA CRW and the dataset DOI".
 The instance's posture ADR rules on it, including any upstream era caveat (CoralTemp's 1985–2002 OSTIA input).
 
-spec: {base (…/griddap/<dataset>.csv), variable, years: [y0, y1], chunk_years (default 5), pad_deg (default 0.05),
-       start (optional; noaacrwdhwDaily begins 1985-03-25 — see erddap.first_day)}
+spec: {base (…/griddap/<dataset>.csv), variable, years: [y0, y1], chunk_years (default 5) | chunk_months | chunk_days (erddap.chunks),
+       pad_deg (default 0.05), start (optional; noaacrwdhwDaily begins 1985-03-25 — see erddap.first_day),
+       envelope: zone (default) | union (M-2a-ii)}
+
+**`envelope: union` (M-2a-ii, steward ruling 14).** CRW's proxy cuts every request at ~10.3 s (erddap module note), so a
+long record is fetched in short chunks (15-day spans for FKNMS, ruling 15), and per zone that is one request per zone per span. `union` asks once per chunk for the
+union of every zone's padded envelope, then gives each zone the cells ERDDAP would have returned for its own envelope:
+each bound snapped to the NEAREST grid centre on its axis (`snap`, ERDDAP griddap's rule for an off-grid bound). Everything
+after that (step 2 onward) is the same code. So `union` changes the request count, never the reduction. The summary's
+`request` block says which was used. A union box takes in land and open water between zones, which is cheap at 5 km.
 
 **The patients come from the instance, not from the spec.** `bind(inst, sid)` takes the instance's polygon grid through
 `make_grid`, so the zone file's sha256 pin is checked before any request. It also takes the stream's own column names.
 
 Reduction, per zone (per feature: a cell may count for two overlapping zones, and that is recorded, not hidden):
-  1. Download the zone's envelope, padded by `pad_deg` (one cell), per year chunk; cached like `ERDDAPGriddap`.
+  1. Download the zone's envelope, padded by `pad_deg` (one cell), per chunk (or the union of them; below); cached.
   2. Keep the cells whose **centre** lies inside the zone's polygon (even-odd, holes honoured), among cells with any data.
   3. If none qualifies (a zone smaller than a 5 km cell, or all land-masked), **fall back** to the one data cell nearest
      the zone's vertex mean, with longitude scaled by cos(latitude).
@@ -42,7 +50,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from atlantis_core.fetch.erddap import ERDDAPGriddap, _empty
+from atlantis_core.fetch.erddap import CHUNK_KEYS, ERDDAPGriddap, _empty, chunk_label, chunks
 from atlantis_core.grid.polygons import PolygonGrid, geometry_contains
 
 
@@ -63,6 +71,29 @@ def envelope(geom: dict, pad: float) -> list[float]:
 def vertex_mean(geom: dict) -> tuple[float, float]:
     pts = np.concatenate([np.asarray(r, dtype=float) for r in _rings(geom)])
     return float(pts[:, 1].mean()), float(pts[:, 0].mean())
+
+
+def snap(axis, lo: float, hi: float) -> np.ndarray:
+    """Boolean mask over a sorted `axis` of grid centres: the run between the centres NEAREST `lo` and `hi`, inclusive.
+    This is what ERDDAP's griddap returns for an off-grid `[(lo):1:(hi)]`. On a tie the lower centre is taken. The live parity
+    check at M-2a-ii compared it with a real per-zone request."""
+    a = np.asarray(axis, dtype=float)
+    i0, i1 = int(np.abs(a - lo).argmin()), int(np.abs(a - hi).argmin())
+    i0, i1 = min(i0, i1), max(i0, i1)
+    m = np.zeros(len(a), dtype=bool); m[i0:i1 + 1] = True
+    return m
+
+
+def union_box(boxes) -> list[float]:
+    boxes = list(boxes)
+    return [min(b[0] for b in boxes), max(b[1] for b in boxes), min(b[2] for b in boxes), max(b[3] for b in boxes)]
+
+
+def in_box(raw: pd.DataFrame, box) -> pd.DataFrame:
+    """The rows of a union download that a request for `box` alone would have returned (nearest-centre snap per axis)."""
+    lats, lons = np.sort(raw["latitude"].unique()), np.sort(raw["longitude"].unique())
+    keep_la, keep_lo = lats[snap(lats, box[0], box[1])], lons[snap(lons, box[2], box[3])]
+    return raw[raw["latitude"].isin(keep_la) & raw["longitude"].isin(keep_lo)]
 
 
 def select_cells(geom: dict, cells: pd.DataFrame) -> tuple[pd.DataFrame, bool]:
@@ -123,28 +154,38 @@ class CoralReefWatch(ERDDAPGriddap):
             raise ValueError(p)
         return super().fetch(spec)
 
+    def _chunk(self, spec, key, name, d0, d1, box) -> pd.DataFrame | None:
+        cache = self.cache_dir / self.artifact.stem / key / f"{name}_{chunk_label(spec, d0, d1)}.csv"
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        if not cache.exists():
+            r = self.get(spec["base"] + "?" + self.query(spec, d0, d1, box), empty_ok=_empty)
+            txt = "" if _empty(r) else r.text
+            tmp = cache.with_suffix(".tmp"); tmp.write_text(txt); tmp.rename(cache)
+        return pd.read_csv(cache, skiprows=[1]) if cache.stat().st_size else None
+
     def _download(self, spec):
         if self.grid is None:
             raise ValueError("CoralReefWatch needs the instance's polygon grid: build it with fetch.fetcher_for (bind)")
-        y_first, y_last = spec["years"]; step = int(spec.get("chunk_years", 5)); pad = float(spec.get("pad_deg", 0.05))
-        chunks = [(y, min(y + step - 1, y_last)) for y in range(y_first, y_last + 1, step)]
+        mode = spec.get("envelope", "zone")
+        if mode not in ("zone", "union"):
+            raise ValueError(f"fetch spec envelope {mode!r}: zone | union")
+        pad, spans = float(spec.get("pad_deg", 0.05)), chunks(spec)
         var, frames, kept = spec["variable"], [], {}
         b = self.basis(spec)
         key = f"g{b['grid_sha256'][:12]}_p{b['pad_deg']}_{var}"       # III F-1: a re-pin, a new pad or variable never reads old cells
+        empty = pd.DataFrame(columns=["time", "latitude", "longitude", var])
+        boxes = {uid: envelope(geom, pad) for uid, _name, geom in self.grid.units}
+        if mode == "union":
+            ub = union_box(boxes.values())
+            parts = [p for d0, d1 in spans if (p := self._chunk(spec, key, "union", d0, d1, ub)) is not None]
+            union_raw = pd.concat(parts, ignore_index=True) if parts else empty
         zones = {}
         for uid, _name, geom in self.grid.units:
-            box = envelope(geom, pad)
-            parts = []
-            for y0, y1 in chunks:
-                cache = self.cache_dir / self.artifact.stem / key / f"u{uid}_{y0}_{y1}.csv"
-                cache.parent.mkdir(parents=True, exist_ok=True)
-                if not cache.exists():
-                    r = self.get(spec["base"] + "?" + self.query(spec, y0, y1, box), empty_ok=_empty)
-                    txt = "" if _empty(r) else r.text
-                    tmp = cache.with_suffix(".tmp"); tmp.write_text(txt); tmp.rename(cache)
-                if cache.stat().st_size:
-                    parts.append(pd.read_csv(cache, skiprows=[1]))
-            raw = pd.concat(parts, ignore_index=True) if parts else pd.DataFrame(columns=["time", "latitude", "longitude", var])
+            if mode == "union":
+                raw = in_box(union_raw, boxes[uid]) if len(union_raw) else empty
+            else:
+                parts = [p for d0, d1 in spans if (p := self._chunk(spec, key, f"u{uid}", d0, d1, boxes[uid])) is not None]
+                raw = pd.concat(parts, ignore_index=True) if parts else empty
             data = raw.dropna(subset=[var])
             cells = data[["latitude", "longitude"]].drop_duplicates().reset_index(drop=True)
             sel, fb = select_cells(geom, cells)
@@ -161,6 +202,8 @@ class CoralReefWatch(ERDDAPGriddap):
             others = set().union(*(k for u, k in kept.items() if u != uid)) if len(kept) > 1 else set()
             zones[str(uid)]["shared_cells"] = len(cells_kept & others)
         self.reduction = {**b, "zones": zones}
+        self.request = {"envelope": mode, "chunk": {k: spec[k] for k in CHUNK_KEYS if k in spec}
+                        or {"chunk_years": 5}, "n_chunks": len(spans)}
         return pd.concat(frames, ignore_index=True)
 
     def extras(self, df) -> dict:
@@ -169,4 +212,5 @@ class CoralReefWatch(ERDDAPGriddap):
             return {"reduction": None, "reduction_note": "cache hit without a summary: the per-zone reduction was not "
                                                          "recomputed here (re-fetch to record it)"}
         return {"reduction": red, "reduction_rule": "cell centre in polygon, per feature; else the nearest data cell to "
-                                                    "the zone's vertex mean (cos-lat scaled)"}
+                                                    "the zone's vertex mean (cos-lat scaled)",
+                "request": getattr(self, "request", None)}

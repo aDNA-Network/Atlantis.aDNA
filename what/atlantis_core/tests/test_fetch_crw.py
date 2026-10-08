@@ -25,19 +25,26 @@ def value(lat, lon, day):
     return round(100 * (lat - 34) ** 2 + (lon + 77) ** 3 + day, 6)
 
 
+LATS, LONS = np.round(np.arange(34.025, 36.0, 0.05), 3), np.round(np.arange(-77.975, -75.0, 0.05), 3)
+
+
 class FakeERDDAP:
-    """Answers `<base>?var[(t0):1:(t1)][(lat0):1:(lat1)][(lon0):1:(lon1)]` with the cell centres inside the box."""
+    """Answers `<base>?var[(t0):1:(t1)][(lat0):1:(lat1)][(lon0):1:(lon1)]` as ERDDAP griddap does: the days in [t0, t1], and
+    the centres between the ones NEAREST each bound (M-2a-ii; it was `lo ≤ c ≤ hi` before). It uses the fetcher's own `snap`,
+    so these tests prove the union plumbing against one rule; the live parity check proves the rule against CRW."""
     def __init__(self):
         self.calls = []
 
     def get(self, url, params=None, timeout=None):
         self.calls.append(url)
-        var, la0, la1, lo0, lo1 = re.match(r".*\?(\w+)\[.*?\]\[\((.*?)\):1:\((.*?)\)\]\[\((.*?)\):1:\((.*?)\)\]", unquote(url)).groups()
+        var, t0, t1, la0, la1, lo0, lo1 = re.match(
+            r".*\?(\w+)\[\((.*?)\):1:\((.*?)\)\]\[\((.*?)\):1:\((.*?)\)\]\[\((.*?)\):1:\((.*?)\)\]", unquote(url)).groups()
         la0, la1, lo0, lo1 = map(float, (la0, la1, lo0, lo1))
-        lats = [c for c in np.round(np.arange(34.025, 36.0, 0.05), 3) if la0 <= c <= la1]
-        lons = [c for c in np.round(np.arange(-77.975, -75.0, 0.05), 3) if lo0 <= c <= lo1]
+        lats, lons = LATS[crw_mod.snap(LATS, la0, la1)], LONS[crw_mod.snap(LONS, lo0, lo1)]
         rows = ["time,latitude,longitude," + var, "UTC,degrees_north,degrees_east,x"]
         for di, day in enumerate(DAYS):
+            if not (t0 <= day <= t1):
+                continue
             for la in lats:
                 for lo in lons:
                     v = "NaN" if (la, lo) == LAND else value(la, lo, di)
@@ -258,11 +265,90 @@ def test_start_clamps_the_first_chunk_only(tmp_path):
     from atlantis_core.fetch.erddap import first_day
     f = crw(tmp_path, [SEG1])
     spec = {**SPEC, "years": [1985, 1994], "start": "1985-03-25"}
-    q1, q2 = f.query(spec, 1985, 1989, [24.5, 24.6, -81.4, -81.3]), f.query(spec, 1990, 1994, [24.5, 24.6, -81.4, -81.3])
+    from atlantis_core.fetch.erddap import chunks
+    (a0, a1), (b0, b1) = chunks(spec)
+    q1, q2 = f.query(spec, a0, a1, [24.5, 24.6, -81.4, -81.3]), f.query(spec, b0, b1, [24.5, 24.6, -81.4, -81.3])
     assert "[(1985-03-25T12:00:00Z):1:(1989-12-31T12:00:00Z)]" in q1 and "[(1990-01-01T12:00:00Z):1:(1994-12-31T12:00:00Z)]" in q2
     assert first_day(SPEC, 2020) == "2020-01-01"                                   # absent: unchanged
     for bad, why in (("1986-03-25", "first year"), ("25/03/1985", "ISO date")):
         with pytest.raises(ValueError, match=why):
             first_day({**spec, "start": bad}, 1985)
     df = crw(tmp_path / "s", [SEG1]).fetch({**SPEC, "start": "2020-07-02"})        # through the real download path
-    assert len(df) == 2                                                            # the fake serves both days regardless
+    assert len(df) == 1                                                            # the fake honours the range (M-2a-ii)
+
+
+# ── M-2a-ii: month chunks and one union request per chunk (steward ruling 14: CRW's proxy cuts a request at ~10 s) ─────
+MONTHS = {**SPEC, "years": [2020, 2020], "chunk_months": 1}
+
+
+def test_snap_is_nearest_centre_inclusive():
+    a = np.array([25.125, 25.175, 25.225, 25.275])
+    assert a[crw_mod.snap(a, 25.16, 25.24)].tolist() == [25.175, 25.225]     # 25.16 → 25.175 (not the 25.125 below it)
+    assert a[crw_mod.snap(a, 25.14, 25.26)].tolist() == [25.125, 25.175, 25.225, 25.275]   # each bound to its nearest
+    assert a[crw_mod.snap(a, 25.0, 30.0)].tolist() == a.tolist()             # outside the axis: clamped to its ends
+
+
+@pytest.mark.parametrize("features", [[SEG1, SEG2], SHAPES, [square(9, 35.31, 35.32, -76.42, -76.41), SEG1],
+                                      [square(1, 35.2, 35.5, -76.6, -76.2), square(2, 35.3, 35.6, -76.4, -76.0)]],
+                         ids=["land", "shapes", "fallback", "shared"])
+def test_union_equals_per_zone(tmp_path, features):
+    """The union request changes the request count, never the reduction: identical frames and an identical zones block,
+    across the land cell, non-rectangular zones, a fallback zone and two zones sharing cells."""
+    zs, us = FakeERDDAP(), FakeERDDAP()
+    fz, fu = crw(tmp_path / "z", features, session=zs), crw(tmp_path / "u", features, session=us)
+    dz, du = fz.fetch(MONTHS), fu.fetch({**MONTHS, "envelope": "union"})
+    pd.testing.assert_frame_equal(dz.sort_values(["seg", "date"]).reset_index(drop=True),
+                                  du.sort_values(["seg", "date"]).reset_index(drop=True))
+    assert fz.reduction == fu.reduction
+    inside = [ft for ft in features if not fu.reduction["zones"][str(ft["properties"]["seg"])]["fallback"]]
+    assert zone_problems(du, inside) == []                     # the fallback zone's value is checked by its own test above
+    assert len(zs.calls) == 12 * len(features) and len(us.calls) == 12              # one request per month, not per zone
+    s = json.loads((tmp_path / "u" / "dhw_fetch_summary.json").read_text())
+    assert s["request"] == {"envelope": "union", "chunk": {"chunk_months": 1}, "n_chunks": 12}
+
+
+def test_union_box_covers_every_zone_and_is_cached_per_month(tmp_path):
+    sess = FakeERDDAP()
+    f = crw(tmp_path, [SEG1, MULTI], session=sess)
+    f.fetch({**MONTHS, "envelope": "union"})
+    la0, la1, lo0, lo1 = map(float, re.search(r"\]\[\((.*?)\):1:\((.*?)\)\]\[\((.*?)\):1:\((.*?)\)\]$", unquote(sess.calls[0])).groups())
+    assert (la0, la1, lo0, lo1) == pytest.approx((35.15, 35.85, -76.65, -75.75))  # SEG1 ∪ MULTI, each padded 0.05
+    cached = sorted(p.name for p in (tmp_path / "dhw").rglob("*.csv"))
+    assert len(cached) == 12 and cached[6] == "union_2020-07-01_2020-07-31.csv"
+    (tmp_path / "dhw.parquet").unlink(); (tmp_path / "dhw_fetch_summary.json").unlink()
+    again = FakeERDDAP()
+    crw(tmp_path, [SEG1, MULTI], session=again).fetch({**MONTHS, "envelope": "union"})
+    assert again.calls == []                                                      # resumes from the month cache
+
+
+def test_unknown_envelope_is_refused(tmp_path):
+    with pytest.raises(ValueError, match="zone \\| union"):
+        crw(tmp_path, [SEG1]).fetch({**MONTHS, "envelope": "box"})
+
+
+def test_union_offline_never_touches_network(tmp_path):
+    class Boom:
+        def get(self, *a, **k): raise AssertionError("network touched")
+    with pytest.raises(OfflineError):
+        crw(tmp_path, [SEG1], session=Boom(), offline=True).fetch({**MONTHS, "envelope": "union"})
+
+
+def test_plant_a_union_without_the_per_zone_subset_is_caught(tmp_path, monkeypatch):
+    """C-009: the equivalence check must fail if each zone reads the whole union box (no snap-to-its-own-envelope)."""
+    features = [SEG1, MULTI, square(9, 35.31, 35.32, -76.42, -76.41)]
+    fz = crw(tmp_path / "z", features); fz.fetch(MONTHS)
+    monkeypatch.setattr(crw_mod, "in_box", lambda raw, box: raw)
+    fu = crw(tmp_path / "u", features); fu.fetch({**MONTHS, "envelope": "union"})
+    assert fz.reduction["zones"] != fu.reduction["zones"]
+
+
+
+def test_union_in_day_spans_equals_per_zone(tmp_path):
+    """Ruling 15: the instance runs `chunk_days: 15`; the union ≡ per-zone property holds for day spans too."""
+    spec = {**SPEC, "years": [2020, 2020], "chunk_days": 15}
+    zs, us = FakeERDDAP(), FakeERDDAP()
+    fz, fu = crw(tmp_path / "z", [SEG1, SEG2], session=zs), crw(tmp_path / "u", [SEG1, SEG2], session=us)
+    dz, du = fz.fetch(spec), fu.fetch({**spec, "envelope": "union"})
+    pd.testing.assert_frame_equal(dz.sort_values(["seg", "date"]).reset_index(drop=True), du.sort_values(["seg", "date"]).reset_index(drop=True))
+    assert fz.reduction == fu.reduction and len(du) == 4 and len(us.calls) == 25 and len(zs.calls) == 50   # 366 days / 15
+    assert fu.request == {"envelope": "union", "chunk": {"chunk_days": 15}, "n_chunks": 25}
