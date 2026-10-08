@@ -1,5 +1,25 @@
 # CHANGELOG — Atlantis.aDNA
 
+## 2026-10-08 — v0.11.2 · M-2a-ii ✅: FloridaKeysCoral.aDNA fetched and conforming · core 0.5.3 · III 9/9
+
+- **The first MPA instance holds its data.** It has three CRW streams (DHW, HotSpot, SSTA), daily over 1985 → 2025 for 21
+  zones. `fetch --verify` ✅ ×3, and it conforms at the fetched stage. Steward ruling 16 accepted the data and the onset
+  table (train 1.31% → val 7.59% → test 15.01%). The split is unchanged. No data entered Atlantis (SO-3).
+- **Core 0.5.2** (`3c8d11a`): CRW's proxy cuts any request at ~10.3 s, and a 5-year chunk took ~40 s. Fetch specs now
+  take `chunk_months` or `chunk_days`, and CRW takes `envelope: union`; union ≡ per-zone is tested, with a plant.
+- **Core 0.5.3, the III fixes (660 tests):**
+  - **F-1:** the CRW span cache is keyed on the base, and the generic ERDDAP cache on its whole basis. Before, a new base
+    read the old source's spans. A plant reproduces the defect.
+  - **F-2:** `provenance.daily_completeness` adds a summary `completeness` block, and `fetch --verify` prints ⓘ for
+    missing calendar days. FKNMS DHW lacks 1999-05-01, which is disclosed by ruling 17.
+  - **F-5:** an edge-tie test, covering all 16 resolutions; ruling 18.
+  - **F-6:** a start-moved year label names its day.
+  - **F-7/F-8:** docstrings.
+- **III** PASS-WITH-FINDINGS, 9/9. Local store: C-010 → 3, C-023 → 4; new C-028 `readiness_probe_not_the_operation`,
+  C-029 `null_count_blind_to_missing_rows` and C-030 `descriptive_shift_given_causal_label`.
+- **Card completed.** AAR filed. Roster, charter and STATE updated, and **M-2b queued**. The budget ran ≈ +300% on the
+  card, estimated rather than metered.
+
 ## 2026-10-08 — v0.11.1 · M-2a-ii sitting 1: FloridaKeysCoral.aDNA forked and ratified; fetch checkpointed
 
 - **The first instance exists:** `~/aDNA/FloridaKeysCoral.aDNA` (a peer vault). It conforms at the declared stage, its

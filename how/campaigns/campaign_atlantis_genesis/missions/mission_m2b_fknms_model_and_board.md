@@ -18,7 +18,7 @@ split_from: mission_m2_fknms_coral_instance
 aar_path: how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m2b_fknms_model_and_board.md
 session: TBD
 created: 2026-10-03
-updated: 2026-10-06
+updated: 2026-10-08
 last_edited_by: agent_proteus
 home_vault: Atlantis.aDNA
 tags: [mission, m2b, p2, opus, fknms, coral, mpa, eval, board, atlantis, tidewatch]
@@ -37,6 +37,10 @@ tags: [mission, m2b, p2, opus, fknms, coral, mpa, eval, board, atlantis, tidewat
       planning. DHW is both the event and a vital, and it accumulates, so DHW(t) plus HotSpot(t) nearly determine
       DHW(t+k). Without a "no model, just persistence" comparator, the headline AUROC overstates the model's value
       (SO-9). This is an Atlantis-side eval change, with a plant
+- [ ] **Steward ruling 16 (M-2a-ii, 2026-10-08):** report the base rate **per segment** (train 1.31% · val 7.59% · test
+      15.01%; 49 / 45 / 105 onsets) and check calibration under that shift. The split is unchanged, and nothing is tuned to it.
+      Limitations carry: 19/21 zones read through one cell (zone 17, ~30 km², among them); DHW lacks 1999-05-01 (ruling
+      17); the rise is consistent with warming but not separated from CoralTemp's 2002 input change or the fixed MMM
 - [ ] The instance's page, with Limitations (`atlantis_core.site`), lives **in the instance**. No instance page enters
       Atlantis (ADR-002 §4 A-1)
 - [ ] Board entry via `board --entries <instance>/what/board/entries`: closed, GREEN, `claim: method_demonstration`.

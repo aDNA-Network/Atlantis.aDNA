@@ -27,7 +27,7 @@ wheels = [
 
 [[package]]
 name = "atlantis-core"
-version = "0.5.1"
+version = "0.5.3"
 source = { editable = "." }
 dependencies = [
     { name = "jsonschema", extra = ["format"] },
