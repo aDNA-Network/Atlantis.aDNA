@@ -35,6 +35,8 @@ tags: [mission, m2c_ii, p2_gate_condition, opus, fknms, learner_swap, board, reg
     `c07b7c0288` should hold. Verify that.
   - Move the `mapping.yaml` ontology pin to 0.8.0. **Under M-2c ruling 2 this is federation upkeep, counted on its own
     line, not as an instance patch.**
+  - Set `eval.interval_season_start_month` (M-2c ruling 5). January keeps calendar years, which suits a summer heat
+    event; the steward rules, and the choice is disclosed.
   - Move the `federation_ref` pin to the M-2c-i commit.
   - Commit `atlantis.yaml` before the run; core 0.6.1+ refuses stale config bytes.
 - [ ] **Run v3 at core 0.7.0**, including the swap. Then run `conform`.
@@ -43,9 +45,13 @@ tags: [mission, m2c_ii, p2_gate_condition, opus, fknms, learner_swap, board, reg
 - [ ] **Atlantis re-checks and lands it** by a dated commit. v2 stays, superseded by derivation (SO-2).
 - [ ] **SO-7:** re-run the self-test only if vitals or label code moved since M-2b.
 - [ ] **Register**, every number taken from an entry or `metrics.json`, never retyped (C-032):
-  - T11 re-read **at its terms** on both instances: climatology precision and recall at each budget, with realised
-    rates, plus the season-block interval. The exemplar has 4 blocks and FKNMS has 7; both are crude, and the register
-    says so.
+  - T11 re-read **at its terms** on both instances:
+    - climatology precision and recall at each budget, with realised rates;
+    - Δ precision and the **matched-volume** Δ precision with their intervals (ruling 4). This matters most on FKNMS,
+      where the model realises 0.2034 at 0.10;
+    - the threshold-free interval.
+    Every level is **nominal** (C-036): read it beside the seasons favouring the model and the sign test. The exemplar has
+    5 seasons (3 scorable alone); FKNMS has about 7.
   - T2's swap on the second instance.
   - T10 re-read with two 0.8.0 entries.
   - The roll-up says no more than the rows.

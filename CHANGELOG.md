@@ -1,5 +1,31 @@
 # CHANGELOG — Atlantis.aDNA
 
+## 2026-10-08 — v0.14.0 · M-2c-i: T11 at its terms · core 0.7.0 · atl_v0 0.8.0 · exemplar board v4
+
+- **M-2c split** (operator ruling 1) into M-2c-i (this) and M-2c-ii (FKNMS v3 by memo, T2's swap, register). Ruling 2: the
+  FKNMS mapping-pin move is federation upkeep. Ruling 3: the calendar + signal comparator is deferred.
+- **Core 0.7.0:**
+  - Climatology is scored at the model's budgets under M-1e's rule: thresholds fixed on validation by a train-only fit,
+    and the realised rate reported. The pinned AUROC/AUPRC are unchanged to the bit.
+  - **The season-block paired interval:**
+    - model − climatology on AUROC and AUPRC;
+    - Δ precision and Δ recall at the fixed thresholds, and a matched-volume Δ precision (ruling 4);
+    - per-season deltas and an exact sign test;
+    - season-years from a declared month (ruling 5);
+    - the level is nominal.
+  - The emitter refuses results from core < 0.7.0.
+- **atl_v0 0.8.0:** `climatology_alert_budgets` and `paired_intervals` (`AtlPairedInterval`), plus three enums. 78 controls,
+  ALL WORLDS AGREE. The stale README count is corrected and fit matrix §8 added.
+- **`BOARD.md`:**
+  - the lead cell shows nominal · realised (G-7: FKNMS v2 "@ 0.1 nominal · 0.2034 realised");
+  - a climatology-at-the-same-nominal-budgets section and the interval with its sign test.
+- **Exemplar board v4:** v3's run re-made at 0.7.0, ≡ v3 on every v3 number (leaf walk).
+  - At 10%: model precision 0.5267 against climatology's 0.1185; matched-volume Δ +0.4068 [+0.0962, +0.5934] (level
+    nominal).
+  - 3 of 3 scorable seasons favour the model (sign p 0.125).
+- **III:** PASS-WITH-FINDINGS 0/4/3/3, 10/10 addressed. Suite **742 passed on the tree of `1396ce2`**. ACCUMULATE (local):
+  C-003, C-009, C-010, C-026 and C-034 bumped; new C-035, C-036 and C-037. **Not pushed.**
+
 ## 2026-10-08 — v0.13.0 · P2 gate MET: conditional GO P3 · thesis statuses ruled · M-2c carded · P3 re-carded
 
 - **The P2 exit gate was ruled by the operator** (`AskUserQuestion`) after an opus decision brief and a fresh-context III

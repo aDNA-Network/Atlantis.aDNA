@@ -4,7 +4,7 @@ mission_id: M-2c-i
 plan_id: mission_m2c_i_climatology_budget_and_interval
 title: "M-2c-i — climatology at budget (thresholds fixed on validation) · a season-block paired interval · atl_v0 0.8.0 · core 0.7.0 · BOARD.md lead column realised · exemplar board v4"
 owner: stanley
-status: active
+status: completed   # 2026-10-08: III PASS-WITH-FINDINGS 0/4/3/3, all addressed; AAR filed; M-2c-ii queued
 campaign: campaign_atlantis_genesis
 campaign_id: campaign_atlantis_genesis
 phase: P2→P3
@@ -12,7 +12,7 @@ campaign_phase: 3
 mission_class: implementation
 executor_tier: opus
 token_budget_estimated: "≈ 350 kT main (the whole M-2c figure; the split is a sitting line, not a budget cut) + fresh-context III reviewer ≈ 200 kT"
-token_budget_actual: null
+token_budget_actual: "main ≈ 400 kT (estimated, ≈ +14%) · planning explorers ≈ 390 kT (not carded) · III reviewer 216 kT (metered, ≈ +8%)"
 depends_on: ['M-2b', 'p2_gate']
 split_from: mission_m2c_commensurable_board
 origin: "M-2c ruling 1 (operator, AskUserQuestion, 2026-10-08): split on the card's own line"
@@ -48,41 +48,46 @@ tags: [mission, m2c_i, p2_gate_condition, opus, eval, climatology, interval, boa
 
 ## Acceptance criteria
 
-- [ ] **Climatology at budget (eval).**
+- [x] **Climatology at budget (eval).**
   - The selection fit is `embargo(train, val_start, E)`, scored on all of `val`; thresholds come from
     `fixed_thresholds(…, "val")`.
   - Those thresholds are applied to the existing refit's test scores through `at_alert_rates`, with a read-back check
     and a fit-years check.
   - AUROC/AUPRC are unchanged to the bit.
-- [ ] **Season-block paired interval** for model − climatology, on AUROC and AUPRC.
+- [x] **Season-block paired interval** for model − climatology, on AUROC and AUPRC.
   - Whole test years are resampled, and both scores share the same index set.
   - It reports `n_blocks`, distinct multisets and degenerate draws, as summaries only.
   - The whole-block verifier runs on every draw.
-- [ ] **atl_v0 0.8.0.**
+- [x] **atl_v0 0.8.0.**
   - `climatology_alert_budgets` (list of `AtlAlertBudget`) and `paired_intervals` (list of the new `AtlPairedInterval`).
   - One positive control and the negatives; `run_controls.sh` reports ALL WORLDS AGREE.
   - README, the fit matrix and the template mapping pin are moved together.
-- [ ] **Emitter:**
+- [x] **Emitter:**
   - `assert_climatology_at_budget` refuses a budget fixed on test, a realised rate that is not `n_alerts/n`, a selection
     fit into val, and slot ≠ result.
   - `assert_interval` refuses a unit other than season, `n_blocks` ≠ the test years, `lower > upper`, a `spans_zero`
     that disagrees with the bounds, and slot ≠ result.
-- [ ] **Plants C1–C4** are each caught by name:
+- [x] **Plants C1–C4** are each caught by name:
   - C1: climatology thresholds taken from test;
   - C2: the selection fit not embargoed;
   - C3: a row resampler;
   - C4: an unpaired resample.
   - **Result plants** on the emitter are each refused.
-- [ ] **`BOARD.md`:**
+- [x] **`BOARD.md`:**
   - The lead cell shows nominal · realised (G-7).
   - A "Climatology at the same budgets" section, with the interval and how to read it.
   - Regenerated, and `--check` passes.
-- [ ] **Exemplar board v4**, re-run at core 0.7.0:
+- [x] **Exemplar board v4**, re-run at core 0.7.0:
   - v4 ≡ v3 on every v3 number, checked by a leaf-walk script, with every difference named;
   - the self-test passes;
   - emitted with `--vs` v3.
-- [ ] **One counting rule** for Atlantis changes, named in the AAR.
-- [ ] **Close:** III through `iii/` in a fresh context, then the AAR. SITREP at +50%.
+- [x] **One counting rule** for Atlantis changes, named in the AAR.
+- [x] **Close:** III through `iii/` in a fresh context, then the AAR. SITREP at +50%.
+
+## Outcome
+
+All criteria met. After review, rulings 4–5 added budget deltas with a matched-volume reading, and season-years
+from a declared start month. See the AAR. The suite was 742 passed on the tree of `1396ce2`, and the 78 controls report ALL WORLDS AGREE.
 
 ## AAR
 
