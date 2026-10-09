@@ -69,6 +69,11 @@ instance contract v0.3.0 · FloridaKeysCoral.aDNA · stage declared
 **Posture.** `public` (ADR-001). Metrics only; nothing from the guide's right-hand column. The entry holds 582 numeric
 leaves against the GREEN cap of 600.
 
+**Note beside the memo (Atlantis, 2026-10-08, after III M-2c-ii; SO-2: a note, not an edit of the record).** The review (F-1) found the
+page sentences above still over-read the comparison: they led with the raw precision gap at unequal volumes. The steward reworded
+the page at instance `fc6b65d`: matched volume at both readings of the budget, "not shown to be better", and a limits bullet. The pin
+moved to `bcd2612`, where the page build also checks the interval it cites (F-3). **The entry is unchanged**; its sha256 above stands.
+
 ## The entry (unedited)
 
 ```json

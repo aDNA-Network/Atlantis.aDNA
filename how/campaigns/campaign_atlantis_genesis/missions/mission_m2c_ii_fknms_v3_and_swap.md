@@ -39,6 +39,8 @@ tags: [mission, m2c_ii, p2_gate_condition, opus, fknms, learner_swap, board, reg
     event; the steward rules, and the choice is disclosed.
   - Move the `federation_ref` pin to the M-2c-i commit.
   - Commit `atlantis.yaml` before the run; core 0.6.1+ refuses stale config bytes.
+    *(III M-2c-ii F-4, C-039: the guard compares the run's md5 with the **working-tree** file, not a commit — the order is
+    checked at landing, by hand, not by core.)*
 - [ ] **Run v3 at core 0.7.0**, including the swap. Then run `conform`.
 - [ ] **Emit `…_florida_keys_coral_v3`** into the instance's `what/board/entries` with `--vs` v2.
 - [ ] **The steward memo** goes to `who/coordination/inbox/` (contribution guide 0.1.1 §2a).
