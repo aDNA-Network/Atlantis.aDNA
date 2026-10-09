@@ -7,7 +7,7 @@
  "instance": "Atlantis.aDNA/what/exemplars/gulf_karenia_brevis",
  "method_version": "pattern_ecosystem_early_warning 0.1 · atlantis_core 0.7.0",
  "recorded_by": "agent_proteus",
- "recorded_at": "2026-10-09T00:10:14Z",
+ "recorded_at": "2026-10-09T00:51:29Z",
  "run_date": "2026-10-08",
  "evaluation": {
   "evaluation_id": "atl_eval_gulf_karenia_brevis_v4",
@@ -63,26 +63,28 @@
     "comparator": "climatology",
     "metric": "auroc",
     "resample_unit": "season_year",
-    "n_blocks": 4,
+    "season_start_month": 8,
+    "n_blocks": 5,
     "n_draws": 2000,
-    "n_degenerate": 0,
+    "n_degenerate": 23,
     "confidence_level": 0.95,
     "delta_estimate": 0.318,
-    "delta_lower": 0.1126,
-    "delta_upper": 0.4833,
+    "delta_lower": 0.0397,
+    "delta_upper": 0.5408,
     "spans_zero": false
    },
    {
     "comparator": "climatology",
     "metric": "auprc",
     "resample_unit": "season_year",
-    "n_blocks": 4,
+    "season_start_month": 8,
+    "n_blocks": 5,
     "n_draws": 2000,
-    "n_degenerate": 0,
+    "n_degenerate": 23,
     "confidence_level": 0.95,
     "delta_estimate": 0.4369,
-    "delta_lower": 0.3224,
-    "delta_upper": 0.696,
+    "delta_lower": 0.2488,
+    "delta_upper": 0.573,
     "spans_zero": false
    }
   ],
@@ -150,7 +152,7 @@
   "claim": "method_demonstration",
   "limitations_ref": "what/atlantis_core/README.md#known-limits-of-eval-and-explain-so-9 · README.md §Caveats",
   "recorded_by": "agent_proteus",
-  "recorded_at": "2026-10-09T00:10:14Z"
+  "recorded_at": "2026-10-09T00:51:29Z"
  },
  "evaluation_extras": {
   "event": {
@@ -521,7 +523,7 @@
   },
   "semantic_hash": "7b789afded",
   "config_bytes_md5": {
-   "atlantis.yaml": "c94d427078",
+   "atlantis.yaml": "8ac4750f46",
    "config.yaml": "979d3fdf16"
   },
   "data_pins": [
@@ -808,20 +810,126 @@
   "paired_interval": {
    "comparator": "climatology",
    "resample_unit": "season_year",
+   "season_start_month": 8,
    "blocks": [
+    2019,
     2020,
     2021,
     2022,
     2023
    ],
-   "n_blocks": 4,
-   "n_distinct_multisets": 35,
+   "block_rows": {
+    "2019": 260,
+    "2020": 401,
+    "2021": 410,
+    "2022": 391,
+    "2023": 178
+   },
+   "n_blocks": 5,
+   "n_distinct_multisets": 126,
    "n_draws": 2000,
-   "n_degenerate": 0,
+   "n_degenerate": 23,
    "seed": 20261008,
    "level": 0.95,
+   "level_is_nominal": true,
    "paired": true,
-   "scope": "this run's full model on the main test split — not its ablations, sensitivity run or rolling folds"
+   "scope": "this run's full model on the main test split — not its ablations, sensitivity run or rolling folds",
+   "auroc": {
+    "estimate": 0.318,
+    "lower": 0.0397,
+    "upper": 0.5408,
+    "spans_zero": false,
+    "seasons_scored": 3,
+    "seasons_favouring_model": 3,
+    "sign_test_p_one_sided": 0.125,
+    "per_season": {
+     "2020": 0.5161,
+     "2021": 0.0391,
+     "2022": 0.2568
+    }
+   },
+   "auprc": {
+    "estimate": 0.4369,
+    "lower": 0.2488,
+    "upper": 0.573,
+    "spans_zero": false,
+    "seasons_scored": 3,
+    "seasons_favouring_model": 3,
+    "sign_test_p_one_sided": 0.125,
+    "per_season": {
+     "2020": 0.3772,
+     "2021": 0.2005,
+     "2022": 0.547
+    }
+   },
+   "budgets": {
+    "5pct": {
+     "precision": {
+      "estimate": 0.5259,
+      "lower": 0.3163,
+      "upper": 0.7548,
+      "spans_zero": false
+     },
+     "recall": {
+      "estimate": 0.2362,
+      "lower": 0.0,
+      "upper": 0.3878,
+      "spans_zero": true
+     },
+     "matched_volume_precision": {
+      "estimate": 0.525,
+      "lower": 0.2215,
+      "upper": 0.7929,
+      "spans_zero": false
+     },
+     "model_threshold": 0.4318,
+     "climatology_threshold": 0.2137
+    },
+    "10pct": {
+     "precision": {
+      "estimate": 0.4082,
+      "lower": 0.1109,
+      "upper": 0.5998,
+      "spans_zero": false
+     },
+     "recall": {
+      "estimate": 0.4173,
+      "lower": 0.12,
+      "upper": 0.5714,
+      "spans_zero": false
+     },
+     "matched_volume_precision": {
+      "estimate": 0.4068,
+      "lower": 0.0962,
+      "upper": 0.5934,
+      "spans_zero": false
+     },
+     "model_threshold": 0.2813,
+     "climatology_threshold": 0.2014
+    },
+    "20pct": {
+     "precision": {
+      "estimate": 0.1958,
+      "lower": 0.009,
+      "upper": 0.2943,
+      "spans_zero": false
+     },
+     "recall": {
+      "estimate": 0.4409,
+      "lower": 0.2,
+      "upper": 0.5849,
+      "spans_zero": false
+     },
+     "matched_volume_precision": {
+      "estimate": 0.1903,
+      "lower": 0.0416,
+      "upper": 0.3029,
+      "spans_zero": false
+     },
+     "model_threshold": 0.1207,
+     "climatology_threshold": 0.1837
+    }
+   }
   },
   "delta_vs": {
    "entry": "2026-10-07_gulf_karenia_brevis_v3",
@@ -1007,6 +1115,44 @@
       }
      }
     },
+    "paired_intervals": {
+     "auroc": {
+      "delta_estimate": {
+       "was": null,
+       "now": 0.318
+      },
+      "delta_lower": {
+       "was": null,
+       "now": 0.0397
+      },
+      "delta_upper": {
+       "was": null,
+       "now": 0.5408
+      },
+      "n_blocks": {
+       "was": null,
+       "now": 5
+      }
+     },
+     "auprc": {
+      "delta_estimate": {
+       "was": null,
+       "now": 0.4369
+      },
+      "delta_lower": {
+       "was": null,
+       "now": 0.2488
+      },
+      "delta_upper": {
+       "was": null,
+       "now": 0.573
+      },
+      "n_blocks": {
+       "was": null,
+       "now": 5
+      }
+     }
+    },
     "climatology_alert_budgets": {
      "5pct": {
       "precision": {
@@ -1166,6 +1312,11 @@
      "n_trees": 327
     }
    }
+  },
+  "regenerated": {
+   "replaces_commit": "6fa20d3",
+   "reason": "III M-2c-i review (never pushed): M-2c rulings 4 and 5 — budget deltas + matched volume, season-years from August; nominal level; F-4 guards",
+   "at": "2026-10-09T00:51:29Z"
   }
  },
  "provenance": {
@@ -1177,9 +1328,9 @@
   "generated_by": "atlantis_core.board (emit → closed AtlEvaluation validated against the committed atl_ontology_v0.schema.json + assert_green); numbers are not retyped"
  },
  "notes": [
-  "Delta vs v3 has no cause in the model. v4 is v3's run re-made at core 0.7.0 (M-2c-i): every v3 number is equal in v4's metrics and learner-swap files (a leaf walk over all of them; only the core version and the run time differ), and the model, SHAP and what-if bytes are identical. v4 adds what v3 had no slot for: the M-2b comparators (persistence, trend, per-segment base rates, calibration in the large) and M-2c-i's climatology at budget and paired interval.",
-  "Climatology at budget (T11 at its terms; P2 gate III G-3): week-of-year climatology is scored at the model's budgets, each threshold fixed on validation by a climatology fit on train only (embargoed), then applied to test. Its scores tie in whole week-of-year groups, so its realised rates are not its nominal budgets. Read evaluation.climatology_alert_budgets beside alert_budgets, precision against the realised rate.",
-  "The interval is crude and says so. The exemplar's test window holds 4 seasons, so only 35 distinct season-block draws exist, and one season (2021) carries most of the test positives. It describes these four seasons, not a population of seasons. The estimate is the full-test delta; the bounds are percentiles over seeded draws (evaluation_extras.paired_interval).",
-  "No v4 page (as v3, operator ruling 2026-10-07): limitations_ref points to the core README's known limits."
+  "Delta vs v3 has no cause in the model. v4 is v3's run re-made at core 0.7.0 (M-2c-i): every v3 number is equal in v4's metrics and learner-swap files (a leaf walk over all of them; only the core version, the run time and the config bytes differ, the last for an eval-only key, interval_season_start_month), and the model, SHAP and what-if bytes are identical. v4 adds what v3 had no slot for: the M-2b comparators (persistence, trend, per-segment base rates, calibration in the large) and M-2c-i's climatology at budget and paired interval.",
+  "Climatology at budget (T11 at its terms; P2 gate III G-3): week-of-year climatology is scored at the model's budgets, each threshold fixed on validation by a climatology fit on train only (embargoed), then applied to test. Its scores tie in whole week-of-year groups, so its realised rates are not its nominal budgets and differ from the model's. Read precision against the realised rate, and the matched-volume difference (climatology's expected precision at the model's own alert count) in evaluation_extras.paired_interval.budgets.",
+  "The interval is crude and says so. Seasons run August to July (M-2c ruling 5; Nov-Feb blooms straddle New Year), so the 2020-2023 test window holds 5 seasons, the first and last partial and each of those with one class only; per-season deltas therefore score 3 seasons. The level is nominal: a percentile interval over so few blocks under-covers (III M-2c-i F-2), and 'spans 0: no' is not 'distinguished at that level'. Read the seasons favouring the model and the sign test beside it (evaluation_extras.paired_interval).",
+  "outputs/atlantis_core_v4/ first held an unboarded core-0.6.0 run (M-2b, commit 9ac40cf); it was re-made in place at 0.7.0 for this entry. No v4 page (as v3, operator ruling 2026-10-07): limitations_ref points to the core README's known limits, item 5 of which covers these quantities."
  ]
 }

@@ -18,6 +18,7 @@ them, so v1's run still re-projects onto v1 (the v1 page's build check).
 from __future__ import annotations
 
 import json, re
+from math import comb
 from pathlib import Path
 
 from atlantis_core.eval.metrics import rate_key
@@ -67,13 +68,15 @@ def _budget(r: float, a: dict) -> dict:
 
 INTERVAL_KEY = "paired_interval_model_vs_climatology"
 INTERVAL_METRICS = ("auroc", "auprc")
+MIN_DRAWS = 200   # III M-2c-i F-8: a handful of draws is not an interval
 
 
 def _intervals(pi: dict | None) -> list | None:
     """atl_v0 0.8.0 `paired_intervals`: one AtlPairedInterval per metric, projected from the result (never retyped)."""
     if not pi:
         return None
-    return [{"comparator": pi["comparator"], "metric": m, "resample_unit": pi["resample_unit"], "n_blocks": int(pi["n_blocks"]),
+    return [{"comparator": pi["comparator"], "metric": m, "resample_unit": pi["resample_unit"],
+             "season_start_month": int(pi["season_start_month"]), "n_blocks": int(pi["n_blocks"]),
              "n_draws": int(pi["n_draws"]), "n_degenerate": int(pi["n_degenerate"]), "confidence_level": float(pi["level"]),
              "delta_estimate": _r(pi[m]["estimate"]), "delta_lower": _r(pi[m]["lower"]), "delta_upper": _r(pi[m]["upper"]),
              "spans_zero": bool(pi[m]["spans_zero"])} for m in INTERVAL_METRICS]
@@ -339,7 +342,7 @@ def assert_climatology_at_budget(ev: dict, res: dict, rates) -> None:
         raise BoardError("climatology at budget (M-2c): " + "; ".join(bad))
 
 
-def assert_interval(ev: dict, res: dict) -> None:
+def assert_interval(ev: dict, res: dict, ecfg: dict | None = None) -> None:
     """M-2c-i: no new entry without its season-block paired interval for model − climatology, and the interval must be
     what it says it is: seasons as the unit, one block per test year, paired, bounds in order, `spans_zero` true to the
     bounds, and the slots equal to the result. Whether the draws really were whole seasons, and really one draw for both
@@ -354,9 +357,21 @@ def assert_interval(ev: dict, res: dict) -> None:
     if pi.get("paired") is not True:
         bad.append("not paired")
     ty = (res.get("splits") or {}).get("test", {}).get("years")
-    want_blocks = list(range(ty[0], ty[1] + 1)) if ty else None
+    som = pi.get("season_start_month")
+    want_som = int((ecfg or {}).get("interval_season_start_month", 1))
+    if som != want_som:
+        bad.append(f"season_start_month {som} is not the instance's eval.interval_season_start_month ({want_som})")
+    # a season is named by the year it starts: with a start month after January the window's first rows belong to the
+    # season that began the year before (III M-2c-i F-5)
+    want_blocks = (list(range(ty[0] - (1 if som and som > 1 else 0), ty[1] + 1)) if ty else None)
     if pi.get("blocks") != want_blocks or pi.get("n_blocks") != len(pi.get("blocks") or []):
-        bad.append(f"blocks {pi.get('blocks')} (n_blocks {pi.get('n_blocks')}) are not the test years {want_blocks}")
+        bad.append(f"blocks {pi.get('blocks')} (n_blocks {pi.get('n_blocks')}) are not the test seasons {want_blocks}")
+    elif pi.get("n_distinct_multisets") != comb(2 * pi["n_blocks"] - 1, pi["n_blocks"]):
+        bad.append(f"n_distinct_multisets {pi.get('n_distinct_multisets')} is not C(2B−1, B) at B = {pi['n_blocks']}")
+    if pi.get("n_draws", 0) < MIN_DRAWS:
+        bad.append(f"{pi.get('n_draws')} draws — fewer than {MIN_DRAWS} (III M-2c-i F-8)")
+    if pi.get("level_is_nominal") is not True:
+        bad.append("the level is not marked nominal (III M-2c-i F-2)")
     if not (0 <= pi.get("n_degenerate", -1) < pi.get("n_draws", 0)):
         bad.append(f"{pi.get('n_degenerate')} of {pi.get('n_draws')} draws degenerate")
     for m in INTERVAL_METRICS:
@@ -366,6 +381,19 @@ def assert_interval(ev: dict, res: dict) -> None:
             bad.append(f"{m}: lower {lo} > upper {hi}"); continue
         if r.get("spans_zero") is not (lo <= 0.0 <= hi):
             bad.append(f"{m}: spans_zero {r.get('spans_zero')} but the interval is [{lo}, {hi}]")
+    am, ac = res["full"]["test"]["alert_rates"], (res.get("climatology_baseline_test") or {}).get("alert_rates") or {}
+    for k, b in (pi.get("budgets") or {}).items():   # ruling 4: the point estimate IS the two budgets' difference
+        if k not in am or k not in ac:
+            bad.append(f"budget {k}: no such budget on the model or climatology"); continue
+        for q in ("precision", "recall"):
+            want = am[k][q] - ac[k][q]
+            if abs(b[q]["estimate"] - want) > 1e-12:
+                bad.append(f"budget {k} {q}: Δ {b[q]['estimate']} is not model − climatology ({want})")
+        for q, r in b.items():
+            if isinstance(r, dict) and (r["lower"] > r["upper"] or r["spans_zero"] is not (r["lower"] <= 0.0 <= r["upper"])):
+                bad.append(f"budget {k} {q}: [{r['lower']}, {r['upper']}] spans_zero {r['spans_zero']}")
+    if set(pi.get("budgets") or {}) != set(am):
+        bad.append(f"interval budgets {sorted(pi.get('budgets') or {})} are not the model's {sorted(am)} (ruling 4)")
     if not bad and ev.get("paired_intervals") != _intervals(pi):
         bad.append("paired_intervals is not the projection of the result")
     if bad:
@@ -373,10 +401,19 @@ def assert_interval(ev: dict, res: dict) -> None:
 
 
 def interval_extras(res: dict) -> dict:
-    """What the interval resampled and how — the seed and the counts that say how crude it is; never the draws."""
+    """What the interval resampled and how: the seed and the counts that say how crude it is, the per-season deltas and
+    the sign test (F-2), and the budget deltas with the matched-volume reading (ruling 4). Summaries per season and per
+    budget; never the draws."""
     pi = res[INTERVAL_KEY]
-    return {f: pi[f] for f in ("comparator", "resample_unit", "blocks", "n_blocks", "n_distinct_multisets", "n_draws",
-                               "n_degenerate", "seed", "level", "paired", "scope")}
+    out = {f: pi[f] for f in ("comparator", "resample_unit", "season_start_month", "blocks", "block_rows", "n_blocks",
+                              "n_distinct_multisets", "n_draws", "n_degenerate", "seed", "level", "level_is_nominal",
+                              "paired", "scope")}
+    for m in INTERVAL_METRICS:
+        out[m] = {f: (_r(v) if isinstance(v, float) else v) for f, v in pi[m].items() if f != "per_season"}
+        out[m]["per_season"] = {k: _r(v) for k, v in pi[m]["per_season"].items()}
+    out["budgets"] = {k: {q: ({f: (_r(x) if isinstance(x, float) else x) for f, x in r.items()} if isinstance(r, dict) else _r(r))
+                          for q, r in b.items()} for k, b in (pi.get("budgets") or {}).items()}
+    return out
 
 
 def assert_config_bytes(res: dict, inst) -> None:
@@ -491,7 +528,7 @@ def emit(res: dict, inst, *, version: int, run_date: str, recorded_at: str, shap
     assert_embargo(res, inst, swaps)          # and M-1f's, by name
     assert_comparators(ev, res)               # and M-2b's
     assert_climatology_at_budget(ev, res, inst.cfg["eval"]["alert_rates"])   # and M-2c's: T11 at its terms
-    assert_interval(ev, res)                  # and the season-block interval beside it
+    assert_interval(ev, res, inst.cfg["eval"])   # and the season-block interval beside it
     assert_config_bytes(res, inst)            # and III M-2b F-6's: the entry names the bytes that ran
     validate(ev)
     event = inst.event
@@ -548,6 +585,11 @@ def delta(new_ev: dict, old_entry: dict) -> dict:
     d["alert_budgets"] = {rate_key(b["rate"]): {k: {"was": ob.get(rate_key(b["rate"]), {}).get(k), "now": b.get(k)}
                                            for k in ("precision", "recall", "n_alerts", "realised_rate", "threshold_from")}
                           for b in new_ev.get("alert_budgets", [])}
+    oi = {iv["metric"]: iv for iv in o.get("paired_intervals", [])}   # III M-2c-i F-8: a moved interval shows in delta_vs
+    if new_ev.get("paired_intervals") or oi:
+        d["paired_intervals"] = {iv["metric"]: {k: {"was": oi.get(iv["metric"], {}).get(k), "now": iv.get(k)}
+                                                for k in ("delta_estimate", "delta_lower", "delta_upper", "n_blocks")}
+                                 for iv in new_ev.get("paired_intervals", [])}
     oc = {rate_key(b["rate"]): b for b in o.get("climatology_alert_budgets", [])}   # M-2c-i
     if new_ev.get("climatology_alert_budgets") or oc:
         d["climatology_alert_budgets"] = {rate_key(b["rate"]): {k: {"was": oc.get(rate_key(b["rate"]), {}).get(k), "now": b.get(k)}

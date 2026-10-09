@@ -34,22 +34,22 @@
 | `2026-10-08_florida_keys_coral_v2` | 0.0131 / 0.0759 / 0.1501 | 0.7505 / 0.3583 | 0.7809 / 0.5201 | -0.0453 / -0.0974 |
 | `2026-10-08_gulf_karenia_brevis_v4` | 0.1154 / 0.1014 / 0.0774 | 0.7617 / 0.372 | 0.7997 / 0.3982 | -0.0145 / 0.0094 |
 
-## Climatology at the same budgets
+## Climatology at the same nominal budgets
 
-*atl_v0 0.8.0 (M-2c-i; T11 at its terms). Week-of-year climatology is scored at the model's budgets under the model's rule: each threshold is fixed on validation by a climatology fit on train only, then applied to test. Climatology scores tie in whole week-of-year groups, so its **realised** rate departs from the nominal budget by construction; read precision beside it. Entries before 0.8.0 carry none of this and are not listed.*
+*atl_v0 0.8.0 (M-2c-i; T11 at its terms). Week-of-year climatology is scored at the model's budgets under the model's rule: each threshold is fixed on validation by a climatology fit on train only, then applied to test. Climatology scores tie in whole week-of-year groups, so its **realised** rate departs from the nominal budget by construction; read precision beside it. **Δ precision** is model − climatology at those thresholds, with its season-block interval (nominal level). **Matched volume** compares at equal alert counts instead: the model's precision minus climatology's expected precision at the number of alerts the model raised, so a difference in realised rate cannot pass for a difference in skill. Entries before 0.8.0 carry none of this and are not listed.*
 
-| Entry | Budget | Model precision / recall (realised) | Climatology precision / recall (realised) |
-|---|---|---|---|
-| `2026-10-08_gulf_karenia_brevis_v4` | 0.05 | 0.6567 / 0.3465 (0.0409) | 0.1308 / 0.1102 (0.0652) |
-| `2026-10-08_gulf_karenia_brevis_v4` | 0.1 | 0.5267 / 0.5433 (0.0799) | 0.1185 / 0.126 (0.0823) |
-| `2026-10-08_gulf_karenia_brevis_v4` | 0.2 | 0.3143 / 0.7795 (0.1921) | 0.1185 / 0.3386 (0.2213) |
-
-**Model − climatology, season-block paired interval.** *Whole test seasons are drawn with replacement, and one draw scores both the model and climatology. With B seasons there are only C(2B − 1, B) distinct draws (35 at B = 4, 1,716 at B = 7), so the interval is crude. An interval that spans 0 means **not distinguished at this sample**. It never means "no difference".*
-
-| Entry | Metric | Model − climatology | Interval | Season blocks (distinct draws) | Spans 0 |
+| Entry | Budget | Model precision / recall (realised) | Climatology precision / recall (realised) | Δ precision [interval] | Matched-volume Δ precision [interval] |
 |---|---|---|---|---|---|
-| `2026-10-08_gulf_karenia_brevis_v4` | auroc | +0.318 | 0.95: [+0.1126, +0.4833] | 4 (35) | no |
-| `2026-10-08_gulf_karenia_brevis_v4` | auprc | +0.4369 | 0.95: [+0.3224, +0.696] | 4 (35) | no |
+| `2026-10-08_gulf_karenia_brevis_v4` | 0.05 | 0.6567 / 0.3465 (0.0409) | 0.1308 / 0.1102 (0.0652) | +0.5259 [+0.3163, +0.7548] | +0.525 [+0.2215, +0.7929] |
+| `2026-10-08_gulf_karenia_brevis_v4` | 0.1 | 0.5267 / 0.5433 (0.0799) | 0.1185 / 0.126 (0.0823) | +0.4082 [+0.1109, +0.5998] | +0.4068 [+0.0962, +0.5934] |
+| `2026-10-08_gulf_karenia_brevis_v4` | 0.2 | 0.3143 / 0.7795 (0.1921) | 0.1185 / 0.3386 (0.2213) | +0.1958 [+0.009, +0.2943] | +0.1903 [+0.0416, +0.3029] |
+
+**Model − climatology, season-block paired interval.** *Whole test seasons (each starting at the instance's declared month) are drawn with replacement, and one draw scores both the model and climatology. With B seasons there are only C(2B − 1, B) distinct draws (35 at B = 4, 1,716 at B = 7). The level is **nominal**: a percentile interval under-covers at so few blocks (III M-2c-i F-2), so **"spans 0: no" is not "distinguished at that level"**. Read it beside how many seasons favour the model on their own, and the exact one-sided sign test. An interval that spans 0 means **not distinguished at this sample**. It never means "no difference".*
+
+| Entry | Metric | Model − climatology | Interval (nominal level) | Seasons (start month · distinct draws) | Seasons favouring the model (sign test p) | Spans 0 |
+|---|---|---|---|---|---|---|
+| `2026-10-08_gulf_karenia_brevis_v4` | auroc | +0.318 | 0.95: [+0.0397, +0.5408] | 5 (month 8 · 126) | 3 of 3 (p 0.125) | no |
+| `2026-10-08_gulf_karenia_brevis_v4` | auprc | +0.4369 | 0.95: [+0.2488, +0.573] | 5 (month 8 · 126) | 3 of 3 (p 0.125) | no |
 
 ## Alert budgets
 

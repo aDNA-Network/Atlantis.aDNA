@@ -74,18 +74,18 @@ def evaluate(y, p, label: str, rates=(0.05, 0.10, 0.20), bins: int = 10, *, thre
 
 
 def climatology_scores(fit: pd.DataFrame, rows: pd.DataFrame):
-    """The week-of-year onset rate of `fit`, read on `rows` (an unseen week takes the fit's overall rate), and the years
-    the fit actually received (C-023). Scores are per week of year, so they tie in whole week groups: a budget's realised
+    """The week-of-year onset rate of `fit`, read on `rows` (an unseen week takes the fit's overall rate), and the years and
+    row count the fit actually received (C-023). Scores are per week of year, so they tie in whole week groups: a budget's realised
     rate is never its nominal one, and is reported beside it (M-2c)."""
     woy = lambda d: d["week"].dt.isocalendar().week.astype(int)
     rate = fit.assign(woy=woy(fit)).groupby("woy")["y"].mean()
     p = woy(rows).map(rate).fillna(fit["y"].mean()).astype(float).values
-    return p, _years(fit)
+    return p, _years(fit), int(len(fit))
 
 
 def climatology_baseline(train: pd.DataFrame, test: pd.DataFrame) -> dict:
     """Week-of-year onset rate from the training years: the 'no model' comparator (T11)."""
-    p, _ = climatology_scores(train, test)
+    p, _, _ = climatology_scores(train, test)
     return {"auroc": float(roc_auc_score(test["y"].astype(int), p)),
             "auprc": float(average_precision_score(test["y"].astype(int), p))}
 

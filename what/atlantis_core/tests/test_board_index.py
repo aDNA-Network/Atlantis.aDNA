@@ -201,9 +201,14 @@ def test_f2_pipe_is_escaped_not_a_column(board):
 
 def test_f9_supersession_is_derived(board):
     a = IX.render(board)
-    for old in (V0, V1, V2):   # M-1f: v3 supersedes all three (the highest version of the stem)
-        assert next(l for l in a.splitlines() if l.startswith(f"| [`{old}`]")).endswith(f"superseded → `{V3}` |")
-    assert next(l for l in a.splitlines() if l.startswith(f"| [`{V3}`]")).endswith("| live |")
+    # III M-2c-i F-1 (C-035): the expected top is DERIVED from the entries on disk, not hard-coded — landing v4 had made
+    # this test red at HEAD. Within the exemplar stem the highest version is live and supersedes every lower one.
+    stem = sorted((int(p.stem.rsplit("_v", 1)[1]), p.stem) for p in board.glob("*_gulf_karenia_brevis_v*.json"))
+    top = stem[-1][1]
+    assert {V0, V1, V2, V3} <= {e for _, e in stem}
+    for _, old in stem[:-1]:
+        assert next(l for l in a.splitlines() if l.startswith(f"| [`{old}`]")).endswith(f"superseded → `{top}` |")
+    assert next(l for l in a.splitlines() if l.startswith(f"| [`{top}`]")).endswith("| live |")
     _edit(board, V1, lambda d: d.update(superseded_by=V0))           # names an entry, but disagrees with the derivation
     with pytest.raises(IX.BoardError, match="disagrees with the derived"):
         IX.render(board)

@@ -3626,40 +3626,136 @@
    1994,
    2016
   ],
+  "selection_fit_rows": 7946,
   "fit_years": [
    1994,
    2019
   ],
+  "fit_rows": 9130,
   "n_test": 1640
  },
  "paired_interval_model_vs_climatology": {
   "comparator": "climatology",
   "resample_unit": "season_year",
+  "season_start_month": 8,
   "blocks": [
+   2019,
    2020,
    2021,
    2022,
    2023
   ],
-  "n_blocks": 4,
-  "n_distinct_multisets": 35,
+  "block_rows": {
+   "2019": 260,
+   "2020": 401,
+   "2021": 410,
+   "2022": 391,
+   "2023": 178
+  },
+  "n_blocks": 5,
+  "n_distinct_multisets": 126,
   "n_draws": 2000,
-  "n_degenerate": 0,
+  "n_degenerate": 23,
   "seed": 20261008,
   "level": 0.95,
+  "level_is_nominal": true,
   "paired": true,
   "scope": "this run's full model on the main test split \u2014 not its ablations, sensitivity run or rolling folds",
   "auroc": {
    "estimate": 0.3179582724003518,
-   "lower": 0.11260918568610878,
-   "upper": 0.48328953283308546,
-   "spans_zero": false
+   "lower": 0.03970027247956409,
+   "upper": 0.5407774390243903,
+   "spans_zero": false,
+   "per_season": {
+    "2020": 0.5160756885708089,
+    "2021": 0.03906493506493525,
+    "2022": 0.25683255758443724
+   },
+   "seasons_scored": 3,
+   "seasons_favouring_model": 3,
+   "sign_test_p_one_sided": 0.125
   },
   "auprc": {
    "estimate": 0.43689724510510014,
-   "lower": 0.322437588327539,
-   "upper": 0.6960081436617418,
-   "spans_zero": false
+   "lower": 0.2488246445247,
+   "upper": 0.5729966559379287,
+   "spans_zero": false,
+   "per_season": {
+    "2020": 0.3772006446941218,
+    "2021": 0.20051313754060757,
+    "2022": 0.5470303337804423
+   },
+   "seasons_scored": 3,
+   "seasons_favouring_model": 3,
+   "sign_test_p_one_sided": 0.125
+  },
+  "budgets": {
+   "5pct": {
+    "precision": {
+     "estimate": 0.5258752964151207,
+     "lower": 0.3163265306122449,
+     "upper": 0.7548148148148148,
+     "spans_zero": false
+    },
+    "recall": {
+     "estimate": 0.23622047244094488,
+     "lower": 0.0,
+     "upper": 0.3877551020408163,
+     "spans_zero": true
+    },
+    "matched_volume_precision": {
+     "estimate": 0.5250219490781387,
+     "lower": 0.22153846153846157,
+     "upper": 0.7928571428571428,
+     "spans_zero": false
+    },
+    "model_threshold": 0.4318191707134247,
+    "climatology_threshold": 0.21374045801526717
+   },
+   "10pct": {
+    "precision": {
+     "estimate": 0.40819903873338986,
+     "lower": 0.11086956521739127,
+     "upper": 0.5998329156223893,
+     "spans_zero": false
+    },
+    "recall": {
+     "estimate": 0.4173228346456693,
+     "lower": 0.12000000000000005,
+     "upper": 0.5714285714285715,
+     "spans_zero": false
+    },
+    "matched_volume_precision": {
+     "estimate": 0.40676117775354415,
+     "lower": 0.09615384615384615,
+     "upper": 0.5934065934065934,
+     "spans_zero": false
+    },
+    "model_threshold": 0.2813381254673004,
+    "climatology_threshold": 0.2014388489208633
+   },
+   "20pct": {
+    "precision": {
+     "estimate": 0.19582841401023218,
+     "lower": 0.008966837897808444,
+     "upper": 0.2942810942810943,
+     "spans_zero": false
+    },
+    "recall": {
+     "estimate": 0.4409448818897637,
+     "lower": 0.20000000000000007,
+     "upper": 0.5849056603773585,
+     "spans_zero": false
+    },
+    "matched_volume_precision": {
+     "estimate": 0.19027137736815156,
+     "lower": 0.04155266757865936,
+     "upper": 0.3029478458049887,
+     "spans_zero": false
+    },
+    "model_threshold": 0.12067026644945145,
+    "climatology_threshold": 0.1836734693877551
+   }
   }
  },
  "persistence_baseline_test": {
@@ -4386,7 +4482,7 @@
  "atlantis_core": "0.7.0",
  "semantic_hash": "7b789afded",
  "config_bytes_md5": {
-  "atlantis.yaml": "c94d427078",
+  "atlantis.yaml": "8ac4750f46",
   "config.yaml": "979d3fdf16"
  },
  "features_report": {
@@ -4397,5 +4493,5 @@
   "positives": 1168,
   "prevalence": 0.10810810810810811
  },
- "run_at": "2026-10-09T00:06:07.123681+00:00"
+ "run_at": "2026-10-09T00:40:40.581704+00:00"
 }

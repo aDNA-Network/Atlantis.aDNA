@@ -142,6 +142,8 @@ eval:   # how the trained model is read — not in semantic_hash (it does not ch
     - {drop_group: surveillance}
   surveillance_only: n_samples_4w   # single-vital comparator: how much does "how hard we looked" alone predict?
   sensitivity_threshold: 50000      # (= config.yaml target.sensitivity_threshold) same vitals, the label re-made at this threshold
+  interval_season_start_month: 8     # M-2c-i ruling 5 (III F-5): the paired interval resamples bloom seasons Aug→Jul, not calendar
+                                    #   years — Nov–Feb blooms straddle New Year. The test window's edges become partial seasons
 
 explain:   # (= config.yaml shap)
   background_n: 1000

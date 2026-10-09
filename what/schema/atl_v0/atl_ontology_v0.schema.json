@@ -439,7 +439,7 @@
                     ]
                 },
                 "paired_intervals": {
-                    "description": "0.8.0 (M-2c-i). model \u2212 comparator on a threshold-free metric, with a percentile interval from season-block draws (whole test years, the same draw scoring both: paired). Read with n_blocks: with B blocks only C(2B\u22121, B) distinct draws exist (35 at B = 4), so the interval is crude; one that spans 0 means 'not distinguished at this sample', never 'no difference'. Optional. Controls: pos_evaluation_climatology_budget_and_interval \u00b7 neg_interval_extra_key (per-draw values cannot ride along). Nearest miss NOT caught: an interval whose draws were not paired (atlantis_core: eval.interval's pairing guard and the identical-scores control; plant C4).",
+                    "description": "0.8.0 (M-2c-i). model \u2212 comparator on a threshold-free metric, with a percentile interval from season-block draws (whole test years, the same draw scoring both: paired). Read with n_blocks: with B blocks only C(2B\u22121, B) distinct draws exist (35 at B = 4), so the interval is crude; one that spans 0 means 'not distinguished at this sample', never 'no difference'. Optional. Controls: pos_evaluation_climatology_budget_and_interval \u00b7 neg_interval_extra_key (per-draw values cannot ride along). Nearest miss NOT caught: an interval whose draws were not paired (atlantis_core: the identical-scores control in tests/test_m2c.py fails under plant C4 \u2014 the proof is that control, not a guard; III M-2c-i F-8). The level is NOMINAL: at small n_blocks a percentile interval under-covers, so 'spans 0: no' is not 'distinguished at that level' (III M-2c-i F-2); the board carries the per-season deltas and a sign test beside it.",
                     "items": {
                         "$ref": "#/$defs/AtlPairedInterval"
                     },
@@ -869,12 +869,13 @@
                     "description": "0.8.0. Control: neg_interval_unknown_comparator."
                 },
                 "confidence_level": {
+                    "description": "0.8.0. The NOMINAL level of the percentile interval \u2014 not its delivered coverage, which is lower at few blocks (III M-2c-i F-2).",
                     "maximum": 1,
                     "minimum": 0,
                     "type": "number"
                 },
                 "delta_estimate": {
-                    "description": "0.8.0. model \u2212 comparator on the full test set.",
+                    "description": "0.8.0. model \u2212 comparator on the full test set. Control: neg_interval_estimate_lt_minus1.",
                     "maximum": 1,
                     "minimum": -1,
                     "type": "number"
@@ -886,6 +887,7 @@
                     "type": "number"
                 },
                 "delta_upper": {
+                    "description": "0.8.0. Control: neg_interval_upper_gt_1.",
                     "maximum": 1,
                     "minimum": -1,
                     "type": "number"
@@ -915,6 +917,12 @@
                     "$ref": "#/$defs/ResampleUnit",
                     "description": "0.8.0. Control: neg_interval_resample_unit_row."
                 },
+                "season_start_month": {
+                    "description": "0.8.0 (III M-2c-i F-5, ruling 5). The month a season-year starts in (1 = calendar year). A season is named by the year it starts; with a start month other than 1 the test window's edges are partial seasons, each a block. Controls: neg_interval_season_start_month_0 \u00b7 neg_interval_season_start_month_13. Nearest miss NOT caught: a start month that cuts the instance's events in two (the steward's choice, disclosed).",
+                    "maximum": 12,
+                    "minimum": 1,
+                    "type": "integer"
+                },
                 "spans_zero": {
                     "description": "0.8.0. True when delta_lower \u2264 0 \u2264 delta_upper \u2014 reported as exactly that. Control: neg_interval_without_spans_zero. Nearest miss NOT caught: a flag that disagrees with the bounds (atlantis_core: board.assert_interval).",
                     "type": "boolean"
@@ -924,6 +932,7 @@
                 "comparator",
                 "metric",
                 "resample_unit",
+                "season_start_month",
                 "n_blocks",
                 "n_draws",
                 "confidence_level",
@@ -1219,7 +1228,7 @@
             "type": "string"
         },
         "ResampleUnit": {
-            "description": "What a paired interval resamples (0.8.0, M-2c-i). local. `season_year`: whole test years \u2014 zone-weeks within a season are one event seen many times, so a row resample would claim an independence the data do not have.",
+            "description": "What a paired interval resamples (0.8.0, M-2c-i). local. `season_year`: whole seasons, each starting at the evaluation's `season_start_month` (1 = calendar year) \u2014 zone-weeks within a season are one event seen many times, so a row resample would claim an independence the data do not have.",
             "enum": [
                 "season_year"
             ],

@@ -33,7 +33,7 @@ from sklearn.metrics import average_precision_score, roc_auc_score
 from atlantis_core.config import feature_name
 from atlantis_core.eval.lead import lead_time
 from atlantis_core.eval.learners import learner
-from atlantis_core.eval.interval import season_block_interval
+from atlantis_core.eval.interval import season_block_interval, season_labels
 from atlantis_core.eval.metrics import (THRESHOLD_FROM, at_alert_rates, climatology_baseline, climatology_scores, evaluate,
                                         persistence_baseline, quantile_thresholds, rate_key, signal_history,
                                         trend_baseline)
@@ -255,10 +255,21 @@ def climatology_at_budget(inst, train, val, test, base_fit, ecfg):
     s = inst.cfg["split"]
     E, H = _embargo_of(inst)
     rates = tuple(ecfg["alert_rates"])
-    sel = embargo(train, s["val_start"], E)
-    p_val, sel_years = climatology_scores(sel, val)
+
+    def fit_scored(frame, rows, boundary, next_start):
+        """Every climatology fit goes through here: the label windows of the frame it ACTUALLY fits are checked in the
+        same call (III M-2c-i F-4, C-037 — a check on a neighbouring variable let an unembargoed fit through)."""
+        if E:
+            check_label_windows(boundary, frame, next_start, H)
+        return climatology_scores(frame, rows)
+
+    p_val, sel_years, sel_rows = fit_scored(embargo(train, s["val_start"], E), val, "climatology selection→val", s["val_start"])
     fixed = fixed_thresholds(p_val, rates, tf)                 # set BEFORE test is scored
-    p_test, fit_years = climatology_scores(base_fit, test)
+    p_test, fit_years, fit_rows = fit_scored(base_fit, test, "climatology refit→test", s["test_start"])
+    # read off the fits (C-023): a fit that bypassed fit_scored with other rows is seen by what it received (III plant B)
+    for what, got, want in (("selection", sel_rows, len(embargo(train, s["val_start"], E))), ("refit", fit_rows, len(base_fit))):
+        if got != want:
+            raise ObligationError(f"climatology {what} fit received {got} rows — the embargoed set it must fit has {want}")
     ar = at_alert_rates(test["y"].astype(int).values, p_test, rates, thresholds=fixed, threshold_from=tf)
     if fixed is not None:
         applied = {k: v["threshold"] for k, v in ar.items()}
@@ -269,10 +280,8 @@ def climatology_at_budget(inst, train, val, test, base_fit, ecfg):
                                   f"starts {s['val_start']}")
     if fit_years[1] >= s["test_start"]:
         raise ObligationError(f"climatology: the refit read rows through {fit_years[1]} — test starts {s['test_start']}")
-    if E:
-        check_label_windows("climatology selection→val", sel, s["val_start"], H)
-    return ({"alert_rates": ar, "threshold_from": tf, "selection_fit_years": sel_years, "fit_years": fit_years,
-             "n_test": int(len(test))}, p_test)
+    return ({"alert_rates": ar, "threshold_from": tf, "selection_fit_years": sel_years, "selection_fit_rows": sel_rows,
+             "fit_years": fit_years, "fit_rows": fit_rows, "n_test": int(len(test))}, p_test)
 
 
 def run(inst, model_df: pd.DataFrame, panel: pd.DataFrame, *, fold_tables=None, sensitivity_df=None,
@@ -323,9 +332,12 @@ def run(inst, model_df: pd.DataFrame, panel: pd.DataFrame, *, fold_tables=None, 
     scored = art["test_scored"]
     if not scored.index.equals(test.index):
         raise ObligationError("paired interval: the model's scored test rows are not the comparator's")
+    som = int(ecfg.get("interval_season_start_month", 1))   # III M-2c-i F-5 (ruling 5): a season, not a calendar year
+    ar_m, ar_c = res["full"]["test"]["alert_rates"], res["climatology_baseline_test"]["alert_rates"]
     res["paired_interval_model_vs_climatology"] = season_block_interval(
-        test["y"].astype(int).values, scored["p"].values, p_clim, test["week"].dt.year.values, comparator="climatology",
-        n_draws=int(ecfg.get("interval_draws", 2000)), seed=int(ecfg.get("interval_seed", 20261008)))
+        test["y"].astype(int).values, scored["p"].values, p_clim, season_labels(test["week"].values, som),
+        comparator="climatology", thresholds={k: (ar_m[k]["threshold"], ar_c[k]["threshold"]) for k in ar_m},
+        season_start_month=som, n_draws=int(ecfg.get("interval_draws", 2000)), seed=int(ecfg.get("interval_seed", 20261008)))
     ev = inst.event
     # M-2b (ruling 19): the event signal's own comparators, fitted on those same rows. The rows the trend actually received
     # are checked like any fit (C-022 on the frame received, H from the event), so a fit that read test is refused by name

@@ -152,10 +152,11 @@ enums:
       auprc: {}
 
   ResampleUnit:
-    # Closed, one value. Control: neg_interval_resample_unit_row (`zone_week` rejected AT its slot). Nearest miss NOT caught: an interval labelled `season_year` whose draws were rows (atlantis_core: eval.interval.assert_whole_blocks on every draw; plant C3 in tests/test_m2c.py).
+    # Closed, one value. Control: neg_interval_resample_unit_row (`zone_week` rejected AT its slot). Nearest miss NOT caught: an interval labelled `season_year` whose draws were rows (atlantis_core: eval.interval._take checks the very indices it scores, in the same call; plants C3 and A in tests/test_m2c.py).
     description: >-
-      What a paired interval resamples (0.8.0, M-2c-i). local. `season_year`: whole test years — zone-weeks within a
-      season are one event seen many times, so a row resample would claim an independence the data do not have.
+      What a paired interval resamples (0.8.0, M-2c-i). local. `season_year`: whole seasons, each starting at the
+      evaluation's `season_start_month` (1 = calendar year) — zone-weeks within a season are one event seen many times,
+      so a row resample would claim an independence the data do not have.
     permissible_values:
       season_year: {}
 
@@ -277,7 +278,7 @@ slots:
   calibration_in_the_large_validation: {range: float, minimum_value: -1, maximum_value: 1, description: "0.7.0 (M-2b, ruling 16). Mean predicted probability − observed prevalence on the validation stop set: 0 is calibrated in the large, > 0 over-predicts. Beside the test value it shows calibration under a base-rate shift. Controls: pos_evaluation_baselines_and_segments · neg_calibration_in_the_large_validation_gt1. Nearest miss NOT caught: a value that is not mean(p) − prevalence."}
   calibration_in_the_large_test: {range: float, minimum_value: -1, maximum_value: 1, description: "0.7.0 (M-2b, ruling 16). Mean predicted probability − observed prevalence on test. Controls: pos_evaluation_baselines_and_segments · neg_calibration_in_the_large_test_lt_minus1."}
   climatology_alert_budgets: {range: AtlAlertBudget, multivalued: true, inlined_as_list: true, description: "0.8.0 (M-2c-i; P2 gate III G-3, C-034). T11 at its terms: the week-of-year climatology scored at the same nominal budgets as the model, each threshold fixed on validation by a climatology fit on train only (embargoed), applied to the refit's test scores, with the realised rate beside the nominal one — the AtlAlertBudget rule (validation ⇒ realised_rate) applies here as on `alert_budgets`. Climatology scores tie in whole week-of-year groups, so the realised rate departs from the nominal one by construction. Optional: entries before 0.8.0 still validate. Controls: pos_evaluation_climatology_budget_and_interval · neg_climatology_budget_without_realised_rate. Nearest miss NOT caught: a threshold quantiled from test while labelled `validation` (atlantis_core: eval's invariance test and plant C1 in tests/test_m2c.py; board.assert_climatology_at_budget)."}
-  paired_intervals: {range: AtlPairedInterval, multivalued: true, inlined_as_list: true, description: "0.8.0 (M-2c-i). model − comparator on a threshold-free metric, with a percentile interval from season-block draws (whole test years, the same draw scoring both: paired). Read with n_blocks: with B blocks only C(2B−1, B) distinct draws exist (35 at B = 4), so the interval is crude; one that spans 0 means 'not distinguished at this sample', never 'no difference'. Optional. Controls: pos_evaluation_climatology_budget_and_interval · neg_interval_extra_key (per-draw values cannot ride along). Nearest miss NOT caught: an interval whose draws were not paired (atlantis_core: eval.interval's pairing guard and the identical-scores control; plant C4)."}
+  paired_intervals: {range: AtlPairedInterval, multivalued: true, inlined_as_list: true, description: "0.8.0 (M-2c-i). model − comparator on a threshold-free metric, with a percentile interval from season-block draws (whole test years, the same draw scoring both: paired). Read with n_blocks: with B blocks only C(2B−1, B) distinct draws exist (35 at B = 4), so the interval is crude; one that spans 0 means 'not distinguished at this sample', never 'no difference'. Optional. Controls: pos_evaluation_climatology_budget_and_interval · neg_interval_extra_key (per-draw values cannot ride along). Nearest miss NOT caught: an interval whose draws were not paired (atlantis_core: the identical-scores control in tests/test_m2c.py fails under plant C4 — the proof is that control, not a guard; III M-2c-i F-8). The level is NOMINAL: at small n_blocks a percentile interval under-covers, so 'spans 0: no' is not 'distinguished at that level' (III M-2c-i F-2); the board carries the per-season deltas and a sign test beside it."}
   alert_budgets:    {range: AtlAlertBudget, multivalued: true, inlined_as_list: true, required: true, minimum_cardinality: 1, description: "At least one (T6; SO-9 — operator ruling at M-1c to enforce now, not at M-1b). Controls: neg_evaluation_without_budget (absent) · neg_evaluation_empty_budgets (`[]`). Nearest miss NOT caught: a budget whose precision/recall were not measured at that rate."}
   lead_time:        {range: AtlLeadTime, inlined: true}
   ablations:        {range: AtlAblation, multivalued: true, inlined_as_list: true, description: "Surveillance ablation is REQUIRED where a surveillance channel is declared (T5)."}
@@ -303,13 +304,14 @@ slots:
   comparator:    {range: IntervalComparator, required: true, description: "0.8.0. Control: neg_interval_unknown_comparator."}
   metric:        {range: IntervalMetric, required: true, description: "0.8.0. Control: neg_interval_unknown_metric."}
   resample_unit: {range: ResampleUnit, required: true, description: "0.8.0. Control: neg_interval_resample_unit_row."}
+  season_start_month: {range: integer, required: true, minimum_value: 1, maximum_value: 12, description: "0.8.0 (III M-2c-i F-5, ruling 5). The month a season-year starts in (1 = calendar year). A season is named by the year it starts; with a start month other than 1 the test window's edges are partial seasons, each a block. Controls: neg_interval_season_start_month_0 · neg_interval_season_start_month_13. Nearest miss NOT caught: a start month that cuts the instance's events in two (the steward's choice, disclosed)."}
   n_blocks:      {range: integer, required: true, minimum_value: 2, description: "0.8.0. The number of test seasons resampled. At least 2 (one season admits no resample). Control: neg_interval_n_blocks_1. Nearest miss NOT caught: n_blocks ≠ the test years the split names (atlantis_core: board.assert_interval)."}
   n_draws:       {range: integer, required: true, minimum_value: 1}
   n_degenerate:  {range: integer, minimum_value: 0, description: "0.8.0. Draws that held a single class and could score neither metric — counted and left out, never imputed."}
-  confidence_level: {range: float, required: true, minimum_value: 0, maximum_value: 1}
-  delta_estimate: {range: float, required: true, minimum_value: -1, maximum_value: 1, description: "0.8.0. model − comparator on the full test set."}
+  confidence_level: {range: float, required: true, minimum_value: 0, maximum_value: 1, description: "0.8.0. The NOMINAL level of the percentile interval — not its delivered coverage, which is lower at few blocks (III M-2c-i F-2)."}
+  delta_estimate: {range: float, required: true, minimum_value: -1, maximum_value: 1, description: "0.8.0. model − comparator on the full test set. Control: neg_interval_estimate_lt_minus1."}
   delta_lower:   {range: float, required: true, minimum_value: -1, maximum_value: 1, description: "0.8.0. Control: neg_interval_lower_lt_minus1. Nearest miss NOT caught: delta_lower > delta_upper (cross-slot arithmetic; atlantis_core: board.assert_interval)."}
-  delta_upper:   {range: float, required: true, minimum_value: -1, maximum_value: 1}
+  delta_upper:   {range: float, required: true, minimum_value: -1, maximum_value: 1, description: "0.8.0. Control: neg_interval_upper_gt_1."}
   spans_zero:    {range: boolean, required: true, description: "0.8.0. True when delta_lower ≤ 0 ≤ delta_upper — reported as exactly that. Control: neg_interval_without_spans_zero. Nearest miss NOT caught: a flag that disagrees with the bounds (atlantis_core: board.assert_interval)."}
   ablation_name: {range: string, required: true, description: "What was removed (the surveillance group; a stream; a lever)."}
   ablated_auroc: {range: float, minimum_value: 0, maximum_value: 1}
@@ -448,7 +450,7 @@ classes:
       0.8.0 (M-2c-i). model − comparator on one metric, by season-block resampling: whole test years drawn with
       replacement, one draw scoring both. Summaries only; the draws stay in the instance. CLOSED: control
       neg_interval_extra_key proves an undeclared key (a per-draw list) is rejected AT the interval.
-    slots: [comparator, metric, resample_unit, n_blocks, n_draws, n_degenerate, confidence_level, delta_estimate,
+    slots: [comparator, metric, resample_unit, season_start_month, n_blocks, n_draws, n_degenerate, confidence_level, delta_estimate,
             delta_lower, delta_upper, spans_zero]
 
   AtlLeadTime:

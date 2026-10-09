@@ -199,6 +199,18 @@ def _signed(x) -> str:
     return "—" if x is None else _cell(f"{x:+}")
 
 
+def _rate_key(r) -> str:
+    return f"{int(r * 100)}pct"
+
+
+def _iv(r) -> str:
+    """A delta with its interval: +0.4 [+0.3, +0.5]; spans 0 said in words."""
+    if not r:
+        return "—"
+    return (f"{_signed(r.get('estimate'))} [{_signed(r.get('lower'))}, {_signed(r.get('upper'))}]"
+            + (" · spans 0" if r.get("spans_zero") else ""))
+
+
 def render(entries: Path) -> str:
     docs = load(entries)
     sup = supersession(docs)
@@ -235,40 +247,51 @@ def render(entries: Path) -> str:
                      f"{_num(ev.get('calibration_in_the_large_validation'))} / {_num(ev.get('calibration_in_the_large_test'))} |")
     if not rows:
         parts.append("| *none yet* | | | | |")
-    parts += ["", "## Climatology at the same budgets", "",
+    parts += ["", "## Climatology at the same nominal budgets", "",
               "*atl_v0 0.8.0 (M-2c-i; T11 at its terms). Week-of-year climatology is scored at the model's budgets under the "
               "model's rule: each threshold is fixed on validation by a climatology fit on train only, then applied to test. "
               "Climatology scores tie in whole week-of-year groups, so its **realised** rate departs from the nominal budget by "
-              "construction; read precision beside it. Entries before 0.8.0 carry none of this and are not listed.*", "",
-              "| Entry | Budget | Model precision / recall (realised) | Climatology precision / recall (realised) |",
-              "|---|---|---|---|"]
+              "construction; read precision beside it. **Δ precision** is model − climatology at those thresholds, with its "
+              "season-block interval (nominal level). **Matched volume** compares at equal alert counts instead: the model's "
+              "precision minus climatology's expected precision at the number of alerts the model raised, so a difference in "
+              "realised rate cannot pass for a difference in skill. Entries before 0.8.0 carry none of this and are not listed.*", "",
+              "| Entry | Budget | Model precision / recall (realised) | Climatology precision / recall (realised) | Δ precision [interval] | Matched-volume Δ precision [interval] |",
+              "|---|---|---|---|---|---|"]
     rows = [e for _, e, _ in docs if e["evaluation"].get("climatology_alert_budgets")]
     for e in rows:
         ev = e["evaluation"]
         mb = {b["rate"]: b for b in ev["alert_budgets"]}
+        ib = ((e.get("evaluation_extras") or {}).get("paired_interval") or {}).get("budgets") or {}
         for c in ev["climatology_alert_budgets"]:
             m = mb.get(c["rate"], {})
+            bi = ib.get(_rate_key(c["rate"]), {})
             parts.append(f"| `{e['entry_id']}` | {_num(c.get('rate'))} | {_num(m.get('precision'))} / {_num(m.get('recall'))} "
                          f"({_num(m.get('realised_rate'))}) | {_num(c.get('precision'))} / {_num(c.get('recall'))} "
-                         f"({_num(c.get('realised_rate'))}) |")
-    if not rows:
-        parts.append("| *none yet* | | | |")
-    parts += ["", "**Model − climatology, season-block paired interval.** *Whole test seasons are drawn with replacement, and "
-                  "one draw scores both the model and climatology. With B seasons there are only C(2B − 1, B) distinct draws "
-                  "(35 at B = 4, 1,716 at B = 7), so the interval is crude. An interval that spans 0 means **not "
-                  "distinguished at this sample**. It never means \"no difference\".*", "",
-              "| Entry | Metric | Model − climatology | Interval | Season blocks (distinct draws) | Spans 0 |",
-              "|---|---|---|---|---|---|"]
-    rows = [e for _, e, _ in docs if e["evaluation"].get("paired_intervals")]
-    for e in rows:
-        for iv in e["evaluation"]["paired_intervals"]:
-            B = iv.get("n_blocks")
-            parts.append(f"| `{e['entry_id']}` | {_cell(iv.get('metric'))} | {_signed(iv.get('delta_estimate'))} | "
-                         f"{_num(iv.get('confidence_level'))}: [{_signed(iv.get('delta_lower'))}, {_signed(iv.get('delta_upper'))}] | "
-                         f"{_num(B)} ({_num(comb(2 * B - 1, B) if isinstance(B, int) else None)}) | "
-                         f"{'yes' if iv.get('spans_zero') else 'no'} |")
+                         f"({_num(c.get('realised_rate'))}) | {_iv(bi.get('precision'))} | {_iv(bi.get('matched_volume_precision'))} |")
     if not rows:
         parts.append("| *none yet* | | | | | |")
+    parts += ["", "**Model − climatology, season-block paired interval.** *Whole test seasons (each starting at the instance's "
+                  "declared month) are drawn with replacement, and one draw scores both the model and climatology. With B seasons "
+                  "there are only C(2B − 1, B) distinct draws (35 at B = 4, 1,716 at B = 7). The level is **nominal**: a "
+                  "percentile interval under-covers at so few blocks (III M-2c-i F-2), so **\"spans 0: no\" is not "
+                  "\"distinguished at that level\"**. Read it beside how many seasons favour the model on their own, and the "
+                  "exact one-sided sign test. An interval that spans 0 means **not distinguished at this sample**. It never "
+                  "means \"no difference\".*", "",
+              "| Entry | Metric | Model − climatology | Interval (nominal level) | Seasons (start month · distinct draws) | Seasons favouring the model (sign test p) | Spans 0 |",
+              "|---|---|---|---|---|---|---|"]
+    rows = [e for _, e, _ in docs if e["evaluation"].get("paired_intervals")]
+    for e in rows:
+        px = (e.get("evaluation_extras") or {}).get("paired_interval") or {}
+        for iv in e["evaluation"]["paired_intervals"]:
+            B = iv.get("n_blocks")
+            ps = px.get(iv.get("metric")) or {}
+            parts.append(f"| `{e['entry_id']}` | {_cell(iv.get('metric'))} | {_signed(iv.get('delta_estimate'))} | "
+                         f"{_num(iv.get('confidence_level'))}: [{_signed(iv.get('delta_lower'))}, {_signed(iv.get('delta_upper'))}] | "
+                         f"{_num(B)} (month {_num(iv.get('season_start_month'))} · {_num(comb(2 * B - 1, B) if isinstance(B, int) else None)}) | "
+                         f"{_num(ps.get('seasons_favouring_model'))} of {_num(ps.get('seasons_scored'))} "
+                         f"(p {_num(ps.get('sign_test_p_one_sided'))}) | {'yes' if iv.get('spans_zero') else 'no'} |")
+    if not rows:
+        parts.append("| *none yet* | | | | | | |")
     parts += ["", "## Alert budgets", "",
               "*Precision and recall when the steward can staff alerts on this fraction of patient-weeks. **Budget** is "
               "nominal; **Realised** is the share of test patient-weeks a threshold fixed beforehand actually flagged "

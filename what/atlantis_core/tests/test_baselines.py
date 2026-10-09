@@ -216,7 +216,9 @@ def test_clean_run_carries_comparators_and_segments(clean_res, built):
 
 
 @pytest.mark.parametrize("plant,match", [("B1_trend_fit_on_test", "baselines: the trend was fitted on rows through"),
-                                         ("B2_baseline_fit_unembargoed", "embargo baselines fit→test")])
+                                         # M-2c-i: climatology now fits on base_fit first and checks the frame it received,
+                                         # so the same defect is refused one check earlier, by that name
+                                         ("B2_baseline_fit_unembargoed", "embargo (climatology refit|baselines fit)→test")])
 def test_eval_plants_are_refused_by_name(built, plant, match):
     inst, frames, m, panel = built
     with pytest.raises(ObligationError, match=match):
@@ -279,7 +281,9 @@ def test_exemplar_v4_differs_from_v3_by_the_comparators_alone(exemplar_dir):
         if isinstance(x, list):
             return [f"{p} len"] if len(x) != len(y) else [d for i, (u, v) in enumerate(zip(x, y)) for d in diff(u, v, f"{p}[{i}]")]
         return [] if x == y else [p]
-    assert diff(a, b) == ["/atlantis_core", "/run_at"]
+    # M-2c-i: v4 was re-made at core 0.7.0 after the exemplar's atlantis.yaml gained an eval-only key
+    # (interval_season_start_month, ruling 5) — outside semantic_hash, so only the config BYTES moved
+    assert set(diff(a, b)) - {"/config_bytes_md5/atlantis.yaml"} == {"/atlantis_core", "/run_at"}
     assert {"persistence_baseline_test", "trend_baseline_test"} <= set(b) and "base_rate" in b["splits"]["train"]
     assert "calibration_in_the_large" in b["full"]["test"]
     for f in ("model.json", "shap_summary.json", "whatif.json"):
