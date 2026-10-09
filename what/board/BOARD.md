@@ -8,18 +8,19 @@
 > owner's written ruling. Read every score against **its own base rate** and at **its stated alert budgets** — a bare
 > AUROC is not a result here.
 
-**6 entries** (4 superseded by a newer version of the same stem; 1 open-shape, grandfathered by id).
+**7 entries** (5 superseded by a newer version of the same stem; 1 open-shape, grandfathered by id).
 
 ## Entries
 
 | Entry | Source | Event | Patients | Base rate | AUROC / AUPRC | Climatology AUROC / AUPRC | Lead (budget: nominal · realised) | Claim | Shape | Status |
 |---|---|---|---|---|---|---|---|---|---|---|
-| [`2026-09-23_gulf_karenia_brevis_v0`](entries/2026-09-23_gulf_karenia_brevis_v0.json) | exemplar | `atl_event_kbrevis_onset_100k_4w` ≥ 100000 /L within 4 wk | 9 × coastal_band | 0.0774 | 0.8941 / 0.5473 | 0.5767 / 0.1038 | 0.6364 of 22 onsets flagged, median 4.0 wk (@ 0.1 nominal · realised —, threshold set on test after the fact (F-8)) | method_demonstration | open shape — pre-atlantis_core (M-0 sitting script); not a closed AtlEvaluation | superseded → `2026-10-07_gulf_karenia_brevis_v3` |
-| [`2026-10-02_gulf_karenia_brevis_v1`](entries/2026-10-02_gulf_karenia_brevis_v1.json) | exemplar | `atl_event_kbrevis_onset_100k_4w` ≥ 100000 /L within 4 wk | 9 × coastal_band | 0.0774 | 0.8938 / 0.5388 | 0.5767 / 0.1038 | 0.6818 of 22 onsets flagged, median 4.0 wk (@ 0.1 nominal · realised —, threshold set on test after the fact (F-8)) | method_demonstration | closed `AtlEvaluation` | superseded → `2026-10-07_gulf_karenia_brevis_v3` |
-| [`2026-10-03_gulf_karenia_brevis_v2`](entries/2026-10-03_gulf_karenia_brevis_v2.json) | exemplar | `atl_event_kbrevis_onset_100k_4w` ≥ 100000 /L within 4 wk | 9 × coastal_band | 0.0774 | 0.8938 / 0.5388 | 0.5767 / 0.1038 | 0.6364 of 22 onsets flagged, median 4.0 wk (@ 0.1 nominal · 0.0811 realised) | method_demonstration | closed `AtlEvaluation` | superseded → `2026-10-07_gulf_karenia_brevis_v3` |
-| [`2026-10-07_gulf_karenia_brevis_v3`](entries/2026-10-07_gulf_karenia_brevis_v3.json) | exemplar | `atl_event_kbrevis_onset_100k_4w` ≥ 100000 /L within 4 wk | 9 × coastal_band | 0.0774 | 0.895 / 0.5414 | 0.577 / 0.1045 | 0.5909 of 22 onsets flagged, median 4.0 wk (@ 0.1 nominal · 0.0799 realised) | method_demonstration | closed `AtlEvaluation` | live |
+| [`2026-09-23_gulf_karenia_brevis_v0`](entries/2026-09-23_gulf_karenia_brevis_v0.json) | exemplar | `atl_event_kbrevis_onset_100k_4w` ≥ 100000 /L within 4 wk | 9 × coastal_band | 0.0774 | 0.8941 / 0.5473 | 0.5767 / 0.1038 | 0.6364 of 22 onsets flagged, median 4.0 wk (@ 0.1 nominal · realised —, threshold set on test after the fact (F-8)) | method_demonstration | open shape — pre-atlantis_core (M-0 sitting script); not a closed AtlEvaluation | superseded → `2026-10-08_gulf_karenia_brevis_v4` |
+| [`2026-10-02_gulf_karenia_brevis_v1`](entries/2026-10-02_gulf_karenia_brevis_v1.json) | exemplar | `atl_event_kbrevis_onset_100k_4w` ≥ 100000 /L within 4 wk | 9 × coastal_band | 0.0774 | 0.8938 / 0.5388 | 0.5767 / 0.1038 | 0.6818 of 22 onsets flagged, median 4.0 wk (@ 0.1 nominal · realised —, threshold set on test after the fact (F-8)) | method_demonstration | closed `AtlEvaluation` | superseded → `2026-10-08_gulf_karenia_brevis_v4` |
+| [`2026-10-03_gulf_karenia_brevis_v2`](entries/2026-10-03_gulf_karenia_brevis_v2.json) | exemplar | `atl_event_kbrevis_onset_100k_4w` ≥ 100000 /L within 4 wk | 9 × coastal_band | 0.0774 | 0.8938 / 0.5388 | 0.5767 / 0.1038 | 0.6364 of 22 onsets flagged, median 4.0 wk (@ 0.1 nominal · 0.0811 realised) | method_demonstration | closed `AtlEvaluation` | superseded → `2026-10-08_gulf_karenia_brevis_v4` |
+| [`2026-10-07_gulf_karenia_brevis_v3`](entries/2026-10-07_gulf_karenia_brevis_v3.json) | exemplar | `atl_event_kbrevis_onset_100k_4w` ≥ 100000 /L within 4 wk | 9 × coastal_band | 0.0774 | 0.895 / 0.5414 | 0.577 / 0.1045 | 0.5909 of 22 onsets flagged, median 4.0 wk (@ 0.1 nominal · 0.0799 realised) | method_demonstration | closed `AtlEvaluation` | superseded → `2026-10-08_gulf_karenia_brevis_v4` |
 | [`2026-10-08_florida_keys_coral_v1`](entries/2026-10-08_florida_keys_coral_v1.json) | instance | `atl_event_florida_keys_coral_onset` ≥ 4.0 Cel.wk within 8 wk | 21 × mpa_zone | 0.1501 | 0.937 / 0.6903 | 0.9194 / 0.6012 | 1.0 of 105 onsets flagged, median 8.0 wk (@ 0.1 nominal · 0.2034 realised) | method_demonstration | closed `AtlEvaluation` | superseded → `2026-10-08_florida_keys_coral_v2` |
 | [`2026-10-08_florida_keys_coral_v2`](entries/2026-10-08_florida_keys_coral_v2.json) | instance | `atl_event_florida_keys_coral_onset` ≥ 4.0 Cel.wk within 8 wk | 21 × mpa_zone | 0.1501 | 0.937 / 0.6903 | 0.9194 / 0.6012 | 1.0 of 105 onsets flagged, median 8.0 wk (@ 0.1 nominal · 0.2034 realised) | method_demonstration | closed `AtlEvaluation` | live |
+| [`2026-10-08_gulf_karenia_brevis_v4`](entries/2026-10-08_gulf_karenia_brevis_v4.json) | exemplar | `atl_event_kbrevis_onset_100k_4w` ≥ 100000 /L within 4 wk | 9 × coastal_band | 0.0774 | 0.895 / 0.5414 | 0.577 / 0.1045 | 0.5909 of 22 onsets flagged, median 4.0 wk (@ 0.1 nominal · 0.0799 realised) | method_demonstration | closed `AtlEvaluation` | live |
 
 *Status is derived, never written into an entry (SO-2): within one source, instance and stem, the highest version supersedes the lower ones. A superseded entry stays on the board.*
 
@@ -31,6 +32,7 @@
 |---|---|---|---|---|
 | `2026-10-08_florida_keys_coral_v1` | 0.0131 / 0.0759 / 0.1501 | 0.7505 / 0.3583 | 0.7809 / 0.5201 | -0.0453 / -0.0974 |
 | `2026-10-08_florida_keys_coral_v2` | 0.0131 / 0.0759 / 0.1501 | 0.7505 / 0.3583 | 0.7809 / 0.5201 | -0.0453 / -0.0974 |
+| `2026-10-08_gulf_karenia_brevis_v4` | 0.1154 / 0.1014 / 0.0774 | 0.7617 / 0.372 | 0.7997 / 0.3982 | -0.0145 / 0.0094 |
 
 ## Climatology at the same budgets
 
@@ -38,13 +40,16 @@
 
 | Entry | Budget | Model precision / recall (realised) | Climatology precision / recall (realised) |
 |---|---|---|---|
-| *none yet* | | | |
+| `2026-10-08_gulf_karenia_brevis_v4` | 0.05 | 0.6567 / 0.3465 (0.0409) | 0.1308 / 0.1102 (0.0652) |
+| `2026-10-08_gulf_karenia_brevis_v4` | 0.1 | 0.5267 / 0.5433 (0.0799) | 0.1185 / 0.126 (0.0823) |
+| `2026-10-08_gulf_karenia_brevis_v4` | 0.2 | 0.3143 / 0.7795 (0.1921) | 0.1185 / 0.3386 (0.2213) |
 
 **Model − climatology, season-block paired interval.** *Whole test seasons are drawn with replacement, and one draw scores both the model and climatology. With B seasons there are only C(2B − 1, B) distinct draws (35 at B = 4, 1,716 at B = 7), so the interval is crude. An interval that spans 0 means **not distinguished at this sample**. It never means "no difference".*
 
 | Entry | Metric | Model − climatology | Interval | Season blocks (distinct draws) | Spans 0 |
 |---|---|---|---|---|---|
-| *none yet* | | | | | |
+| `2026-10-08_gulf_karenia_brevis_v4` | auroc | +0.318 | 0.95: [+0.1126, +0.4833] | 4 (35) | no |
+| `2026-10-08_gulf_karenia_brevis_v4` | auprc | +0.4369 | 0.95: [+0.3224, +0.696] | 4 (35) | no |
 
 ## Alert budgets
 
@@ -70,6 +75,9 @@
 | `2026-10-08_florida_keys_coral_v2` | 0.05 | validation | 0.0881 | 0.7424 | 0.4357 | 493 |
 | `2026-10-08_florida_keys_coral_v2` | 0.1 | validation | 0.2034 | 0.5677 | 0.769 | 1138 |
 | `2026-10-08_florida_keys_coral_v2` | 0.2 | validation | 0.2861 | 0.4828 | 0.9202 | 1601 |
+| `2026-10-08_gulf_karenia_brevis_v4` | 0.05 | validation | 0.0409 | 0.6567 | 0.3465 | 67 |
+| `2026-10-08_gulf_karenia_brevis_v4` | 0.1 | validation | 0.0799 | 0.5267 | 0.5433 | 131 |
+| `2026-10-08_gulf_karenia_brevis_v4` | 0.2 | validation | 0.1921 | 0.3143 | 0.7795 | 315 |
 
 ## Limits and ablations
 
@@ -79,3 +87,4 @@
 - **`2026-10-07_gulf_karenia_brevis_v3`**: limits: what/atlantis_core/README.md#known-limits-of-eval-and-explain-so-9 · README.md §Caveats · config `7b789afded` · ablations: without surveillance group (n_samples_t0, n_samples_4w): AUROC 0.8911 / AUPRC 0.5307; surveillance-only single feature (n_samples_4w): AUROC 0.6239
 - **`2026-10-08_florida_keys_coral_v1`**: limits: site/florida_keys_coral_v1.html#limits · config `c07b7c0288` · ablations: none declared
 - **`2026-10-08_florida_keys_coral_v2`**: limits: site/florida_keys_coral_v1.html#limits · config `c07b7c0288` · ablations: none declared
+- **`2026-10-08_gulf_karenia_brevis_v4`**: limits: what/atlantis_core/README.md#known-limits-of-eval-and-explain-so-9 · README.md §Caveats · config `7b789afded` · ablations: without surveillance group (n_samples_t0, n_samples_4w): AUROC 0.8911 / AUPRC 0.5307; surveillance-only single feature (n_samples_4w): AUROC 0.6239
