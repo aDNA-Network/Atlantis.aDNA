@@ -1,5 +1,28 @@
 # CHANGELOG — Atlantis.aDNA
 
+## 2026-10-08 — v0.15.0 · M-2c-ii: FKNMS v3 · T11 at its terms on both instances · P2-gate condition (a) met
+
+- **FloridaKeysCoral.aDNA v3** was landed by steward memo (`492cb61`). Core 0.7.0, the logistic swap, January-start
+  seasons (M-2c-ii ruling 1), and every v2 number equal. v2 is superseded by derivation (SO-2).
+- **T11, proposed for the P3 gate (not ruled):** *falsified as worded on FKNMS.* The model is not shown to beat
+  climatology at the chosen budget under either reading. Matched-volume Δ precision:
+  - at the 10% threshold's realised 20.3%: −0.0221 [−0.0906, +0.067];
+  - nearest a 10% staffing (8.8%): +0.0839 [−0.0118, +0.1926].
+
+  The levels are nominal, so this is no demonstrated advantage, not a deficit. T11 is supported at its terms on the
+  exemplar.
+- **T2:** the falsifier is not met on two instances. On FKNMS the logistic's point estimates beat the GBM's, but no interval
+  was measured (C-038). **T9:** +1. **T10:** unchanged.
+- **Core (0.7.0, no bump; III F-9 disclosed):**
+  - the page's data carries the paired interval (`8255d9b`);
+  - `board_check` compares it with the entry (`bcd2612`, III F-3);
+  - README limit 5 gains "matched volume is the model's volume, not the steward's" and the sign-test floor 1/2^k.
+- **atl_v0 "0.8.0" was amended before publication (III F-11).** `1396ce2` added `season_start_month` to
+  `AtlPairedInterval` under the same version as `0da7414`. Entries valid under one are rejected by the other. Neither
+  commit is on `origin/main`, so the version is not bumped; this line records it.
+- **III:** PASS-WITH-FINDINGS 0/1/7/3, 11/11 dispositioned. ACCUMULATE (local): C-032 → 3, C-034 → 3, C-037 → 2; new
+  C-038 and C-039. **Operator decision before M-3:** the GREEN cap (F-7; 582/600 and 570/600). **Not pushed.**
+
 ## 2026-10-08 — v0.14.0 · M-2c-i: T11 at its terms · core 0.7.0 · atl_v0 0.8.0 · exemplar board v4
 
 - **M-2c split** (operator ruling 1) into M-2c-i (this) and M-2c-ii (FKNMS v3 by memo, T2's swap, register). Ruling 2: the

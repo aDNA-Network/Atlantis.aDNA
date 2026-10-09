@@ -135,8 +135,8 @@ deviation:** the gate ran at opus, not fable, by the operator's ruling at the si
 charter's fable rule is *not* amended. **The exit bar is met as worded; drop-in is not demonstrated** (T9): there were zero
 instance-local patches, but that weak form cannot fail under the M-2 card's own "do not patch locally" rule, and FKNMS
 forced ≈ 13–15 Atlantis changes once the M-2a-i set is counted. That count is P4's baseline. Conditions:
-- (a) **M-2c before M-3b.** Split 2026-10-08 into M-2c-i ✅ (core, schema, lead column, exemplar v4) and M-2c-ii (FKNMS v3,
-  register). It does five things:
+- (a) **M-2c before M-3b — MET 2026-10-08.** Split 2026-10-08 into M-2c-i ✅ (core, schema, lead column, exemplar v4) and M-2c-ii ✅ (FKNMS v3,
+  register; T11 falsified as worded on FKNMS, proposed for the P3 gate). It does five things:
   - re-enters the exemplar at atl_v0 0.7.0 (board v4);
   - adds a climatology-at-budget slot with a control (T11);
   - re-runs FKNMS as v3 through the steward's memo;

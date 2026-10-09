@@ -1,15 +1,15 @@
 ---
 type: state
 status: p3_open
-phase: "P3 open — P2 gate MET 2026-10-08, CONDITIONAL GO P3 (a) M-2c before M-3b · (b) P3 re-carded ≈2.3× · (c) M-3b off the exemplar · (d) P4 bar before P4; M-2c split → M-2c-i ✅ · M-2c-ii ⏭ (opus) · M-3a"
+phase: "P3 open — P2 gate MET 2026-10-08, CONDITIONAL GO P3: (a) M-2c before M-3b — MET (M-2c-i ✅ · M-2c-ii ✅) · (b) P3 re-carded ≈2.3× · (c) M-3b off the exemplar · (d) P4 bar before P4; next M-3a (opus)"
 campaigns: [campaign_atlantis_genesis]
-mission: m2c_ii   # QUEUED (opus); M-2c-i ✅ 2026-10-08 (core 0.7.0 · atl_v0 0.8.0 · board v4 · III 10/10); M-2c split 2026-10-08; P2 gate ✅ 2026-10-08 (conditional GO P3; opus decision brief + III review of the gate case, PASS-WITH-FINDINGS 0/6/4/2); M-2b ✅ 2026-10-08 (board v2 · core 0.6.1 · atl_v0 0.7.0 · III 8/8); M-2a-ii ✅ 2026-10-08 (forked · fetched · conforms · III 9/9 · core 0.5.3); M-1f ✅ 2026-10-07 (board v3); M-2a-i ✅ 2026-10-06; M-2a split 2026-10-06; M-1e ✅ 2026-10-03 (board v2); P1 gate ✅ 2026-10-03 (conditional GO); M-1d-ii ✅ · M-1d-i ✅ · M-1b-ii-b ✅ 2026-10-03; M-1b-ii-a ✅ · M-1b-i ✅ · M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
+mission: m3a   # QUEUED (opus); M-2c-ii ✅ 2026-10-08 (FKNMS v3 · T11 falsified as worded on FKNMS, proposed for P3 gate · III 11/11); M-2c-i ✅ 2026-10-08 (core 0.7.0 · atl_v0 0.8.0 · board v4 · III 10/10); M-2c split 2026-10-08; P2 gate ✅ 2026-10-08 (conditional GO P3; opus decision brief + III review of the gate case, PASS-WITH-FINDINGS 0/6/4/2); M-2b ✅ 2026-10-08 (board v2 · core 0.6.1 · atl_v0 0.7.0 · III 8/8); M-2a-ii ✅ 2026-10-08 (forked · fetched · conforms · III 9/9 · core 0.5.3); M-1f ✅ 2026-10-07 (board v3); M-2a-i ✅ 2026-10-06; M-2a split 2026-10-06; M-1e ✅ 2026-10-03 (board v2); P1 gate ✅ 2026-10-03 (conditional GO); M-1d-ii ✅ · M-1d-i ✅ · M-1b-ii-b ✅ 2026-10-03; M-1b-ii-a ✅ · M-1b-i ✅ · M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
 persona: proteus   # RULED 2026-10-02 (ADR-001 ratified)
-last_session: session_stanley_20261008_234650_m2c_i_commensurable_core (opus)
+last_session: session_stanley_20261009_015643_m2c_ii_fknms_v3_and_swap (opus)
 created: 2026-09-23
 updated: 2026-10-08
 last_edited_by: agent_proteus
-tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_complete, m1b_ii_a_complete, m1b_ii_b_complete, m1d_i_complete, m1d_ii_complete, p1_gate_met, p2_conditional_go, m1e_complete, board_v2, atl_v0_0_4_0, m2a_split, m2a_i_complete, atl_v0_0_5_0, core_0_4_0, crw_built, m1f_complete, board_v3, atl_v0_0_6_0, core_0_5_0, m2a_ii_complete, core_0_5_1, core_0_5_2, core_0_5_3, floridakeyscoral_forked, floridakeyscoral_fetched, m2b_complete, core_0_6_0, core_0_6_1, atl_v0_0_7_0, floridakeyscoral_on_board, p2_gate_met, p3_conditional_go, p3_open, m2c_split, m2c_i_complete, core_0_7_0, atl_v0_0_8_0, board_v4]
+tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_complete, m1b_ii_a_complete, m1b_ii_b_complete, m1d_i_complete, m1d_ii_complete, p1_gate_met, p2_conditional_go, m1e_complete, board_v2, atl_v0_0_4_0, m2a_split, m2a_i_complete, atl_v0_0_5_0, core_0_4_0, crw_built, m1f_complete, board_v3, atl_v0_0_6_0, core_0_5_0, m2a_ii_complete, core_0_5_1, core_0_5_2, core_0_5_3, floridakeyscoral_forked, floridakeyscoral_fetched, m2b_complete, core_0_6_0, core_0_6_1, atl_v0_0_7_0, floridakeyscoral_on_board, p2_gate_met, p3_conditional_go, p3_open, m2c_split, m2c_i_complete, core_0_7_0, atl_v0_0_8_0, board_v4, m2c_ii_complete, fknms_v3, p2_condition_a_met, t11_falsified_fknms_proposed]
 ---
 
 # STATE — Atlantis.aDNA
@@ -23,7 +23,7 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
 4. The exemplar is at hygiene (M-1a): `what/exemplars/gulf_karenia_brevis/README.md` §Provenance · `uv sync && .venv/bin/python -m pytest` · self-test green.
 5. The ontology is controlled (M-1c; 0.3.0 at M-1d-i; 0.4.0 at M-1e; 0.5.0 at M-2a-i; 0.6.0 at M-1f): `what/schema/atl_v0/README.md` (proof table · known limits) · `LINKML_BIN=<scratch venv>/bin what/schema/atl_v0/fixtures/controls/run_controls.sh` → ALL WORLDS AGREE (65 controls; 0.7.0 at M-2b; **78 at 0.8.0, M-2c-i**).
 6. III review goes through `iii/` in a fresh context (SO-10).
-7. The core (M-1b-i + ii-a + ii-b + M-1d-i + M-1d-ii): `what/atlantis_core/README.md` · `cd what/atlantis_core && uv sync && .venv/bin/python -m pytest` (742, ~5.5 min unloaded; core 0.7.0; `node` on PATH for the page-script checks) ·
+7. The core (M-1b-i + ii-a + ii-b + M-1d-i + M-1d-ii): `what/atlantis_core/README.md` · `cd what/atlantis_core && uv sync && .venv/bin/python -m pytest` (744 at the M-2c-ii close, ~5 min; core 0.7.0; `node` on PATH for the page-script checks) ·
    `.venv/bin/python -m atlantis_core.selftest --instance ../exemplars/gulf_karenia_brevis` (all-stream, SO-7) ·
    `python -m atlantis_core.run --instance …` (→ `outputs/atlantis_core/`, ~7 min) · `python -m atlantis_core.board …` (→ `what/board/entries/`) ·
    `python -m atlantis_core.site --instance …` (→ the instance's page, ~2 s) · `python -m atlantis_core.mapping --check <mapping.yaml>` ·
@@ -34,71 +34,82 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
 
 ## ⏭ QUEUED — Next Live Session
 
-**M-2c-i ✅ 2026-10-08** (opus), the first half of P2-gate condition (a). M-2c was split by operator ruling 1; ruling 2 made the
-FKNMS mapping-pin move federation upkeep; ruling 3 deferred the calendar + signal comparator.
-- **Core 0.7.0:**
-  - `climatology_at_budget`: climatology at the model's budgets under M-1e's rule, with the realised rate.
-  - `eval/interval.py`: the season-block paired interval. Season-years start at a declared month (ruling 5). It gives Δ
-    AUROC and Δ AUPRC, Δ precision and Δ recall at the fixed thresholds, and a **matched-volume** Δ precision (ruling 4).
-    It also gives per-season deltas and an exact sign test. The level is **nominal** (C-036).
-- **atl_v0 0.8.0:** `climatology_alert_budgets` and `paired_intervals` (`AtlPairedInterval`, with `season_start_month`). 78
-  controls, ALL WORLDS AGREE.
-- **`BOARD.md`:** the lead cell shows nominal · realised (G-7). It gains a climatology-at-the-same-nominal-budgets section.
-- **Exemplar board v4:** ≡ v3 on every v3 number.
-- **T11 at its terms, exemplar.** At 10% the model's precision is 0.5267 (realised 0.0799) and climatology's is 0.1185
-  (realised 0.0823).
-  - Matched-volume Δ precision: +0.4068 [+0.0962, +0.5934], level nominal.
-  - Seasons: 5, of which 3 can be scored alone, and all 3 favour the model (sign p 0.125).
-- **III:** PASS-WITH-FINDINGS, 0 blocker · 4 major · 3 minor · 3 nit, 10/10 addressed. The suite was **742 passed on the
-  tree of `1396ce2`**. ACCUMULATE: C-003, C-009, C-010, C-026 and C-034 bumped; C-035, C-036 and C-037 new.
+**M-2c-ii ✅ 2026-10-08** (opus). With M-2c-i, **P2-gate condition (a) is met**.
+- **FKNMS v3** was run at core 0.7.0 with the logistic swap and landed by memo (`492cb61`). Every v2 number is equal.
+  Steward ruling (M-2c-ii ruling 1): the interval's seasons are calendar years.
+- **T11 is falsified as worded on FKNMS. This is proposed for the P3 gate, not ruled.** The model is not shown to beat
+  climatology at the chosen budget under either reading of it, measured as matched-volume Δ precision:
+  - at the threshold's realised 20.3%: −0.0221 [−0.0906, +0.067];
+  - nearest a 10% staffing (the 5% threshold, 8.8%): +0.0839 [−0.0118, +0.1926].
 
-**Next: M-2c-ii** (opus): `missions/mission_m2c_ii_fknms_v3_and_swap.md`. **M-3a** (opus) may run beside it.
+  Both levels are nominal. This means no demonstrated advantage, not a demonstrated deficit. T11 is supported at its terms
+  on the exemplar.
+- **T2:** the falsifier is not met on two instances. On FKNMS the logistic's point estimates are the higher, but it is not
+  shown to be the better learner (C-038).
+- **T10** is unchanged. **T9:** +1 Atlantis change, the page's data (`8255d9b`, checked at `bcd2612`).
+- **III:** PASS-WITH-FINDINGS, 0 blocker · 1 major · 7 minor · 3 nit, 11/11 dispositioned. ACCUMULATE: C-032 → 3,
+  C-034 → 3, C-037 → 2; new C-038 and C-039.
+- **Suite:** **744 passed at `e6b8ef0`** (279 s). The close commit after it is docs-only (C-035).
+
+**Next: M-3a** (opus): `missions/mission_m3a_stream_discovery_skill.md`. **M-3b** may open after M-3a, since condition (a)
+is met; it stays off the exemplar under condition (c).
 
 **Pending operator acts:**
-- Accept C-035, C-036 and C-037 (their `accepted` is null).
-- The push. Nothing from M-2c-i is pushed; run gitleaks first.
-- Deliver the graduation memo into `III.aDNA/who/coordination/`.
-- Deliver the Hestia memo into `Home.aDNA/who/coordination/inbox/`.
-- C-015's acceptance.
-- FloridaKeysCoral's remote, which is the owner's ruling.
+- **The GREEN cap, before M-3** (III M-2c-ii F-7). FKNMS v3 holds 582 numeric leaves and exemplar v4 holds 570, against
+  600. Choose one: count `delta_vs` echoes once, raise the cap with a reason, or move the per-season deltas out.
+- Accept or reject C-035 to C-039. C-032 and C-034 are graduation candidates at frequency 3.
+- The push. **Nothing from M-2c-i or M-2c-ii is pushed**; run gitleaks first.
+- At the P3 gate: rule T11's status (above) and T2's wording.
+- The FKNMS steward's question: is a model worth running for a lever-free heat event whose operational product CRW
+  publishes, when the calendar is not beaten?
+- Carried: the graduation memo into `III.aDNA/who/coordination/`; the Hestia memo into `Home.aDNA/who/coordination/inbox/`;
+  C-015's acceptance; FloridaKeysCoral's remote (the owner's ruling).
 
-**Next Session Prompt (self-contained, M-2c-ii, opus):**
+**Next Session Prompt (self-contained, M-3a, opus):**
 
-> You are Proteus in `~/aDNA/Atlantis.aDNA`, on **opus**, opening **M-2c-ii**: FKNMS re-run as board v3 by steward memo,
-> with T2's learner swap, then the register re-read. Read, in order:
+> You are Proteus in `~/aDNA/Atlantis.aDNA`, on **opus**, opening **M-3a**: `skill_stream_discovery`, playbook §A as a
+> runnable skill with the traps as checks. Read, in order:
 > 1. STATE.
-> 2. The card `how/campaigns/campaign_atlantis_genesis/missions/mission_m2c_ii_fknms_v3_and_swap.md`.
-> 3. The M-2c-i AAR (`missions/aar/aar_m2c_i_climatology_budget_and_interval.md`: the counting rule, the T11 finding).
-> 4. `what/board/README.md` (rows `climatology_alert_budgets` and `paired_intervals`; how to read a nominal interval).
-> 5. The register rows T2, T10 and T11 (`artifacts/thesis_register.md`).
-> 6. `who/governance/contribution_guide.md` §2a (the memo path).
-> 7. `~/aDNA/FloridaKeysCoral.aDNA/` CLAUDE.md, STATE.md and `atlantis.yaml`.
+> 2. The card `how/campaigns/campaign_atlantis_genesis/missions/mission_m3a_stream_discovery_skill.md`.
+> 3. `what/context/playbook_data_and_literature_mining.md` §A and §B.
+> 4. `how/skills/skill_atlantis_instance_fork.md` (the skill format the fleet uses here).
+> 5. The schema slots for `AtlObservationStream` (`what/schema/atl_v0/README.md`).
+> 6. The two `streams.yaml` it must reproduce: the exemplar's and `~/aDNA/FloridaKeysCoral.aDNA/streams.yaml`.
 >
-> Probe both vaults' `how/sessions/active/` and open a lease in each you write.
+> Probe `how/sessions/active/` in each vault you write, and open a lease there.
 >
-> In the instance (the steward's hand, dated commits, `atlantis.yaml` committed **before** the run, since core refuses
-> stale config bytes):
-> - the `mapping.yaml` pin → 0.8.0 (federation upkeep, M-2c ruling 2: its own line, not a patch);
-> - a `learner_swaps:` logistic block, as the exemplar's. Verify `semantic_hash` stays `c07b7c0288`;
-> - `eval.interval_season_start_month`: ask the steward; January suits a summer heat event;
-> - the `federation_ref` pin.
+> First, ask the operator for the GREEN-cap ruling (III M-2c-ii F-7) if it is still open; it gates any new board field.
 >
-> Then run v3 at core 0.7.0 with the swap (≈ 7–8 min), `conform`, and emit `--vs` v2 into the instance's entries. Write
-> the memo to Atlantis's inbox, re-check it, and land it. Run `board --index --check`.
+> On the exemplar, discovery writes **pointer rows only** (SO-3): no fetch, and no new bytes. Run the skill once on each
+> instance. Validate both `streams.yaml` files against atl_v0. Re-read the register for M-3a's obligations (C-033).
+> Review through `iii/` in a fresh context. Record the suite count **with its commit** (C-035). Write the AAR.
 >
-> Then the register:
-> - T11 at its terms on both instances: Δ precision and **matched-volume** Δ precision with their intervals, levels nominal,
->   seasons favouring the model, the sign test;
-> - T2's swap on FKNMS;
-> - T10 with two 0.8.0 entries.
->
-> Every number comes from an entry, never retyped (C-032). Count Atlantis changes under the M-2c-i rule. Run SO-7 only if
-> vitals or label code moved. Review through `iii/` in a fresh context. Record the suite count **with its commit**
-> (C-035). Write the AAR.
->
-> Budget: the rest of M-2c's ≈ 350 kT, plus a reviewer.
+> Budget: ≈ 140 kT plus a reviewer ≈ 150 kT. SITREP at +50%.
 
 ## What's in place
+
+### M-2c-ii (2026-10-08 — Atlantis `8255d9b` · `492cb61` · `eb1fda3` · `bcd2612` · `e6b8ef0` + close; instance `ff7eda9` · `0ad8804` · `8bc76f3` · `24cc1f4` · `fc6b65d`)
+
+- **Ruling 1** (AskUserQuestion, steward): FKNMS `interval_season_start_month: 1`.
+- **FKNMS v3:**
+  - `learner_swaps` (logistic), with the hash `c07b7c0288` unchanged;
+  - the mapping pin to 0.8.0 (upkeep), and the federation pin → `bcd2612`;
+  - a run at 0.7.0 that is ≡ v2 by leaf-walk;
+  - entry v3 (582/600 numeric leaves);
+  - the page reworded by token and STATE re-cut.
+- **Core (no version bump; F-9 disclosed):**
+  - the page's data carries the paired interval (`8255d9b`);
+  - `board_check` compares it against the entry (`bcd2612`, III F-3);
+  - README limit 5: matched volume is the model's volume, not the steward's; the sign-test floor is 1/2^k.
+- **Register:** T11 (both instances at its terms; falsified as worded on FKNMS, proposed) · T2 (two instances) · T9 (+1) ·
+  T10. 112 decimals were traced to entries, the swap file or the cited review (C-032).
+- **Findings:**
+  - "the chosen budget" is two things under a base-rate shift;
+  - both verdicts rest on one nominal instrument;
+  - the hand-maintained surfaces drift after a re-run;
+  - a guard was cited beyond its reach twice (C-037, C-039).
+- **III:** PASS-WITH-FINDINGS 11/11 (`missions/aar/iii_review_m2c_ii.md`). Change count under the M-2c-i rule: **1**;
+  instance patches 0.
 
 ### M-2c-i (2026-10-08 — Atlantis `19c442d` · `0da7414` · `6fa20d3` · `1396ce2` · `11299c9` + close)
 
