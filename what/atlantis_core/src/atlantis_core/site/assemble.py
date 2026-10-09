@@ -117,7 +117,8 @@ def _metrics(inst, m: dict) -> dict:
            for a in inst.cfg["eval"].get("ablations", []) or []]
     keep = ("splits", "climatology_baseline_test", "persistence_baseline_test", "trend_baseline_test",
             "surveillance_only_test_auroc", "surveillance_only_vital",
-            "rolling_origin", "obligations", "mode", "sensitivity", "semantic_hash", "features_report", "atlantis_core")
+            "rolling_origin", "obligations", "mode", "sensitivity", "semantic_hash", "features_report", "atlantis_core",
+            "paired_interval_model_vs_climatology")   # M-2c-ii: summary statistics only — the page cites it by token (C-032)
     out = {k: m[k] for k in keep if k in m}
     if "calibration_in_the_large" in full.get("test", {}):   # ruling 16: val beside test, so the shift is on the page
         v = full.get("val") or {}   # III M-2b F-7: val's CITL is on the embargoed stop set — its own n and prevalence travel with it

@@ -278,3 +278,21 @@ def test_polygon_unit_names_come_from_the_grid(monkeypatch):
     assert unit_names(rules) == {7: "Lee-Collier"}
     bare = types.SimpleNamespace(cfg={"grid": {"kind": "polygons"}})
     assert unit_names(bare) == {}
+
+
+def test_page_data_carries_the_paired_interval():
+    """M-2c-ii: a page that says how the model reads against climatology must cite the paired interval by token, never
+    retype it (C-032). Planted first: without the key in `_metrics`'s keep-list this fails, and the FKNMS copy's tokens did not
+    resolve. The interval is summary statistics only (board-GREEN), so the page may carry it whole."""
+    from types import SimpleNamespace
+    from atlantis_core.site.assemble import _metrics
+    inst = SimpleNamespace(cfg={"eval": {"lead_budget": 0.1, "ablations": []}})
+    pi = {"auroc": {"estimate": 0.01, "lower": -0.02, "upper": 0.05, "seasons_scored": 7, "seasons_favouring_model": 3},
+          "budgets": {"10pct": {"matched_volume_precision": {"estimate": -0.02, "lower": -0.09, "upper": 0.07}}}}
+    m = {"full": {"test": {}, "lead_time_test_10pct": {"median_lead": 8.0}}, "paired_interval_model_vs_climatology": pi}
+    data = {"metrics": _metrics(inst, m)}
+    assert resolve(data, "metrics.paired_interval_model_vs_climatology.budgets.10pct.matched_volume_precision.lower") == -0.09
+    assert resolve(data, "metrics.paired_interval_model_vs_climatology.auroc.seasons_favouring_model") == 3
+    # a run that predates the interval (core < 0.7.0) still builds: the key is simply absent
+    m.pop("paired_interval_model_vs_climatology")
+    assert "paired_interval_model_vs_climatology" not in _metrics(inst, m)
