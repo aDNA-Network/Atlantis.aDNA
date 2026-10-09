@@ -1,13 +1,16 @@
 # atl_ontology_v0.linkml.yaml — Atlantis.aDNA · the `atl_` ontology for ecosystem early warning, v0
 #
-# STATUS: draft (v0.7.0) — authored at M-0 (2026-10-02, fable); CONTROLLED at P1 M-1c (2026-10-02, opus); 0.3.0 at M-1d-i
+# STATUS: draft (v0.8.0) — authored at M-0 (2026-10-02, fable); CONTROLLED at P1 M-1c (2026-10-02, opus); 0.3.0 at M-1d-i
 # (2026-10-03, operator ruling): a stream may be DECLARED before it is fetched — `ingested_at` optional, and a hash ⇒ a fetch time.
 # 0.4.0 at M-1e (2026-10-03, operator ruling; F-8): an alert budget says where its threshold was fixed (`threshold_from`), and a
 # threshold fixed on validation ⇒ the REALISED test alert rate is stated beside the nominal `rate`. 0.5.0 at M-2a-i (2026-10-06):
 # `refractory_weeks` on an event. 0.6.0 at M-1f (2026-10-07, operator ruling): an evaluation may state the label-horizon
 # embargo its fit and stop sets were cut with (`embargo_weeks`). 0.7.0 at M-2b (2026-10-08, steward rulings 19–20): two no-model
 # comparators beside climatology (`persistence_*`, `trend_*`) and the base rate and calibration-in-the-large per segment
-# (`base_rate_train`, `base_rate_validation`, `calibration_in_the_large_*`; ruling 16). A constraint
+# (`base_rate_train`, `base_rate_validation`, `calibration_in_the_large_*`; ruling 16). 0.8.0 at M-2c-i (2026-10-08; P2 gate
+# III G-3, C-034): T11 at its terms — climatology scored at the model's budgets with thresholds fixed on validation
+# (`climatology_alert_budgets`, reusing AtlAlertBudget and its realised-rate rule), and a season-block paired interval for
+# model − comparator (`paired_intervals`, AtlPairedInterval; resampled by test season, never by row). A constraint
 # is claimed ONLY where a control in fixtures/controls/ proves it under all three worlds of run_controls.sh
 # (linkml-validate · the committed atl_ontology_v0.schema.json, descendants OFF · a scratch JSON Schema, descendants ON).
 # The control count and the known limits are in README.md. A constraint whose docstring names no control is NOT claimed.
@@ -38,7 +41,7 @@ description: >-
   (a feature with a tag and a lineage), an event definition (threshold · direction · horizon), and an evaluation
   (the measurement, always against its base rate). Observations, labels and predictions are table shapes, not
   entities, and never cross into Atlantis.
-version: 0.7.0
+version: 0.8.0
 license: https://opensource.org/licenses/MIT
 status: draft
 
@@ -130,6 +133,32 @@ enums:
       draft: {}
       reviewed: {}
       validated: {}
+  IntervalComparator:
+    # Closed. Control: neg_interval_unknown_comparator (an unlisted value rejected AT its slot). Nearest miss NOT caught: an interval computed against a different comparator than the one named (atlantis_core: board.assert_interval reads it against the result).
+    description: >-
+      The no-model comparator a paired interval measures the model against (0.8.0, M-2c-i). local — names a baseline of
+      the method. `climatology`: the week-of-year onset rate (T11). Further comparators (persistence, trend, a
+      calendar + signal logistic) are added only with their own controls.
+    permissible_values:
+      climatology: {}
+
+  IntervalMetric:
+    # Closed. Control: neg_interval_unknown_metric. Nearest miss NOT caught: a delta computed on a metric other than the one named.
+    description: >-
+      The threshold-free metric a paired interval is drawn on (0.8.0, M-2c-i). local. A budget's precision/recall are
+      read beside the interval in `climatology_alert_budgets`, not inside it.
+    permissible_values:
+      auroc: {}
+      auprc: {}
+
+  ResampleUnit:
+    # Closed, one value. Control: neg_interval_resample_unit_row (`zone_week` rejected AT its slot). Nearest miss NOT caught: an interval labelled `season_year` whose draws were rows (atlantis_core: eval.interval.assert_whole_blocks on every draw; plant C3 in tests/test_m2c.py).
+    description: >-
+      What a paired interval resamples (0.8.0, M-2c-i). local. `season_year`: whole test years — zone-weeks within a
+      season are one event seen many times, so a row resample would claim an independence the data do not have.
+    permissible_values:
+      season_year: {}
+
   ThresholdSource:
     # Closed. Control: neg_unknown_threshold_from (an unlisted value rejected AT its slot). Nearest miss NOT caught: a value that misstates where the threshold was actually computed (that is caught by effect in atlantis_core/tests/test_f8.py::test_eval_thresholds_do_not_move_with_test and by the identity checks in eval._variant and board.assert_thresholds_fixed).
     description: >-
@@ -247,6 +276,8 @@ slots:
   base_rate_validation: {range: float, minimum_value: 0, maximum_value: 1, description: "0.7.0 (M-2b, ruling 16). Prevalence of the validation years' modelling rows (the years every threshold is fixed on). Controls: pos_evaluation_baselines_and_segments · neg_base_rate_validation_negative."}
   calibration_in_the_large_validation: {range: float, minimum_value: -1, maximum_value: 1, description: "0.7.0 (M-2b, ruling 16). Mean predicted probability − observed prevalence on the validation stop set: 0 is calibrated in the large, > 0 over-predicts. Beside the test value it shows calibration under a base-rate shift. Controls: pos_evaluation_baselines_and_segments · neg_calibration_in_the_large_validation_gt1. Nearest miss NOT caught: a value that is not mean(p) − prevalence."}
   calibration_in_the_large_test: {range: float, minimum_value: -1, maximum_value: 1, description: "0.7.0 (M-2b, ruling 16). Mean predicted probability − observed prevalence on test. Controls: pos_evaluation_baselines_and_segments · neg_calibration_in_the_large_test_lt_minus1."}
+  climatology_alert_budgets: {range: AtlAlertBudget, multivalued: true, inlined_as_list: true, description: "0.8.0 (M-2c-i; P2 gate III G-3, C-034). T11 at its terms: the week-of-year climatology scored at the same nominal budgets as the model, each threshold fixed on validation by a climatology fit on train only (embargoed), applied to the refit's test scores, with the realised rate beside the nominal one — the AtlAlertBudget rule (validation ⇒ realised_rate) applies here as on `alert_budgets`. Climatology scores tie in whole week-of-year groups, so the realised rate departs from the nominal one by construction. Optional: entries before 0.8.0 still validate. Controls: pos_evaluation_climatology_budget_and_interval · neg_climatology_budget_without_realised_rate. Nearest miss NOT caught: a threshold quantiled from test while labelled `validation` (atlantis_core: eval's invariance test and plant C1 in tests/test_m2c.py; board.assert_climatology_at_budget)."}
+  paired_intervals: {range: AtlPairedInterval, multivalued: true, inlined_as_list: true, description: "0.8.0 (M-2c-i). model − comparator on a threshold-free metric, with a percentile interval from season-block draws (whole test years, the same draw scoring both: paired). Read with n_blocks: with B blocks only C(2B−1, B) distinct draws exist (35 at B = 4), so the interval is crude; one that spans 0 means 'not distinguished at this sample', never 'no difference'. Optional. Controls: pos_evaluation_climatology_budget_and_interval · neg_interval_extra_key (per-draw values cannot ride along). Nearest miss NOT caught: an interval whose draws were not paired (atlantis_core: eval.interval's pairing guard and the identical-scores control; plant C4)."}
   alert_budgets:    {range: AtlAlertBudget, multivalued: true, inlined_as_list: true, required: true, minimum_cardinality: 1, description: "At least one (T6; SO-9 — operator ruling at M-1c to enforce now, not at M-1b). Controls: neg_evaluation_without_budget (absent) · neg_evaluation_empty_budgets (`[]`). Nearest miss NOT caught: a budget whose precision/recall were not measured at that rate."}
   lead_time:        {range: AtlLeadTime, inlined: true}
   ablations:        {range: AtlAblation, multivalued: true, inlined_as_list: true, description: "Surveillance ablation is REQUIRED where a surveillance channel is declared (T5)."}
@@ -269,6 +300,17 @@ slots:
   n_onsets:     {range: integer, required: true, minimum_value: 0}
   flagged_fraction: {range: float, required: true, minimum_value: 0, maximum_value: 1}
   median_lead:  {range: float, minimum_value: 0, description: "In time steps."}
+  comparator:    {range: IntervalComparator, required: true, description: "0.8.0. Control: neg_interval_unknown_comparator."}
+  metric:        {range: IntervalMetric, required: true, description: "0.8.0. Control: neg_interval_unknown_metric."}
+  resample_unit: {range: ResampleUnit, required: true, description: "0.8.0. Control: neg_interval_resample_unit_row."}
+  n_blocks:      {range: integer, required: true, minimum_value: 2, description: "0.8.0. The number of test seasons resampled. At least 2 (one season admits no resample). Control: neg_interval_n_blocks_1. Nearest miss NOT caught: n_blocks ≠ the test years the split names (atlantis_core: board.assert_interval)."}
+  n_draws:       {range: integer, required: true, minimum_value: 1}
+  n_degenerate:  {range: integer, minimum_value: 0, description: "0.8.0. Draws that held a single class and could score neither metric — counted and left out, never imputed."}
+  confidence_level: {range: float, required: true, minimum_value: 0, maximum_value: 1}
+  delta_estimate: {range: float, required: true, minimum_value: -1, maximum_value: 1, description: "0.8.0. model − comparator on the full test set."}
+  delta_lower:   {range: float, required: true, minimum_value: -1, maximum_value: 1, description: "0.8.0. Control: neg_interval_lower_lt_minus1. Nearest miss NOT caught: delta_lower > delta_upper (cross-slot arithmetic; atlantis_core: board.assert_interval)."}
+  delta_upper:   {range: float, required: true, minimum_value: -1, maximum_value: 1}
+  spans_zero:    {range: boolean, required: true, description: "0.8.0. True when delta_lower ≤ 0 ≤ delta_upper — reported as exactly that. Control: neg_interval_without_spans_zero. Nearest miss NOT caught: a flag that disagrees with the bounds (atlantis_core: board.assert_interval)."}
   ablation_name: {range: string, required: true, description: "What was removed (the surveillance group; a stream; a lever)."}
   ablated_auroc: {range: float, minimum_value: 0, maximum_value: 1}
   ablated_auprc: {range: float, minimum_value: 0, maximum_value: 1}
@@ -368,7 +410,8 @@ classes:
       smuggled inside a declared free-text slot (e.g. `split`, `learner`) — a reviewer's catch, not a shape's.
     slots: [evaluation_id, event_ref, unit_ref, split, embargo_weeks, n_test, n_positives, base_rate, auroc, auprc, brier, calibration_slope,
             climatology_auroc, climatology_auprc, persistence_auroc, persistence_auprc, trend_auroc, trend_auprc,
-            base_rate_train, base_rate_validation, calibration_in_the_large_validation, calibration_in_the_large_test, alert_budgets, lead_time, ablations, learner, config_hash, data_pins,
+            base_rate_train, base_rate_validation, calibration_in_the_large_validation, calibration_in_the_large_test,
+            climatology_alert_budgets, paired_intervals, alert_budgets, lead_time, ablations, learner, config_hash, data_pins,
             shap_summary_ref, claim, owner_ruling_ref, limitations_ref]
     rules:
       - preconditions:
@@ -399,6 +442,14 @@ classes:
           through). Controls: neg_budget_validation_without_realised_rate (absent) · neg_budget_realised_rate_null (null).
           Positive: pos_budget_fixed_on_validation. Nearest miss NOT caught: a budget that omits `threshold_from`
           altogether (the grandfathered shape) — the board emitter refuses that for every new entry.
+
+  AtlPairedInterval:
+    description: >-
+      0.8.0 (M-2c-i). model − comparator on one metric, by season-block resampling: whole test years drawn with
+      replacement, one draw scoring both. Summaries only; the draws stay in the instance. CLOSED: control
+      neg_interval_extra_key proves an undeclared key (a per-draw list) is rejected AT the interval.
+    slots: [comparator, metric, resample_unit, n_blocks, n_draws, n_degenerate, confidence_level, delta_estimate,
+            delta_lower, delta_upper, spans_zero]
 
   AtlLeadTime:
     description: Lead-time summary at one budget. Histogram stays in the instance. (0.4.0) `threshold_from` says where the threshold it reads was fixed.

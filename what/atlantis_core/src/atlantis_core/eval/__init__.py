@@ -33,12 +33,14 @@ from sklearn.metrics import average_precision_score, roc_auc_score
 from atlantis_core.config import feature_name
 from atlantis_core.eval.lead import lead_time
 from atlantis_core.eval.learners import learner
-from atlantis_core.eval.metrics import (THRESHOLD_FROM, climatology_baseline, evaluate, persistence_baseline,
-                                        quantile_thresholds, rate_key, signal_history, trend_baseline)
+from atlantis_core.eval.interval import season_block_interval
+from atlantis_core.eval.metrics import (THRESHOLD_FROM, at_alert_rates, climatology_baseline, climatology_scores, evaluate,
+                                        persistence_baseline, quantile_thresholds, rate_key, signal_history,
+                                        trend_baseline)
 from atlantis_core.eval.rolling import clipped_eras
 
 __all__ = ["run", "split", "groups", "ObligationError", "check_fold_selection", "eval_modes", "embargo_weeks", "embargo",
-           "check_label_windows", "horizon_spill"]
+           "check_label_windows", "horizon_spill", "climatology_at_budget"]
 
 ROLLING_SELECTION = ("per_fold", "full_model")
 
@@ -241,6 +243,38 @@ def _variant(inst, spec, feats, train, val, test, panel, ecfg, unit_col):
     return r, L, final, scored
 
 
+def climatology_at_budget(inst, train, val, test, base_fit, ecfg):
+    """T11 at its terms (M-2c, P2 gate G-3): climatology scored at the model's budgets under the model's M-1e rule.
+
+    The selection fit is train only, embargoed against val, as the model's selection is. Its scores on every validation
+    week fix the thresholds before test is scored. They are applied to the test scores of the refit (`base_fit`, the
+    same rows and the same scores as the AUROC/AUPRC above), and the realised rate is reported beside the nominal one.
+    The years each fit received are read off the fit (C-023), and the applied thresholds are read back from the result.
+    Returns the block for `climatology_baseline_test` and the test scores (for the paired interval)."""
+    tf, _ = eval_modes(ecfg)
+    s = inst.cfg["split"]
+    E, H = _embargo_of(inst)
+    rates = tuple(ecfg["alert_rates"])
+    sel = embargo(train, s["val_start"], E)
+    p_val, sel_years = climatology_scores(sel, val)
+    fixed = fixed_thresholds(p_val, rates, tf)                 # set BEFORE test is scored
+    p_test, fit_years = climatology_scores(base_fit, test)
+    ar = at_alert_rates(test["y"].astype(int).values, p_test, rates, thresholds=fixed, threshold_from=tf)
+    if fixed is not None:
+        applied = {k: v["threshold"] for k, v in ar.items()}
+        if applied != fixed:
+            raise ObligationError(f"F-8 (climatology): applied thresholds {applied} are not the ones fixed on validation {fixed}")
+        if sel_years[1] >= s["val_start"]:
+            raise ObligationError(f"F-8 (climatology): thresholds fixed by a fit through {sel_years[1]} — validation "
+                                  f"starts {s['val_start']}")
+    if fit_years[1] >= s["test_start"]:
+        raise ObligationError(f"climatology: the refit read rows through {fit_years[1]} — test starts {s['test_start']}")
+    if E:
+        check_label_windows("climatology selection→val", sel, s["val_start"], H)
+    return ({"alert_rates": ar, "threshold_from": tf, "selection_fit_years": sel_years, "fit_years": fit_years,
+             "n_test": int(len(test))}, p_test)
+
+
 def run(inst, model_df: pd.DataFrame, panel: pd.DataFrame, *, fold_tables=None, sensitivity_df=None,
         learner_spec: dict | None = None, reference: bool = False, log=print):
     if inst.obligations and fold_tables is None and not reference:
@@ -283,11 +317,18 @@ def run(inst, model_df: pd.DataFrame, panel: pd.DataFrame, *, fold_tables=None, 
         res["surveillance_only_test_auroc"] = float(roc_auc_score(test["y"], test[so].fillna(0)))
         res["surveillance_only_vital"] = so
     # the baseline is fitted on the refit's rows: the embargo is the model's, so the comparison stays like for like
-    res["climatology_baseline_test"] = climatology_baseline(pd.concat([train, embargo(val, s["test_start"], E)]), test)
+    base_fit = pd.concat([train, embargo(val, s["test_start"], E)])
+    clim, p_clim = climatology_at_budget(inst, train, val, test, base_fit, ecfg)
+    res["climatology_baseline_test"] = {**climatology_baseline(base_fit, test), **clim}
+    scored = art["test_scored"]
+    if not scored.index.equals(test.index):
+        raise ObligationError("paired interval: the model's scored test rows are not the comparator's")
+    res["paired_interval_model_vs_climatology"] = season_block_interval(
+        test["y"].astype(int).values, scored["p"].values, p_clim, test["week"].dt.year.values, comparator="climatology",
+        n_draws=int(ecfg.get("interval_draws", 2000)), seed=int(ecfg.get("interval_seed", 20261008)))
     ev = inst.event
     # M-2b (ruling 19): the event signal's own comparators, fitted on those same rows. The rows the trend actually received
     # are checked like any fit (C-022 on the frame received, H from the event), so a fit that read test is refused by name
-    base_fit = pd.concat([train, embargo(val, s["test_start"], E)])
     hist = signal_history(panel, unit_col, int(inst.cfg["label"]["last_known_weeks"]))
     res["persistence_baseline_test"] = persistence_baseline(base_fit, test, hist, unit_col=unit_col, direction=ev["direction"])
     res["trend_baseline_test"] = trend_baseline(base_fit, test, hist, unit_col=unit_col)

@@ -25,6 +25,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from math import comb
 from pathlib import Path
 
 from atlantis_core.board import BoardError, assert_green, validate
@@ -181,19 +182,34 @@ def _patients(ev: dict, extras: dict) -> str:
     return f"{_cell(p.get('n_units'))} × {_cell(p.get('unit_kind'))}" if p else f"`{_cell(ev.get('unit_ref'))}`"
 
 
+def _lead(ev: dict) -> str:
+    """The lead cell (P2 gate G-7, C-032): the budget it was read at, nominal AND realised. "@ 0.1" alone hid a threshold
+    that flagged 20.3% of test; a budget fixed after the fact (v0, v1) has no realised rate and says so."""
+    lt = ev.get("lead_time") or {}
+    if not lt:
+        return "—"
+    b = next((x for x in ev.get("alert_budgets") or [] if x.get("rate") == lt.get("budget_rate")), {})
+    real = (f"{_cell(b['realised_rate'])} realised" if b.get("realised_rate") is not None
+            else "realised —, threshold set on test after the fact (F-8)")
+    return (f"{_cell(lt.get('flagged_fraction'))} of {_cell(lt.get('n_onsets'))} onsets flagged, median "
+            f"{_cell(lt.get('median_lead'))} wk (@ {_cell(lt.get('budget_rate'))} nominal · {real})")
+
+
+def _signed(x) -> str:
+    return "—" if x is None else _cell(f"{x:+}")
+
+
 def render(entries: Path) -> str:
     docs = load(entries)
     sup = supersession(docs)
     parts = [HEADER, f"**{len(docs)} entries** ({len(sup)} superseded by a newer version of the same stem; "
                      f"{sum(1 for *_, s in docs if s == 'open')} open-shape, grandfathered by id).", "",
              "## Entries", "",
-             "| Entry | Source | Event | Patients | Base rate | AUROC / AUPRC | Climatology AUROC / AUPRC | Lead (budget) | Claim | Shape | Status |",
+             "| Entry | Source | Event | Patients | Base rate | AUROC / AUPRC | Climatology AUROC / AUPRC | Lead (budget: nominal · realised) | Claim | Shape | Status |",
              "|---|---|---|---|---|---|---|---|---|---|---|"]
     for p, e, shape in docs:
         ev, ex = e["evaluation"], e.get("evaluation_extras") or {}
-        lt = ev.get("lead_time") or {}
-        lead = (f"{_cell(lt.get('flagged_fraction'))} of {_cell(lt.get('n_onsets'))} onsets flagged, median "
-                f"{_cell(lt.get('median_lead'))} wk (@ {_cell(lt.get('budget_rate'))})") if lt else "—"
+        lead = _lead(ev)
         claim = _cell(ev["claim"]) + (f" ({_cell(ev['owner_ruling_ref'])})" if ev.get("owner_ruling_ref") else "")
         sh = "closed `AtlEvaluation`" if shape == "closed" else GRANDFATHERED_OPEN[e["entry_id"]][1]
         status = f"superseded → `{sup[e['entry_id']]}`" if e["entry_id"] in sup else "live"
@@ -219,6 +235,40 @@ def render(entries: Path) -> str:
                      f"{_num(ev.get('calibration_in_the_large_validation'))} / {_num(ev.get('calibration_in_the_large_test'))} |")
     if not rows:
         parts.append("| *none yet* | | | | |")
+    parts += ["", "## Climatology at the same budgets", "",
+              "*atl_v0 0.8.0 (M-2c-i; T11 at its terms). Week-of-year climatology is scored at the model's budgets under the "
+              "model's rule: each threshold is fixed on validation by a climatology fit on train only, then applied to test. "
+              "Climatology scores tie in whole week-of-year groups, so its **realised** rate departs from the nominal budget by "
+              "construction; read precision beside it. Entries before 0.8.0 carry none of this and are not listed.*", "",
+              "| Entry | Budget | Model precision / recall (realised) | Climatology precision / recall (realised) |",
+              "|---|---|---|---|"]
+    rows = [e for _, e, _ in docs if e["evaluation"].get("climatology_alert_budgets")]
+    for e in rows:
+        ev = e["evaluation"]
+        mb = {b["rate"]: b for b in ev["alert_budgets"]}
+        for c in ev["climatology_alert_budgets"]:
+            m = mb.get(c["rate"], {})
+            parts.append(f"| `{e['entry_id']}` | {_num(c.get('rate'))} | {_num(m.get('precision'))} / {_num(m.get('recall'))} "
+                         f"({_num(m.get('realised_rate'))}) | {_num(c.get('precision'))} / {_num(c.get('recall'))} "
+                         f"({_num(c.get('realised_rate'))}) |")
+    if not rows:
+        parts.append("| *none yet* | | | |")
+    parts += ["", "**Model − climatology, season-block paired interval.** *Whole test seasons are drawn with replacement, and "
+                  "one draw scores both the model and climatology. With B seasons there are only C(2B − 1, B) distinct draws "
+                  "(35 at B = 4, 1,716 at B = 7), so the interval is crude. An interval that spans 0 means **not "
+                  "distinguished at this sample**. It never means \"no difference\".*", "",
+              "| Entry | Metric | Model − climatology | Interval | Season blocks (distinct draws) | Spans 0 |",
+              "|---|---|---|---|---|---|"]
+    rows = [e for _, e, _ in docs if e["evaluation"].get("paired_intervals")]
+    for e in rows:
+        for iv in e["evaluation"]["paired_intervals"]:
+            B = iv.get("n_blocks")
+            parts.append(f"| `{e['entry_id']}` | {_cell(iv.get('metric'))} | {_signed(iv.get('delta_estimate'))} | "
+                         f"{_num(iv.get('confidence_level'))}: [{_signed(iv.get('delta_lower'))}, {_signed(iv.get('delta_upper'))}] | "
+                         f"{_num(B)} ({_num(comb(2 * B - 1, B) if isinstance(B, int) else None)}) | "
+                         f"{'yes' if iv.get('spans_zero') else 'no'} |")
+    if not rows:
+        parts.append("| *none yet* | | | | | |")
     parts += ["", "## Alert budgets", "",
               "*Precision and recall when the steward can staff alerts on this fraction of patient-weeks. **Budget** is "
               "nominal; **Realised** is the share of test patient-weeks a threshold fixed beforehand actually flagged "

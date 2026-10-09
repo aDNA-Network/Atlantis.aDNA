@@ -12,14 +12,14 @@
 
 ## Entries
 
-| Entry | Source | Event | Patients | Base rate | AUROC / AUPRC | Climatology AUROC / AUPRC | Lead (budget) | Claim | Shape | Status |
+| Entry | Source | Event | Patients | Base rate | AUROC / AUPRC | Climatology AUROC / AUPRC | Lead (budget: nominal · realised) | Claim | Shape | Status |
 |---|---|---|---|---|---|---|---|---|---|---|
-| [`2026-09-23_gulf_karenia_brevis_v0`](entries/2026-09-23_gulf_karenia_brevis_v0.json) | exemplar | `atl_event_kbrevis_onset_100k_4w` ≥ 100000 /L within 4 wk | 9 × coastal_band | 0.0774 | 0.8941 / 0.5473 | 0.5767 / 0.1038 | 0.6364 of 22 onsets flagged, median 4.0 wk (@ 0.1) | method_demonstration | open shape — pre-atlantis_core (M-0 sitting script); not a closed AtlEvaluation | superseded → `2026-10-07_gulf_karenia_brevis_v3` |
-| [`2026-10-02_gulf_karenia_brevis_v1`](entries/2026-10-02_gulf_karenia_brevis_v1.json) | exemplar | `atl_event_kbrevis_onset_100k_4w` ≥ 100000 /L within 4 wk | 9 × coastal_band | 0.0774 | 0.8938 / 0.5388 | 0.5767 / 0.1038 | 0.6818 of 22 onsets flagged, median 4.0 wk (@ 0.1) | method_demonstration | closed `AtlEvaluation` | superseded → `2026-10-07_gulf_karenia_brevis_v3` |
-| [`2026-10-03_gulf_karenia_brevis_v2`](entries/2026-10-03_gulf_karenia_brevis_v2.json) | exemplar | `atl_event_kbrevis_onset_100k_4w` ≥ 100000 /L within 4 wk | 9 × coastal_band | 0.0774 | 0.8938 / 0.5388 | 0.5767 / 0.1038 | 0.6364 of 22 onsets flagged, median 4.0 wk (@ 0.1) | method_demonstration | closed `AtlEvaluation` | superseded → `2026-10-07_gulf_karenia_brevis_v3` |
-| [`2026-10-07_gulf_karenia_brevis_v3`](entries/2026-10-07_gulf_karenia_brevis_v3.json) | exemplar | `atl_event_kbrevis_onset_100k_4w` ≥ 100000 /L within 4 wk | 9 × coastal_band | 0.0774 | 0.895 / 0.5414 | 0.577 / 0.1045 | 0.5909 of 22 onsets flagged, median 4.0 wk (@ 0.1) | method_demonstration | closed `AtlEvaluation` | live |
-| [`2026-10-08_florida_keys_coral_v1`](entries/2026-10-08_florida_keys_coral_v1.json) | instance | `atl_event_florida_keys_coral_onset` ≥ 4.0 Cel.wk within 8 wk | 21 × mpa_zone | 0.1501 | 0.937 / 0.6903 | 0.9194 / 0.6012 | 1.0 of 105 onsets flagged, median 8.0 wk (@ 0.1) | method_demonstration | closed `AtlEvaluation` | superseded → `2026-10-08_florida_keys_coral_v2` |
-| [`2026-10-08_florida_keys_coral_v2`](entries/2026-10-08_florida_keys_coral_v2.json) | instance | `atl_event_florida_keys_coral_onset` ≥ 4.0 Cel.wk within 8 wk | 21 × mpa_zone | 0.1501 | 0.937 / 0.6903 | 0.9194 / 0.6012 | 1.0 of 105 onsets flagged, median 8.0 wk (@ 0.1) | method_demonstration | closed `AtlEvaluation` | live |
+| [`2026-09-23_gulf_karenia_brevis_v0`](entries/2026-09-23_gulf_karenia_brevis_v0.json) | exemplar | `atl_event_kbrevis_onset_100k_4w` ≥ 100000 /L within 4 wk | 9 × coastal_band | 0.0774 | 0.8941 / 0.5473 | 0.5767 / 0.1038 | 0.6364 of 22 onsets flagged, median 4.0 wk (@ 0.1 nominal · realised —, threshold set on test after the fact (F-8)) | method_demonstration | open shape — pre-atlantis_core (M-0 sitting script); not a closed AtlEvaluation | superseded → `2026-10-07_gulf_karenia_brevis_v3` |
+| [`2026-10-02_gulf_karenia_brevis_v1`](entries/2026-10-02_gulf_karenia_brevis_v1.json) | exemplar | `atl_event_kbrevis_onset_100k_4w` ≥ 100000 /L within 4 wk | 9 × coastal_band | 0.0774 | 0.8938 / 0.5388 | 0.5767 / 0.1038 | 0.6818 of 22 onsets flagged, median 4.0 wk (@ 0.1 nominal · realised —, threshold set on test after the fact (F-8)) | method_demonstration | closed `AtlEvaluation` | superseded → `2026-10-07_gulf_karenia_brevis_v3` |
+| [`2026-10-03_gulf_karenia_brevis_v2`](entries/2026-10-03_gulf_karenia_brevis_v2.json) | exemplar | `atl_event_kbrevis_onset_100k_4w` ≥ 100000 /L within 4 wk | 9 × coastal_band | 0.0774 | 0.8938 / 0.5388 | 0.5767 / 0.1038 | 0.6364 of 22 onsets flagged, median 4.0 wk (@ 0.1 nominal · 0.0811 realised) | method_demonstration | closed `AtlEvaluation` | superseded → `2026-10-07_gulf_karenia_brevis_v3` |
+| [`2026-10-07_gulf_karenia_brevis_v3`](entries/2026-10-07_gulf_karenia_brevis_v3.json) | exemplar | `atl_event_kbrevis_onset_100k_4w` ≥ 100000 /L within 4 wk | 9 × coastal_band | 0.0774 | 0.895 / 0.5414 | 0.577 / 0.1045 | 0.5909 of 22 onsets flagged, median 4.0 wk (@ 0.1 nominal · 0.0799 realised) | method_demonstration | closed `AtlEvaluation` | live |
+| [`2026-10-08_florida_keys_coral_v1`](entries/2026-10-08_florida_keys_coral_v1.json) | instance | `atl_event_florida_keys_coral_onset` ≥ 4.0 Cel.wk within 8 wk | 21 × mpa_zone | 0.1501 | 0.937 / 0.6903 | 0.9194 / 0.6012 | 1.0 of 105 onsets flagged, median 8.0 wk (@ 0.1 nominal · 0.2034 realised) | method_demonstration | closed `AtlEvaluation` | superseded → `2026-10-08_florida_keys_coral_v2` |
+| [`2026-10-08_florida_keys_coral_v2`](entries/2026-10-08_florida_keys_coral_v2.json) | instance | `atl_event_florida_keys_coral_onset` ≥ 4.0 Cel.wk within 8 wk | 21 × mpa_zone | 0.1501 | 0.937 / 0.6903 | 0.9194 / 0.6012 | 1.0 of 105 onsets flagged, median 8.0 wk (@ 0.1 nominal · 0.2034 realised) | method_demonstration | closed `AtlEvaluation` | live |
 
 *Status is derived, never written into an entry (SO-2): within one source, instance and stem, the highest version supersedes the lower ones. A superseded entry stays on the board.*
 
@@ -31,6 +31,20 @@
 |---|---|---|---|---|
 | `2026-10-08_florida_keys_coral_v1` | 0.0131 / 0.0759 / 0.1501 | 0.7505 / 0.3583 | 0.7809 / 0.5201 | -0.0453 / -0.0974 |
 | `2026-10-08_florida_keys_coral_v2` | 0.0131 / 0.0759 / 0.1501 | 0.7505 / 0.3583 | 0.7809 / 0.5201 | -0.0453 / -0.0974 |
+
+## Climatology at the same budgets
+
+*atl_v0 0.8.0 (M-2c-i; T11 at its terms). Week-of-year climatology is scored at the model's budgets under the model's rule: each threshold is fixed on validation by a climatology fit on train only, then applied to test. Climatology scores tie in whole week-of-year groups, so its **realised** rate departs from the nominal budget by construction; read precision beside it. Entries before 0.8.0 carry none of this and are not listed.*
+
+| Entry | Budget | Model precision / recall (realised) | Climatology precision / recall (realised) |
+|---|---|---|---|
+| *none yet* | | | |
+
+**Model − climatology, season-block paired interval.** *Whole test seasons are drawn with replacement, and one draw scores both the model and climatology. With B seasons there are only C(2B − 1, B) distinct draws (35 at B = 4, 1,716 at B = 7), so the interval is crude. An interval that spans 0 means **not distinguished at this sample**. It never means "no difference".*
+
+| Entry | Metric | Model − climatology | Interval | Season blocks (distinct draws) | Spans 0 |
+|---|---|---|---|---|---|
+| *none yet* | | | | | |
 
 ## Alert budgets
 

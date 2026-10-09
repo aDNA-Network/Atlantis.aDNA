@@ -33,7 +33,7 @@ MAX_STRING_NUMBERS = 40   # numbers inside one string — notes are prose, not a
 EXTRAS_KEYS = {"rolling_selection", "rolling_skipped", "event", "patient", "modelling_rows", "modelling_positives", "modelling_prevalence",
                "dropped_already_in_event", "dropped_outcome_unknown", "n_trees", "n_vitals", "vital_groups",
                "sensitivity", "rolling_origin", "obligations", "shap_summary", "semantic_hash", "config_bytes_md5",
-               "data_pins", "learner_swaps", "delta_vs", "regenerated", "embargo", "baselines"}
+               "data_pins", "learner_swaps", "delta_vs", "regenerated", "embargo", "baselines", "paired_interval"}
 
 
 class BoardError(ValueError):
@@ -63,6 +63,25 @@ def _budget(r: float, a: dict) -> dict:
         if a.get("realised_rate") is not None:   # absent → the emit check names it (and the schema rule rejects it)
             out["realised_rate"] = _r(a["realised_rate"])
     return out
+
+
+INTERVAL_KEY = "paired_interval_model_vs_climatology"
+INTERVAL_METRICS = ("auroc", "auprc")
+
+
+def _intervals(pi: dict | None) -> list | None:
+    """atl_v0 0.8.0 `paired_intervals`: one AtlPairedInterval per metric, projected from the result (never retyped)."""
+    if not pi:
+        return None
+    return [{"comparator": pi["comparator"], "metric": m, "resample_unit": pi["resample_unit"], "n_blocks": int(pi["n_blocks"]),
+             "n_draws": int(pi["n_draws"]), "n_degenerate": int(pi["n_degenerate"]), "confidence_level": float(pi["level"]),
+             "delta_estimate": _r(pi[m]["estimate"]), "delta_lower": _r(pi[m]["lower"]), "delta_upper": _r(pi[m]["upper"]),
+             "spans_zero": bool(pi[m]["spans_zero"])} for m in INTERVAL_METRICS]
+
+
+def _climatology_budgets(res: dict, rates) -> list | None:
+    cb = res["climatology_baseline_test"]
+    return [_budget(r, cb["alert_rates"][rate_key(r)]) for r in rates] if "alert_rates" in cb else None
 
 
 def _groups(inst, res):
@@ -105,6 +124,9 @@ def project(res: dict, inst, *, version: int, recorded_at: str, recorded_by: str
           "base_rate_validation": _r(res["splits"]["val"].get("base_rate")),
           "calibration_in_the_large_validation": _r(full["val"].get("calibration_in_the_large")),
           "calibration_in_the_large_test": _r(t.get("calibration_in_the_large")),
+          # atl_v0 0.8.0 (M-2c-i): T11 at its terms — absent from a result that predates it, so v0–v4(0.6.0) re-project unchanged
+          "climatology_alert_budgets": _climatology_budgets(res, e["alert_rates"]),
+          "paired_intervals": _intervals(res.get(INTERVAL_KEY)),
           "alert_budgets": [_budget(r, t["alert_rates"][rate_key(r)]) for r in e["alert_rates"]],
           "lead_time": {"budget_rate": budget, "n_onsets": int(lt["n_onsets"]),
                         "flagged_fraction": _r(lt["detected_fraction"]), "median_lead": lt["median_lead_weeks"],
@@ -278,6 +300,85 @@ def assert_comparators(ev: dict, res: dict) -> None:
         raise BoardError("comparators (M-2b): " + "; ".join(bad))
 
 
+def assert_climatology_at_budget(ev: dict, res: dict, rates) -> None:
+    """M-2c-i (P2 gate G-3, C-034): no new entry without climatology at the model's budgets, each threshold fixed on
+    validation by a climatology fit that saw only train, with its realised rate. Like assert_comparators, this checks the
+    result dict and the projection against each other; it cannot tell a tampered result that is consistent with itself.
+    What proves the thresholds did not read test is eval's own read-back and fit-years checks and the invariance test with
+    plant C1 in tests/test_m2c.py, not this function."""
+    bad = []
+    cb = res.get("climatology_baseline_test") or {}
+    if "alert_rates" not in cb:
+        raise BoardError("climatology at budget (M-2c): no climatology alert budgets — T11 is untested at its terms "
+                         "(a result from before core 0.7.0; re-run)")
+    n_test = res["full"]["test"]["n"]
+    if cb.get("threshold_from") != "val":
+        bad.append(f"climatology thresholds fixed on {cb.get('threshold_from')!r}, not validation (F-8)")
+    if cb.get("n_test") != n_test:
+        bad.append(f"climatology scored {cb.get('n_test')} rows, not the {n_test} test rows")
+    v0, t0 = (res.get("splits") or {}).get("val", {}).get("years", [None])[0], inst_test_start(res)
+    sy, fy = cb.get("selection_fit_years"), cb.get("fit_years")
+    if not sy or v0 is None or sy[1] >= v0:
+        bad.append(f"climatology thresholds were fixed by a fit through {sy and sy[1]} — validation starts {v0}")
+    if not fy or t0 is None or fy[1] >= t0:
+        bad.append(f"climatology refit read rows through {fy and fy[1]} — test starts {t0}")
+    for r in rates:
+        k = rate_key(r); a = cb["alert_rates"].get(k)
+        if a is None:
+            bad.append(f"climatology budget {r}: missing"); continue
+        if a.get("threshold_from") != "val":
+            bad.append(f"climatology budget {r}: threshold_from {a.get('threshold_from')!r}")
+        if a.get("realised_rate") is None:
+            bad.append(f"climatology budget {r}: no realised rate")
+        elif abs(a["realised_rate"] - a["n_alerts"] / n_test) > 1e-9:
+            bad.append(f"climatology budget {r}: realised rate {a['realised_rate']} is not n_alerts / n_test ({a['n_alerts']}/{n_test})")
+    want = [_budget(r, cb["alert_rates"][rate_key(r)]) for r in rates if rate_key(r) in cb["alert_rates"]]
+    if ev.get("climatology_alert_budgets") != want:
+        bad.append("climatology_alert_budgets is not the projection of the result")
+    if bad:
+        raise BoardError("climatology at budget (M-2c): " + "; ".join(bad))
+
+
+def assert_interval(ev: dict, res: dict) -> None:
+    """M-2c-i: no new entry without its season-block paired interval for model − climatology, and the interval must be
+    what it says it is: seasons as the unit, one block per test year, paired, bounds in order, `spans_zero` true to the
+    bounds, and the slots equal to the result. Whether the draws really were whole seasons, and really one draw for both
+    sides, is eval.interval's to prove on every draw (plants C3, C4), not this function's."""
+    pi = res.get(INTERVAL_KEY)
+    if not pi:
+        raise BoardError(f"paired interval (M-2c): {INTERVAL_KEY} missing — model − climatology has no uncertainty "
+                         "(a result from before core 0.7.0; re-run)")
+    bad = []
+    if pi.get("resample_unit") != "season_year":
+        bad.append(f"resampled by {pi.get('resample_unit')!r}, not season_year")
+    if pi.get("paired") is not True:
+        bad.append("not paired")
+    ty = (res.get("splits") or {}).get("test", {}).get("years")
+    want_blocks = list(range(ty[0], ty[1] + 1)) if ty else None
+    if pi.get("blocks") != want_blocks or pi.get("n_blocks") != len(pi.get("blocks") or []):
+        bad.append(f"blocks {pi.get('blocks')} (n_blocks {pi.get('n_blocks')}) are not the test years {want_blocks}")
+    if not (0 <= pi.get("n_degenerate", -1) < pi.get("n_draws", 0)):
+        bad.append(f"{pi.get('n_degenerate')} of {pi.get('n_draws')} draws degenerate")
+    for m in INTERVAL_METRICS:
+        r = pi.get(m) or {}
+        lo, hi = r.get("lower"), r.get("upper")
+        if lo is None or hi is None or lo > hi:
+            bad.append(f"{m}: lower {lo} > upper {hi}"); continue
+        if r.get("spans_zero") is not (lo <= 0.0 <= hi):
+            bad.append(f"{m}: spans_zero {r.get('spans_zero')} but the interval is [{lo}, {hi}]")
+    if not bad and ev.get("paired_intervals") != _intervals(pi):
+        bad.append("paired_intervals is not the projection of the result")
+    if bad:
+        raise BoardError("paired interval (M-2c): " + "; ".join(bad))
+
+
+def interval_extras(res: dict) -> dict:
+    """What the interval resampled and how — the seed and the counts that say how crude it is; never the draws."""
+    pi = res[INTERVAL_KEY]
+    return {f: pi[f] for f in ("comparator", "resample_unit", "blocks", "n_blocks", "n_distinct_multisets", "n_draws",
+                               "n_degenerate", "seed", "level", "paired", "scope")}
+
+
 def assert_config_bytes(res: dict, inst) -> None:
     """III M-2b F-6 (C-023): `config_bytes_md5` is stamped at run time; an entry emitted after the config file was edited
     names bytes no commit holds (the semantic hash need not move — a board-block edit is outside it). Refused: re-run."""
@@ -299,6 +400,11 @@ def inst_test_start(res: dict):
 def baselines_extras(res: dict) -> dict:
     """How each comparator was scored — counts, never rows: what it read, how many test rows needed an imputed signal."""
     out = {"climatology": {"score": "week-of-year onset rate, train ∪ embargoed val"}}
+    cb = res.get("climatology_baseline_test") or {}
+    if "alert_rates" in cb:   # M-2c-i: where its budget thresholds came from
+        out["climatology"].update({"thresholds": "fixed on validation by a fit on train only (embargoed)",
+                                   "selection_fit_years": cb["selection_fit_years"], "fit_years": cb["fit_years"],
+                                   "n_test": cb["n_test"]})
     for name, k in (("persistence", "persistence_baseline_test"), ("trend", "trend_baseline_test")):
         b = res[k]
         out[name] = {f: b[f] for f in ("score", "n_test", "n_imputed", "n_fit", "fit_years") if f in b}
@@ -384,6 +490,8 @@ def emit(res: dict, inst, *, version: int, run_date: str, recorded_at: str, shap
     assert_thresholds_fixed(ev, res, swaps)   # before the schema, so the refusal names F-8 rather than a slot
     assert_embargo(res, inst, swaps)          # and M-1f's, by name
     assert_comparators(ev, res)               # and M-2b's
+    assert_climatology_at_budget(ev, res, inst.cfg["eval"]["alert_rates"])   # and M-2c's: T11 at its terms
+    assert_interval(ev, res)                  # and the season-block interval beside it
     assert_config_bytes(res, inst)            # and III M-2b F-6's: the entry names the bytes that ran
     validate(ev)
     event = inst.event
@@ -411,6 +519,7 @@ def emit(res: dict, inst, *, version: int, run_date: str, recorded_at: str, shap
         "learner_swaps": [_swap_summary(sw) for sw in (swaps or {}).values()],
         "embargo": embargo_extras(res),
         "baselines": baselines_extras(res),
+        "paired_interval": interval_extras(res),
     }
     if delta_vs:
         extras["delta_vs"] = delta_vs
@@ -439,6 +548,11 @@ def delta(new_ev: dict, old_entry: dict) -> dict:
     d["alert_budgets"] = {rate_key(b["rate"]): {k: {"was": ob.get(rate_key(b["rate"]), {}).get(k), "now": b.get(k)}
                                            for k in ("precision", "recall", "n_alerts", "realised_rate", "threshold_from")}
                           for b in new_ev.get("alert_budgets", [])}
+    oc = {rate_key(b["rate"]): b for b in o.get("climatology_alert_budgets", [])}   # M-2c-i
+    if new_ev.get("climatology_alert_budgets") or oc:
+        d["climatology_alert_budgets"] = {rate_key(b["rate"]): {k: {"was": oc.get(rate_key(b["rate"]), {}).get(k), "now": b.get(k)}
+                                                           for k in ("precision", "recall", "realised_rate")}
+                                          for b in new_ev.get("climatology_alert_budgets", [])}
     return {"entry": old_entry["entry_id"], "fields": d}
 
 

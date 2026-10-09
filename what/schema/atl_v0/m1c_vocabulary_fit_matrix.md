@@ -4,10 +4,10 @@ doc_id: atl_v0_m1c_vocabulary_fit_matrix
 title: "atl_v0 — vocabulary fit matrix (every enum value × crosswalk authority)"
 status: draft
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-08
 last_edited_by: agent_proteus
 mission: mission_m1c_linkml_controls
-schema: atl_ontology_v0.linkml.yaml (v0.2.0)
+schema: atl_ontology_v0.linkml.yaml (v0.2.0 at M-1c; §8 added at v0.8.0, M-2c-i)
 crosswalk: crosswalk_external_vocabularies_v0.yaml
 tags: [fit_matrix, vocabulary, atl, m1c, goos, eov]
 ---
@@ -128,6 +128,22 @@ A causal vocabulary (`driver`, `cause`) is **deliberately absent**: control `neg
 | `reviewed` | — | — | — | — | — | — | — | — | `local` |
 | `validated` | — | — | — | — | — | — | — | — | `local` — `published` dropped: the board is the publication |
 
+## 8 · Enums added after M-1c (0.4.0 · 0.8.0) — the method's own words
+
+Added at M-2c-i (2026-10-08). `ThresholdSource` (0.4.0, M-1e) never had its rows here, and they are added now in passing. All
+of these name a step of the **method** (where a threshold was set, what a model is compared with, what is resampled). No
+marine authority names such things, so every row is `local`. All seven external columns are **—** and are left out of the
+table.
+
+| Enum · value | Verdict · reason |
+|---|---|
+| `ThresholdSource.validation` | `local`: a threshold fixed on scores the model was not trained on, before test (F-8) |
+| `ThresholdSource.test` | `local`: the after-the-fact quantile (grandfathered v0/v1 only) |
+| `IntervalComparator.climatology` | `local`: the week-of-year onset rate, the method's cheapest baseline (T11) |
+| `IntervalMetric.auroc` | `local`: a ranking metric. sklearn names the computation, but no vocabulary enumerates it as a term |
+| `IntervalMetric.auprc` | `local`: as `auroc` (average precision) |
+| `ResampleUnit.season_year` | `local`: a whole test year. Zone-weeks within a season are one event seen many times |
+
 ## Summary
 
 | Enum | Rows | Bound | `local` | Candidate for v1 |
@@ -139,7 +155,8 @@ A causal vocabulary (`driver`, `cause`) is **deliberately absent**: control `neg
 | Direction | 2 | 0 | 2 | — |
 | Claim | 2 | 0 | 2 | — |
 | EvidenceTier | 3 | 0 | 3 | — |
-| **Total** | **30** | **0** | **30** | 1 |
+| ThresholdSource · IntervalComparator · IntervalMetric · ResampleUnit (§8) | 6 | 0 | 6 | — |
+| **Total** | **36** | **0** | **36** | 1 |
 
 **Known limit:** this matrix checks *names against names*. It does not validate any `authority` / `external_id` CURIE
 against the authority's service (is `WoRMS:233015` live? is a WDPA id current?). That is a validator's job

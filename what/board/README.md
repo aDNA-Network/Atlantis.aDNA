@@ -7,7 +7,7 @@ schema: atl_board_entry_v1
 created: 2026-10-02
 updated: 2026-10-08
 last_edited_by: agent_proteus
-mission: mission_m0_atlantis_genesis_planning   # instance-ref note: p2_gate · BOARD.md generator + --entries: mission_m1d_ii_lattice_and_registries · thresholds fixed beforehand: mission_m1e_eval_thresholds_on_validation
+mission: mission_m0_atlantis_genesis_planning   # climatology at budget + paired interval: mission_m2c_i_climatology_budget_and_interval · instance-ref note: p2_gate · BOARD.md generator + --entries: mission_m1d_ii_lattice_and_registries · thresholds fixed beforehand: mission_m1e_eval_thresholds_on_validation
 precedent: RareArchive.aDNA/what/board/ (ra_board_entry_v1, GREEN-only, promotion-to-gold is human)
 tags: [board, evidence, metrics, green, atlantis, m0]
 ---
@@ -35,6 +35,8 @@ renders the schema:
 | `evaluation.climatology_auroc` | required from M-1b on (T11) |
 | `evaluation.alert_budgets[]` | ≥ 1 from M-1b on (T6) |
 | `alert_budgets[].threshold_from` · `.realised_rate` | from M-1e (board v2) on: every threshold `validation`-fixed, before test was scored, with the realised test rate beside the nominal `rate` (atl_v0 0.4.0; F-8). The emitter refuses `test`, a missing realised rate, a lead time not read at a fixed threshold, and rolling folds not selected per fold. v0/v1 predate this and carry neither field |
+| `evaluation.climatology_alert_budgets[]` | from M-2c-i (atl_v0 0.8.0, core 0.7.0) on: T11 at its terms. Climatology is scored at the model's nominal budgets, each threshold fixed on validation by a climatology fit on train only, with the realised rate beside the nominal one. Climatology ties in whole week-of-year groups, so the realised rate departs from the budget by construction. Read precision against it. The emitter refuses a result without it, a threshold not fixed on validation, and a realised rate that is not n_alerts / n |
+| `evaluation.paired_intervals[]` | from M-2c-i on: model − climatology on AUROC and AUPRC, by percentile over season-block draws. Whole test years are drawn with replacement, and one draw scores both (paired). **How to read it:** with B season blocks there are only C(2B − 1, B) distinct draws (35 at B = 4, 1,716 at B = 7), so the interval is crude. An interval that spans 0 means *not distinguished at this sample*, never *no difference*. The draws stay in the instance; `evaluation_extras.paired_interval` carries the blocks, seed and counts |
 | `evaluation.ablations[]` | surveillance ablation required where a surveillance channel is declared (T5) |
 | `evaluation.config_hash`, `evaluation.data_pins[]` | the join keys to the instance's run; every pin carries a sha256 |
 | `evaluation.claim` | `method_demonstration` (default) \| `operational_by_owner_ruling` (+ `owner_ruling_ref`) |

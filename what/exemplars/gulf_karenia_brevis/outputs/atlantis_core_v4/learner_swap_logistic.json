@@ -3679,7 +3679,76 @@
  "surveillance_only_vital": "n_samples_4w",
  "climatology_baseline_test": {
   "auroc": 0.5770357687443729,
-  "auprc": 0.1044659877560699
+  "auprc": 0.1044659877560699,
+  "alert_rates": {
+   "5pct": {
+    "threshold": 0.21374045801526717,
+    "precision": 0.1308411214953271,
+    "recall": 0.11023622047244094,
+    "n_alerts": 107,
+    "nominal_rate": 0.05,
+    "realised_rate": 0.06524390243902439,
+    "threshold_from": "val"
+   },
+   "10pct": {
+    "threshold": 0.2014388489208633,
+    "precision": 0.11851851851851852,
+    "recall": 0.12598425196850394,
+    "n_alerts": 135,
+    "nominal_rate": 0.1,
+    "realised_rate": 0.08231707317073171,
+    "threshold_from": "val"
+   },
+   "20pct": {
+    "threshold": 0.1836734693877551,
+    "precision": 0.1184573002754821,
+    "recall": 0.33858267716535434,
+    "n_alerts": 363,
+    "nominal_rate": 0.2,
+    "realised_rate": 0.22134146341463415,
+    "threshold_from": "val"
+   }
+  },
+  "threshold_from": "val",
+  "selection_fit_years": [
+   1994,
+   2016
+  ],
+  "fit_years": [
+   1994,
+   2019
+  ],
+  "n_test": 1640
+ },
+ "paired_interval_model_vs_climatology": {
+  "comparator": "climatology",
+  "resample_unit": "season_year",
+  "blocks": [
+   2020,
+   2021,
+   2022,
+   2023
+  ],
+  "n_blocks": 4,
+  "n_distinct_multisets": 35,
+  "n_draws": 2000,
+  "n_degenerate": 0,
+  "seed": 20261008,
+  "level": 0.95,
+  "paired": true,
+  "scope": "this run's full model on the main test split \u2014 not its ablations, sensitivity run or rolling folds",
+  "auroc": {
+   "estimate": 0.29573096158750145,
+   "lower": 0.10855170470555087,
+   "upper": 0.44841050289890144,
+   "spans_zero": false
+  },
+  "auprc": {
+   "estimate": 0.42011390628885653,
+   "lower": 0.3005224621740914,
+   "upper": 0.5693338215348833,
+   "spans_zero": false
+  }
  },
  "persistence_baseline_test": {
   "auroc": 0.7617342610759247,
@@ -4409,7 +4478,7 @@
    }
   }
  },
- "atlantis_core": "0.6.0",
+ "atlantis_core": "0.7.0",
  "semantic_hash": "2874d991c5",
  "config_bytes_md5": {
   "atlantis.yaml": "c94d427078",
@@ -4423,7 +4492,7 @@
   "positives": 1168,
   "prevalence": 0.10810810810810811
  },
- "run_at": "2026-10-08T17:52:42.100468+00:00",
+ "run_at": "2026-10-09T00:06:07.123681+00:00",
  "shap_summary": {
   "learner_kind": "logistic",
   "base_logit": -2.808992278759157,

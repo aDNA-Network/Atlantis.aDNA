@@ -331,6 +331,16 @@
                     "$ref": "#/$defs/Claim",
                     "description": "SO-4. REQUIRED and written out: neither validator applies `ifabsent`, so an evaluation without `claim` is rejected rather than defaulted (the default documents intent for generators). Controls: neg_missing_claim \u00b7 neg_unknown_claim."
                 },
+                "climatology_alert_budgets": {
+                    "description": "0.8.0 (M-2c-i; P2 gate III G-3, C-034). T11 at its terms: the week-of-year climatology scored at the same nominal budgets as the model, each threshold fixed on validation by a climatology fit on train only (embargoed), applied to the refit's test scores, with the realised rate beside the nominal one \u2014 the AtlAlertBudget rule (validation \u21d2 realised_rate) applies here as on `alert_budgets`. Climatology scores tie in whole week-of-year groups, so the realised rate departs from the nominal one by construction. Optional: entries before 0.8.0 still validate. Controls: pos_evaluation_climatology_budget_and_interval \u00b7 neg_climatology_budget_without_realised_rate. Nearest miss NOT caught: a threshold quantiled from test while labelled `validation` (atlantis_core: eval's invariance test and plant C1 in tests/test_m2c.py; board.assert_climatology_at_budget).",
+                    "items": {
+                        "$ref": "#/$defs/AtlAlertBudget"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
                 "climatology_auprc": {
                     "maximum": 1,
                     "minimum": 0,
@@ -425,6 +435,16 @@
                     "description": "REQUIRED and non-blank when claim = operational_by_owner_ruling (AtlEvaluation rule).",
                     "type": [
                         "string",
+                        "null"
+                    ]
+                },
+                "paired_intervals": {
+                    "description": "0.8.0 (M-2c-i). model \u2212 comparator on a threshold-free metric, with a percentile interval from season-block draws (whole test years, the same draw scoring both: paired). Read with n_blocks: with B blocks only C(2B\u22121, B) distinct draws exist (35 at B = 4), so the interval is crude; one that spans 0 means 'not distinguished at this sample', never 'no difference'. Optional. Controls: pos_evaluation_climatology_budget_and_interval \u00b7 neg_interval_extra_key (per-draw values cannot ride along). Nearest miss NOT caught: an interval whose draws were not paired (atlantis_core: eval.interval's pairing guard and the identical-scores control; plant C4).",
+                    "items": {
+                        "$ref": "#/$defs/AtlPairedInterval"
+                    },
+                    "type": [
+                        "array",
                         "null"
                     ]
                 },
@@ -840,6 +860,81 @@
             "title": "AtlObservationStream",
             "type": "object"
         },
+        "AtlPairedInterval": {
+            "additionalProperties": false,
+            "description": "0.8.0 (M-2c-i). model \u2212 comparator on one metric, by season-block resampling: whole test years drawn with replacement, one draw scoring both. Summaries only; the draws stay in the instance. CLOSED: control neg_interval_extra_key proves an undeclared key (a per-draw list) is rejected AT the interval.",
+            "properties": {
+                "comparator": {
+                    "$ref": "#/$defs/IntervalComparator",
+                    "description": "0.8.0. Control: neg_interval_unknown_comparator."
+                },
+                "confidence_level": {
+                    "maximum": 1,
+                    "minimum": 0,
+                    "type": "number"
+                },
+                "delta_estimate": {
+                    "description": "0.8.0. model \u2212 comparator on the full test set.",
+                    "maximum": 1,
+                    "minimum": -1,
+                    "type": "number"
+                },
+                "delta_lower": {
+                    "description": "0.8.0. Control: neg_interval_lower_lt_minus1. Nearest miss NOT caught: delta_lower > delta_upper (cross-slot arithmetic; atlantis_core: board.assert_interval).",
+                    "maximum": 1,
+                    "minimum": -1,
+                    "type": "number"
+                },
+                "delta_upper": {
+                    "maximum": 1,
+                    "minimum": -1,
+                    "type": "number"
+                },
+                "metric": {
+                    "$ref": "#/$defs/IntervalMetric",
+                    "description": "0.8.0. Control: neg_interval_unknown_metric."
+                },
+                "n_blocks": {
+                    "description": "0.8.0. The number of test seasons resampled. At least 2 (one season admits no resample). Control: neg_interval_n_blocks_1. Nearest miss NOT caught: n_blocks \u2260 the test years the split names (atlantis_core: board.assert_interval).",
+                    "minimum": 2,
+                    "type": "integer"
+                },
+                "n_degenerate": {
+                    "description": "0.8.0. Draws that held a single class and could score neither metric \u2014 counted and left out, never imputed.",
+                    "minimum": 0,
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "n_draws": {
+                    "minimum": 1,
+                    "type": "integer"
+                },
+                "resample_unit": {
+                    "$ref": "#/$defs/ResampleUnit",
+                    "description": "0.8.0. Control: neg_interval_resample_unit_row."
+                },
+                "spans_zero": {
+                    "description": "0.8.0. True when delta_lower \u2264 0 \u2264 delta_upper \u2014 reported as exactly that. Control: neg_interval_without_spans_zero. Nearest miss NOT caught: a flag that disagrees with the bounds (atlantis_core: board.assert_interval).",
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "comparator",
+                "metric",
+                "resample_unit",
+                "n_blocks",
+                "n_draws",
+                "confidence_level",
+                "delta_estimate",
+                "delta_lower",
+                "delta_upper",
+                "spans_zero"
+            ],
+            "title": "AtlPairedInterval",
+            "type": "object"
+        },
         "AtlSpatialUnit": {
             "additionalProperties": false,
             "description": "The patient's space \u2014 one of these \u00d7 one time step is a patient row. Passes the instance test (an MPA zone is countable), independence (it outlives any model) and lifecycle (boundaries change by ruling, versioned). Geometry is a pointer: Atlantis never holds a polygon.",
@@ -1091,6 +1186,23 @@
             "title": "EvidenceTier",
             "type": "string"
         },
+        "IntervalComparator": {
+            "description": "The no-model comparator a paired interval measures the model against (0.8.0, M-2c-i). local \u2014 names a baseline of the method. `climatology`: the week-of-year onset rate (T11). Further comparators (persistence, trend, a calendar + signal logistic) are added only with their own controls.",
+            "enum": [
+                "climatology"
+            ],
+            "title": "IntervalComparator",
+            "type": "string"
+        },
+        "IntervalMetric": {
+            "description": "The threshold-free metric a paired interval is drawn on (0.8.0, M-2c-i). local. A budget's precision/recall are read beside the interval in `climatology_alert_budgets`, not inside it.",
+            "enum": [
+                "auroc",
+                "auprc"
+            ],
+            "title": "IntervalMetric",
+            "type": "string"
+        },
         "Modality": {
             "description": "How a stream speaks. local, informed by GOOS EOV platform classes (not bound in v0 \u2014 crosswalk row 7).",
             "enum": [
@@ -1104,6 +1216,14 @@
                 "literature"
             ],
             "title": "Modality",
+            "type": "string"
+        },
+        "ResampleUnit": {
+            "description": "What a paired interval resamples (0.8.0, M-2c-i). local. `season_year`: whole test years \u2014 zone-weeks within a season are one event seen many times, so a row resample would claim an independence the data do not have.",
+            "enum": [
+                "season_year"
+            ],
+            "title": "ResampleUnit",
             "type": "string"
         },
         "ThresholdSource": {
@@ -1156,7 +1276,7 @@
     "$schema": "https://json-schema.org/draft/2019-09/schema",
     "additionalProperties": false,
     "description": "Container used to validate instance registry files; any file may carry any subset.",
-    "metamodel_version": "1.11.0",
+    "metamodel_version": "1.12.0",
     "properties": {
         "evaluations": {
             "items": {
@@ -1206,6 +1326,6 @@
     },
     "title": "atl_ontology_v0",
     "type": "object",
-    "version": "0.7.0"
+    "version": "0.8.0"
 }
 
