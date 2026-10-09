@@ -70,12 +70,21 @@ BOARD_META = {"recorded_at", "recorded_by", "learner", "limitations_ref", "split
 def board_check(metrics: dict, entry: dict, inst) -> dict:
     """The page must say what its board entry says. The run's metrics are re-projected through the board's own projector
     and EVERY evaluated field (metrics, budgets, lead time, ablations, hash, data pins) must equal the entry's; only
-    record metadata may differ (III F-3c — a five-field check passed a doctored Brier)."""
-    from atlantis_core.board import project
+    record metadata may differ (III F-3c — a five-field check passed a doctored Brier). The paired interval in
+    `evaluation_extras`, which the page may cite, is compared whole (III M-2c-ii F-3). The learner-swap row is not compared
+    (a known gap: the page reads it from the swap file)."""
+    from atlantis_core.board import INTERVAL_KEY, interval_extras, project
     ev = entry["evaluation"]
     mine = project(metrics, inst, version=0, recorded_at=ev.get("recorded_at") or "1970-01-01T00:00:00Z", config_hash=metrics["semantic_hash"])
     keys = (set(ev) | set(mine)) - BOARD_META
     bad = {k: (mine.get(k), ev.get(k)) for k in sorted(keys) if mine.get(k) != ev.get(k)}
+    # III M-2c-ii F-3 (C-037): the page cites the interval by token (8255d9b), so the extras it reads are checked too —
+    # projected by the board's own interval_extras, rounded as the entry was. A run and an entry must agree on having one.
+    pi_entry = (entry.get("evaluation_extras") or {}).get("paired_interval")
+    pi_mine = interval_extras(metrics) if INTERVAL_KEY in metrics else None
+    if pi_mine != pi_entry:
+        bad["evaluation_extras.paired_interval"] = ("the run's" if pi_mine else None, "the entry's" if pi_entry else None)
+    keys.add("evaluation_extras.paired_interval")
     if bad:
         raise SiteError(f"outputs disagree with board entry {entry['entry_id']}: {bad} — rerun atlantis_core.run, or point site.yaml at the right entry")
     return {"entry_id": entry["entry_id"], "auroc": ev["auroc"], "auprc": ev["auprc"], "base_rate": ev["base_rate"],

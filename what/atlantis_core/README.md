@@ -289,11 +289,16 @@ only; the board refuses them. What remains is named under each.
      exemplar at 5%, they flag 0.041 and 0.065 of test respectively. Precision falls with volume, so a precision gap at a
      shared nominal budget is not by itself skill. Read the **matched-volume** Δ precision, which takes climatology's
      expected precision at the model's own alert count, with ties broken at random in expectation.
+   - **Matched volume is the model's volume, not the steward's** (III M-2c-ii F-1). Under a base-rate shift a validation-fixed
+     threshold realises a different volume in test (FKNMS: nominal 10% → 0.2034), and the matched-volume reading is taken
+     there. The volume a programme staffs may sit at another budget row; read the row nearest it, and say which reading a
+     verdict uses. On FKNMS the sign of the point estimate differs between the two.
    - **The level is nominal.** A percentile interval over few season blocks under-covers. The III reviewer's simulation
      gave about 0.80 at 4 blocks and 0.87 at 7 for a nominal 0.95, under ideal independence, and nothing here measures the
      delivered coverage. "Spans 0: no" at so few blocks is not "distinguished at that level". Read it beside the per-season
-     deltas, the number of seasons favouring the model, and the exact one-sided sign test. With 4 or 5 seasons that test
-     cannot go below 1/16 or 1/32.
+     deltas, the number of seasons favouring the model, and the exact one-sided sign test. Its floor is 1/2^k at k scorable
+     seasons: 1/8 at 3 (the exemplar, which hits it) to 1/128 at 7 (FKNMS) (III M-2c-ii F-10d). The per-season deltas and
+     the sign test are threshold-free (AUROC, AUPRC) only; the budgets carry neither yet (III M-2c-ii F-1).
    - **Blocks are season-years from a declared month** (`eval.interval_season_start_month`; the exemplar uses August, ruling
      5). An event that runs past the season boundary is still cut in two, and the test window's edges are partial seasons.
      Seasons stand in for independent units, but neighbouring seasons are not independent.

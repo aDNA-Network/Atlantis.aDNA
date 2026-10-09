@@ -296,3 +296,29 @@ def test_page_data_carries_the_paired_interval():
     # a run that predates the interval (core < 0.7.0) still builds: the key is simply absent
     m.pop("paired_interval_model_vs_climatology")
     assert "paired_interval_model_vs_climatology" not in _metrics(inst, m)
+
+
+def test_board_check_compares_the_interval_the_page_cites(tmp_path):
+    """III M-2c-ii F-3 (C-037): 8255d9b let a page cite the paired interval, but board_check compared `evaluation` only — a
+    doctored matched-volume estimate passed it. Planted first against the FKNMS v3 entry and run (skipped if absent): the
+    run's interval, projected by the board's own `interval_extras`, must equal the entry's `evaluation_extras.paired_interval`."""
+    from pathlib import Path
+    fkc = Path(__file__).resolve().parents[4] / "FloridaKeysCoral.aDNA"
+    entry_p = fkc / "what" / "board" / "entries" / "2026-10-08_florida_keys_coral_v3.json"
+    if not entry_p.exists():
+        pytest.skip("FloridaKeysCoral.aDNA v3 not present (local-only instance)")
+    inst = load_instance(fkc)
+    m = json.loads((fkc / "outputs" / "atlantis_core" / "metrics.json").read_text())
+    entry = json.loads(entry_p.read_text())
+    assert board_check(m, entry, inst)["fields_checked"] >= 25
+    for path, v in ((("budgets", "10pct", "matched_volume_precision", "estimate"), 0.05),
+                    (("auroc", "seasons_favouring_model"), 7), (("auprc", "per_season", "2022"), 0.2), (("season_start_month",), 8)):
+        bad = _copy.deepcopy(entry); o = bad["evaluation_extras"]["paired_interval"]
+        for k in path[:-1]: o = o[k]
+        o[path[-1]] = v
+        with pytest.raises(SiteError, match="disagree"):
+            board_check(m, bad, inst)
+    # an entry that dropped the interval while the run has one is refused too
+    bad = _copy.deepcopy(entry); bad["evaluation_extras"].pop("paired_interval")
+    with pytest.raises(SiteError, match="disagree"):
+        board_check(m, bad, inst)
