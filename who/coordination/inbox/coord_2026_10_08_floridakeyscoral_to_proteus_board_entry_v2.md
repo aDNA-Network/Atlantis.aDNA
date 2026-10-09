@@ -10,6 +10,7 @@ updated: 2026-10-08
 last_edited_by: agent_proteus
 status: landed   # 2026-10-08, operator-opened Atlantis M-2b session (rulings 24, 26): sha256, validate, assert_green, unit_ref, semantic_hash, config bytes md5 = file re-checked; evaluation = v1 but for id and record time; BOARD.md regenerated (v1 superseded)
 supersedes: coord_2026_10_08_floridakeyscoral_to_proteus_board_entry   # its entry v1 stays on the board, superseded (SO-2)
+superseded_by: coord_2026_10_08_floridakeyscoral_to_proteus_board_entry_v3   # 2026-10-08, Atlantis M-2c-ii: v3 re-runs at core 0.7.0 (climatology at budget, paired interval, learner swap); every v2 number equal. Entry v2 stays on the board, superseded by derivation (SO-2)
 federation_ref: {source_vault: Atlantis.aDNA, source_commit: 28e5af41d02c102b491c4253fe6bc00a753cde62, contract: instance_contract_v0 v0.3.0}
 instance_commit: 88685c7
 posture_class: public   # FloridaKeysCoral.aDNA ADR-001 (ratified 2026-10-07)
