@@ -34,9 +34,10 @@ lattice:
       type: process
       description: "Stream discovery — which observation streams exist for this patient and event, with licence and provenance (playbook §A/§B as checks)."
       config:
-        status: declared_only_until_M-3a
-        skill: "how/skills/skill_stream_discovery.md (M-3a — not yet written)"
-        note: "Not built. A runspec that names this stage is rejected as not enabled; streams are declared by hand at fork until M-3a."
+        module: atlantis_core.discover
+        command: "python -m atlantis_core.discover --instance <instance> --compare <instance>/streams.yaml"
+        skill: how/skills/skill_stream_discovery.md
+        note: "Built at M-3a (2026-10-10). Writes pointer rows (discovery/streams.discovered.yaml) and a memo, never streams.yaml, never a cache. --probe adds count-only requests."
     - id: conform_declared
       type: process
       description: "Contract v0.2.0 §B as a machine check on the declarations, before any fetch."
@@ -138,17 +139,18 @@ lattice:
       label: "patient · event · warning wanted"
     - from: discover
       to: conform_declared
-      label: "streams found (from M-3a)"
+      label: "pointer rows + the six §B traps (the steward copies accepted rows into streams.yaml)"
     - from: declarations
       to: conform_declared
-      label: "streams declared by hand (until M-3a)"
+      label: "streams declared at fork (the interview's answers)"
     - from: conform_declared
       to: selftest
       label: "items 1–8, 11–12 ✅"
     - from: selftest
       to: fetch
-      label: "receipt"
-      condition: "receipt matches the current semantic_hash and self-test code; a network fetch also needs a signed posture Ratification row"
+      # ACADÉMIE M-L2b-iii (Noether, 2026-10-08): `condition` is CEL. This gate is a policy enforced INSIDE the node, so the edge
+      # is unconditional and the prose is its label (option b, operator ruling 2026-10-10). Enforced by fetch/__main__.py.
+      label: "receipt — the gate is in the node: fetch refuses unless the receipt matches the current semantic_hash and self-test code, and a network fetch also needs a signed posture Ratification row"
     - from: fetch
       to: raw_streams
       label: "caches + sha256 summaries"
@@ -175,8 +177,8 @@ lattice:
       label: "metrics"
     - from: explain
       to: board
-      label: "metrics + shap_summary"
-      condition: "no unhonoured obligation"
+      # As above (option b): enforced by board.emit, which refuses a result with an unhonoured obligation.
+      label: "metrics + shap_summary — the gate is in the node: board refuses to emit with any unhonoured obligation"
     - from: board
       to: board_entry
       label: "GREEN entry"

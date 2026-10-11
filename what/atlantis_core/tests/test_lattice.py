@@ -118,7 +118,7 @@ def test_command_without_main_local(doc):
 
 
 def test_process_node_without_module_or_status_local(doc):
-    del next(n for n in nodes(doc) if n["id"] == "discover")["config"]["status"]
+    del next(n for n in nodes(doc) if n["id"] == "discover")["config"]["module"]   # built at M-3a: module, not status
     assert any("discover" in e and "module" in e for e in L.check_local(doc))
 
 

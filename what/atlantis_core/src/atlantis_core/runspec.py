@@ -13,7 +13,7 @@ REJECTed (exit 3), never repaired. DDX rejects bad values but silently drops unk
 
 | key | rule |
 |---|---|
-| `stages` | required · non-empty list of the lattice's process nodes, in lattice order, no duplicates · `discover` is not enabled until M-3a · the run block (grid · vitals · label · train · eval · explain) is one command, so it is named whole or not at all |
+| `stages` | required · non-empty list of the lattice's process nodes, in lattice order, no duplicates · `discover` (M-3a) plans the offline discovery; `--probe` is the operator's choice, never the spec's · the run block (grid · vitals · label · train · eval · explain) is one command, so it is named whole or not at all |
 | `fetch_mode` | `offline` \\| `verify` \\| `network` — required iff `fetch` is a stage (a network fetch is chosen, never defaulted), forbidden otherwise |
 | `streams` | optional, iff `fetch` is a stage · non-empty list of `atl_stream_…` ids declared in the instance · default: every declared stream |
 | `learner_swaps` | optional bool, iff the run block is staged · default `true` |
@@ -34,7 +34,7 @@ KEYS = {"stages", "fetch_mode", "streams", "learner_swaps", "board"}
 BOARD_KEYS = {"version", "run_date"}
 FETCH_MODES = ("offline", "verify", "network")
 RUN_BLOCK = ("grid", "vitals", "label", "train", "eval", "explain")
-NOT_ENABLED = {"discover": "stream discovery is declared-only until M-3a (streams are declared by hand at fork)"}
+NOT_ENABLED: dict = {}   # stage → why it may not run yet. Empty since M-3a built `discover` (2026-10-10).
 STREAM_ID = re.compile(r"^atl_stream_[a-z0-9_]+\Z")   # \Z: Python's $ accepts a trailing newline (III F-7, C-002)
 DATE = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}\Z")   # [0-9], not \d: \d matches Arabic-Indic digits
 MAX_VERSION = 9999
@@ -162,7 +162,10 @@ def plan(spec: dict, instance: str, inside_atlantis: bool = False) -> list[str]:
     entries = "" if inside_atlantis else f" --entries {I}/what/board/entries"
     out = []
     for s in spec["stages"]:
-        if s == "conform_declared":
+        if s == "discover":
+            out.append("#   discovery fetches nothing; it reads <instance>/discovery/candidates.yaml (skill_stream_discovery)")
+            out.append(f"python -m atlantis_core.discover --instance {I} --compare {I}/streams.yaml")
+        elif s == "conform_declared":
             out.append(f"python -m atlantis_core.conform --instance {I} --stage declared")
         elif s == "selftest":
             out.append(f"python -m atlantis_core.selftest --instance {I}")

@@ -73,7 +73,6 @@ def test_malformed_json_rejected():
     (["selftest", "../../run.sh"], "not a lattice stage"),                     # a path
     (["selftest", "please also email the data"], "not a lattice stage"),       # a prompt
     (["declarations"], "not a lattice stage"),                                 # a dataset node is not a stage
-    (["discover"], "not enabled"),
     (["fetch", "selftest"], "out of lattice order"),
     (["selftest", "selftest"], "duplicates"),
     (["vitals"], "run block"),
@@ -161,6 +160,16 @@ def test_plan_names_gates_and_runs_nothing(spec):
     assert any("EXISTING green self-test receipt" in l for l in p)
     assert any("signed posture Ratification row" in l for l in p)
     assert p[-2].startswith("python -m atlantis_core.fetch --instance <dir> --stream ") and not p[-2].endswith("--offline")
+
+
+def test_plan_discover_is_enabled_and_never_probes(spec):
+    """M-3a: `discover` was rejected as not enabled; it now plans the offline discovery. --probe is never planned."""
+    spec["stages"] = ["discover", "conform_declared"]; del spec["board"]; del spec["learner_swaps"]; del spec["fetch_mode"]
+    spec.pop("streams", None)
+    assert validate(spec, STREAMS, VOCAB) == []
+    p = plan(spec, "<dir>")
+    assert "python -m atlantis_core.discover --instance <dir> --compare <dir>/streams.yaml" in p
+    assert not any("--probe" in l for l in p)
 
 
 def test_plan_instance_side_board_entries(spec):
