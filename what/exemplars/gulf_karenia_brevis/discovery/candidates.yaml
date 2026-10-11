@@ -1,0 +1,82 @@
+# candidates.yaml — the exemplar's stream discovery, M-3a rehearsal (2026-10-10, Proteus, opus), by how/skills/skill_stream_discovery.md.
+# POINTER rows only (SO-3, ADR-002 §4): nothing here was fetched; the exemplar's three grandfathered parquets are read by the
+# traps, never written. Limit, said up front: the agent knew the registry it was asked to reproduce, so `--compare` proves
+# the skill can EXPRESS these rows and the traps can READ them, not that a blind search would have found them.
+request:
+  grid_kind: rules
+  event_stream: atl_stream_fwc_hab_karenia
+  event_variable: Karenia brevis
+  ecosystem: "estuary + inner shelf — west Florida coast, eastern Gulf of Mexico (red tide, K. brevis)"
+searched:
+  - step: A1
+    where: "ArcGIS Hub search API (hub.arcgis.com/api/v3/datasets?q=harmful algal bloom Karenia Florida); FWC Open Data MapServer (gis.myfwc.com)"
+    query: "harmful algal bloom Karenia Florida — 2026-10-10: 133,947 Hub hits, FWC's 'Harmful Algal Bloom Monitoring Application' in the first page; the six decade layers Historic_Harmful_Algal_Bloom_Events_* are FWC's MapServer (S329)"
+    found: [atl_stream_fwc_hab_karenia]
+    note: "Sampling intensifies during blooms (FWC responds to reports) → surveillance channel (T5). Licence: Florida public records, credit FWC-FWRI."
+  - step: A2
+    where: "NOAA CoastWatch ERDDAP search (coastwatch.pfeg.noaa.gov/erddap/search?searchFor=ncdcOisst21Agg)"
+    query: "OISST v2.1 daily — 2026-10-10: ncdcOisst21Agg_LonPM180 listed (Final, 0.25°, 1981–); the NRT sibling ncdcOisst21NrtAgg is preliminary and not used"
+    found: [atl_stream_oisst_region_daily]
+    note: "One box per unit (atlantis.yaml boxes), nearshore Gulf side. Chlorophyll, SSH and wind siblings exist; not carried at v1."
+  - step: A3
+    where: "USGS NWIS site service (waterservices.usgs.gov/nwis/site), parameter 00060"
+    query: "five gauges feeding the Gulf units; 02292900 = CALOOSAHATCHEE RIVER AT S-79, NR. OLGA (the managed release: the lever, owner SFWMD/USACE)"
+    found: [atl_stream_usgs_discharge_daily]
+    note: "S-79 is tidal-affected: reverse flow reported negative → clip_negative declared (trap 5)."
+  - step: A4
+    where: "NDBC station pages (e.g. 42013, west Florida shelf; HTTP 200 on 2026-10-10)"
+    query: "stdmet wind/waves/water temperature near the units"
+    found: []
+    note: "Stations exist; not carried. NDBCStdmet is a declared, not built, fetcher, and buoys are optional at v1 (playbook §A4)."
+  - step: A5
+    where: "OBIS / GBIF occurrence by taxon (Karenia brevis, WoRMS 233015)"
+    query: "occurrence records in the eastern Gulf"
+    found: []
+    note: "Not carried: FWC's monitoring database is the system of record; the aggregators republish subsets of it, so carrying both would double-count samples. OBIS/GBIF fetchers are declared, not built."
+  - step: A6
+    where: "NCEI landing pages and archive-management URLs (S329)"
+    query: "the originating-agency route vs the NCEI archive"
+    found: []
+    note: "NCEI returned 503 all S329 session; the ERDDAP mirror and the originating agencies were used instead. Nothing new tried at M-3a."
+candidates:
+  - stream_id: atl_stream_fwc_hab_karenia
+    modality: point_count
+    source_system: FWC-FWRI HAB Monitoring Database via ArcGIS Open Data
+    source_id: Historic_Harmful_Algal_Bloom_Events (six decade layers)
+    authority: "WoRMS:233015"
+    variable: Karenia brevis
+    unit: /L
+    license: "public (Florida public records; credit FWC-FWRI)"
+    fetcher: ArcGISMapServer
+    surveillance_channel: true
+    step: A1
+  - stream_id: atl_stream_oisst_region_daily
+    modality: gridded_field
+    source_system: NOAA CoastWatch ERDDAP
+    source_id: ncdcOisst21Agg_LonPM180
+    authority: "CF:sea_surface_temperature"
+    variable: sea_surface_temperature
+    unit: Cel
+    license: "public (NOAA / USGS)"
+    fetcher: ERDDAPGriddap
+    surveillance_channel: false
+    step: A2
+  - stream_id: atl_stream_usgs_discharge_daily
+    modality: gauge_series
+    source_system: USGS NWIS daily values
+    source_id: parameter 00060 at five gauges (config.yaml -> gauges)
+    variable: discharge (USGS parameter 00060)
+    unit: "[cft_i]/s"
+    license: "public (NOAA / USGS)"
+    fetcher: NWISDailyValues
+    surveillance_channel: false
+    step: A3
+rulings:   # AskUserQuestion, operator (Stanley), 2026-10-10, at the M-3a run
+  longitude_by_unit:
+    ruling: "Accepted, recorded, carried. The rule grid assigns by latitude band, so open-Gulf samples pool into coastal units: units 2 (2.46%), 3 (4.95%) and 8 (1.49%) hold > 1% of points over 1° outside their OISST boxes. A method demonstration whose pooling is a known limit, now measured. Re-gridding the exemplar by coordinates is carried to the P3 gate as an open item; no vitals change now (SO-7)."
+    by: stanley (operator)
+    date: "2026-10-10"
+  server_count:
+    ruling: "Accepted; the pinned bytes stand. USGS 02359170 now serves 458 days more than the cache (2022-06-21 → 2023-09-23, backfilled, qualifiers A/R and A/e) and 45 shared days carry revised values, partly inside the 2020–2023 test window. The sha256-pinned parquet is the exemplar's record; a re-fetch is a new pin and a new board version. 'Refresh 02359170' is carried as an open item."
+    by: stanley (operator)
+    date: "2026-10-10"

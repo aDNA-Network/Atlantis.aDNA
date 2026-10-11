@@ -1,0 +1,33 @@
+# streams.discovered.yaml — POINTER rows from atlantis_core.discover (0.8.0), 2026-10-11T01:34:06+00:00.
+# No fetch provenance (sha256 · ingested_at · row_count): discovery fetches nothing (SO-3). A steward copies the
+# accepted rows into streams.yaml; fork and fetch own that file. Memo: discovery_memo.md.
+observation_streams:
+- stream_id: atl_stream_fwc_hab_karenia
+  modality: point_count
+  source_system: FWC-FWRI HAB Monitoring Database via ArcGIS Open Data
+  source_id: Historic_Harmful_Algal_Bloom_Events (six decade layers)
+  authority: WoRMS:233015
+  variable: Karenia brevis
+  unit: /L
+  license: public (Florida public records; credit FWC-FWRI)
+  fetcher: ArcGISMapServer
+  surveillance_channel: true
+- stream_id: atl_stream_oisst_region_daily
+  modality: gridded_field
+  source_system: NOAA CoastWatch ERDDAP
+  source_id: ncdcOisst21Agg_LonPM180
+  authority: CF:sea_surface_temperature
+  variable: sea_surface_temperature
+  unit: Cel
+  license: public (NOAA / USGS)
+  fetcher: ERDDAPGriddap
+  surveillance_channel: false
+- stream_id: atl_stream_usgs_discharge_daily
+  modality: gauge_series
+  source_system: USGS NWIS daily values
+  source_id: parameter 00060 at five gauges (config.yaml -> gauges)
+  variable: discharge (USGS parameter 00060)
+  unit: '[cft_i]/s'
+  license: public (NOAA / USGS)
+  fetcher: NWISDailyValues
+  surveillance_channel: false
