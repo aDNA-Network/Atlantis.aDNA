@@ -4,7 +4,7 @@ mission_id: M-3a
 plan_id: mission_m3a_stream_discovery_skill
 title: "M-3a — `skill_stream_discovery` — playbook §A as a runnable skill with the traps as checks"
 owner: stanley
-status: planned
+status: completed   # 2026-10-10 (opus); AAR filed; III PASS-WITH-FINDINGS 0/2/7/3, dispositioned
 campaign: campaign_atlantis_genesis
 campaign_id: campaign_atlantis_genesis
 phase: P3
@@ -12,12 +12,12 @@ campaign_phase: 3
 mission_class: implementation
 executor_tier: opus
 token_budget_estimated: "≈ 140 kT main + fresh-context III reviewer ≈ 150 kT (re-carded at the P2 gate 2026-10-08: 40-60kT × 2.3, the observed ratio, III G-10)"
-token_budget_actual: ""
+token_budget_actual: "≈ 306 kT main (session counter at the review step; +50% line crossed, reported late — III F-9) + reviewer ≈ 229 kT metered; two lanes folded in (GREEN cap · CEL ack)"
 depends_on: ['M-1d']
 aar_path: how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m3a_stream_discovery_skill.md
-session: TBD
+session: session_stanley_20261011_011559_m3a_stream_discovery
 created: 2026-10-02
-updated: 2026-10-08
+updated: 2026-10-10
 last_edited_by: agent_proteus
 home_vault: Atlantis.aDNA
 tags: [mission, m3a, p3, opus, atlantis, tidewatch]
@@ -34,13 +34,13 @@ Turn the data-discovery arc (portals → ERDDAP → gauges → buoys → bio/seq
 
 ## Acceptance criteria
 
-- [ ] `how/skills/skill_stream_discovery.md`: inputs = patient geometry pointer + event variable + ecosystem type; steps per playbook §A; outputs = `streams.yaml` rows (AtlObservationStream) + a discovery memo
-- [ ] Traps as checks: server count asserted · longitude distribution per unit · probe-before-believing-a-zero · samples-per-year before `min_train_year` · negative tidal flow clipped and noted · surveillance channel declared
-- [ ] Run once on the FKNMS instance and once on the exemplar; both `streams.yaml` validate against `atl_v0`
-- [ ] Playbook §A/§B re-pointed to the skill (playbook stays the narrative)
-- [ ] *(P2 gate, C-033)* Before the AAR, re-read the register for any obligation it gives M-3a or P3. Each one is carried, dropped or recorded, never silently lost
-- [ ] On the exemplar, discovery writes **pointer rows only** (SO-3, ADR-002 §4): no fetch, and no new bytes in Atlantis
-- [ ] III review via `iii/` in a fresh context; SITREP at the +50% line
+- [x] `how/skills/skill_stream_discovery.md`: inputs = patient geometry pointer + event variable + ecosystem type; steps per playbook §A; outputs = `streams.yaml` rows (AtlObservationStream) + a discovery memo *(→ `discovery/streams.discovered.yaml`; discovery never writes `streams.yaml` — AAR deviation, III F-12)*
+- [x] Traps as checks: server count asserted · longitude distribution per unit · probe-before-believing-a-zero · samples-per-year before `min_train_year` · negative tidal flow clipped and noted · surveillance channel declared
+- [x] Run once on the FKNMS instance and once on the exemplar; both `streams.yaml` validate against `atl_v0`
+- [x] Playbook §A/§B re-pointed to the skill (playbook stays the narrative)
+- [x] *(P2 gate, C-033)* Before the AAR, re-read the register for any obligation it gives M-3a or P3. Each one is carried, dropped or recorded, never silently lost
+- [x] On the exemplar, discovery writes **pointer rows only** (SO-3, ADR-002 §4): no fetch, and no new bytes in Atlantis
+- [x] III review via `iii/` in a fresh context; SITREP at the +50% line *(SITREP given at the review step, after the line — III F-9)*
 
 ## Guardrails
 

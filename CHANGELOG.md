@@ -1,5 +1,33 @@
 # CHANGELOG — Atlantis.aDNA
 
+## 2026-10-10 — v0.16.0 · M-3a: `skill_stream_discovery` · core 0.8.0 `discover` · the GREEN cap ruled · the CEL ack
+
+- **`skill_stream_discovery`** (`how/skills/`): playbook §A as steps A1–A6 written to `candidates.yaml`. Every step gets a
+  row, the empty ones too.
+- **Core 0.8.0 `atlantis_core.discover`:**
+  - pointer rows: fetch provenance refused, `--compare` against `streams.yaml`;
+  - playbook §B as six traps with failure keys;
+  - probes: counts and metadata, plus the NWIS series read in memory (III F-2);
+  - rulings accept the failures they name, never the trap (III F-1);
+  - it never writes `streams.yaml` and never caches. 36 offline tests.
+- **Runs:**
+  - *Exemplar,* pointer rows only (SO-3): FWC's six layers equal the fetch. **Two findings, accepted by the operator and
+    carried to the P3 gate:** latitude-band pooling (units 2 · 3 · 8 > 1% beyond 1° of their boxes), and USGS 02359170's
+    458 since-backfilled days (2022-06-21 → 2023-09-23, partly in the test window) plus 45 revised values. No gauge serves
+    a negative day. 1994 is sparse.
+  - *FKNMS:* clean.
+  - Both match their `streams.yaml` (the limit: the agent knew the registries). All four stream files pass linkml-validate.
+- **GREEN cap (operator ruling; III M-2c-ii F-7):** `evaluation_extras.delta_vs` is counted once, in its own bucket of ≤ 600,
+  under every structural guard. Own counts: FKNMS v3 414, exemplar v4 436. Echo verification is a follow-up (III F-7).
+- **Noether's CEL notice (ACADÉMIE M-L2b-iii), option (b):** the two prose conditions move into labels, and the edges
+  become unconditional (the gates are in `fetch` and `board.emit`). The corpus lint lists no Atlantis condition. The ack is
+  staged.
+- **runspec:** `discover` is enabled. **Lattice:** `discover` built. **Playbook:** re-pointed. **Register:** re-read, no
+  row change.
+- **III:** PASS-WITH-FINDINGS 0/2/7/3, dispositioned. ACCUMULATE (local): C-009 → 9, C-023 → 6, C-032 → 4, C-037 → 3,
+  C-039 → 2; new C-040 to C-042.
+- **Suite:** 788 passed at `af66f59` (782 at `c39a9b4`). **Not pushed.**
+
 ## 2026-10-08 — v0.15.0 · M-2c-ii: FKNMS v3 · T11 at its terms on both instances · P2-gate condition (a) met
 
 - **FloridaKeysCoral.aDNA v3** was landed by steward memo (`492cb61`). Core 0.7.0, the logistic swap, January-start

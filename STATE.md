@@ -1,15 +1,15 @@
 ---
 type: state
 status: p3_open
-phase: "P3 open — P2 gate MET 2026-10-08, CONDITIONAL GO P3: (a) M-2c before M-3b — MET (M-2c-i ✅ · M-2c-ii ✅) · (b) P3 re-carded ≈2.3× · (c) M-3b off the exemplar · (d) P4 bar before P4; next M-3a (opus)"
+phase: "P3 open — P2 gate MET 2026-10-08, CONDITIONAL GO P3: (a) MET · (b) P3 re-carded ≈2.3× · (c) M-3b off the exemplar · (d) P4 bar before P4; M-3a ✅ 2026-10-10; next M-3b (opus)"
 campaigns: [campaign_atlantis_genesis]
-mission: m3a   # QUEUED (opus); M-2c-ii ✅ 2026-10-08 (FKNMS v3 · T11 falsified as worded on FKNMS, proposed for P3 gate · III 11/11); M-2c-i ✅ 2026-10-08 (core 0.7.0 · atl_v0 0.8.0 · board v4 · III 10/10); M-2c split 2026-10-08; P2 gate ✅ 2026-10-08 (conditional GO P3; opus decision brief + III review of the gate case, PASS-WITH-FINDINGS 0/6/4/2); M-2b ✅ 2026-10-08 (board v2 · core 0.6.1 · atl_v0 0.7.0 · III 8/8); M-2a-ii ✅ 2026-10-08 (forked · fetched · conforms · III 9/9 · core 0.5.3); M-1f ✅ 2026-10-07 (board v3); M-2a-i ✅ 2026-10-06; M-2a split 2026-10-06; M-1e ✅ 2026-10-03 (board v2); P1 gate ✅ 2026-10-03 (conditional GO); M-1d-ii ✅ · M-1d-i ✅ · M-1b-ii-b ✅ 2026-10-03; M-1b-ii-a ✅ · M-1b-i ✅ · M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
+mission: m3b   # QUEUED (opus); M-3a ✅ 2026-10-10 (core 0.8.0 discover · skill · exemplar + FKNMS runs · GREEN cap counted-once · CEL ack staged · III 0/2/7/3); M-2c-ii ✅ 2026-10-08 (FKNMS v3 · T11 falsified as worded on FKNMS, proposed for P3 gate · III 11/11); M-2c-i ✅ 2026-10-08 (core 0.7.0 · atl_v0 0.8.0 · board v4 · III 10/10); M-2c split 2026-10-08; P2 gate ✅ 2026-10-08 (conditional GO P3; opus decision brief + III review of the gate case, PASS-WITH-FINDINGS 0/6/4/2); M-2b ✅ 2026-10-08 (board v2 · core 0.6.1 · atl_v0 0.7.0 · III 8/8); M-2a-ii ✅ 2026-10-08 (forked · fetched · conforms · III 9/9 · core 0.5.3); M-1f ✅ 2026-10-07 (board v3); M-2a-i ✅ 2026-10-06; M-2a split 2026-10-06; M-1e ✅ 2026-10-03 (board v2); P1 gate ✅ 2026-10-03 (conditional GO); M-1d-ii ✅ · M-1d-i ✅ · M-1b-ii-b ✅ 2026-10-03; M-1b-ii-a ✅ · M-1b-i ✅ · M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
 persona: proteus   # RULED 2026-10-02 (ADR-001 ratified)
-last_session: session_stanley_20261009_015643_m2c_ii_fknms_v3_and_swap (opus)
+last_session: session_stanley_20261011_011559_m3a_stream_discovery (opus)
 created: 2026-09-23
-updated: 2026-10-08
+updated: 2026-10-10
 last_edited_by: agent_proteus
-tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_complete, m1b_ii_a_complete, m1b_ii_b_complete, m1d_i_complete, m1d_ii_complete, p1_gate_met, p2_conditional_go, m1e_complete, board_v2, atl_v0_0_4_0, m2a_split, m2a_i_complete, atl_v0_0_5_0, core_0_4_0, crw_built, m1f_complete, board_v3, atl_v0_0_6_0, core_0_5_0, m2a_ii_complete, core_0_5_1, core_0_5_2, core_0_5_3, floridakeyscoral_forked, floridakeyscoral_fetched, m2b_complete, core_0_6_0, core_0_6_1, atl_v0_0_7_0, floridakeyscoral_on_board, p2_gate_met, p3_conditional_go, p3_open, m2c_split, m2c_i_complete, core_0_7_0, atl_v0_0_8_0, board_v4, m2c_ii_complete, fknms_v3, p2_condition_a_met, t11_falsified_fknms_proposed]
+tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_complete, m1b_ii_a_complete, m1b_ii_b_complete, m1d_i_complete, m1d_ii_complete, p1_gate_met, p2_conditional_go, m1e_complete, board_v2, atl_v0_0_4_0, m2a_split, m2a_i_complete, atl_v0_0_5_0, core_0_4_0, crw_built, m1f_complete, board_v3, atl_v0_0_6_0, core_0_5_0, m2a_ii_complete, core_0_5_1, core_0_5_2, core_0_5_3, floridakeyscoral_forked, floridakeyscoral_fetched, m2b_complete, core_0_6_0, core_0_6_1, atl_v0_0_7_0, floridakeyscoral_on_board, p2_gate_met, p3_conditional_go, p3_open, m2c_split, m2c_i_complete, core_0_7_0, atl_v0_0_8_0, board_v4, m2c_ii_complete, fknms_v3, p2_condition_a_met, t11_falsified_fknms_proposed, m3a_complete, core_0_8_0, discover_built, green_cap_ruled]
 ---
 
 # STATE — Atlantis.aDNA
@@ -21,7 +21,8 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
    `artifacts/mission_roster_p1_p5.md`.
 3. The three ADRs in `who/governance/` (all **ratified 2026-10-02**).
 4. The exemplar is at hygiene (M-1a): `what/exemplars/gulf_karenia_brevis/README.md` §Provenance · `uv sync && .venv/bin/python -m pytest` · self-test green.
-5. The ontology is controlled (M-1c; 0.3.0 at M-1d-i; 0.4.0 at M-1e; 0.5.0 at M-2a-i; 0.6.0 at M-1f): `what/schema/atl_v0/README.md` (proof table · known limits) · `LINKML_BIN=<scratch venv>/bin what/schema/atl_v0/fixtures/controls/run_controls.sh` → ALL WORLDS AGREE (65 controls; 0.7.0 at M-2b; **78 at 0.8.0, M-2c-i**).
+5. **Stream discovery (M-3a):** `how/skills/skill_stream_discovery.md` → `python -m atlantis_core.discover --instance <dir> --compare <dir>/streams.yaml [--probe]` (writes `<dir>/discovery/`, never `streams.yaml`).
+6. The ontology is controlled (M-1c; 0.3.0 at M-1d-i; 0.4.0 at M-1e; 0.5.0 at M-2a-i; 0.6.0 at M-1f): `what/schema/atl_v0/README.md` (proof table · known limits) · `LINKML_BIN=<scratch venv>/bin what/schema/atl_v0/fixtures/controls/run_controls.sh` → ALL WORLDS AGREE (65 controls; 0.7.0 at M-2b; **78 at 0.8.0, M-2c-i**).
 6. III review goes through `iii/` in a fresh context (SO-10).
 7. The core (M-1b-i + ii-a + ii-b + M-1d-i + M-1d-ii): `what/atlantis_core/README.md` · `cd what/atlantis_core && uv sync && .venv/bin/python -m pytest` (744 at the M-2c-ii close, ~5 min; core 0.7.0; `node` on PATH for the page-script checks) ·
    `.venv/bin/python -m atlantis_core.selftest --instance ../exemplars/gulf_karenia_brevis` (all-stream, SO-7) ·
@@ -34,59 +35,93 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
 
 ## ⏭ QUEUED — Next Live Session
 
-**M-2c-ii ✅ 2026-10-08** (opus). With M-2c-i, **P2-gate condition (a) is met**.
-- **FKNMS v3** was run at core 0.7.0 with the logistic swap and landed by memo (`492cb61`). Every v2 number is equal.
-  Steward ruling (M-2c-ii ruling 1): the interval's seasons are calendar years.
-- **T11 is falsified as worded on FKNMS. This is proposed for the P3 gate, not ruled.** The model is not shown to beat
-  climatology at the chosen budget under either reading of it, measured as matched-volume Δ precision:
-  - at the threshold's realised 20.3%: −0.0221 [−0.0906, +0.067];
-  - nearest a 10% staffing (the 5% threshold, 8.8%): +0.0839 [−0.0118, +0.1926].
+**M-3a ✅ 2026-10-10** (opus):
+- **Delivered:** `skill_stream_discovery` + core **0.8.0** `atlantis_core.discover`, with playbook §B's six traps as checks.
+- **The runs:**
+  - on the exemplar, pointer rows only (12 requests, nothing cached);
+  - on FKNMS, clean (3 requests).
+  - On both, the discovered rows equal `streams.yaml` on every declarative field. The agent knew the registries, so this
+    shows the rows can be expressed, not that a blind search finds them.
+- **Exemplar findings, accepted by the operator and carried to the P3 gate:**
+  - **(i)** the rule grid pools open-Gulf samples into coastal units (units 2 · 3 · 8 have > 1% of points beyond 1° of
+    their boxes);
+  - **(ii)** USGS 02359170 now serves 458 days the pinned cache lacks (2022-06-21 → 2023-09-23, partly in the test window),
+    plus 45 revised values.
 
-  Both levels are nominal. This means no demonstrated advantage, not a demonstrated deficit. T11 is supported at its terms
-  on the exemplar.
-- **T2:** the falsifier is not met on two instances. On FKNMS the logistic's point estimates are the higher, but it is not
-  shown to be the better learner (C-038).
-- **T10** is unchanged. **T9:** +1 Atlantis change, the page's data (`8255d9b`, checked at `bcd2612`).
-- **III:** PASS-WITH-FINDINGS, 0 blocker · 1 major · 7 minor · 3 nit, 11/11 dispositioned. ACCUMULATE: C-032 → 3,
-  C-034 → 3, C-037 → 2; new C-038 and C-039.
-- **Suite:** **744 passed at `e6b8ef0`** (279 s). The close commit after it is docs-only (C-035).
+  Also: no gauge serves a negative day (S-79 included), and 1994 is sparse; the earliest clean `min_train_year` is 1995.
+- **Folded in:**
+  - the GREEN-cap ruling: `delta_vs` counted once, own counts 414 and 436 of 600;
+  - Noether's CEL notice: option (b), prose → labels, ack **staged**.
+- **III:** PASS-WITH-FINDINGS 0/2/7/3 (`missions/aar/iii_review_m3a.md`). F-1 (rulings now accept named failures) and F-2
+  (the NWIS probe reads the series in memory, and the surfaces say so) are fixed. ACCUMULATE: C-009 → 9, C-023 → 6,
+  C-032 → 4, C-037 → 3; new C-040 to C-042.
+- **Suite:** **788 passed at `af66f59`** (278 s); 782 at `c39a9b4` before the III fixes. The close commit after it is docs-only (C-035).
+- **Budget:** ≈ 306 kT main against ≈ 140 kT carded; the +50% line was reported late (C-042).
 
-**Next: M-3a** (opus): `missions/mission_m3a_stream_discovery_skill.md`. **M-3b** may open after M-3a, since condition (a)
-is met; it stays off the exemplar under condition (c).
+**Next: M-3b** (opus), `missions/mission_m3b_hypothesis_ledger_and_mining.md`, on FKNMS or a new instance, **not the
+exemplar** (condition (c)). The card is ≈ 350 kT plus reviewer, the largest yet, so **split it at open** (ledger + skill /
+realise + SHAP) rather than discover the overrun mid-sitting (C-042).
 
 **Pending operator acts:**
-- **The GREEN cap, before M-3** (III M-2c-ii F-7). FKNMS v3 holds 582 numeric leaves and exemplar v4 holds 570, against
-  600. Choose one: count `delta_vs` echoes once, raise the cap with a reason, or move the per-season deltas out.
-- Accept or reject C-035 to C-039. C-032 and C-034 are graduation candidates at frequency 3.
-- The push. **Nothing from M-2c-i or M-2c-ii is pushed**; run gitleaks first.
-- At the P3 gate: rule T11's status (above) and T2's wording.
-- The FKNMS steward's question: is a model worth running for a lever-free heat event whose operational product CRW
+- **Deliver the Noether ack:** `who/coordination/coord_2026_10_10_proteus_to_noether_condition_cel_ack.md` →
+  `LatticeProtocol.aDNA/who/coordination/inbox/`.
+- **The push.** Nothing since M-2c-i is pushed (`origin/main` = `76bb143`); run gitleaks first.
+- **At the P3 gate:**
+  - the exemplar re-grid by coordinates and the 02359170 refresh (both exemplar v5);
+  - T11's status and T2's wording (from M-2c-ii).
+- Accept or reject C-035 to C-042. C-032 (4) and C-037 (3) are graduation candidates.
+- **The FKNMS steward's question:** is a model worth running for a lever-free heat event whose operational product CRW
   publishes, when the calendar is not beaten?
-- Carried: the graduation memo into `III.aDNA/who/coordination/`; the Hestia memo into `Home.aDNA/who/coordination/inbox/`;
-  C-015's acceptance; FloridaKeysCoral's remote (the owner's ruling).
+- **Carried:**
+  - the graduation memo into `III.aDNA/who/coordination/`;
+  - the Hestia memo into `Home.aDNA/who/coordination/inbox/`;
+  - C-015's acceptance;
+  - FloridaKeysCoral's remote (the owner's ruling).
 
-**Next Session Prompt (self-contained, M-3a, opus):**
+**Next Session Prompt (self-contained, M-3b, opus):**
 
-> You are Proteus in `~/aDNA/Atlantis.aDNA`, on **opus**, opening **M-3a**: `skill_stream_discovery`, playbook §A as a
-> runnable skill with the traps as checks. Read, in order:
+> You are Proteus in `~/aDNA/Atlantis.aDNA`, on **opus**, opening **M-3b**: the hypothesis ledger,
+> `skill_feature_hypothesis_mining`, and ≥ 1 literature-asserted driver tested by SHAP, on **FKNMS** (or a new
+> instance), **never the exemplar** (P2-gate condition (c), SO-3). Read, in order:
 > 1. STATE.
-> 2. The card `how/campaigns/campaign_atlantis_genesis/missions/mission_m3a_stream_discovery_skill.md`.
-> 3. `what/context/playbook_data_and_literature_mining.md` §A and §B.
-> 4. `how/skills/skill_atlantis_instance_fork.md` (the skill format the fleet uses here).
-> 5. The schema slots for `AtlObservationStream` (`what/schema/atl_v0/README.md`).
-> 6. The two `streams.yaml` it must reproduce: the exemplar's and `~/aDNA/FloridaKeysCoral.aDNA/streams.yaml`.
+> 2. The card `how/campaigns/campaign_atlantis_genesis/missions/mission_m3b_hypothesis_ledger_and_mining.md`.
+> 3. `what/hypotheses/README.md`.
+> 4. Playbook §C (`what/context/playbook_data_and_literature_mining.md`).
+> 5. `how/skills/skill_stream_discovery.md` (the skill format, and how a new stream is recorded).
+> 6. `~/aDNA/FloridaKeysCoral.aDNA/discovery/discovery_memo.md` (its next streams: the NDBC reef lights; bleaching
+>    surveys).
+> 7. `~/aDNA/Ingest.aDNA/CLAUDE.md` (compose its intake if it is ready for literature).
 >
-> Probe `how/sessions/active/` in each vault you write, and open a lease there.
+> **First, propose a split** of this ≈ 350 kT card to the operator via `AskUserQuestion` (C-042). Probe
+> `how/sessions/active/` in each vault you write, and open a lease there.
 >
-> First, ask the operator for the GREEN-cap ruling (III M-2c-ii F-7) if it is still open; it gates any new board field.
->
-> On the exemplar, discovery writes **pointer rows only** (SO-3): no fetch, and no new bytes. Run the skill once on each
-> instance. Validate both `streams.yaml` files against atl_v0. Re-read the register for M-3a's obligations (C-033).
-> Review through `iii/` in a fresh context. Record the suite count **with its commit** (C-035). Write the AAR.
->
-> Budget: ≈ 140 kT plus a reviewer ≈ 150 kT. SITREP at +50%.
+> Every comparison with the FKNMS v3 entry is read at the same base rate and budget (C-031, C-034). A realised driver
+> that is a proxy is written up as one (T7). Review through `iii/` in a fresh context. Record the suite count **with its
+> commit** (C-035). SITREP **at** the +50% line, not after it (C-042). Write the AAR.
 
 ## What's in place
+
+### M-3a (2026-10-10 — Atlantis `6e6ecc1` · `bb5f223` · `c39a9b4` · `50f50b4` · `bf9390f` · `e72e09f` · `c5be542` · `ad76921` · `af66f59` + close; instance `416cfe6` · `ac3a445`)
+
+- **Rulings 1–6** (AskUserQuestion, operator):
+  1. GREEN cap: count `delta_vs` once;
+  2. CEL option (b);
+  3. probes allowed (summary numbers only, nothing cached);
+  4. the exemplar longitude fail accepted and carried;
+  5. the 02359170 drift accepted, pinned bytes stand;
+  6. past budget, proceed to review.
+- **Core 0.8.0:**
+  - `discover`: `rows` (pointer rows, compare, request and searched checks) · `probe` (counts and metadata; NWIS series
+    in memory) · `traps` (six, each with failure keys) · CLI (memo; rulings accept named keys; a stale ruling fails; a
+    probed memo is not overwritten by an unprobed run);
+  - `board`: the `delta_vs` bucket;
+  - `runspec`: `discover` enabled;
+  - lattice: `discover` built, conditions → labels.
+- **Skill:** `how/skills/skill_stream_discovery.md`, from the interview to A1–A6 to the traps to the rulings to the
+  hand-off.
+- **Register:** M-3a re-read; no row changes; two exemplar data findings recorded.
+- **III:** PASS-WITH-FINDINGS 0/2/7/3 (`missions/aar/iii_review_m3a.md`); AAR `missions/aar/aar_m3a_stream_discovery_skill.md`.
+  T9 +0, instance patches 0.
 
 ### M-2c-ii (2026-10-08 — Atlantis `8255d9b` · `492cb61` · `eb1fda3` · `bcd2612` · `e6b8ef0` + close; instance `ff7eda9` · `0ad8804` · `8bc76f3` · `24cc1f4` · `fc6b65d`)
 

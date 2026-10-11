@@ -18,7 +18,7 @@ home_vault: Atlantis.aDNA
 remit_adr: who/governance/adr_002_remit_mpa_knowledge_system.md
 roster: artifacts/mission_roster_p1_p5.md
 created: 2026-09-23
-updated: 2026-10-08
+updated: 2026-10-10
 last_edited_by: agent_proteus
 tags: [campaign, atlantis, tidewatch, genesis, early_warning, oceans, mpa, ontology, evidence_board]
 ---
@@ -156,6 +156,14 @@ M-3a `skill_stream_discovery` (playbook §A/§B as checks) · M-3b hypothesis le
 ecosystem type) + `skill_feature_hypothesis_mining` + ≥ 1 literature-asserted driver realised as a vital and tested by
 SHAP, written up either way. Composes `Ingest.aDNA` when a corpus exists. **Exit bar:** one instance's vitals extended
 from the ledger with provenance; the test written up.
+
+**M-3a ✅ 2026-10-10:**
+- *Delivered:* `skill_stream_discovery` + core 0.8.0 `discover`, run on the exemplar (pointer rows only) and FKNMS. Folded
+  in: the GREEN-cap ruling (`delta_vs` counted once) and the Noether CEL ack (option b, staged).
+- *Carried to the P3 gate (operator):* the exemplar's re-grid by coordinates (latitude-band pooling, units 2 · 3 · 8) and
+  the 02359170 refresh (458 backfilled days + 45 revised values in the test window). Both were accepted for now; each
+  is a vitals or pin change and exemplar v5.
+- *Review:* III 0/2/7/3, dispositioned. **Next: M-3b.**
 
 ### P4 — Federation & stewards (fable sitting + gate)
 M-4 contract v1 ratified · steward governance set · consumer-wrapper template + register · Exchange listing · Network
