@@ -68,3 +68,43 @@ def test_emit_refuses_reference_mode(v0):
     ok = {**m, "mode": "core", "obligations": [{"obligation": inst.obligations[0], "honoured": True}]}
     with pytest.raises(BoardError, match="learner swap"):   # III F-5: a reference-mode swap cannot ride along
         emit(ok, inst, version=9, run_date="2026-10-02", recorded_at="2026-10-02T00:00:00Z", shap={}, swaps={"s": ref})
+
+
+# --- The GREEN-cap ruling (operator, 2026-10-10; III M-2c-ii F-7): delta_vs echoes are counted once -----------------
+def _numbers(n, start=0):
+    """n numeric leaves, laid out under the structural limits (dicts of ≤ 40, lists of ≤ 32)."""
+    return {f"g{j}": {f"k{i}": 0.5 for i in range(min(40, n - 40 * j))} for j in range((n + 39) // 40)}
+
+
+def test_delta_vs_echoes_do_not_spend_the_entrys_cap():
+    """590 numbers of the entry's own plus 30 in delta_vs: the echoes restate board numbers, so the entry is under 600."""
+    assert_green({"evaluation": _numbers(590), "evaluation_extras": {"delta_vs": {"fields": _numbers(30)}}})
+
+
+def test_the_entrys_own_cap_still_bites():
+    with pytest.raises(BoardError, match="more than 600 numbers"):
+        assert_green({"evaluation": _numbers(601), "evaluation_extras": {"delta_vs": {"fields": _numbers(30)}}})
+
+
+def test_delta_vs_has_its_own_cap():
+    with pytest.raises(BoardError, match="more than 600 numbers in delta_vs"):
+        assert_green({"evaluation_extras": {"delta_vs": {"fields": _numbers(601)}}})
+
+
+@pytest.mark.parametrize("bad", [{"fields": {"auroc": {"was": [0.1] * 33}}},          # a per-patient vector
+                                 {"fields": {f"r7|2021-{i:04d}": 0.1 for i in range(41)}},   # a patient-week dict
+                                 {"fields": {"p": {"was": 0.1, "now": 0.2}}}])          # a forbidden key
+def test_delta_vs_still_passes_every_structural_guard(bad):
+    with pytest.raises(BoardError, match="never on the board"):
+        assert_green({"evaluation_extras": {"delta_vs": bad}})
+
+
+def test_only_the_extras_delta_vs_is_exempt():
+    """A key named delta_vs elsewhere is not the comparison block; its numbers count."""
+    with pytest.raises(BoardError, match="more than 600 numbers"):
+        assert_green({"evaluation": {**_numbers(590), "delta_vs": _numbers(30)}})
+
+
+def test_every_committed_entry_passes_under_the_ruling():
+    for f in sorted((Path(__file__).resolve().parents[2] / "board" / "entries").glob("*.json")):
+        assert_green(json.loads(f.read_text()))

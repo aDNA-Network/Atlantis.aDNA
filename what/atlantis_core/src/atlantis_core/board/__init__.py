@@ -29,7 +29,11 @@ FORBIDDEN = {"p", "p_actual", "p_scenario", "y", "weeks", "shap", "shap_all", "x
              "histogram_weeks_before_onset", "importance", "gain_importance", "val_logloss_by_C"}
 MAX_LIST = 32          # no per-patient vector fits under this; the longest legitimate list is the rolling-origin panel
 MAX_DICT = 40          # a dict keyed by patient-week would exceed this; the widest legitimate one is a group/tag table
-MAX_NUMERIC = 600      # numeric leaves in a whole entry (v1 carries ~250)
+MAX_NUMERIC = 600      # numeric leaves in a whole entry (v1 carries ~250), evaluation_extras.delta_vs excepted:
+MAX_DELTA_ECHOES = 600  # GREEN-cap ruling (operator 2026-10-10, III M-2c-ii F-7): delta_vs restates numbers already on the
+#                        board (was = the prior entry's, now = this entry's, change = their difference), so it is counted
+#                        once — in its own bucket, under every structural guard. NOT checked: that each echo equals a
+#                        board value (C-039: the guard bounds the count; it does not prove the echo).
 MAX_STRING_NUMBERS = 40   # numbers inside one string — notes are prose, not a smuggled vector
 EXTRAS_KEYS = {"rolling_selection", "rolling_skipped", "event", "patient", "modelling_rows", "modelling_positives", "modelling_prevalence",
                "dropped_already_in_event", "dropped_outcome_unknown", "n_trees", "n_vitals", "vital_groups",
@@ -469,9 +473,9 @@ def embargo_extras(res: dict) -> dict:
 _NUM = re.compile(r"-?\d+(?:\.\d+)?(?:e-?\d+)?")
 
 
-def assert_green(obj, path="", _count=None) -> None:
+def assert_green(obj, path="", _count=None, _echo=False) -> None:
     top = _count is None
-    _count = _count if _count is not None else [0]
+    _count = _count if _count is not None else [0, 0]   # [the entry's own numbers, delta_vs echoes]
     if top and isinstance(obj, dict) and isinstance(obj.get("evaluation_extras"), dict):
         extra = set(obj["evaluation_extras"]) - EXTRAS_KEYS
         if extra:
@@ -482,18 +486,20 @@ def assert_green(obj, path="", _count=None) -> None:
         for k, v in obj.items():
             if k in FORBIDDEN:
                 raise BoardError(f"never on the board: {path}/{k} (per-patient or per-row content)")
-            assert_green(v, f"{path}/{k}", _count)
+            assert_green(v, f"{path}/{k}", _count, _echo or (k == "delta_vs" and path == "/evaluation_extras"))
     elif isinstance(obj, list):
         if len(obj) > MAX_LIST:
             raise BoardError(f"never on the board: {path} is a {len(obj)}-long list (per-patient vectors do not cross)")
         for i, v in enumerate(obj):
-            assert_green(v, f"{path}[{i}]", _count)
+            assert_green(v, f"{path}[{i}]", _count, _echo)
     elif isinstance(obj, str):
         if len(_NUM.findall(obj)) > MAX_STRING_NUMBERS:
             raise BoardError(f"never on the board: {path} carries {len(_NUM.findall(obj))} numbers in one string")
     elif isinstance(obj, (int, float)) and not isinstance(obj, bool):
-        _count[0] += 1
-        if _count[0] > MAX_NUMERIC:
+        _count[_echo] += 1
+        if _echo and _count[1] > MAX_DELTA_ECHOES:
+            raise BoardError(f"never on the board: more than {MAX_DELTA_ECHOES} numbers in delta_vs (at {path})")
+        if not _echo and _count[0] > MAX_NUMERIC:
             raise BoardError(f"never on the board: more than {MAX_NUMERIC} numbers in one entry (at {path})")
 
 

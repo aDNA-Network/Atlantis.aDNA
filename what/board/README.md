@@ -54,6 +54,16 @@ to publish. *(P2 gate ruling 3, III G-6.)*
 human-subject sites · trained binaries · credentials · anything from an instance whose data posture ruling forbids
 it. If a field would carry one of these, the entry is wrong, not the rule.
 
+**The count cap (`assert_green`).**
+- An entry carries at most **600 numbers of its own**.
+- `evaluation_extras.delta_vs` is counted **once, in its own bucket** of at most 600. Its `was` restates the prior entry,
+  its `now` restates this entry, and its `change` is their difference, so these numbers are already on the board.
+- The cap guards against per-patient vectors, and an echo of summary numbers carries none. Every structural guard still
+  applies inside `delta_vs`: lists ≤ 32, dicts ≤ 40, forbidden keys, numbers per string.
+- **Not checked:** that each echo equals a board value. The guard bounds the count. It does not prove the echo (C-039).
+- *(Operator ruling 2026-10-10, III M-2c-ii F-7. At the ruling the largest own counts were FKNMS v3 at 414 and exemplar v4
+  at 436.)*
+
 ## Lifecycle
 
 1. An instance (or the exemplar) produces `outputs/metrics.json` + `shap_summary.json`; `atlantis_core` (P1)
