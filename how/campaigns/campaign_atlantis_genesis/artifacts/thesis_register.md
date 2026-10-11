@@ -4,9 +4,9 @@ doc_id: thesis_register
 title: "Thesis register — the claims Atlantis makes, as falsifiable statements with evidence and the phase that tests each"
 status: draft   # statuses ruled at each phase gate; the register itself stays a living draft
 created: 2026-10-02
-updated: 2026-10-08
+updated: 2026-10-10
 last_edited_by: agent_proteus
-mission: m2c_ii   # re-read T2 · T10 · T11 at M-2c-ii 2026-10-08 (proposed for the P3 gate, not ruled); before that: statuses RULED at the P2 gate 2026-10-08 (III review artifacts/p2_gate_iii_review.md, G-1…G-12); re-cut at M-2b (T1 T3 T9 T10; notes on T4 T6 T11); authored at mission_m0_atlantis_genesis_planning
+mission: m3a   # M-3a 2026-10-10: C-033 re-read, no row changed, two exemplar data findings recorded (below); M-2c-ii: re-read T2 · T10 · T11 at M-2c-ii 2026-10-08 (proposed for the P3 gate, not ruled); before that: statuses RULED at the P2 gate 2026-10-08 (III review artifacts/p2_gate_iii_review.md, G-1…G-12); re-cut at M-2b (T1 T3 T9 T10; notes on T4 T6 T11); authored at mission_m0_atlantis_genesis_planning
 campaign_id: campaign_atlantis_genesis
 evidence_source: what/exemplars/gulf_karenia_brevis/outputs/metrics.json   # config_hash e9dea88254 · P2: FloridaKeysCoral.aDNA outputs/atlantis_core/metrics.json, config c07b7c0288 (board 2026-10-08_florida_keys_coral_v1; v3 from M-2c-ii) · exemplar board 2026-10-08_gulf_karenia_brevis_v4 (M-2c-ii's T11 reading)
 tags: [artifact, thesis_register, m0, atlantis, tidewatch]
@@ -36,6 +36,21 @@ yet. Status of every claim is **supported-by-one-exemplar** or **untested** — 
 | T12 | A region-specific model is the right unit; a second event definition on the same vitals is a second model, not a feature. | 50k-cells/L sensitivity run: AUROC 0.888 / AUPRC 0.597 at prevalence 0.076. **FKNMS (M-2b; recorded at the P2 gate, G-4):** DHW ≥ 8 (Alert Level 2) sensitivity run, a second model on the same vitals: AUROC 0.875 / AUPRC 0.238 at prevalence 0.063. No multi-threshold model was fitted, so the falsifier was not put. | A single multi-threshold model is better calibrated across events than per-event models on the same instance. | **P2+** (two DHW thresholds on FKNMS). |
 
 ## Reading the register
+
+- **M-3a re-read (2026-10-10, C-033). No row's status changes, and none is proposed to.**
+  - *Obligations:* no row names M-3a. T7 and T8 stay with **M-3b**. T11 and T2 stay with **the P3 gate**, as above. T5's
+    check now also runs at discovery (`surveillance_declared` → R8): FKNMS passes absent-with-reason, and its memo records
+    that observed-bleaching surveys would be a surveillance channel if ever carried. T9: **+0**. The skill is a planned P3
+    deliverable and the GREEN-cap change answers a review finding (III M-2c-ii F-7); neither was forced by an instance.
+  - *Two exemplar data findings bear on every exemplar row's evidence.* The operator **accepted** both (rulings in
+    `what/exemplars/gulf_karenia_brevis/discovery/candidates.yaml`) and carried them to the P3 gate:
+    - **(i) Latitude-band pooling.** The rule grid pools open-Gulf samples into coastal units. Units 2, 3 and 8 hold
+      2.46%, 4.95% and 1.49% of their points more than 1° outside their OISST boxes.
+    - **(ii) A since-backfilled gap.** USGS 02359170, which feeds unit 1, now serves 458 days that the pinned cache lacks
+      (2022-06-21 → 2023-09-23), partly inside the 2020–2023 test window, and 45 revised values.
+
+    The exemplar numbers above were measured on these pinned bytes. They are not re-measured here, and neither finding
+    is shown to move them.
 
 - **M-2c-ii re-read (2026-10-08), amended after its III review (F-1, F-2, F-8). Proposed for the P3 gate; the operator rules, and this is not that ruling:**
   - **T11:** falsified as worded on FKNMS: the model is not shown to beat climatology at the chosen budget, under either reading of it (threshold rule, realised 0.2034: matched-volume ΔP −0.0221; staffed volume, nearest point realised 0.0881: +0.0839; both nominal, both span 0). No demonstrated advantage, not a demonstrated deficit. Supported at its terms on the exemplar (every budget; 3 of 3 scorable seasons, the sign test's floor at 3). Per SO-2 it is kept, with both readings.
