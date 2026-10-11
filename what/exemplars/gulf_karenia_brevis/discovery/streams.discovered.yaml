@@ -1,4 +1,4 @@
-# streams.discovered.yaml — POINTER rows from atlantis_core.discover (0.8.0), 2026-10-11T01:34:06+00:00.
+# streams.discovered.yaml — POINTER rows from atlantis_core.discover (0.8.0), 2026-10-11T01:59:12+00:00.
 # No fetch provenance (sha256 · ingested_at · row_count): discovery fetches nothing (SO-3). A steward copies the
 # accepted rows into streams.yaml; fork and fetch own that file. Memo: discovery_memo.md.
 observation_streams:

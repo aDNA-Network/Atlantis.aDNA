@@ -61,6 +61,10 @@ it. If a field would carry one of these, the entry is wrong, not the rule.
 - The cap guards against per-patient vectors, and an echo of summary numbers carries none. Every structural guard still
   applies inside `delta_vs`: lists ≤ 32, dicts ≤ 40, forbidden keys, numbers per string.
 - **Not checked:** that each echo equals a board value. The guard bounds the count. It does not prove the echo (C-039).
+  So the bucket is a second channel nothing verifies. Its bound of 600 is the entry's own budget, chosen so that a
+  `delta_vs` can echo a whole prior entry. It is not derived from the echo shape, whose largest live count is 168.
+  Verifying echoes in `emit` (each `now` against this entry and each `was` against the prior one, then a derived bound)
+  is an open follow-up (III M-3a F-7).
 - *(Operator ruling 2026-10-10, III M-2c-ii F-7. At the ruling the largest own counts were FKNMS v3 at 414 and exemplar v4
   at 436.)*
 

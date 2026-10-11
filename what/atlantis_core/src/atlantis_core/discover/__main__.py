@@ -25,19 +25,26 @@ MARK = {"pass": "✅", "warn": "⚠", "fail": "✗", "na": "—", "accepted": "�
 
 
 def apply_rulings(results: list[dict], rulings: dict) -> list[str]:
-    """A fail a steward has ruled on becomes `accepted`, with the ruling beside it. A ruling must say what, who, when."""
+    """A fail a steward has ruled on becomes `accepted`, with the ruling beside it. A ruling says what, who, when, and
+    `accepts:` — the failure keys it was given for (III M-3a F-1). A failure the ruling does not name keeps the trap
+    failing ("ruling stale"): a ruling accepts the failures it saw, never the trap."""
     errs = []
     for r in results:
         ru = (rulings or {}).get(r["trap"])
         if not ru:
             continue
-        missing = [k for k in ("ruling", "by", "date") if not str(ru.get(k) or "").strip()]
+        missing = [k for k in ("ruling", "by", "date", "accepts") if not ru.get(k) or not str(ru.get(k)).strip()]
         if missing:
             errs.append(f"rulings.{r['trap']}: missing {missing}")
         elif r["status"] == "fail":
-            r["status"], r["ruling"] = "accepted", ru
+            new = sorted(set(r["failures"]) - set(ru["accepts"]))
+            if new:
+                r["ruling_stale"] = f"the ruling of {ru['date']} does not accept {new}"
+                errs.append(f"rulings.{r['trap']}: stale — new failure(s) {new}")
+            else:
+                r["status"], r["ruling"] = "accepted", ru
         else:
-            r["ruling_unused"] = f"a ruling is recorded, but the trap is {r['status']} — it is not applied"
+            r["ruling_unused"] = f"a ruling is recorded ({ru['date']}), but the trap is {r['status']} — it is not applied"
     return errs
 
 
@@ -46,7 +53,10 @@ def render_md(m: dict) -> str:
          f"*`atlantis_core.discover` {m['discover']} · generated {m['generated_at']} · probed: {m['probed']}"
          + (f" ({', '.join(f'{h} ×{n}' for h, n in m['hosts'].items())})" if m["hosts"] else "") + "*", "",
          "Summary numbers only. Nothing here was fetched or cached; `streams.discovered.yaml` holds pointer rows "
-         "(no sha256, no row count), and `streams.yaml` was not written.", "",
+         "(no sha256, no row count), and `streams.yaml` was not written. With --probe, NWIS series are read in memory "
+         "(day-by-day comparison; III M-3a F-2); every other probe is a count or metadata.", "",
+         "**Limit of the compare:** a match shows the skill can express the registry's rows; when the searcher already "
+         "knew the registry (a rehearsal), it does not show a blind search would have found them.", "",
          "## Request", "", *[f"- **{k}:** {v}" for k, v in m["request"].items()], "",
          "## Searched (playbook §A)", "", "| Step | Where | Found | Note |", "|---|---|---|---|",
          *[f"| {s.get('step')} | {s.get('where', '')} | {', '.join(s.get('found') or []) or '—'} | {s.get('note', '')} |"
@@ -65,7 +75,11 @@ def render_md(m: dict) -> str:
     for r in m["traps"]:
         L += [f"### {r['trap']} — {r['status']}", ""]
         if r.get("ruling"):
-            L += [f"> Ruled ({r['ruling']['by']}, {r['ruling']['date']}): {r['ruling']['ruling']}", ""]
+            L += [f"> Ruled ({r['ruling']['by']}, {r['ruling']['date']}; accepts {', '.join(r['ruling']['accepts'])}): "
+                  f"{r['ruling']['ruling']}", ""]
+        for k in ("ruling_stale", "ruling_unused"):
+            if r.get(k):
+                L += [f"> **{k.replace('_', ' ')}:** {r[k]}", ""]
         if r["evidence"]:
             L += ["```yaml", yaml.safe_dump(r["evidence"], sort_keys=False, allow_unicode=True, width=120).rstrip(), "```", ""]
     return "\n".join(L) + "\n"
@@ -79,6 +93,8 @@ def main(argv=None, session=None) -> int:
     ap.add_argument("--probe", action="store_true", help="count-only requests to each stream's source")
     ap.add_argument("--compare", help="a streams.yaml whose declarative fields the discovered rows must reproduce")
     ap.add_argument("--at", help="generated_at (ISO); default now")
+    ap.add_argument("--overwrite-probed", action="store_true",
+                    help="allow an unprobed run to replace a probed memo (it would turn three traps na)")
     a = ap.parse_args(argv)
     root = Path(a.instance).resolve()
     out = Path(a.out) if a.out else root / "discovery"
@@ -102,6 +118,11 @@ def main(argv=None, session=None) -> int:
             "compare": None if diffs is None else {"against": Path(a.compare).name, "diffs": diffs},
             "probed": bool(a.probe), "hosts": dict(P.hosts) if P else {},
             "checks": {**DEFAULTS, **(doc.get("checks") or {})}, "traps": results}
+    old = out / "discovery_memo.json"
+    if not a.probe and old.exists() and json.loads(old.read_text()).get("probed") and not a.overwrite_probed:
+        print(f"✗ {old} records a probed run; an unprobed run would replace it with three traps n/a. Re-run with --probe, "
+              f"write elsewhere (--out), or pass --overwrite-probed (III M-3a F-6)")
+        return 1
     out.mkdir(parents=True, exist_ok=True)
     head = (f"# streams.discovered.yaml — POINTER rows from atlantis_core.discover ({__version__}), {memo['generated_at']}.\n"
             f"# No fetch provenance (sha256 · ingested_at · row_count): discovery fetches nothing (SO-3). A steward copies the\n"

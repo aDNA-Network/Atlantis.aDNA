@@ -1,7 +1,9 @@
-"""Count-only probes of a stream's source (operator ruling, M-3a 2026-10-10): metadata and counts, read in memory.
+"""Probes of a stream's source (operator ruling, M-3a 2026-10-10): counts and metadata, plus — for NWIS only — the daily
+series read IN MEMORY, because the ruling asked for reverse-flow counts before the clip and a gauge's day-by-day content
+cannot be compared any other way (III M-3a F-2: this is not count-only, and every surface now says so).
 
-Nothing is cached and nothing but summary numbers leaves this module: no artifact, no observation, no reply body. A probe
-answers three questions per source:
+Nothing is cached and nothing but summary numbers leaves this module's callers: no artifact, no observation, no reply body.
+An NWIS answer carries the series under `_series` for `traps.server_count` to compare; no trap emits it. A probe answers:
   · what does the server count? (§B trap 1 — the count a fetch must assert)
   · is a zero a zero? (§B trap 3 — an empty answer is re-asked with a control the server must answer)
   · how much reverse flow is there before the clip? (§B trap 5 — NWIS only; the cached artifact is already clipped)
@@ -33,9 +35,9 @@ class Probe:
 
     def get(self, url, params=None):
         """→ (status_code, response) or (None, error string). Never raises: an unreachable source is an answer."""
-        self.hosts[urlsplit(url).netloc] += 1
         err = None
         for _ in range(self.retries):
+            self.hosts[urlsplit(url).netloc] += 1   # every attempt is a request (III M-3a F-11)
             try:
                 r = self._http().get(url, params=params, timeout=self.timeout)
                 return r.status_code, r
@@ -120,7 +122,7 @@ def nwis(spec: dict, P: Probe) -> list[dict]:
     for site in spec["sites"]:
         j, err = P.json(NWIS_DV, {"format": "json", "sites": site, "parameterCd": spec["parameter"],
                                   "startDT": spec["start"], "endDT": spec["end"], "siteStatus": "all"})
-        n = neg = sentinel = None
+        n = neg = sentinel = series = None
         if j is not None:
             try:
                 ts = j["value"]["timeSeries"]
@@ -128,13 +130,15 @@ def nwis(spec: dict, P: Probe) -> list[dict]:
                     n = 0
                 else:
                     nodata = ts[0].get("variable", {}).get("noDataValue")
-                    v = pd.to_numeric(pd.Series([x["value"] for x in ts[0]["values"][0]["value"]]), errors="coerce").dropna()
+                    raw = ts[0]["values"][0]["value"]
+                    v = pd.Series(pd.to_numeric([x["value"] for x in raw], errors="coerce"),
+                                  index=pd.to_datetime([x["dateTime"][:10] for x in raw])).dropna()
                     sentinel = int((v == nodata).sum()) if nodata is not None else 0
                     real = v[v != nodata] if nodata is not None else v
-                    n, neg = int(len(v)), int((real < 0).sum())
+                    n, neg, series = int(len(v)), int((real < 0).sum()), real
             except (KeyError, IndexError, TypeError) as e:
                 err = f"reply shape unexpected: {type(e).__name__}"
-        a = _answer(f"site {site}", n, broken=err, negatives=neg, nodata_sentinels=sentinel)
+        a = _answer(f"site {site}", n, broken=err, negatives=neg, nodata_sentinels=sentinel, _series=series)
         if n == 0 or n is None:
             code, r = P.get(NWIS_SITE, {"format": "rdb", "sites": site})
             a["control"] = (f"site service knows {site}" if code == 200 and str(site) in r.text

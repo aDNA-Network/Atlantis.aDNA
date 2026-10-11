@@ -13,7 +13,7 @@ tags: [skill, atlantis, discovery, streams, playbook, traps, erddap, arcgis, nwi
 requirements:
   tools: ["Bash", "WebSearch", "WebFetch", "AskUserQuestion"]
   context: ["Atlantis.aDNA/CLAUDE.md", "what/context/playbook_data_and_literature_mining.md", "what/schema/atl_v0/README.md"]
-  permissions: ["write <instance>/discovery/ only", "count-only public metadata requests (--probe)", "NO fetch, NO cache, NO edit of streams.yaml"]
+  permissions: ["write <instance>/discovery/ only", "public probe requests (--probe): counts and metadata; NWIS daily series read in memory", "NO fetch, NO cache, NO edit of streams.yaml"]
 ---
 
 # Skill: stream discovery
@@ -31,7 +31,10 @@ checks. It ends in two files in `<instance>/discovery/`:
 **Discovery fetches nothing** (SO-3, ADR-002 §4).
 - A pointer row has no `sha256`, `ingested_at` or `row_count`. Those are what a fetch proves, and the fetch is gated
   separately on a self-test receipt and a ratified posture (`skill_atlantis_instance_fork` step 6).
-- `--probe` adds **count-only** requests read in memory, by operator ruling 2026-10-10. It never caches.
+- `--probe` adds public requests, by operator ruling 2026-10-10. They are counts and metadata (ArcGIS `returnCountOnly`,
+  ERDDAP `info`), except **NWIS, whose daily series is read in memory**: the ruling asked for reverse-flow counts
+  before the clip, and a gauge's content can only be compared day by day (III M-3a F-2). It never caches, and only
+  summary numbers reach the memo.
 - The steward copies accepted rows into `streams.yaml`. Discovery never writes that file.
 
 Proteus asks first: *what is the patient, what is the event, and how much warning would change what you do?* The streams
@@ -42,7 +45,7 @@ from the event finds the data that can see it coming.
 
 ```
 /skill_stream_discovery instance=<path>            # after a fork: the patient and event are declared
-/skill_stream_discovery instance=<path> probe=true # add the count-only probes
+/skill_stream_discovery instance=<path> probe=true # add the probes
 ```
 
 ## Parameters
@@ -51,7 +54,7 @@ from the event finds the data that can see it coming.
 |---|---|---|---|---|
 | `instance` | path | yes | — | An instance with `atlantis.yaml` (the patient: a pinned geometry or a rule grid) and an event declared. Discovery for a not-yet-forked steward runs on a rehearsal fork |
 | `ecosystem` | string | yes | — | The ecosystem type (estuary · coral reef · shelf · river · lake). It chooses which §A steps can find anything, and the memo records it |
-| `probe` | bool | no | false | Count-only requests to each declared stream's source (traps 1, 3, 5) |
+| `probe` | bool | no | false | Public requests to each declared stream's source: counts and metadata, plus NWIS series in memory (traps 1, 3, 5) |
 
 ## Requirements
 
@@ -145,18 +148,20 @@ Each stream found becomes one entry in `candidates:`, carrying exactly the AtlOb
 
 ```
 $A/.venv/bin/python -m atlantis_core.discover --instance <instance> --compare <instance>/streams.yaml           # offline
-$A/.venv/bin/python -m atlantis_core.discover --instance <instance> --compare <instance>/streams.yaml --probe   # + counts
+$A/.venv/bin/python -m atlantis_core.discover --instance <instance> --compare <instance>/streams.yaml --probe   # + probes
 ```
 
-`--compare` is used when a `streams.yaml` already exists: a re-discovery must reproduce its declarative fields. The six
-traps, playbook §B:
+`--compare` is used when a `streams.yaml` already exists: a re-discovery must reproduce its declarative fields. **A match
+shows the skill can express the registry's rows.** When the searcher already knew the registry, as in a rehearsal, it
+does not show that a blind search would have found them; the memo says so. An unprobed run will not overwrite a probed
+memo unless `--overwrite-probed` is given. The six traps, playbook §B:
 
 | Trap | Check | Reads |
 |---|---|---|
-| `server_count` | ArcGIS `returnCountOnly` per layer against the fetch summary · ERDDAP's time axis must cover what was fetched · NWIS days served per site against days cached | probe |
+| `server_count` | ArcGIS: `returnCountOnly` per layer against the fetch summary, a true count · ERDDAP: the time axis must **cover** the fetched range, which is coverage, not a count and not values · NWIS: the series in memory against the cache, day by day (server-only days, cache-only days, revised values) | probe |
 | `longitude_by_unit` | Per unit: lon min/median/max; points beyond ±0.5° (warn) and ±1° (**fail** above 1% of a unit) of the unit's declared space; the unassigned count, which `vitals.build` drops silently. Point streams only. A gridded stream reports its reduction instead (fallback zones) | cache |
-| `probe_zero` | Every empty or keyless answer is re-asked with a control the server must answer (layer metadata · ERDDAP `/version` · the NWIS site service). A reply without the asked-for key is a **broken question**, never a zero | probe |
-| `samples_per_year` | Rows per year over `min_train_year`…`test_end`. A year below 25% of the median year is sparse, and the event stream sets the status. It never moves `min_train_year`, which would be a vitals change (SO-7) | cache |
+| `probe_zero` | Every empty or keyless answer is re-asked with a control the server must answer (layer metadata · ERDDAP `/version` · the NWIS site service). A reply without the asked-for key is a **broken question**, never a zero. The control shows the source exists, **not** that the zero is true. With no zero met the trap is `na`, not a pass | probe |
+| `samples_per_year` | Rows per year **from the first year on record** to `test_end`, against the median year of `min_train_year`…`test_end`. A year below 25% of it is sparse, and the event stream sets the status. It reports the earliest `min_train_year` with no sparse year after it. It never moves `min_train_year`, which would be a vitals change (SO-7) | cache |
 | `negative_flow` | Negative days served, per gauge, before the clip. NWIS no-data sentinels are counted apart: a clip would read one as zero flow. Offline, only what survived in the cache | probe / cache |
 | `surveillance_declared` | Registry R8 (contract item 5): present with a vital and an ablation, or absent with a reason | declarations |
 
@@ -167,12 +172,15 @@ The thresholds come from `candidates.yaml → checks` (`lon_tolerance_deg` · `l
 
 - **`warn`:** look at it with the steward. Nothing is known to be wrong.
 - **`fail`:** the steward rules. Either fix the source declaration, or accept the result in
-  `candidates.yaml → rulings.<trap>: {ruling, by, date}`. A ruling without all three fields is refused. An accepted fail
-  shows as `accepted`, with the ruling beside it, in every memo after.
+  `candidates.yaml → rulings.<trap>: {ruling, by, date, accepts: [failure keys]}`. A ruling missing any field is refused.
+  **A ruling accepts the failures it names, never the trap:** a later failure it does not name shows as *ruling stale*,
+  and the trap fails again (III M-3a F-1). An accepted fail shows as `accepted`, with the ruling beside it.
 - **Ask with `AskUserQuestion`.** A ruling on the exemplar or on a live instance is the operator's or the steward's, never
   the agent's.
 - **Hand-off:** the steward copies the accepted rows into `streams.yaml`, adds the engine shape to `atlantis.yaml → streams`,
   re-runs the self-test (SO-7) and only then fetches. Commit `discovery/` with a path-scoped `git add`.
+- **A partner or human-subject instance's memo stays in the instance.** It carries per-unit coordinate ranges, so it is
+  never copied into Atlantis or onto the board.
 
 ## Outputs
 
@@ -192,10 +200,13 @@ The exit code is 0 when the rows validate, the compare is empty and no trap fail
   their own bounding boxes, and containment makes those pass by construction.
 - **Probes exist for ArcGIS, ERDDAP/CRW and NWIS only.** NDBC, OBIS and GBIF are declared fetchers with no probe. Their
   traps report `na` with the reason.
+- **`server_count` is a count only on ArcGIS.** ERDDAP is checked for coverage, and a value revised inside a covered
+  range is not seen. NWIS is compared day by day, so its revised values *are* seen.
 - **Server-count drift is a fail by design.** A source revised since the fetch means a re-fetch would differ. The ruling
   decides whether to re-fetch, which is a new data pin and a new board version, or to accept it.
 
 ## Rehearsal of record
 
-M-3a (2026-10-10): run on the exemplar (pointer rows only) and on FloridaKeysCoral. The transcript and findings are in
-`how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m3a_stream_discovery_skill.md`.
+M-3a (2026-10-10): run on the exemplar (pointer rows only; 12 requests, two fails accepted by the operator) and on
+FloridaKeysCoral (3 requests; clean). On FKNMS two traps are `na` and `probe_zero` met no zero, so the non-trivial trap
+paths ran on real data on the exemplar only. Findings: `missions/aar/aar_m3a_stream_discovery_skill.md`.

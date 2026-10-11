@@ -22,7 +22,7 @@ searched:
     where: "USGS NWIS site service (waterservices.usgs.gov/nwis/site), parameter 00060"
     query: "five gauges feeding the Gulf units; 02292900 = CALOOSAHATCHEE RIVER AT S-79, NR. OLGA (the managed release: the lever, owner SFWMD/USACE)"
     found: [atl_stream_usgs_discharge_daily]
-    note: "S-79 is tidal-affected: reverse flow reported negative → clip_negative declared (trap 5)."
+    note: "clip_negative is declared (S329's code comment: 'S-79 reports reverse flow as negative'). At M-3a the daily-values series served no negative day at any of the five gauges, S-79 included; whether it ever did is not on record (trap 5)."
   - step: A4
     where: "NDBC station pages (e.g. 42013, west Florida shelf; HTTP 200 on 2026-10-10)"
     query: "stdmet wind/waves/water temperature near the units"
@@ -76,7 +76,9 @@ rulings:   # AskUserQuestion, operator (Stanley), 2026-10-10, at the M-3a run
     ruling: "Accepted, recorded, carried. The rule grid assigns by latitude band, so open-Gulf samples pool into coastal units: units 2 (2.46%), 3 (4.95%) and 8 (1.49%) hold > 1% of points over 1° outside their OISST boxes. A method demonstration whose pooling is a known limit, now measured. Re-gridding the exemplar by coordinates is carried to the P3 gate as an open item; no vitals change now (SO-7)."
     by: stanley (operator)
     date: "2026-10-10"
+    accepts: [atl_stream_fwc_hab_karenia:2, atl_stream_fwc_hab_karenia:3, atl_stream_fwc_hab_karenia:8]   # III M-3a F-1: the failures ruled on, by key
   server_count:
-    ruling: "Accepted; the pinned bytes stand. USGS 02359170 now serves 458 days more than the cache (2022-06-21 → 2023-09-23, backfilled, qualifiers A/R and A/e) and 45 shared days carry revised values, partly inside the 2020–2023 test window. The sha256-pinned parquet is the exemplar's record; a re-fetch is a new pin and a new board version. 'Refresh 02359170' is carried as an open item."
+    ruling: "Accepted; the pinned bytes stand. USGS 02359170 now serves 458 days more than the cache (2022-06-21 → 2023-09-23, backfilled; qualifiers A/R and A/e, read at the ruling by an in-memory script, not by this code) and 45 shared days carry revised values, partly inside the 2020–2023 test window. The day and value counts are re-measured by discover's NWIS comparison from M-3a's III fixes on (memo, server_count). The sha256-pinned parquet is the exemplar's record; a re-fetch is a new pin and a new board version. 'Refresh 02359170' is carried as an open item."
     by: stanley (operator)
     date: "2026-10-10"
+    accepts: ["atl_stream_usgs_discharge_daily:site 02359170"]

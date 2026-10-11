@@ -1,8 +1,10 @@
 # Discovery memo — gulf_karenia_brevis
 
-*`atlantis_core.discover` atlantis_core 0.8.0 · generated 2026-10-11T01:34:06+00:00 · probed: True (gis.myfwc.com ×6, coastwatch.pfeg.noaa.gov ×1, waterservices.usgs.gov ×5)*
+*`atlantis_core.discover` atlantis_core 0.8.0 · generated 2026-10-11T01:59:12+00:00 · probed: True (gis.myfwc.com ×6, coastwatch.pfeg.noaa.gov ×1, waterservices.usgs.gov ×5)*
 
-Summary numbers only. Nothing here was fetched or cached; `streams.discovered.yaml` holds pointer rows (no sha256, no row count), and `streams.yaml` was not written.
+Summary numbers only. Nothing here was fetched or cached; `streams.discovered.yaml` holds pointer rows (no sha256, no row count), and `streams.yaml` was not written. With --probe, NWIS series are read in memory (day-by-day comparison; III M-3a F-2); every other probe is a count or metadata.
+
+**Limit of the compare:** a match shows the skill can express the registry's rows; when the searcher already knew the registry (a rehearsal), it does not show a blind search would have found them.
 
 ## Request
 
@@ -17,7 +19,7 @@ Summary numbers only. Nothing here was fetched or cached; `streams.discovered.ya
 |---|---|---|---|
 | A1 | ArcGIS Hub search API (hub.arcgis.com/api/v3/datasets?q=harmful algal bloom Karenia Florida); FWC Open Data MapServer (gis.myfwc.com) | atl_stream_fwc_hab_karenia | Sampling intensifies during blooms (FWC responds to reports) → surveillance channel (T5). Licence: Florida public records, credit FWC-FWRI. |
 | A2 | NOAA CoastWatch ERDDAP search (coastwatch.pfeg.noaa.gov/erddap/search?searchFor=ncdcOisst21Agg) | atl_stream_oisst_region_daily | One box per unit (atlantis.yaml boxes), nearshore Gulf side. Chlorophyll, SSH and wind siblings exist; not carried at v1. |
-| A3 | USGS NWIS site service (waterservices.usgs.gov/nwis/site), parameter 00060 | atl_stream_usgs_discharge_daily | S-79 is tidal-affected: reverse flow reported negative → clip_negative declared (trap 5). |
+| A3 | USGS NWIS site service (waterservices.usgs.gov/nwis/site), parameter 00060 | atl_stream_usgs_discharge_daily | clip_negative is declared (S329's code comment: 'S-79 reports reverse flow as negative'). At M-3a the daily-values series served no negative day at any of the five gauges, S-79 included; whether it ever did is not on record (trap 5). |
 | A4 | NDBC station pages (e.g. 42013, west Florida shelf; HTTP 200 on 2026-10-10) | — | Stations exist; not carried. NDBCStdmet is a declared, not built, fetcher, and buoys are optional at v1 (playbook §A4). |
 | A5 | OBIS / GBIF occurrence by taxon (Karenia brevis, WoRMS 233015) | — | Not carried: FWC's monitoring database is the system of record; the aggregators republish subsets of it, so carrying both would double-count samples. OBIS/GBIF fetchers are declared, not built. |
 | A6 | NCEI landing pages and archive-management URLs (S329) | — | NCEI returned 503 all S329 session; the ERDDAP mirror and the originating agencies were used instead. Nothing new tried at M-3a. |
@@ -37,16 +39,16 @@ Summary numbers only. Nothing here was fetched or cached; `streams.discovered.ya
 
 | Trap | Status | Note |
 |---|---|---|
-| server_count | ☑ accepted | ArcGIS: returnCountOnly per layer vs the fetch summary · ERDDAP: the time axis vs the fetched range · NWIS: days served vs days cached, per site |
+| server_count | ☑ accepted | ArcGIS: returnCountOnly per layer vs the fetch summary (a count) · ERDDAP: the time axis must cover the fetched range (coverage only — not a count, not values) · NWIS: the series read in memory, day by day, vs the cache (days only on the server, days only in the cache, values revised) |
 | longitude_by_unit | ☑ accepted | bounds: atl_stream_oisst_region_daily fetch.boxes; a point counts as outside beyond ±0.5° (warn) and ±1.0° (fail if > 1% of a unit's points). Unassigned points are dropped by vitals.build without a count; the count is here. A rule grid's box is a proxy for the unit, not its boundary: a fail asks for a ruling, not a re-grid. |
-| probe_zero | ✅ pass | 12 probe answers; each zero or failed answer re-asked with a control |
-| samples_per_year | ⚠ warn | a year is sparse below 25% of the median year in 1994–2023; min_train_year is 1994. A warn asks whether the sparse years should train — it does not move min_train_year (that is a vitals change, SO-7). |
+| probe_zero | — na | 12 probe answers, none zero or broken: the trap had nothing to test |
+| samples_per_year | ⚠ warn | counts from the first year on record; a year is sparse below 25% of the median year in 1994–2023; min_train_year is 1994. A warn asks whether the sparse years should train — it does not move min_train_year (that is a vitals change, SO-7). |
 | negative_flow | ✅ pass |  |
 | surveillance_declared | ✅ pass | registry R8 (contract item 5) |
 
 ### server_count — accepted
 
-> Ruled (stanley (operator), 2026-10-10): Accepted; the pinned bytes stand. USGS 02359170 now serves 458 days more than the cache (2022-06-21 → 2023-09-23, backfilled, qualifiers A/R and A/e) and 45 shared days carry revised values, partly inside the 2020–2023 test window. The sha256-pinned parquet is the exemplar's record; a re-fetch is a new pin and a new board version. 'Refresh 02359170' is carried as an open item.
+> Ruled (stanley (operator), 2026-10-10; accepts atl_stream_usgs_discharge_daily:site 02359170): Accepted; the pinned bytes stand. USGS 02359170 now serves 458 days more than the cache (2022-06-21 → 2023-09-23, backfilled; qualifiers A/R and A/e, read at the ruling by an in-memory script, not by this code) and 45 shared days carry revised values, partly inside the 2020–2023 test window. The day and value counts are re-measured by discover's NWIS comparison from M-3a's III fixes on (memo, server_count). The sha256-pinned parquet is the exemplar's record; a re-fetch is a new pin and a new board version. 'Refresh 02359170' is carried as an open item.
 
 ```yaml
 atl_stream_fwc_hab_karenia:
@@ -95,33 +97,51 @@ atl_stream_usgs_discharge_daily:
 - what: site 02292900
   server: 12305
   fetched: 12305
+  server_only_days: 0
+  cache_only_days: 0
+  revised_values: 0
   status: pass
   why: ''
 - what: site 02296750
   server: 12418
   fetched: 12418
+  server_only_days: 0
+  cache_only_days: 0
+  revised_values: 0
   status: pass
   why: ''
 - what: site 02304500
   server: 12349
   fetched: 12349
+  server_only_days: 0
+  cache_only_days: 0
+  revised_values: 0
   status: pass
   why: ''
 - what: site 02323500
   server: 12418
   fetched: 12418
+  server_only_days: 0
+  cache_only_days: 0
+  revised_values: 0
   status: pass
   why: ''
 - what: site 02359170
   server: 12412
   fetched: 11954
+  server_only_days: 458
+  cache_only_days: 0
+  revised_values: 45
+  server_only_span:
+  - '2022-06-21'
+  - '2023-09-23'
   status: fail
-  why: 'server day count ≠ fetched: a re-fetch would differ'
+  why: a re-fetch would differ
 ```
 
 ### longitude_by_unit — accepted
 
-> Ruled (stanley (operator), 2026-10-10): Accepted, recorded, carried. The rule grid assigns by latitude band, so open-Gulf samples pool into coastal units: units 2 (2.46%), 3 (4.95%) and 8 (1.49%) hold > 1% of points over 1° outside their OISST boxes. A method demonstration whose pooling is a known limit, now measured. Re-gridding the exemplar by coordinates is carried to the P3 gate as an open item; no vitals change now (SO-7).
+> Ruled (stanley (operator), 2026-10-10; accepts atl_stream_fwc_hab_karenia:2, atl_stream_fwc_hab_karenia:3, atl_stream_fwc_hab_karenia:8): Accepted, recorded, carried. The rule grid assigns by latitude band, so open-Gulf samples pool into coastal units: units 2 (2.46%), 3 (4.95%) and 8 (1.49%) hold > 1% of points over 1° outside their OISST boxes. A method demonstration whose pooling is a known limit, now measured. Re-gridding the exemplar by coordinates is carried to the P3 gate as an open item; no vitals change now (SO-7).
 
 ```yaml
 atl_stream_fwc_hab_karenia:
@@ -257,7 +277,7 @@ atl_stream_usgs_discharge_daily:
   assigned_by: the declared station → unit map
 ```
 
-### probe_zero — pass
+### probe_zero — na
 
 ```yaml
 answers: 12
@@ -269,6 +289,30 @@ zero_or_broken: 0
 ```yaml
 atl_stream_fwc_hab_karenia:
   years:
+    1970: 1
+    1971: 477
+    1972: 196
+    1973: 114
+    1974: 1744
+    1975: 421
+    1976: 918
+    1977: 530
+    1978: 787
+    1979: 619
+    1980: 919
+    1981: 171
+    1982: 684
+    1983: 372
+    1984: 222
+    1985: 138
+    1986: 276
+    1987: 1118
+    1988: 780
+    1989: 734
+    1990: 804
+    1991: 1162
+    1992: 1096
+    1993: 687
     1994: 1218
     1995: 2608
     1996: 2668
@@ -306,6 +350,18 @@ atl_stream_fwc_hab_karenia:
   earliest_min_train_year_with_no_sparse_year: 1995
 atl_stream_oisst_region_daily:
   years:
+    1982: 3285
+    1983: 3285
+    1984: 3294
+    1985: 3285
+    1986: 3285
+    1987: 3285
+    1988: 3294
+    1989: 3285
+    1990: 3285
+    1991: 3285
+    1992: 2925
+    1993: 1458
     1994: 1242
     1995: 1530
     1996: 1530
@@ -339,9 +395,13 @@ atl_stream_oisst_region_daily:
   median_year: 3285.0
   sparse_years: []
   first_year_on_record: 1982
-  earliest_min_train_year_with_no_sparse_year: 1994
+  earliest_min_train_year_with_no_sparse_year: 1982
 atl_stream_usgs_discharge_daily:
   years:
+    1990: 1825
+    1991: 1825
+    1992: 1830
+    1993: 1825
     1994: 1825
     1995: 1825
     1996: 1830
@@ -375,7 +435,7 @@ atl_stream_usgs_discharge_daily:
   median_year: 1822.5
   sparse_years: []
   first_year_on_record: 1990
-  earliest_min_train_year_with_no_sparse_year: 1994
+  earliest_min_train_year_with_no_sparse_year: 1990
 ```
 
 ### negative_flow — pass

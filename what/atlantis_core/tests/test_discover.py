@@ -230,7 +230,7 @@ def test_server_count_matches(inst_dir):
     _one_layer(inst_dir); inst = load_instance(inst_dir)
     probes = {FWC: P.probe_stream(inst, FWC, P.Probe(session=_arcgis(R({"count": 7}))))}
     assert T.server_count(inst, probes)["status"] == "pass"
-    assert T.probe_zero(inst, probes)["status"] == "pass"
+    assert T.probe_zero(inst, probes)["status"] == "na"     # III F-4: no zero met is nothing tested, not a pass
 
 
 def test_server_count_drift_fails(inst_dir):
@@ -332,9 +332,80 @@ def test_cli_fails_on_a_compare_diff_and_a_ruling_accepts_a_fail(inst_dir, exemp
     _write_candidates(inst_dir, doc)
     assert discover_main(["--instance", str(inst_dir)]) == 1                       # a ruling without a date is refused
     doc["rulings"]["longitude_by_unit"]["date"] = "2026-10-10"; _write_candidates(inst_dir, doc)
+    assert discover_main(["--instance", str(inst_dir)]) == 1                       # …and one without `accepts`
+    doc["rulings"]["longitude_by_unit"]["accepts"] = [f"{FWC}:4"]; _write_candidates(inst_dir, doc)
     assert discover_main(["--instance", str(inst_dir)]) == 0
     memo = json.loads((inst_dir / "discovery/discovery_memo.json").read_text())
     assert _status(memo["traps"], "longitude_by_unit")["status"] == "accepted"
+
+
+def test_a_ruling_accepts_the_failures_it_saw_not_the_trap(inst_dir, exemplar_dir):
+    """III M-3a F-1, the reviewer's plant: a ruling given for unit 4 must not absorb a new failure in unit 5."""
+    p = inst_dir / "data/raw/fwc_hab_karenia_1970_2023.parquet"
+    df = pd.read_parquet(p); df.loc[df.index[:20], "lon"] = -88.5
+    extra = df.iloc[:40].assign(lat=27.3, lon=-88.0)                    # unit 5 (Sarasota) band, 5° west of its box
+    pd.concat([df, extra], ignore_index=True).to_parquet(p)
+    doc = _candidates(exemplar_dir)
+    doc["rulings"] = {"longitude_by_unit": {"ruling": "offshore pooling", "by": "steward", "date": "2026-10-10",
+                                            "accepts": [f"{FWC}:4"]}}
+    _write_candidates(inst_dir, doc)
+    assert discover_main(["--instance", str(inst_dir)]) == 1
+    r = _status(json.loads((inst_dir / "discovery/discovery_memo.json").read_text())["traps"], "longitude_by_unit")
+    assert r["status"] == "fail" and f"{FWC}:5" in r["ruling_stale"]
+    assert "ruling stale" in (inst_dir / "discovery/discovery_memo.md").read_text()
+
+
+def test_an_unused_ruling_is_shown_not_applied(inst_dir, exemplar_dir):
+    doc = _candidates(exemplar_dir)
+    doc["rulings"] = {"surveillance_declared": {"ruling": "x", "by": "steward", "date": "2026-10-10", "accepts": ["R8"]}}
+    _write_candidates(inst_dir, doc)
+    assert discover_main(["--instance", str(inst_dir)]) == 0
+    assert "ruling unused" in (inst_dir / "discovery/discovery_memo.md").read_text()
+
+
+def test_an_unprobed_run_does_not_replace_a_probed_memo(inst_dir, exemplar_dir):
+    _write_candidates(inst_dir, _candidates(exemplar_dir))
+    (inst_dir / "discovery/discovery_memo.json").write_text(json.dumps({"probed": True}))
+    assert discover_main(["--instance", str(inst_dir)]) == 1
+    assert discover_main(["--instance", str(inst_dir), "--overwrite-probed"]) == 0
+
+
+def test_a_candidate_no_step_found_is_refused(exemplar_dir):
+    doc = _candidates(exemplar_dir); doc["searched"][2]["found"] = []
+    assert any(USGS in e and "no searched row" in e for e in check_searched(doc))
+
+
+def test_nwis_server_count_compares_days_and_values(inst_dir):
+    """The arm that produced the exemplar's only server-count fail (III F-10): backfilled days and revised values."""
+    inst = load_instance(inst_dir)
+    cached = pd.read_parquet(inst_dir / "data/raw/usgs_discharge_daily.parquet")      # 3 days: 10, 0, 5
+    days = [str(d.date()) for d in cached.date]
+    body = lambda vals, ds: {"value": {"timeSeries": [{"variable": {"noDataValue": -999999.0}, "values": [{"value": [
+        {"dateTime": f"{d}T00:00:00.000", "value": str(v)} for d, v in zip(ds, vals)]}]}]}}
+    same = Fake([("waterservices", lambda p: p["sites"] == "02292900", R(body([10.0, -4.0, 5.0], days))),
+                 ("waterservices", lambda p: "parameterCd" in p, R({"value": {"timeSeries": []}})),
+                 ("waterservices/nwis/site", lambda p: True, R(text="02296750"))])
+    r = T.server_count(inst, {USGS: P.probe_stream(inst, USGS, P.Probe(session=same))})
+    row = r["evidence"][USGS][0]
+    assert row["status"] == "pass" and row["revised_values"] == 0       # −4 clipped as the fetch clips it = cached 0
+    more = Fake([("waterservices", lambda p: p["sites"] == "02292900",
+                  R(body([10.0, 0.0, 7.5, 3.0], days + ["2030-01-01"])))])
+    r = T.server_count(inst, {USGS: P.probe_stream(inst, USGS, P.Probe(session=more))})
+    row = r["evidence"][USGS][0]
+    assert (row["server_only_days"], row["revised_values"], row["status"]) == (1, 1, "fail")
+    assert r["failures"][0] == f"{USGS}:site 02292900"
+
+
+def test_polygon_units_sit_inside_their_bounds(forked):
+    """The polygon arm (III F-10): containment assigns, so a point in a segment is inside that segment's bounds."""
+    inst = load_instance(forked)
+    sid = next(s for s in inst.streams if inst.stream_spec(s).get("shape") == "point")
+    spec = inst.stream_spec(sid); c = spec["columns"]
+    p = forked / spec["artifact"]; p.parent.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame({c["date"]: pd.date_range("2010-01-01", periods=10, freq="30D"), c["value"]: 5.0,
+                  c["lat"]: [35.3] * 5 + [35.0] * 5, c["lon"]: -76.4}).to_parquet(p)
+    r = T.longitude_by_unit(load_instance(forked), T.DEFAULTS)
+    assert r["status"] == "pass" and set(r["evidence"][sid]["units"]) == {"1", "2"} and "containment" in r["note"]
 
 
 def test_cli_probe_records_hosts_and_counts_only(inst_dir, exemplar_dir):

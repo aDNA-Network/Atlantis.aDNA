@@ -7,7 +7,7 @@ A discovery sitting (how/skills/skill_stream_discovery.md) writes `<instance>/di
     candidates:[{stream_id, modality, source_system, source_id, authority, variable, unit, license, fetcher,
                  surveillance_channel, step, note}]                                 # one per stream found
     checks:    {lon_tolerance_deg, lon_max_out_frac, sparse_year_frac}              # optional; the trap thresholds
-    rulings:   {<trap>: {ruling, by, date}}                                          # optional; a steward's acceptance of a fail
+    rulings:   {<trap>: {ruling, by, date, accepts: [failure keys]}}                # optional; a steward's acceptance of named fails
 
 A pointer row is the declarative half of a stream: where it lives, what it measures, under what licence. It carries no
 `sha256`, `ingested_at`, `row_count`, `pipeline_version` or `captured_at` — those are what a FETCH proves, and discovery
@@ -65,6 +65,8 @@ def check_searched(doc: dict) -> list[str]:
     seen = {s.get("step") for s in doc.get("searched") or []}
     errs = [f"searched: step {s} not accounted for (record it with found: [] and why)" for s in STEPS if s not in seen]
     ids = {c.get("stream_id") for c in doc.get("candidates") or []}
+    found = {sid for s in doc.get("searched") or [] for sid in s.get("found") or []}
+    errs += [f"candidate {sid!r} is in no searched row's `found` — say which step found it" for sid in sorted(ids - found)]
     for s in doc.get("searched") or []:
         for sid in s.get("found") or []:
             if sid not in ids:

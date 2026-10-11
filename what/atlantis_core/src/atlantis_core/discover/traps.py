@@ -20,8 +20,11 @@ TRAPS = ("server_count", "longitude_by_unit", "probe_zero", "samples_per_year", 
 DEFAULTS = {"lon_tolerance_deg": 0.5, "lon_gross_deg": 1.0, "lon_max_out_frac": 0.01, "sparse_year_frac": 0.25}
 
 
-def _result(trap, status, evidence=None, note=""):
-    return {"trap": trap, "status": status, "evidence": evidence or {}, "note": note}
+def _result(trap, status, evidence=None, note="", failures=None):
+    """`failures`: one key per failing item (a unit, a layer, a site). A steward's ruling names the keys it accepts; a
+    failure it does not name is not accepted (III M-3a F-1)."""
+    return {"trap": trap, "status": status, "evidence": evidence or {}, "note": note,
+            "failures": sorted(failures or ([trap] if status == "fail" else []))}
 
 
 def _worst(statuses) -> str:
@@ -47,8 +50,8 @@ def _frame(inst, sid) -> pd.DataFrame | None:
 def server_count(inst, probes: dict | None) -> dict:
     """§B/§A1: the server's own count, asserted against what the instance fetched (and stored, so a re-fetch sees drift)."""
     if probes is None:
-        return _result("server_count", "na", note="not probed — re-run with --probe (count-only requests)")
-    ev, st = {}, []
+        return _result("server_count", "na", note="not probed — re-run with --probe")
+    ev, st, fails = {}, [], []
     for sid, p in probes.items():
         if p.get("skipped"):
             ev[sid] = {"skipped": p["skipped"]}; st.append("na"); continue
@@ -69,16 +72,40 @@ def server_count(inst, probes: dict | None) -> dict:
                 row.update(server_range=rng, fetched_range=[lo, hi], status="pass" if ok else "fail",
                            why="" if ok else "the server's time axis no longer covers what was fetched")
             elif p["fetcher"] == "NWISDailyValues":
-                df, col = _frame(inst, sid), (spec.get("columns") or {}).get("station", "site")
-                have = None if df is None else int((df[col].astype(str) == a["what"].removeprefix("site ")).sum())
-                row.update(fetched=have, status="pass" if have == a["n"] else ("na" if have is None else "fail"),
-                           why="" if have == a["n"] else ("not fetched" if have is None else
-                                                          "server day count ≠ fetched: a re-fetch would differ"))
+                row.update(_nwis_compare(inst, sid, spec, a))
             rows.append(row); st.append(row["status"])
+            if row["status"] == "fail":
+                fails.append(f"{sid}:{a['what']}")
         ev[sid] = rows
     return _result("server_count", _worst(st), ev,
-                   "ArcGIS: returnCountOnly per layer vs the fetch summary · ERDDAP: the time axis vs the fetched range · "
-                   "NWIS: days served vs days cached, per site")
+                   "ArcGIS: returnCountOnly per layer vs the fetch summary (a count) · ERDDAP: the time axis must cover the "
+                   "fetched range (coverage only — not a count, not values) · NWIS: the series read in memory, day by day, vs "
+                   "the cache (days only on the server, days only in the cache, values revised)", fails)
+
+
+def _nwis_compare(inst, sid, spec, a) -> dict:
+    """Day sets and values, server vs cache, for one gauge. The server's values are clipped as the fetch would clip them."""
+    df, col = _frame(inst, sid), (spec.get("columns") or {}).get("station", "site")
+    if df is None:
+        return {"fetched": None, "status": "na", "why": "not fetched"}
+    site, val = a["what"].removeprefix("site "), spec["columns"]["value"]
+    c = df[df[col].astype(str) == site].set_index(pd.to_datetime(df.loc[df[col].astype(str) == site, spec["columns"]["date"]]))[val]
+    out = {"fetched": int(len(c))}
+    s = a.get("_series")
+    if s is None:
+        ok = a["n"] == len(c)
+        return {**out, "status": "pass" if ok else "fail", "why": "" if ok else "server day count ≠ fetched"}
+    if (spec.get("fetch") or {}).get("clip_negative"):
+        s = s.clip(lower=0)
+    only_s, only_c = s.index.difference(c.index), c.index.difference(s.index)
+    both = s.index.intersection(c.index)
+    revised = int((~np.isclose(s.loc[both].to_numpy(float), c.loc[both].to_numpy(float), rtol=0, atol=1e-6)).sum())
+    out.update(server_only_days=int(len(only_s)), cache_only_days=int(len(only_c)), revised_values=revised)
+    if len(only_s):
+        out["server_only_span"] = [str(only_s.min().date()), str(only_s.max().date())]
+    bad = len(only_s) or len(only_c) or revised
+    out.update(status="fail" if bad else "pass", why="a re-fetch would differ" if bad else "")
+    return out
 
 
 # ── 2. longitude distribution per unit ─────────────────────────────────────────────────────────────────────────────
@@ -124,7 +151,7 @@ def longitude_by_unit(inst, checks: dict) -> dict:
         bounds, source = _polygon_bounds(inst), "the pinned zone polygons' bounding boxes"
     else:
         bounds, source = _declared_boxes(inst)
-    ev, st = {}, []
+    ev, st, fails = {}, [], []
     for sid in inst.streams:
         spec = inst.stream_spec(sid)
         if spec.get("shape") != "point":
@@ -161,13 +188,16 @@ def longitude_by_unit(inst, checks: dict) -> dict:
         n_un = int(unit.isna().sum())
         ev[sid] = {"units": per, "unassigned": n_un, "bounds": source or "none declared",
                    "failing_units": [u for u, s in zip(per, s_st) if s == "fail"]}
+        fails += [f"{sid}:{u}" for u in ev[sid]["failing_units"]]
         st.append(_worst(s_st + (["warn"] if n_un else [])))
     note = (f"bounds: {source or 'none declared — read the per-unit ranges by eye'}; a point counts as outside beyond "
             f"±{tol}° (warn) and ±{gross}° (fail if > {mx:.0%} of a unit's points). Unassigned points are dropped by "
             f"vitals.build without a count; the count is here.")
     if kind == "rules" and bounds:
         note += " A rule grid's box is a proxy for the unit, not its boundary: a fail asks for a ruling, not a re-grid."
-    return _result("longitude_by_unit", _worst(st), ev, note)
+    if kind == "polygons":
+        note += " Polygon units are assigned by containment, so their points sit inside their bounds by construction."
+    return _result("longitude_by_unit", _worst(st), ev, note, fails)
 
 
 # ── 3. probe before believing a zero ───────────────────────────────────────────────────────────────────────────────
@@ -183,11 +213,12 @@ def probe_zero(inst, probes: dict | None) -> dict:
             return _result("probe_zero", "warn", {"zero_rows": zeros, "zero_layers": layer0},
                            "a zero on record, never probed — re-run with --probe")
         return _result("probe_zero", "na", note="not probed — re-run with --probe; no zero on record in the summaries")
-    ev, st, n = {}, [], 0
+    ev, st, n, fails = {}, [], 0, []
     for sid, p in probes.items():
         for a in p.get("answers", []):
             n += 1
             if a["broken"]:
+                fails.append(f"{sid}:{a['what']}")
                 ok = bool(a["control"]) and "did not answer" not in a["control"]
                 ev.setdefault(sid, []).append({"what": a["what"], "kind": "broken question", "error": a["broken"],
                                                "control": a["control"],
@@ -197,12 +228,20 @@ def probe_zero(inst, probes: dict | None) -> dict:
             elif a["zero"]:
                 real = bool(a["control"]) and "did not answer" not in a["control"]
                 ev.setdefault(sid, []).append({"what": a["what"], "kind": "zero", "control": a["control"],
-                                               "reading": "a true zero (the control answered)" if real else "a broken question"})
+                                               "reading": "a zero from a server that answers its control — the source "
+                                                          "exists; that the zero is true is NOT shown" if real
+                                               else "a broken question"})
                 st.append("warn" if real else "fail")
+                if not real:
+                    fails.append(f"{sid}:{a['what']}")
     if not n:
         return _result("probe_zero", "na", note="no stream had a probe")
-    return _result("probe_zero", _worst(st) if st else "pass", ev or {"answers": n, "zero_or_broken": 0},
-                   f"{n} probe answers; each zero or failed answer re-asked with a control")
+    if not st:   # III M-3a F-4: nothing to probe is not a pass
+        return _result("probe_zero", "na", {"answers": n, "zero_or_broken": 0},
+                       f"{n} probe answers, none zero or broken: the trap had nothing to test")
+    return _result("probe_zero", _worst(st), ev,
+                   f"{n} probe answers; each zero or failed answer re-asked with a control (the control shows the source "
+                   f"exists, not that the zero is true)", fails)
 
 
 # ── 4. samples per year before min_train_year ──────────────────────────────────────────────────────────────────────
@@ -218,17 +257,19 @@ def samples_per_year(inst, checks: dict) -> dict:
         if df is None:
             ev[sid] = {"skipped": "not fetched"}; continue
         years = pd.to_datetime(df[inst.stream_spec(sid)["columns"]["date"]]).dt.year
-        counts = years.value_counts().reindex(range(y0, y1 + 1), fill_value=0)
-        med = float(counts.median())
-        sparse = [int(y) for y, n in counts.items() if n < frac * med]
-        ok_from = next((y for y in range(y0, y1 + 1) if all(counts[z] >= frac * med for z in range(y, y1 + 1))), None)
         first = int(years.min())
+        lo = min(first, y0)   # III M-3a F-5: count from the first year on record, so the table can inform the choice
+        counts = years.value_counts().reindex(range(lo, y1 + 1), fill_value=0)
+        med = float(counts.loc[y0:y1].median())   # the reference: the median year of the window as chosen
+        sparse = [int(y) for y, n in counts.loc[y0:y1].items() if n < frac * med]
+        ok_from = next((y for y in range(lo, y1 + 1) if all(counts[z] >= frac * med for z in range(y, y1 + 1))), None)
         ev[sid] = {"years": {int(y): int(n) for y, n in counts.items()}, "median_year": med,
                    "sparse_years": sparse, "first_year_on_record": first,
                    "earliest_min_train_year_with_no_sparse_year": ok_from}
         if sid == ev_sid:
             status = "warn" if sparse else "pass"
-    note = (f"a year is sparse below {frac:.0%} of the median year in {y0}–{y1}; min_train_year is {y0}. A warn asks "
+    note = (f"counts from the first year on record; a year is sparse below {frac:.0%} of the median year in {y0}–{y1}; "
+            f"min_train_year is {y0}. A warn asks "
             f"whether the sparse years should train — it does not move min_train_year (that is a vitals change, SO-7).")
     if ev_sid not in ev or "skipped" in ev[ev_sid]:
         note = "the event stream is not fetched. " + note
@@ -273,7 +314,7 @@ def negative_flow(inst, probes: dict | None) -> dict:
         ev[sid] = row
     if not ev:
         return _result("negative_flow", "na", note="no gauge stream (NWIS) declared")
-    return _result("negative_flow", _worst(st), ev)
+    return _result("negative_flow", _worst(st), ev, failures=[sid for sid, x in zip(ev, st) if x == "fail"])   # one status per gauge
 
 
 # ── 6. surveillance channel declared ───────────────────────────────────────────────────────────────────────────────
@@ -292,7 +333,8 @@ def surveillance_declared(inst) -> dict:
         ev["reason"] = surv["reason"]
     if r8:
         ev["r8"] = r8
-    return _result("surveillance_declared", "fail" if r8 else "pass", ev, "registry R8 (contract item 5)")
+    return _result("surveillance_declared", "fail" if r8 else "pass", ev, "registry R8 (contract item 5)",
+                   ["R8"] if r8 else None)
 
 
 def run_all(inst, checks: dict | None = None, probes: dict | None = None) -> list[dict]:
