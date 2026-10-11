@@ -4,8 +4,8 @@ doc_id: playbook_data_and_literature_mining
 title: "Playbook — mining the data and literature for a new regional instance (v0)"
 status: proposed
 created: 2026-09-23
-updated: 2026-09-23
-last_edited_by: agent_berthier
+updated: 2026-10-10
+last_edited_by: agent_proteus
 tags: [playbook, data_discovery, literature_mining, erddap, arcgis, nwis, ndbc, atlantis]
 ---
 
@@ -15,6 +15,10 @@ Written from the S329 discovery arc (Florida, *K. brevis*), which found and veri
 under an hour, and hit every trap below at least once.
 
 ## A. Data discovery, in the order that worked
+
+> **Runnable since M-3a (2026-10-10):** `how/skills/skill_stream_discovery.md` walks these steps as A1–A6 into
+> `<instance>/discovery/candidates.yaml`, then `python -m atlantis_core.discover` writes pointer rows and runs §B as checks.
+> This section stays the narrative: why the order, and what S329 learned.
 
 1. **State / agency open-data portals first** (ArcGIS Hub: `hub.arcgis.com/api/v3/datasets?q=<taxon or program>`;
    a state's `geodata.<agency>` Hub search API). Monitoring archives are usually ArcGIS MapServer layers with
@@ -37,15 +41,23 @@ under an hour, and hit every trap below at least once.
 
 ## B. Traps, each hit once
 
+> Each trap is now a check in `atlantis_core.discover.traps`; its name is in brackets. The memo reports pass · warn · fail ·
+> n/a, and a steward's dated ruling turns a fail into *accepted*.
+
 - **Assign space by coordinates, never by names.** Location strings changed convention across decade layers;
   a coordinate rule is the only consistent key. Then **check the longitude distribution per region**: our first
-  rule put 11,379 Atlantic-coast samples into Gulf regions.
+  rule put 11,379 Atlantic-coast samples into Gulf regions. [`longitude_by_unit`]
 - **Probe before you believe a zero.** A `returnDistinctValues` query returned no `features` key; a variable
-  that shell-expanded to nothing produced empty counts. A zero measures your question first.
+  that shell-expanded to nothing produced empty counts. A zero measures your question first. [`probe_zero`; the
+  server's own count, §A1, is `server_count`]
 - **Surveillance is endogenous.** Sampling intensifies during events. Keep sample counts as explicit, flagged
-  features; ablate them; report the single-feature baseline.
-- **Early decades are sparse.** Count samples per year before choosing `min_train_year`.
-- **Reverse flow at tidal gauges is negative.** Clip, and say so in the dataset note.
+  features; ablate them; report the single-feature baseline. [`surveillance_declared` → registry R8]
+- **Early decades are sparse.** Count samples per year before choosing `min_train_year`. [`samples_per_year`]
+- **Reverse flow at tidal gauges is negative.** Clip, and say so in the dataset note. [`negative_flow`. S329's
+  record of this trap is one code comment with no count (`hab/fetch_env.py:92`). On 2026-10-10 the daily-values
+  series served no negative day at any of the exemplar's five gauges, S-79 included. Whether it ever did is not on
+  record. The check now records the count, and counts NWIS no-data sentinels apart, since a clip would read them as
+  zero flow.]
 
 ## C. Literature mining (the P3 lane — design, not yet built)
 
