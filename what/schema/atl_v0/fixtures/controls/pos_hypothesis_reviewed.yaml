@@ -1,0 +1,35 @@
+# POSITIVE — M-3b-i (atl_v0 0.9.0). SYNTHETIC hypothesis row. A reviewed row naming its reviewer, realised and written up as not_supported (T8: written either way). Must validate.
+hypotheses:
+- hyp_id: atl_hyp_coral_reef_example_001
+  tier: reviewed
+  ecosystem_type: coral_reef
+  event_variable: degree_heating_week
+  mechanism: Low wind reduces vertical mixing and evaporative cooling, so reef-flat water heats faster.
+  driver:
+    variable: wind_speed
+    authority: CF:wind_speed
+    driver_lag:
+      lag_value: 1
+      lag_unit: weeks
+      lag_note: as stated
+    driver_direction: negative
+  region_asserted: example reef tract
+  evidence_class: observational
+  citation:
+    doi: 10.0000/atl.example.001
+    title: An example paper
+    year: 2001
+    citation_source: openalex
+  sentence_pointer: Results, paragraph 2
+  hypothesis_source: literature
+  realisable_as: buoy wind speed (NDBC stdmet) · weekly mean · lag 1 week
+  realisation:
+    realised_in: Example.aDNA
+    realised_vital: atl_vital_example
+    realised_stream: atl_stream_example
+    tested_at: '2026-10-12'
+    result: not_supported
+    shap_mean_abs: 0.0
+    write_up: who/coordination/example_memo.md
+  recorded_by: agent_example
+  reviewed_by: agent_reviewer

@@ -1,0 +1,30 @@
+# NEGATIVE — M-3b-i (atl_v0 0.9.0). SYNTHETIC hypothesis row. A whitespace sentence pointer. MUST FAIL, and only on this.
+# REJECTS_ON: does not match
+# REJECTS_AT: ^/hypotheses/0/sentence_pointer$
+hypotheses:
+- hyp_id: atl_hyp_coral_reef_example_001
+  tier: draft
+  ecosystem_type: coral_reef
+  event_variable: degree_heating_week
+  mechanism: Low wind reduces vertical mixing and evaporative cooling, so reef-flat water heats faster.
+  driver:
+    variable: wind_speed
+    authority: CF:wind_speed
+    driver_lag:
+      lag_value: 1
+      lag_unit: weeks
+      lag_note: as stated
+    driver_direction: negative
+  region_asserted: example reef tract
+  evidence_class: observational
+  citation:
+    doi: 10.0000/atl.example.001
+    title: An example paper
+    year: 2001
+    citation_source: openalex
+  sentence_pointer: '  '
+  hypothesis_source: literature
+  realisable_as: buoy wind speed (NDBC stdmet) · weekly mean · lag 1 week
+  realisation:
+    result: untested
+  recorded_by: agent_example

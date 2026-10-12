@@ -84,14 +84,19 @@ bound:   # adopted now — an atl_ slot carries this authority's id
     reason: "DHW is the P2 event variable and has no CF standard name (cf_standard_names.known_limit). The producer's product doc is the only authority that defines it."
     known_limit: "A producer-scoped id, not a community vocabulary — replace with CF the day a standard name exists. Ids are CRW ERDDAP variable names; nothing checks them against CRW's service."
 
-deferred:   # listed so nobody re-discovers them; bound when an instance needs them
-
   - id: envo
     external_authority: "ENVO — Environment Ontology (OBO)"
     iri_base: http://purl.obolibrary.org/obo/ENVO_
-    adoption_verdict: defer
-    bind_when: "an eDNA / metagenomic instance needs habitat terms (ENVO:00000447 marine biome; ENVO:01000020 estuarine biome) on AtlSpatialUnit"
-    reason: "Not needed to compare evaluations; useful for the hypothesis ledger's ecosystem-type key at P3."
+    curie_prefix: ENVO
+    pin_field: "AtlHypothesis.ecosystem_type — through EcosystemType's `meaning:` (an enum binding, not a slot carrying an id)"
+    applies_when: "a hypothesis-ledger row; the value is the ledger's join key across instances (hypotheses README rule 5)"
+    adoption_verdict: adopt
+    bound_at: "2026-10-12, M-3b-i (was deferred at M-0; its reason named this key). BIOME terms, looked up in OLS 2026-10-12, none obsolete: coral_reef → ENVO:01000049 (marine coral reef biome) · estuary → ENVO:01000020 (estuarine biome) · neritic_shelf → ENVO:01000042 (neritic epipelagic zone biome). ENVO:00000150 (coral reef, a geographic FEATURE) was considered and not taken: the key names an ecosystem type, not a place"
+    version_pinned_by: "the term ids in the schema (ENVO is append-only; an obsoleted id would be a schema change)"
+    reason: "The ledger needs a key a coral DHW driver asserted in Palau and a Keys instance both resolve to; a biome class is that key, and ENVO is the OBO standard MIxS also uses."
+    known_limit: "Scope is the ledger's enum only. AtlSpatialUnit still carries no habitat term — its original bind_when (an eDNA / metagenomic instance needing habitat terms on the unit) is NOT met and stays open. Nothing checks the ids against OLS at validation time."
+
+deferred:   # listed so nobody re-discovers them; bound when an instance needs them
 
   - id: mixs
     external_authority: "MIxS — Minimum Information about any (x) Sequence (GSC); water / sediment packages"

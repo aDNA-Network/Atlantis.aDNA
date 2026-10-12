@@ -104,6 +104,73 @@
             "title": "AtlAlertBudget",
             "type": "object"
         },
+        "AtlCitation": {
+            "additionalProperties": false,
+            "description": "0.9.0. The cited work. Its DOI (or URL) must appear in the ledger's corpus manifest (atlantis_core check).",
+            "if": {
+                "not": {
+                    "required": [
+                        "doi"
+                    ]
+                },
+                "properties": {
+                    "doi": {}
+                }
+            },
+            "properties": {
+                "citation_source": {
+                    "$ref": "#/$defs/CitationSource",
+                    "description": "0.9.0. Control: neg_hypothesis_unknown_citation_source."
+                },
+                "doi": {
+                    "description": "0.9.0. A bare DOI (10.xxxx/\u2026), no resolver prefix. Control: neg_hypothesis_doi_malformed (a `https://doi.org/` prefix). Required unless `url` is given (AtlCitation rule).",
+                    "pattern": "^10\\.[0-9]{4,9}/\\S+(?!\\n)$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "title": {
+                    "type": "string"
+                },
+                "url": {
+                    "description": "0.9.0. For a work with no DOI (an agency report). Control: neg_hypothesis_url_malformed.",
+                    "pattern": "^https?://\\S+(?!\\n)$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "year": {
+                    "description": "0.9.0. Control: neg_hypothesis_year_out_of_range.",
+                    "maximum": 2100,
+                    "minimum": 1800,
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "title",
+                "year",
+                "citation_source"
+            ],
+            "then": {
+                "properties": {
+                    "url": {
+                        "allOf": [
+                            {
+                                "pattern": "^https?://\\S+(?!\\n)$",
+                                "type": "string"
+                            }
+                        ]
+                    }
+                },
+                "required": [
+                    "url"
+                ]
+            },
+            "title": "AtlCitation",
+            "type": "object"
+        },
         "AtlDataPin": {
             "additionalProperties": false,
             "description": "One stream the model saw, pinned by hash.",
@@ -186,6 +253,16 @@
                 "event_definitions": {
                     "items": {
                         "$ref": "#/$defs/AtlEventDefinition"
+                    },
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "hypotheses": {
+                    "description": "0.9.0. For controls and bulk validation; a ledger row file holds ONE hypothesis at top level, validated -C AtlHypothesis.",
+                    "items": {
+                        "$ref": "#/$defs/AtlHypothesis"
                     },
                     "type": [
                         "array",
@@ -651,6 +728,219 @@
             "title": "AtlEventDefinition",
             "type": "object"
         },
+        "AtlHypothesis": {
+            "additionalProperties": false,
+            "description": "0.9.0 (M-3b-i). One claim from the literature about what drives an event \u2014 mechanism \u00b7 driver \u00b7 lag \u00b7 direction \u00b7 threshold \u00b7 evidence class \u00b7 citation \u2014 pointing at a sentence, and saying what vital would realise it. A hypothesis, not a fact: `tier: validated` would mean two reviewers agree the extraction is faithful, never that the mechanism is true; truth is the instance's SHAP and the write-up's job (README rule 2). CLOSED: control neg_hypothesis_extra_key proves an undeclared key (an abstract pasted in) is rejected AT the row. Nearest miss NOT caught: a long quotation pasted INTO sentence_pointer or mechanism (atlantis_core check counts the pointer's words; mechanism is a reviewer's catch).",
+            "if": {
+                "properties": {
+                    "tier": {
+                        "const": "reviewed"
+                    }
+                },
+                "required": [
+                    "tier"
+                ]
+            },
+            "properties": {
+                "citation": {
+                    "$ref": "#/$defs/AtlCitation"
+                },
+                "description": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "driver": {
+                    "$ref": "#/$defs/AtlHypothesisDriver",
+                    "description": "0.9.0. Control: neg_hypothesis_without_driver."
+                },
+                "ecosystem_type": {
+                    "$ref": "#/$defs/EcosystemType",
+                    "description": "0.9.0. The join key (README rule 5); also the ledger directory name (atlantis_core check). Control: neg_hypothesis_unknown_ecosystem."
+                },
+                "event_variable": {
+                    "description": "0.9.0. The event the claim bears on, as the instance names it (degree_heating_week; a WoRMS taxon). Free text: a hypothesis may be read before any instance declares the event.",
+                    "type": "string"
+                },
+                "evidence_class": {
+                    "$ref": "#/$defs/EvidenceClass",
+                    "description": "0.9.0. Control: neg_hypothesis_unknown_evidence_class."
+                },
+                "hyp_id": {
+                    "description": "0.9.0. Hypothesis id; the row's file is <hyp_id>.yaml (atlantis_core.hypotheses check). Control: neg_hypothesis_id_prefix.",
+                    "pattern": "^atl_hyp_[a-z0-9_]{2,64}(?!\\n)$",
+                    "type": "string"
+                },
+                "hypothesis_source": {
+                    "$ref": "#/$defs/HypothesisSource",
+                    "description": "0.9.0. Control: neg_hypothesis_unknown_source."
+                },
+                "mechanism": {
+                    "description": "0.9.0. One sentence: the paper's claim in the paper's terms. Control: neg_hypothesis_mechanism_blank.",
+                    "pattern": "\\S",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Human label. Never a partner site's name when the instance's posture is partner or human_subject.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "realisable_as": {
+                    "description": "0.9.0 (skill step 4). The candidate vital in stream-class terms (source \u00b7 transform \u00b7 lag), or `unrealisable: <why>` \u2014 T8's falsifier made visible (rows no fetcher can realise). Control: neg_hypothesis_realisable_as_blank.",
+                    "pattern": "\\S",
+                    "type": "string"
+                },
+                "realisation": {
+                    "$ref": "#/$defs/AtlRealisation",
+                    "description": "0.9.0. Present on every row (`result: untested` until an instance realises it); filled when an instance turns the row into a vital. Required, not optional: an optional inlined object is emitted anyOf [object, null], and a defect inside it would be rejected only as an unnamed branch (the controls could not name it)."
+                },
+                "recorded_at": {
+                    "format": "date-time",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "recorded_by": {
+                    "description": "Agent or operator id (e.g. agent_proteus, stanley).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "region_asserted": {
+                    "description": "0.9.0. Where the paper looked (a region name; never coordinates).",
+                    "type": "string"
+                },
+                "reviewed_by": {
+                    "description": "0.9.0. Who confirmed the extraction is faithful to the cited text. REQUIRED and non-blank when tier = reviewed (AtlHypothesis rule). Nearest miss NOT caught: a reviewer who is the extractor (atlantis_core check), or `validated` with fewer than two reviewers (atlantis_core check refuses `validated` until a second-reviewer slot exists).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "sentence_pointer": {
+                    "description": "0.9.0. README rule 1 \u2014 no pointer, no row: a section/paragraph, or a quotation of \u2264 25 words. Controls: neg_hypothesis_without_sentence_pointer (absent) \u00b7 neg_hypothesis_sentence_pointer_blank. Nearest miss NOT caught: a quotation over 25 words, or one not in the paper (atlantis_core.hypotheses check: word count always; verbatim against the cached text when the cache is present).",
+                    "pattern": "\\S",
+                    "type": "string"
+                },
+                "tier": {
+                    "$ref": "#/$defs/EvidenceTier"
+                },
+                "version": {
+                    "description": "Semantic version of the declared object.",
+                    "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?!\\n)$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "hyp_id",
+                "ecosystem_type",
+                "event_variable",
+                "mechanism",
+                "driver",
+                "region_asserted",
+                "evidence_class",
+                "citation",
+                "sentence_pointer",
+                "hypothesis_source",
+                "realisable_as",
+                "realisation"
+            ],
+            "then": {
+                "properties": {
+                    "reviewed_by": {
+                        "allOf": [
+                            {
+                                "pattern": "\\S",
+                                "type": "string"
+                            }
+                        ]
+                    }
+                },
+                "required": [
+                    "reviewed_by"
+                ]
+            },
+            "title": "AtlHypothesis",
+            "type": "object"
+        },
+        "AtlHypothesisDriver": {
+            "additionalProperties": false,
+            "description": "0.9.0. The driver variable as an authority names it, with its lag, direction and optional threshold.",
+            "properties": {
+                "authority": {
+                    "description": "The vocabulary the stream's variable is named in: CF standard name, WoRMS AphiaID, Darwin Core term.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "driver_direction": {
+                    "$ref": "#/$defs/DriverDirection",
+                    "description": "0.9.0. Control: neg_hypothesis_unknown_direction."
+                },
+                "driver_lag": {
+                    "$ref": "#/$defs/AtlLagSpec",
+                    "description": "0.9.0. Required: a realisation needs a lag. A paper that states none is recorded as lag_value 0 with lag_note `not stated \u2014 concurrent`, or an inferred lag with `inferred: <how>` (the skill, step 3). Required for the same reason as realisation."
+                },
+                "driver_threshold": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/AtlThresholdSpec"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "variable": {
+                    "description": "The driver as the authority names it (wind_speed; Ni\u00f1o 3.4; cloud_area_fraction).",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "variable",
+                "driver_lag",
+                "driver_direction"
+            ],
+            "title": "AtlHypothesisDriver",
+            "type": "object"
+        },
+        "AtlLagSpec": {
+            "additionalProperties": false,
+            "description": "0.9.0. A lag as the paper states it.",
+            "properties": {
+                "lag_note": {
+                    "description": "0.9.0. `as stated` or `inferred: <how>`.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "lag_unit": {
+                    "$ref": "#/$defs/LagUnit",
+                    "description": "0.9.0. Control: neg_hypothesis_unknown_lag_unit."
+                },
+                "lag_value": {
+                    "description": "0.9.0. Control: neg_hypothesis_lag_negative.",
+                    "minimum": 0,
+                    "type": "number"
+                }
+            },
+            "required": [
+                "lag_value",
+                "lag_unit"
+            ],
+            "title": "AtlLagSpec",
+            "type": "object"
+        },
         "AtlLeadTime": {
             "additionalProperties": false,
             "description": "Lead-time summary at one budget. Histogram stays in the instance. (0.4.0) `threshold_from` says where the threshold it reads was fixed.",
@@ -944,6 +1234,65 @@
             "title": "AtlPairedInterval",
             "type": "object"
         },
+        "AtlRealisation": {
+            "additionalProperties": false,
+            "description": "0.9.0. The loop closed in an instance \u2014 realised, tested, written up either way.",
+            "properties": {
+                "realised_in": {
+                    "description": "0.9.0. The instance (vault name) that realised the row.",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "realised_stream": {
+                    "pattern": "^atl_stream_[a-z0-9_]{2,64}(?!\\n)$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "realised_vital": {
+                    "description": "0.9.0. The AtlVital whose hypothesis_ref names this row.",
+                    "pattern": "^atl_vital_[a-z0-9_]{2,64}(?!\\n)$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "result": {
+                    "$ref": "#/$defs/RealisationResult",
+                    "description": "0.9.0. Control: neg_hypothesis_unknown_result."
+                },
+                "shap_mean_abs": {
+                    "description": "0.9.0. Mean |SHAP| of the realised vital (or its group) on test \u2014 a summary, never per-patient.",
+                    "minimum": 0,
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "tested_at": {
+                    "format": "date",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "write_up": {
+                    "description": "0.9.0. Memo or board-entry pointer \u2014 written either way (T8).",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "result"
+            ],
+            "title": "AtlRealisation",
+            "type": "object"
+        },
         "AtlSpatialUnit": {
             "additionalProperties": false,
             "description": "The patient's space \u2014 one of these \u00d7 one time step is a patient row. Passes the instance test (an MPA zone is countable), independence (it outlives any model) and lifecycle (boundaries change by ruling, versioned). Geometry is a pointer: Atlantis never holds a polygon.",
@@ -1026,6 +1375,25 @@
                 "time_step"
             ],
             "title": "AtlSpatialUnit",
+            "type": "object"
+        },
+        "AtlThresholdSpec": {
+            "additionalProperties": false,
+            "description": "0.9.0. A threshold the paper names.",
+            "properties": {
+                "threshold_unit": {
+                    "description": "UCUM.",
+                    "type": "string"
+                },
+                "threshold_value": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "threshold_value",
+                "threshold_unit"
+            ],
+            "title": "AtlThresholdSpec",
             "type": "object"
         },
         "AtlVital": {
@@ -1167,6 +1535,17 @@
             "title": "AtlVital",
             "type": "object"
         },
+        "CitationSource": {
+            "description": "0.9.0. The index or portal the cited work was retrieved through (provenance of the retrieval, not of the work). local.",
+            "enum": [
+                "openalex",
+                "semantic_scholar",
+                "europe_pmc",
+                "agency"
+            ],
+            "title": "CitationSource",
+            "type": "string"
+        },
         "Claim": {
             "description": "What an evaluation is allowed to claim (SO-4). local. Default is method_demonstration; the other value needs the instance owner's written ruling naming the agencies that run the real forecast.",
             "enum": [
@@ -1185,6 +1564,39 @@
             "title": "Direction",
             "type": "string"
         },
+        "DriverDirection": {
+            "description": "0.9.0. Which way the literature says the driver moves the event's probability. local. Distinct from Direction (which way a threshold CROSSING goes). `threshold`: the paper names a level past which the effect appears; `nonmonotone`: an optimum or a U-shape.",
+            "enum": [
+                "positive",
+                "negative",
+                "nonmonotone",
+                "threshold"
+            ],
+            "title": "DriverDirection",
+            "type": "string"
+        },
+        "EcosystemType": {
+            "description": "0.9.0 (M-3b-i). The hypothesis ledger's join key across instances (hypotheses README rule 5) \u2014 a coral DHW driver asserted in Palau is a candidate vital in the Keys. Bound to ENVO BIOME terms (crosswalk row envo, moved from deferred to adopted at 0.9.0; ids looked up in OLS on 2026-10-12, none obsolete). Scope of the binding: this enum only \u2014 AtlSpatialUnit carries no ENVO term (its bind_when is unchanged). A new ecosystem type is a new value with its looked-up term.",
+            "enum": [
+                "coral_reef",
+                "estuary",
+                "neritic_shelf"
+            ],
+            "title": "EcosystemType",
+            "type": "string"
+        },
+        "EvidenceClass": {
+            "description": "0.9.0. What kind of evidence the cited work offers for the claim. local (playbook \u00a7C.2).",
+            "enum": [
+                "observational",
+                "experimental",
+                "model",
+                "review",
+                "agency_report"
+            ],
+            "title": "EvidenceClass",
+            "type": "string"
+        },
         "EvidenceTier": {
             "description": "Review tier of a declared object. local \u2014 RareArchive's draft\u2192reviewed\u2192validated\u2192published ladder, minus `published` (the board is the publication).",
             "enum": [
@@ -1193,6 +1605,16 @@
                 "validated"
             ],
             "title": "EvidenceTier",
+            "type": "string"
+        },
+        "HypothesisSource": {
+            "description": "0.9.0. Where a hypothesis came from. local. `steward_expert` carries the steward's consent to be named or is attributed to the instance (README rule 4); `model_finding` is a SHAP surprise promoted to a hypothesis.",
+            "enum": [
+                "literature",
+                "steward_expert",
+                "model_finding"
+            ],
+            "title": "HypothesisSource",
             "type": "string"
         },
         "IntervalComparator": {
@@ -1212,6 +1634,17 @@
             "title": "IntervalMetric",
             "type": "string"
         },
+        "LagUnit": {
+            "description": "0.9.0. The unit a literature lag is stated in. local \u2014 the paper's own unit, converted to the instance's time step at realisation, not here.",
+            "enum": [
+                "days",
+                "weeks",
+                "months",
+                "years"
+            ],
+            "title": "LagUnit",
+            "type": "string"
+        },
         "Modality": {
             "description": "How a stream speaks. local, informed by GOOS EOV platform classes (not bound in v0 \u2014 crosswalk row 7).",
             "enum": [
@@ -1225,6 +1658,17 @@
                 "literature"
             ],
             "title": "Modality",
+            "type": "string"
+        },
+        "RealisationResult": {
+            "description": "0.9.0. What the instance's test said. local. `not_supported` rows are kept and written up (T8; README rule 3). `supported` means the realised vital carried attribution as the paper predicts \u2014 never that the mechanism is true.",
+            "enum": [
+                "untested",
+                "supported",
+                "not_supported",
+                "inconclusive"
+            ],
+            "title": "RealisationResult",
             "type": "string"
         },
         "ResampleUnit": {
@@ -1305,6 +1749,16 @@
                 "null"
             ]
         },
+        "hypotheses": {
+            "description": "0.9.0. For controls and bulk validation; a ledger row file holds ONE hypothesis at top level, validated -C AtlHypothesis.",
+            "items": {
+                "$ref": "#/$defs/AtlHypothesis"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
+        },
         "observation_streams": {
             "items": {
                 "$ref": "#/$defs/AtlObservationStream"
@@ -1335,6 +1789,6 @@
     },
     "title": "atl_ontology_v0",
     "type": "object",
-    "version": "0.8.0"
+    "version": "0.9.0"
 }
 

@@ -4,10 +4,10 @@ doc_id: atl_v0_m1c_vocabulary_fit_matrix
 title: "atl_v0 — vocabulary fit matrix (every enum value × crosswalk authority)"
 status: draft
 created: 2026-10-02
-updated: 2026-10-08
+updated: 2026-10-12
 last_edited_by: agent_proteus
 mission: mission_m1c_linkml_controls
-schema: atl_ontology_v0.linkml.yaml (v0.2.0 at M-1c; §8 added at v0.8.0, M-2c-i)
+schema: atl_ontology_v0.linkml.yaml (v0.2.0 at M-1c; §8 added at v0.8.0, M-2c-i; §9 added at v0.9.0, M-3b-i)
 crosswalk: crosswalk_external_vocabularies_v0.yaml
 tags: [fit_matrix, vocabulary, atl, m1c, goos, eov]
 ---
@@ -144,6 +144,26 @@ table.
 | `IntervalMetric.auprc` | `local`: as `auroc` (average precision) |
 | `ResampleUnit.season_year` | `local`: a whole test year. Zone-weeks within a season are one event seen many times |
 
+## 9 · Hypothesis-ledger enums (0.9.0, M-3b-i) — the first bound enum
+
+Added at M-3b-i (2026-10-12). **`EcosystemType` is the first enum bound to an external authority** (ENVO, crosswalk row
+`envo`, moved to bound): it names a thing in the world (a biome), not a step of the method, so the M-1c finding below
+does not apply to it. The other six name the method's reading of a paper — every row `local`; the external columns are
+**—** and left out.
+
+| Enum · value | Verdict · reason |
+|---|---|
+| `EcosystemType.coral_reef` | **bound** `ENVO:01000049` marine coral reef biome (OLS 2026-10-12) |
+| `EcosystemType.estuary` | **bound** `ENVO:01000020` estuarine biome |
+| `EcosystemType.neritic_shelf` | **bound** `ENVO:01000042` neritic epipelagic zone biome (the shelf water column; the exemplar's *K. brevis*) |
+| `DriverDirection.positive` · `.negative` | `local`: the sign the paper asserts for the driver's effect on the event |
+| `DriverDirection.nonmonotone` · `.threshold` | `local`: an optimum / a level past which the effect appears |
+| `LagUnit.days` · `.weeks` · `.months` · `.years` | `local`: the paper's own unit; UCUM would name `d`/`wk`/`mo`/`a`, but the slot records the paper's words and converts at realisation |
+| `EvidenceClass.observational` · `.experimental` · `.model` · `.review` · `.agency_report` | `local`: playbook §C.2's classes. ECO (Evidence & Conclusion Ontology) was considered: its terms type *assertions about genes and functions*, not field ecology — not taken |
+| `HypothesisSource.literature` · `.steward_expert` · `.model_finding` | `local`: where the row came from (README rule 4) |
+| `CitationSource.openalex` · `.semantic_scholar` · `.europe_pmc` · `.agency` | `local`: the index the work was retrieved through |
+| `RealisationResult.untested` · `.supported` · `.not_supported` · `.inconclusive` | `local`: what the instance's test said — never that the mechanism is true |
+
 ## Summary
 
 | Enum | Rows | Bound | `local` | Candidate for v1 |
@@ -156,7 +176,9 @@ table.
 | Claim | 2 | 0 | 2 | — |
 | EvidenceTier | 3 | 0 | 3 | — |
 | ThresholdSource · IntervalComparator · IntervalMetric · ResampleUnit (§8) | 6 | 0 | 6 | — |
-| **Total** | **36** | **0** | **36** | 1 |
+| EcosystemType (§9) | 3 | **3** (ENVO) | 0 | further biomes as instances need them |
+| DriverDirection · LagUnit · EvidenceClass · HypothesisSource · CitationSource · RealisationResult (§9) | 24 | 0 | 24 | — |
+| **Total** | **63** | **3** | **60** | 2 |
 
 **Known limit:** this matrix checks *names against names*. It does not validate any `authority` / `external_id` CURIE
 against the authority's service (is `WoRMS:233015` live? is a WDPA id current?). That is a validator's job

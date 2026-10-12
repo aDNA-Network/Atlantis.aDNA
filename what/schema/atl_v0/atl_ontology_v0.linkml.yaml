@@ -1,6 +1,6 @@
 # atl_ontology_v0.linkml.yaml — Atlantis.aDNA · the `atl_` ontology for ecosystem early warning, v0
 #
-# STATUS: draft (v0.8.0) — authored at M-0 (2026-10-02, fable); CONTROLLED at P1 M-1c (2026-10-02, opus); 0.3.0 at M-1d-i
+# STATUS: draft (v0.9.0) — authored at M-0 (2026-10-02, fable); CONTROLLED at P1 M-1c (2026-10-02, opus); 0.3.0 at M-1d-i
 # (2026-10-03, operator ruling): a stream may be DECLARED before it is fetched — `ingested_at` optional, and a hash ⇒ a fetch time.
 # 0.4.0 at M-1e (2026-10-03, operator ruling; F-8): an alert budget says where its threshold was fixed (`threshold_from`), and a
 # threshold fixed on validation ⇒ the REALISED test alert rate is stated beside the nominal `rate`. 0.5.0 at M-2a-i (2026-10-06):
@@ -10,7 +10,10 @@
 # (`base_rate_train`, `base_rate_validation`, `calibration_in_the_large_*`; ruling 16). 0.8.0 at M-2c-i (2026-10-08; P2 gate
 # III G-3, C-034): T11 at its terms — climatology scored at the model's budgets with thresholds fixed on validation
 # (`climatology_alert_budgets`, reusing AtlAlertBudget and its realised-rate rule), and a season-block paired interval for
-# model − comparator (`paired_intervals`, AtlPairedInterval; resampled by test season, never by row). A constraint
+# model − comparator (`paired_intervals`, AtlPairedInterval; resampled by test season, never by row). 0.9.0 at M-3b-i
+# (2026-10-12, operator rulings 1–3): the hypothesis ledger — AtlHypothesis (one literature claim, pointing at a sentence,
+# realisable as a vital) with its inlined driver · lag · threshold · citation · realisation, and EcosystemType bound to
+# ENVO biome terms (the ledger's join key; crosswalk row envo). A constraint
 # is claimed ONLY where a control in fixtures/controls/ proves it under all three worlds of run_controls.sh
 # (linkml-validate · the committed atl_ontology_v0.schema.json, descendants OFF · a scratch JSON Schema, descendants ON).
 # The control count and the known limits are in README.md. A constraint whose docstring names no control is NOT claimed.
@@ -28,7 +31,7 @@
 # Five classes, chosen by the instance / independence / lifecycle tests (context_adna_core_ontology_workshop):
 #   AtlSpatialUnit · AtlObservationStream · AtlVital · AtlEventDefinition · AtlEvaluation.
 # Deliberately NOT classes in v0 (README §Dropped): Patient×TimeStep, Observation, Label (table shapes → type
-# vocabulary); Model (→ RareArchive model.schema.json / Ray RayJobRecord by reference); Hypothesis (v1, P3);
+# vocabulary); Model (→ RareArchive model.schema.json / Ray RayJobRecord by reference); Hypothesis (added 0.9.0, P3 M-3b-i);
 # Steward, Instance (governance documents); BoardEntry (the board's own schema, which embeds AtlEvaluation).
 
 id: https://w3id.org/adna/atlantis/atl_v0
@@ -41,7 +44,7 @@ description: >-
   (a feature with a tag and a lineage), an event definition (threshold · direction · horizon), and an evaluation
   (the measurement, always against its base rate). Observations, labels and predictions are table shapes, not
   entities, and never cross into Atlantis.
-version: 0.8.0
+version: 0.9.0
 license: https://opensource.org/licenses/MIT
 status: draft
 
@@ -170,6 +173,80 @@ enums:
       validation: {}
       test: {}
 
+  EcosystemType:
+    # Closed. Control: neg_hypothesis_unknown_ecosystem (an unlisted value rejected AT its slot). Nearest miss NOT caught: a listed value that is wrong for the paper (a reviewer's catch).
+    description: >-
+      0.9.0 (M-3b-i). The hypothesis ledger's join key across instances (hypotheses README rule 5) — a coral DHW driver
+      asserted in Palau is a candidate vital in the Keys. Bound to ENVO BIOME terms (crosswalk row envo, moved from
+      deferred to adopted at 0.9.0; ids looked up in OLS on 2026-10-12, none obsolete). Scope of the binding: this enum
+      only — AtlSpatialUnit carries no ENVO term (its bind_when is unchanged). A new ecosystem type is a new value with
+      its looked-up term.
+    permissible_values:
+      coral_reef:    {meaning: ENVO:01000049, description: "marine coral reef biome (FKNMS; the first ledger)"}
+      estuary:       {meaning: ENVO:01000020, description: "estuarine biome"}
+      neritic_shelf: {meaning: ENVO:01000042, description: "neritic epipelagic zone biome — the shelf water column (the exemplar's K. brevis)"}
+
+  DriverDirection:
+    # Closed. Control: neg_hypothesis_unknown_direction (an unlisted value rejected AT its slot). Nearest miss NOT caught: a direction that misreads the paper.
+    description: >-
+      0.9.0. Which way the literature says the driver moves the event's probability. local. Distinct from Direction
+      (which way a threshold CROSSING goes). `threshold`: the paper names a level past which the effect appears;
+      `nonmonotone`: an optimum or a U-shape.
+    permissible_values:
+      positive: {}
+      negative: {}
+      nonmonotone: {}
+      threshold: {}
+
+  LagUnit:
+    # Closed. Control: neg_hypothesis_unknown_lag_unit. Nearest miss NOT caught: a lag stated in one unit and converted wrongly.
+    description: 0.9.0. The unit a literature lag is stated in. local — the paper's own unit, converted to the instance's time step at realisation, not here.
+    permissible_values:
+      days: {}
+      weeks: {}
+      months: {}
+      years: {}
+
+  EvidenceClass:
+    # Closed. Control: neg_hypothesis_unknown_evidence_class. Nearest miss NOT caught: an observational study filed as experimental.
+    description: 0.9.0. What kind of evidence the cited work offers for the claim. local (playbook §C.2).
+    permissible_values:
+      observational: {}
+      experimental: {}
+      model: {description: "A numerical or statistical model's result (a hindcast, a GCM projection, a regression)"}
+      review: {}
+      agency_report: {}
+
+  HypothesisSource:
+    # Closed. Control: neg_hypothesis_unknown_source. Nearest miss NOT caught: a steward's claim filed as literature.
+    description: >-
+      0.9.0. Where a hypothesis came from. local. `steward_expert` carries the steward's consent to be named or is
+      attributed to the instance (README rule 4); `model_finding` is a SHAP surprise promoted to a hypothesis.
+    permissible_values:
+      literature: {}
+      steward_expert: {}
+      model_finding: {}
+
+  CitationSource:
+    # Closed. Control: neg_hypothesis_unknown_citation_source. Nearest miss NOT caught: a work found by one index and filed under another.
+    description: 0.9.0. The index or portal the cited work was retrieved through (provenance of the retrieval, not of the work). local.
+    permissible_values:
+      openalex: {}
+      semantic_scholar: {}
+      europe_pmc: {}
+      agency: {description: "An agency portal or technical-report series (NOAA, CRW, FWC)"}
+
+  RealisationResult:
+    # Closed. Control: neg_hypothesis_unknown_result. Nearest miss NOT caught: `supported` written for a driver whose SHAP was not measured (atlantis_core.hypotheses check: a tested result needs tested_at and write_up).
+    description: >-
+      0.9.0. What the instance's test said. local. `not_supported` rows are kept and written up (T8; README rule 3).
+      `supported` means the realised vital carried attribution as the paper predicts — never that the mechanism is true.
+    permissible_values:
+      untested: {}
+      supported: {}
+      not_supported: {}
+      inconclusive: {}
+
 # ---------------------------------------------------------------------------------------------------------------
 # Slots
 # ---------------------------------------------------------------------------------------------------------------
@@ -186,6 +263,7 @@ slots:
   vital_id:      {identifier: true, range: string, pattern: "^atl_vital_[a-z0-9_]{2,64}(?!\\n)$", description: "Vital id. Control: neg_vital_id_prefix."}
   event_id:      {identifier: true, range: string, pattern: "^atl_event_[a-z0-9_]{2,64}(?!\\n)$", description: "Event-definition id. Control: neg_event_id_prefix."}
   evaluation_id: {identifier: true, range: string, pattern: "^atl_eval_[a-z0-9_]{2,64}(?!\\n)$", description: "Evaluation id. Control: neg_eval_id_prefix."}
+  hyp_id:        {identifier: true, range: string, pattern: "^atl_hyp_[a-z0-9_]{2,64}(?!\\n)$", description: "0.9.0. Hypothesis id; the row's file is <hyp_id>.yaml (atlantis_core.hypotheses check). Control: neg_hypothesis_id_prefix."}
 
   # common -----------------------------------------------------------------------------------------------------
   name:          {range: string, description: "Human label. Never a partner site's name when the instance's posture is partner or human_subject."}
@@ -317,12 +395,49 @@ slots:
   ablated_auroc: {range: float, minimum_value: 0, maximum_value: 1}
   ablated_auprc: {range: float, minimum_value: 0, maximum_value: 1}
 
+  # AtlHypothesis (0.9.0, M-3b-i) ------------------------------------------------------------------------------
+  # The hypotheses README §A row. Slot names that would collide with an existing slot of another range (direction, lag,
+  # threshold, stream_ref) are prefixed (driver_*, lag_*, threshold_*, realised_*) rather than overridden by slot_usage.
+  ecosystem_type:   {range: EcosystemType, required: true, description: "0.9.0. The join key (README rule 5); also the ledger directory name (atlantis_core check). Control: neg_hypothesis_unknown_ecosystem."}
+  event_variable:   {range: string, required: true, description: "0.9.0. The event the claim bears on, as the instance names it (degree_heating_week; a WoRMS taxon). Free text: a hypothesis may be read before any instance declares the event."}
+  mechanism:        {range: string, required: true, pattern: '\S', description: "0.9.0. One sentence: the paper's claim in the paper's terms. Control: neg_hypothesis_mechanism_blank."}
+  driver:           {range: AtlHypothesisDriver, required: true, inlined: true, description: "0.9.0. Control: neg_hypothesis_without_driver."}
+  region_asserted:  {range: string, required: true, description: "0.9.0. Where the paper looked (a region name; never coordinates)."}
+  evidence_class:   {range: EvidenceClass, required: true, description: "0.9.0. Control: neg_hypothesis_unknown_evidence_class."}
+  citation:         {range: AtlCitation, required: true, inlined: true}
+  sentence_pointer: {range: string, required: true, pattern: '\S', description: "0.9.0. README rule 1 — no pointer, no row: a section/paragraph, or a quotation of ≤ 25 words. Controls: neg_hypothesis_without_sentence_pointer (absent) · neg_hypothesis_sentence_pointer_blank. Nearest miss NOT caught: a quotation over 25 words, or one not in the paper (atlantis_core.hypotheses check: word count always; verbatim against the cached text when the cache is present)."}
+  hypothesis_source: {range: HypothesisSource, required: true, description: "0.9.0. Control: neg_hypothesis_unknown_source."}
+  realisable_as:    {range: string, required: true, pattern: '\S', description: "0.9.0 (skill step 4). The candidate vital in stream-class terms (source · transform · lag), or `unrealisable: <why>` — T8's falsifier made visible (rows no fetcher can realise). Control: neg_hypothesis_realisable_as_blank."}
+  realisation:      {range: AtlRealisation, required: true, inlined: true, description: "0.9.0. Present on every row (`result: untested` until an instance realises it); filled when an instance turns the row into a vital. Required, not optional: an optional inlined object is emitted anyOf [object, null], and a defect inside it would be rejected only as an unnamed branch (the controls could not name it)."}
+  reviewed_by:      {range: string, description: "0.9.0. Who confirmed the extraction is faithful to the cited text. REQUIRED and non-blank when tier = reviewed (AtlHypothesis rule). Nearest miss NOT caught: a reviewer who is the extractor (atlantis_core check), or `validated` with fewer than two reviewers (atlantis_core check refuses `validated` until a second-reviewer slot exists)."}
+  driver_lag:       {range: AtlLagSpec, required: true, inlined: true, description: "0.9.0. Required: a realisation needs a lag. A paper that states none is recorded as lag_value 0 with lag_note `not stated — concurrent`, or an inferred lag with `inferred: <how>` (the skill, step 3). Required for the same reason as realisation."}
+  driver_direction: {range: DriverDirection, required: true, description: "0.9.0. Control: neg_hypothesis_unknown_direction."}
+  driver_threshold: {range: AtlThresholdSpec, inlined: true}
+  lag_value:        {range: float, required: true, minimum_value: 0, description: "0.9.0. Control: neg_hypothesis_lag_negative."}
+  lag_unit:         {range: LagUnit, required: true, description: "0.9.0. Control: neg_hypothesis_unknown_lag_unit."}
+  lag_note:         {range: string, description: "0.9.0. `as stated` or `inferred: <how>`."}
+  threshold_value:  {range: float, required: true}
+  threshold_unit:   {range: string, required: true, description: "UCUM."}
+  doi:              {range: string, pattern: "^10\\.[0-9]{4,9}/\\S+(?!\\n)$", description: "0.9.0. A bare DOI (10.xxxx/…), no resolver prefix. Control: neg_hypothesis_doi_malformed (a `https://doi.org/` prefix). Required unless `url` is given (AtlCitation rule)."}
+  url:              {range: string, pattern: "^https?://\\S+(?!\\n)$", description: "0.9.0. For a work with no DOI (an agency report). Control: neg_hypothesis_url_malformed."}
+  title:            {range: string, required: true}
+  year:             {range: integer, required: true, minimum_value: 1800, maximum_value: 2100, description: "0.9.0. Control: neg_hypothesis_year_out_of_range."}
+  citation_source:  {range: CitationSource, required: true, description: "0.9.0. Control: neg_hypothesis_unknown_citation_source."}
+  realised_in:      {range: string, description: "0.9.0. The instance (vault name) that realised the row."}
+  realised_vital:   {range: string, pattern: "^atl_vital_[a-z0-9_]{2,64}(?!\\n)$", description: "0.9.0. The AtlVital whose hypothesis_ref names this row."}
+  realised_stream:  {range: string, pattern: "^atl_stream_[a-z0-9_]{2,64}(?!\\n)$"}
+  tested_at:        {range: date}
+  result:           {range: RealisationResult, required: true, description: "0.9.0. Control: neg_hypothesis_unknown_result."}
+  shap_mean_abs:    {range: float, minimum_value: 0, description: "0.9.0. Mean |SHAP| of the realised vital (or its group) on test — a summary, never per-patient."}
+  write_up:         {range: string, description: "0.9.0. Memo or board-entry pointer — written either way (T8)."}
+
   # document container -----------------------------------------------------------------------------------------
   spatial_units:        {range: AtlSpatialUnit, multivalued: true, inlined_as_list: true}
   observation_streams:  {range: AtlObservationStream, multivalued: true, inlined_as_list: true}
   vitals:               {range: AtlVital, multivalued: true, inlined_as_list: true}
   event_definitions:    {range: AtlEventDefinition, multivalued: true, inlined_as_list: true}
   evaluations:          {range: AtlEvaluation, multivalued: true, inlined_as_list: true}
+  hypotheses:           {range: AtlHypothesis, multivalued: true, inlined_as_list: true, description: "0.9.0. For controls and bulk validation; a ledger row file holds ONE hypothesis at top level, validated -C AtlHypothesis."}
 
 # ---------------------------------------------------------------------------------------------------------------
 # Classes
@@ -332,7 +447,7 @@ classes:
   AtlDocument:
     tree_root: true
     description: Container used to validate instance registry files; any file may carry any subset.
-    slots: [spatial_units, observation_streams, vitals, event_definitions, evaluations]
+    slots: [spatial_units, observation_streams, vitals, event_definitions, evaluations, hypotheses]
 
   AtlDeclared:
     abstract: true
@@ -466,3 +581,61 @@ classes:
     slots: [stream_ref, sha256]
     slot_usage:
       sha256: {required: true}
+
+  AtlHypothesis:
+    is_a: AtlDeclared
+    description: >-
+      0.9.0 (M-3b-i). One claim from the literature about what drives an event — mechanism · driver · lag · direction ·
+      threshold · evidence class · citation — pointing at a sentence, and saying what vital would realise it. A
+      hypothesis, not a fact: `tier: validated` would mean two reviewers agree the extraction is faithful, never that the
+      mechanism is true; truth is the instance's SHAP and the write-up's job (README rule 2). CLOSED: control
+      neg_hypothesis_extra_key proves an undeclared key (an abstract pasted in) is rejected AT the row. Nearest miss NOT
+      caught: a long quotation pasted INTO sentence_pointer or mechanism (atlantis_core check counts the pointer's words;
+      mechanism is a reviewer's catch).
+    slots: [hyp_id, ecosystem_type, event_variable, mechanism, driver, region_asserted, evidence_class, citation,
+            sentence_pointer, hypothesis_source, realisable_as, realisation, reviewed_by]
+    rules:
+      - preconditions:
+          slot_conditions:
+            tier: {equals_string: reviewed}
+        postconditions:
+          slot_conditions:
+            reviewed_by: {required: true, all_of: [{range: string, pattern: '\S'}]}
+        description: >-
+          A reviewed row names its reviewer. Same typed all_of guard as the lever rule (M-1c Finding 1). Controls:
+          neg_hypothesis_reviewed_without_reviewer (absent) · neg_hypothesis_reviewer_null (null) · neg_hypothesis_reviewer_blank. Positive:
+          pos_hypothesis_reviewed. Nearest miss NOT caught: reviewed_by = recorded_by (atlantis_core check).
+
+  AtlHypothesisDriver:
+    description: 0.9.0. The driver variable as an authority names it, with its lag, direction and optional threshold.
+    slots: [variable, authority, driver_lag, driver_direction, driver_threshold]
+    slot_usage:
+      variable: {required: true, description: "The driver as the authority names it (wind_speed; Niño 3.4; cloud_area_fraction)."}
+
+  AtlLagSpec:
+    description: 0.9.0. A lag as the paper states it.
+    slots: [lag_value, lag_unit, lag_note]
+
+  AtlThresholdSpec:
+    description: 0.9.0. A threshold the paper names.
+    slots: [threshold_value, threshold_unit]
+
+  AtlCitation:
+    description: 0.9.0. The cited work. Its DOI (or URL) must appear in the ledger's corpus manifest (atlantis_core check).
+    slots: [doi, url, title, year, citation_source]
+    rules:
+      - preconditions:
+          slot_conditions:
+            doi: {value_presence: ABSENT}
+        postconditions:
+          slot_conditions:
+            url: {required: true, all_of: [{range: string, pattern: "^https?://\\S+(?!\\n)$"}]}
+        description: >-
+          A citation without a DOI gives a URL. Controls: neg_hypothesis_citation_without_doi_or_url (neither) ·
+          pos_hypothesis_agency_url (URL only). Nearest misses NOT caught: `doi: null` (YAML `doi:`) with no URL — the
+          ABSENT precondition is emitted `not required`, and a null key is present (atlantis_core check:
+          citation_without_doi_or_url); a URL that does not resolve, or names another work.
+
+  AtlRealisation:
+    description: 0.9.0. The loop closed in an instance — realised, tested, written up either way.
+    slots: [realised_in, realised_vital, realised_stream, tested_at, result, shap_mean_abs, write_up]
