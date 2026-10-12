@@ -11,7 +11,7 @@ phase: P3
 campaign_phase: 3
 mission_class: implementation
 executor_tier: opus
-token_budget_estimated: "≈ 170 kT main (+50% line ≈ 255 kT) + fresh-context III reviewer ≈ 150 kT"
+token_budget_estimated: "≈ 170 kT main (+50% line ≈ 255 kT) + fresh-context III reviewer ≈ 150 kT — RE-CARDED 2026-10-12 to ≈ 460 kT main (operator ruling 5, AskUserQuestion at the SITREP ≈ 310 kT, after b989318): the planning sitting + the schema and core build ran over; the reading continues in this sitting"
 token_budget_actual: ""
 depends_on: ['M-2c', 'M-3a']
 split_from: mission_m3b_hypothesis_ledger_and_mining
@@ -38,6 +38,8 @@ tags: [mission, m3b_i, p3, opus, hypothesis_ledger, literature_mining, envo, atl
    Abstracts sit in a gitignored `unreviewed/` cache. Rows quote ≤ 25 words. A pointer + recipe, like a dataset record
    (SO-3).
 4. **The staged Noether ack is delivered** (folded in; done at open, `e77f534`).
+5. **Re-card, continue** (at the +50% SITREP, ≈ 310 kT after `b989318`): ≈ 170 → ≈ 460 kT main; rows, review, III and
+   the ruling in this sitting.
 
 ## Facts it rests on
 

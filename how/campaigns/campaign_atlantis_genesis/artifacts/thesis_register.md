@@ -6,7 +6,7 @@ status: draft   # statuses ruled at each phase gate; the register itself stays a
 created: 2026-10-02
 updated: 2026-10-10
 last_edited_by: agent_proteus
-mission: m3a   # M-3a 2026-10-10: C-033 re-read, no row changed, two exemplar data findings recorded (below); M-2c-ii: re-read T2 · T10 · T11 at M-2c-ii 2026-10-08 (proposed for the P3 gate, not ruled); before that: statuses RULED at the P2 gate 2026-10-08 (III review artifacts/p2_gate_iii_review.md, G-1…G-12); re-cut at M-2b (T1 T3 T9 T10; notes on T4 T6 T11); authored at mission_m0_atlantis_genesis_planning
+mission: m3b_i   # M-3b-i 2026-10-12: C-033 re-read, no row changed; T8 interim note and a T12 finding (below); M-3a 2026-10-10: C-033 re-read, no row changed, two exemplar data findings recorded (below); M-2c-ii: re-read T2 · T10 · T11 at M-2c-ii 2026-10-08 (proposed for the P3 gate, not ruled); before that: statuses RULED at the P2 gate 2026-10-08 (III review artifacts/p2_gate_iii_review.md, G-1…G-12); re-cut at M-2b (T1 T3 T9 T10; notes on T4 T6 T11); authored at mission_m0_atlantis_genesis_planning
 campaign_id: campaign_atlantis_genesis
 evidence_source: what/exemplars/gulf_karenia_brevis/outputs/metrics.json   # config_hash e9dea88254 · P2: FloridaKeysCoral.aDNA outputs/atlantis_core/metrics.json, config c07b7c0288 (board 2026-10-08_florida_keys_coral_v1; v3 from M-2c-ii) · exemplar board 2026-10-08_gulf_karenia_brevis_v4 (M-2c-ii's T11 reading)
 tags: [artifact, thesis_register, m0, atlantis, tidewatch]
@@ -37,6 +37,21 @@ yet. Status of every claim is **supported-by-one-exemplar** or **untested** — 
 
 ## Reading the register
 
+- **M-3b-i re-read (2026-10-12, C-033). No row's status changes, and none is proposed to.** The re-cut of T7 and T8 is
+  M-3b-ii's, once a row is realised and tested.
+  - *Obligations:* T7 and T8 stay with **M-3b-ii**. T11 and T2 stay with **the P3 gate**. T9: **+0**. The schema's 0.9.0
+    hypothesis row, `atlantis_core.hypotheses` and the skill are planned P3 deliverables, and no instance forced them.
+    The mapping-template pin moves to 0.9.0, which makes FKNMS's `mapping.yaml` pin move federation upkeep in M-3b-ii
+    (as at M-2c-ii), not an instance patch.
+  - *T8, interim (no status change):* the extraction target yields rows. There are 32 `coral_reef` rows from 28 works,
+    each pointing at a sentence verified verbatim against the cached abstract. Of these, **12** are realisable from FKNMS's
+    own streams or a declared fetcher, **16** need an ordinary new stream, and **4** are `unrealisable` on this grid
+    (`what/hypotheses/realisation_coral_reef_2026-10-12.md`). The falsifier's first half ("rows no fetcher can realise")
+    is not met. Its second half ("rows with no SHAP never written up") is M-3b-ii's to test.
+  - *T12, a finding for its row (no status change):* by the paper's own outcome, **15 of 32 rows are about bleaching or
+    coral cover given heat**, not about what brings heat on. A ledger mined for a DHW-defined event finds about half its
+    literature testing a different event. That is T12's point (a second event is a second model), met at the literature
+    stage.
 - **M-3a re-read (2026-10-10, C-033). No row's status changes, and none is proposed to.**
   - *Obligations:* no row names M-3a. T7 and T8 stay with **M-3b**. T11 and T2 stay with **the P3 gate**, as above. T5's
     check now also runs at discovery (`surveillance_declared` → R8): FKNMS passes absent-with-reason, and its memo records
