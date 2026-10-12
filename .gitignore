@@ -87,3 +87,5 @@ my/
 .playwright-mcp/
 **/data/raw/fwc_[0-9]*.parquet
 **/data/raw/*.log
+# M-3b-i (operator ruling 3, 2026-10-12): the literature corpus is a committed manifest only — abstract text stays local (SO-3)
+what/hypotheses/corpus/*/unreviewed/

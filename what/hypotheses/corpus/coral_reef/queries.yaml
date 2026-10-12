@@ -1,0 +1,31 @@
+# The coral_reef corpus recipe (M-3b-i, 2026-10-12) — committed. Read for FloridaKeysCoral's event: CRW DHW ≥ 4 °C-weeks
+# onset within 8 weeks, per FKNMS zone. Themes are mechanisms × region, regional first (the Keys, then the
+# Caribbean / Gulf, then pantropical). Run: python -m atlantis_core.hypotheses corpus --ecosystem coral_reef
+# The question is what drives REEF-SCALE HEAT STRESS ahead of time — not what bleaching does to corals once it happens.
+per_query: 25
+queries:
+  # wind, calm, mixing — the CREWS / SEAKEYS line of work on the Keys' reef lights
+  - {id: q_wind_keys,       theme: wind,            filter: "publication_year:>1979", search: "coral bleaching wind speed Florida Keys sea temperature"}
+  - {id: q_doldrums,        theme: wind,            filter: "publication_year:>1979", search: "low wind doldrums calm seas coral bleaching sea surface temperature"}
+  - {id: q_crews,           theme: wind,            filter: "publication_year:>1979", search: "coral reef early warning system SEAKEYS C-MAN station bleaching"}
+  # light and cloud
+  - {id: q_cloud,           theme: cloud_light,     filter: "publication_year:>1979", search: "cloud cover solar radiation coral bleaching thermal stress"}
+  - {id: q_turbidity,       theme: cloud_light,     filter: "publication_year:>1979", search: "turbidity light attenuation reduces coral bleaching heat stress"}
+  # storms
+  - {id: q_hurricane,       theme: storms,          filter: "publication_year:>1979", search: "hurricane cooling sea surface temperature coral bleaching"}
+  # ocean physics on the reef tract
+  - {id: q_internal_waves,  theme: upwelling,       filter: "publication_year:>1979", search: "internal waves upwelling cooling coral reef thermal stress"}
+  - {id: q_loop_current,    theme: currents,        filter: "publication_year:>1979", search: "Loop Current Florida Current reef water temperature Florida Keys"}
+  - {id: q_tides,           theme: upwelling,       filter: "publication_year:>1979", search: "tidal mixing reef temperature variability coral bleaching"}
+  # climate modes
+  - {id: q_enso_caribbean,  theme: climate_modes,   filter: "publication_year:>1979", search: "El Nino Caribbean coral bleaching sea surface temperature"}
+  - {id: q_amo_nao,         theme: climate_modes,   filter: "publication_year:>1979", search: "Atlantic Multidecadal Oscillation North Atlantic Oscillation Caribbean sea surface temperature coral"}
+  # heat history and persistence
+  - {id: q_preconditioning, theme: thermal_history, filter: "publication_year:>1979", search: "thermal history preconditioning coral bleaching degree heating weeks"}
+  - {id: q_winter,          theme: thermal_history, filter: "publication_year:>1979", search: "winter sea temperature Florida Keys corals"}
+  - {id: q_ssta_persist,    theme: persistence,     filter: "publication_year:>1979", search: "sea surface temperature anomaly persistence prediction coral bleaching"}
+  - {id: q_dhw_forecast,    theme: persistence,     filter: "publication_year:>1979", search: "predicting coral bleaching degree heating weeks seasonal forecast outlook"}
+  # marine heatwaves and the trend
+  - {id: q_mhw_2023,        theme: marine_heatwave, filter: "publication_year:>2022", search: "2023 marine heatwave Florida coral bleaching"}
+  - {id: q_mhw_drivers,     theme: marine_heatwave, filter: "publication_year:>1979", search: "marine heatwave drivers Caribbean Gulf of Mexico air-sea heat flux"}
+  - {id: q_keys_warming,    theme: trend,           filter: "publication_year:>1979", search: "Florida Keys reef water temperature trend warming bleaching"}
