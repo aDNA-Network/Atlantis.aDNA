@@ -4,7 +4,7 @@ mission_id: M-3b
 plan_id: mission_m3b_hypothesis_ledger_and_mining
 title: "M-3b — Hypothesis ledger populated + `skill_feature_hypothesis_mining` + one literature-asserted driver tested by SHAP"
 owner: stanley
-status: planned
+status: split   # 2026-10-12, M-3b ruling 1 (operator, AskUserQuestion) → M-3b-i + M-3b-ii; kept as the parent card
 campaign: campaign_atlantis_genesis
 campaign_id: campaign_atlantis_genesis
 phase: P3
@@ -17,13 +17,18 @@ depends_on: ['M-2c', 'M-3a']   # M-2c added by P2-gate condition (a)
 aar_path: how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m3b_hypothesis_ledger_and_mining.md
 session: TBD
 created: 2026-10-02
-updated: 2026-10-08
+updated: 2026-10-12
 last_edited_by: agent_proteus
 home_vault: Atlantis.aDNA
 tags: [mission, m3b, p3, opus, atlantis, tidewatch]
 ---
 
 # M-3b — Hypothesis ledger populated + `skill_feature_hypothesis_mining` + one literature-asserted driver tested by SHAP
+
+> **Split 2026-10-12** (M-3b ruling 1, operator, `AskUserQuestion`; C-042) → `mission_m3b_i_ledger_and_skill.md`
+> (schema · core · skill · corpus · ≥ 25 rows · ENVO · III; ends on the realisation ruling) and
+> `mission_m3b_ii_realise_and_test.md` (realise in FKNMS · SHAP · write-up · T7/T8). This card stays the parent: its
+> acceptance criteria are the union of the two halves.
 
 **Campaign:** `../campaign_atlantis_genesis.md` (Operation Tidewatch) · **Phase:** P3 — Knowledge lane ·
 **Tier:** opus · **Budget:** ≈ 350 kT + reviewer (re-carded at the P2 gate) · **Depends on:** M-2c, M-3a · **Target ruled at the P2 gate (condition (c)):** FKNMS or a new instance, not the exemplar

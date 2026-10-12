@@ -163,7 +163,13 @@ from the ledger with provenance; the test written up.
 - *Carried to the P3 gate (operator):* the exemplar's re-grid by coordinates (latitude-band pooling, units 2 · 3 · 8) and
   the 02359170 refresh (458 backfilled days + 45 revised values in the test window). Both were accepted for now; each
   is a vitals or pin change and exemplar v5.
-- *Review:* III 0/2/7/3, dispositioned. **Next: M-3b.**
+- *Review:* III 0/2/7/3, dispositioned.
+
+**M-3b split 2026-10-12** (operator, `AskUserQuestion`, at open; C-042): **M-3b-i** — the `AtlHypothesis` schema,
+`atlantis_core.hypotheses`, the mining skill, ≥ 25 coral_reef rows and the ENVO binding; it ends on the operator's
+ruling of which row to realise. **M-3b-ii** realises it in FKNMS, tests it by SHAP and writes it up either way. Same
+sitting: the driver is ruled after the ledger; the corpus is a committed manifest only (abstracts gitignored); the
+Noether ack delivered.
 
 ### P4 — Federation & stewards (fable sitting + gate)
 M-4 contract v1 ratified · steward governance set · consumer-wrapper template + register · Exchange listing · Network
