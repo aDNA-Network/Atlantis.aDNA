@@ -171,6 +171,15 @@ ruling of which row to realise. **M-3b-ii** realises it in FKNMS, tests it by SH
 sitting: the driver is ruled after the ledger; the corpus is a committed manifest only (abstracts gitignored); the
 Noether ack delivered.
 
+**M-3b-i ✅ 2026-10-12:**
+- *Delivered:* atl_v0 0.9.0 `AtlHypothesis` (126 controls; ENVO biome-bound key), core 0.9.0 `atlantis_core.hypotheses`,
+  `skill_feature_hypothesis_mining`, and the coral_reef ledger. 32 rows were extracted; the faithfulness reader withdrew
+  6. The ledger holds 26, 14 reviewed and hash-bound.
+- *Finding:* no reviewed heat-onset row is realisable from FKNMS's existing streams, and 15 of 26 rows are about
+  bleaching given heat.
+- *Review:* III 0/2/8/2, fixed.
+- *Ruled:* **M-3b-ii realises reef-light wind** (NDBC, WI-19).
+
 ### P4 — Federation & stewards (fable sitting + gate)
 M-4 contract v1 ratified · steward governance set · consumer-wrapper template + register · Exchange listing · Network
 share-class ruling · blind-conductor runbook *iff* a partner-data instance exists · **first outside steward**

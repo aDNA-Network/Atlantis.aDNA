@@ -30,6 +30,24 @@ tags: [mission, m3b_ii, p3, opus, shap, realisation, fknms, t7, t8, atlantis, ti
 **Split from** `mission_m3b_hypothesis_ledger_and_mining.md` (M-3b ruling 1). The other half is
 `mission_m3b_i_ledger_and_skill.md`, which ends on the operator's ruling of which row this half realises.
 
+## Ruled at the M-3b-i close (operator, `AskUserQuestion`, 2026-10-12)
+
+**Realise reef-light wind.** The rows are wind_003★ (4 m/s, a Persian Gulf model of sea-bottom temperature) and
+wind_006★ (heatwaves, one Brazilian season), with wind_001★, 005★, 004 and temperature_variability★ as response-side
+context. The hand-off is `what/hypotheses/realisation_coral_reef_2026-10-12.md`. The question carried III F-6's
+event-matched counts (wind 2, cyclones 1): more rows, farther away, at the highest cost.
+
+**Opening obligations, carried from M-3b-i:**
+1. Build `NDBCStdmet` in `atlantis_core` (WI-19; a template change, the P2 rule) for the C-MAN reef lights MLRF1 ·
+   SMKF1 · LONF1 · SANF1. Re-card at open if the build does not fit.
+2. A steward ruling on the station-to-zone map, and on the calm threshold: **scanned, not fixed at 4 m/s** (a regional
+   transfer).
+3. FKNMS's `mapping.yaml` pin → atl_v0 0.9.0, as federation upkeep (as at M-2c-ii).
+4. The vital's `hypothesis_ref` names the row(s). Its tag is `proxy` (T7: "no lever, still").
+5. Fill `realisation` on the realised rows. A filled realisation does not void their review (`reviewed_sha256`
+   excludes it).
+6. Card lines for main, the reader lane (if any) and the III reviewer at observed sizes (III M-3b-i F-10).
+
 ## Acceptance criteria
 
 - [ ] The ruled row realised as an `AtlVital` (`hypothesis_ref` set) in **FKNMS** (or a new instance), **never the

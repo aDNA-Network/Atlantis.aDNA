@@ -4,7 +4,7 @@ mission_id: M-3b-i
 plan_id: mission_m3b_i_ledger_and_skill
 title: "M-3b-i — AtlHypothesis (atl_v0 0.9.0) · core 0.9.0 `atlantis_core.hypotheses` · `skill_feature_hypothesis_mining` · ≥ 25 coral_reef rows · ENVO binding · ends on the realisation ruling"
 owner: stanley
-status: active
+status: completed   # 2026-10-12: III PASS-WITH-FINDINGS 0/2/8/2, majors + code minors fixed; AAR filed; M-3b-ii queued (reef-light wind, ruling 7)
 campaign: campaign_atlantis_genesis
 campaign_id: campaign_atlantis_genesis
 phase: P3
@@ -12,7 +12,7 @@ campaign_phase: 3
 mission_class: implementation
 executor_tier: opus
 token_budget_estimated: "≈ 170 kT main (+50% line ≈ 255 kT) + fresh-context III reviewer ≈ 150 kT — RE-CARDED 2026-10-12 to ≈ 460 kT main (operator ruling 5, AskUserQuestion at the SITREP ≈ 310 kT, after b989318): the planning sitting + the schema and core build ran over; the reading continues in this sitting"
-token_budget_actual: ""
+token_budget_actual: "main ≈ 508 kT (session counter, planning included; +10% on the ≈ 460 re-card, +199% on the ≈ 170 card) · faithfulness reader ≈ 133 kT (metered; no budget line — F-10) · III reviewer ≈ 278 kT (metered; +85% on ≈ 150)"
 depends_on: ['M-2c', 'M-3a']
 split_from: mission_m3b_hypothesis_ledger_and_mining
 origin: "M-3b ruling 1 (operator, AskUserQuestion, 2026-10-12): two halves — ledger + skill / realise + SHAP (C-042: split at open)"
@@ -38,6 +38,8 @@ tags: [mission, m3b_i, p3, opus, hypothesis_ledger, literature_mining, envo, atl
    Abstracts sit in a gitignored `unreviewed/` cache. Rows quote ≤ 25 words. A pointer + recipe, like a dataset record
    (SO-3).
 4. **The staged Noether ack is delivered** (folded in; done at open, `e77f534`).
+6. **III fixes:** majors + code minors before close. 7. **M-3b-ii realises reef-light wind.** 8. **Accept the
+   reviewer's ACCUMULATE.** (Rulings 6–8 at the III close.)
 5. **Re-card, continue** (at the +50% SITREP, ≈ 310 kT after `b989318`): ≈ 170 → ≈ 460 kT main; rows, review, III and
    the ruling in this sitting.
 
@@ -51,16 +53,16 @@ tags: [mission, m3b_i, p3, opus, hypothesis_ledger, literature_mining, envo, atl
 
 ## Acceptance criteria
 
-- [ ] `AtlHypothesis` in atl_v0 **0.9.0**, with pos/neg controls for every claimed constraint; committed JSON Schema
+- [x] `AtlHypothesis` in atl_v0 **0.9.0**, with pos/neg controls for every claimed constraint; committed JSON Schema
   regenerated; `run_controls.sh` → ALL WORLDS AGREE
-- [ ] ENVO binding revisited (crosswalk deferred row) for `ecosystem_type`; the id looked up, not assumed
-- [ ] Core **0.9.0** `atlantis_core.hypotheses`: `corpus` (standalone intake → manifest + gitignored `unreviewed/`) ·
+- [x] ENVO binding revisited (crosswalk deferred row) for `ecosystem_type`; the id looked up, not assumed
+- [x] Core **0.9.0** `atlantis_core.hypotheses`: `corpus` (standalone intake → manifest + gitignored `unreviewed/`) ·
   `--index` (generated `LEDGER.md`) · `--index --check` (writes nothing; a failure key per defect); offline tests
-- [ ] `how/skills/skill_feature_hypothesis_mining.md`: paper → row; every row points at a sentence; tiers draft → reviewed
-- [ ] ≥ 25 rows for one ecosystem type (`coral_reef`, FKNMS's DHW-onset event); index regenerated; `--check` green
-- [ ] A realisation hand-off memo ranks the rows (literature strength × realisability × build cost); the operator rules
-- [ ] *(C-033)* register re-read before the AAR; T8 gets an interim note (the re-cut is M-3b-ii's)
-- [ ] III review via `iii/` in a fresh context; SITREP **at** the +50% line (C-042); suite count with its commit (C-035)
+- [x] `how/skills/skill_feature_hypothesis_mining.md`: paper → row; every row points at a sentence; tiers draft → reviewed
+- [x] ≥ 25 rows for one ecosystem type (`coral_reef`, FKNMS's DHW-onset event); index regenerated; `--check` green
+- [x] A realisation hand-off memo ranks the rows (literature strength × realisability × build cost); the operator rules
+- [x] *(C-033)* register re-read before the AAR; T8 gets an interim note (the re-cut is M-3b-ii's)
+- [x] III review via `iii/` in a fresh context; SITREP **at** the +50% line (C-042); suite count with its commit (C-035)
 
 ## Guardrails
 
@@ -70,3 +72,6 @@ email sent to any service; peer vaults read-only.
 ## AAR
 
 *Mandatory before `status: completed` (SO-6).* Worked · Didn't · Finding · Change · Follow-up → `aar_path`.
+
+**Closed 2026-10-12.** Every criterion above is met; evidence: `aar/aar_m3b_i_ledger_and_skill.md` (ledger 26 rows, 14
+reviewed; 126 controls; core 0.9.0; the realisation ruled: reef-light wind).

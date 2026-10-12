@@ -1,5 +1,34 @@
 # CHANGELOG — Atlantis.aDNA
 
+## 2026-10-12 — v0.17.0 · M-3b-i: the hypothesis ledger · atl_v0 0.9.0 · core 0.9.0 `hypotheses` · the coral_reef ledger · wind ruled
+
+- **M-3b split at open** (C-042) into M-3b-i (this) and M-3b-ii (realise and test).
+- **atl_v0 0.9.0:**
+  - `AtlHypothesis`, closed, with driver · lag · threshold · citation · realisation;
+  - `EcosystemType` bound to ENVO biome terms (looked up in OLS) — crosswalk `envo` deferred → bound, scoped to the
+    ledger key;
+  - a closed `Realisability`; `reviewed_sha256`;
+  - **126 controls**, with a required-removal sweep proving each required claim.
+- **Core 0.9.0 `atlantis_core.hypotheses`:**
+  - `corpus`: standalone intake (Ingest has no literature class) — OpenAlex, no key, no e-mail sent; Europe PMC for
+    withheld abstracts; manifest committed, abstracts gitignored (SO-3); fails closed;
+  - `check`: 21 failure keys, including the cache hash, any quote glyph, the negator guard, verbatim overflow and the
+    review binding;
+  - `index`: `LEDGER.md`, realisability counted;
+  - `--stamp-review`; 46 offline tests.
+- **`skill_feature_hypothesis_mining`:** paper → row, the translation column, the two-reader review, the hand-off.
+- **The coral_reef ledger** (FKNMS's DHW ≥ 4 onset):
+  - 380 works, 32 rows extracted;
+  - the faithfulness reader confirmed 15, and 6 were withdrawn (archived, SO-2); III demoted 1;
+  - **26 rows, 14 reviewed**; realisability 3 / 6 / 11 / 6.
+- **Findings:** no reviewed heat-onset row is realisable from FKNMS's existing streams; 15 of 26 rows are about
+  bleaching given heat.
+- **Ruled:** **M-3b-ii realises reef-light wind** (NDBC, WI-19).
+- **Noether ack delivered** (ACADÉMIE); its interim notice committed as the read receipt.
+- **Register:** re-read, no status change (T8 interim, its quantifier a gate reading; T12 context).
+- **III:** PASS-WITH-FINDINGS 0/2/8/2. Majors and code minors fixed. ACCUMULATE: C-043, C-044 + eight bumps.
+- **Suite:** 834 passed at `dcdbe65`. **Not pushed.**
+
 ## 2026-10-10 — v0.16.0 · M-3a: `skill_stream_discovery` · core 0.8.0 `discover` · the GREEN cap ruled · the CEL ack
 
 - **`skill_stream_discovery`** (`how/skills/`): playbook §A as steps A1–A6 written to `candidates.yaml`. Every step gets a
