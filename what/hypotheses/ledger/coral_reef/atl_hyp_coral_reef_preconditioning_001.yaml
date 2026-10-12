@@ -1,0 +1,31 @@
+hyp_id: atl_hyp_coral_reef_preconditioning_001
+tier: draft
+ecosystem_type: coral_reef
+event_variable: coral_bleaching (cell mortality and symbiont loss)
+mechanism: Most past thermal-stress events followed a trajectory with a protective sub-bleaching pulse before bleaching temperatures,
+  which conferred thermal tolerance.
+driver:
+  variable: sub-bleaching thermal pre-stress (temperature trajectory)
+  authority: NOAACRW:hotspot
+  driver_lag:
+    lag_value: 0
+    lag_unit: weeks
+    lag_note: not stated — the abstract gives the order (pre-stress before the bleaching peak), not an interval
+  driver_direction: negative
+region_asserted: Great Barrier Reef, three decades
+evidence_class: observational
+citation:
+  doi: 10.1126/science.aac7125
+  title: Climate change disables coral bleaching protection on the Great Barrier Reef
+  year: 2016
+  citation_source: openalex
+sentence_pointer: 'abstract: "75% of past thermal stress events have been characterized by a temperature trajectory that subjects corals
+  to a protective, sub-bleaching stress"'
+hypothesis_source: literature
+realisable_as: 'DERIVABLE from FKNMS''s own CRW streams: a sub-bleaching HotSpot pulse (0 < HotSpot < 1 °C) in the weeks before DHW
+  rises · weekly · lag 2–8 weeks — a vital, no fetcher; but the claim is about bleaching RESPONSE given heat, not about DHW onset (a
+  second event, T12)'
+realisation:
+  result: untested
+recorded_by: agent_proteus
+recorded_at: '2026-10-12T17:30:00Z'

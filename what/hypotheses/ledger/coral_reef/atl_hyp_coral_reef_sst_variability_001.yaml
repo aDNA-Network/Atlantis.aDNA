@@ -1,0 +1,29 @@
+hyp_id: atl_hyp_coral_reef_sst_variability_001
+tier: draft
+ecosystem_type: coral_reef
+event_variable: coral_cover (and its rate of decline)
+mechanism: FKNMS sites with moderately high SST variability kept higher coral cover and declined more slowly, 1994–2008.
+driver:
+  variable: SST variability (variance)
+  authority: CF:sea_surface_temperature
+  driver_lag:
+    lag_value: 0
+    lag_unit: years
+    lag_note: not stated — concurrent
+  driver_direction: positive
+region_asserted: Florida Keys National Marine Sanctuary (36 CREMP sites)
+evidence_class: observational
+citation:
+  doi: 10.1155/2011/981723
+  title: Sea Surface Temperature Variability in the Florida Keys and Its Relationship to Coral Cover
+  year: 2011
+  citation_source: openalex
+sentence_pointer: 'abstract: "Sites that experienced moderately high SST variability relative to other sites showed a trend toward higher
+  percentage coral cover"'
+hypothesis_source: literature
+realisable_as: 'derivable from CRW SSTA (per-zone variance over the preceding year) — but its event is coral COVER, not DHW onset: not
+  this instance''s event (T12)'
+realisation:
+  result: untested
+recorded_by: agent_proteus
+recorded_at: '2026-10-12T17:30:00Z'

@@ -1,0 +1,28 @@
+hyp_id: atl_hyp_coral_reef_dhw_001
+tier: draft
+ecosystem_type: coral_reef
+event_variable: coral_bleaching (intensity)
+mechanism: Accumulated heat stress measured as CRW Degree Heating Weeks predicted bleaching intensity across the Caribbean in 2005.
+driver:
+  variable: degree heating weeks
+  authority: NOAACRW:degree_heating_week
+  driver_lag:
+    lag_value: 0
+    lag_unit: weeks
+    lag_note: not stated — concurrent
+  driver_direction: positive
+region_asserted: wider Caribbean, 2005 (22 countries)
+evidence_class: observational
+citation:
+  doi: 10.1371/journal.pone.0013969
+  title: 'Caribbean Corals in Crisis: Record Thermal Stress, Bleaching, and Mortality in 2005'
+  year: 2010
+  citation_source: openalex
+sentence_pointer: 'abstract: "a significant predictive relationship between accumulated heat stress (measured using NOAA Coral Reef
+  Watch''s Degree Heating Weeks) and bleaching intensity"'
+hypothesis_source: literature
+realisable_as: 'already FKNMS''s EVENT variable: the row supports the event definition (DHW as a bleaching proxy, T12), not a new vital'
+realisation:
+  result: untested
+recorded_by: agent_proteus
+recorded_at: '2026-10-12T17:30:00Z'

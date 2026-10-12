@@ -1,0 +1,32 @@
+hyp_id: atl_hyp_coral_reef_wind_003
+tier: draft
+ecosystem_type: coral_reef
+event_variable: sea_bottom_temperature crossing bleaching thresholds
+mechanism: Summer reef temperatures follow wind regimes through wind-driven evaporative (latent) cooling; below about 4 m/s, corals
+  cross bleaching-threshold temperatures.
+driver:
+  variable: wind speed
+  authority: CF:wind_speed
+  driver_lag:
+    lag_value: 0
+    lag_unit: days
+    lag_note: not stated — concurrent
+  driver_direction: threshold
+  driver_threshold:
+    threshold_value: 4.0
+    threshold_unit: m/s
+region_asserted: Persian/Arabian Gulf (three reef sites; hydrodynamic model 2008–2017)
+evidence_class: model
+citation:
+  doi: 10.3389/fmars.2019.00205
+  title: Coral Bleaching in the Persian/Arabian Gulf Is Modulated by Summer Winds
+  year: 2019
+  citation_source: openalex
+sentence_pointer: 'abstract: "We show that winds of 4 m/s represents a critical threshold for whether or not corals cross bleaching
+  threshold temperatures"'
+hypothesis_source: literature
+realisable_as: reef-light wind speed (NDBC C-MAN, hourly) · weekly count of days below 4 m/s · lag 0–2 weeks — needs NDBCStdmet built
+realisation:
+  result: untested
+recorded_by: agent_proteus
+recorded_at: '2026-10-12T17:30:00Z'

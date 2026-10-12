@@ -1,0 +1,30 @@
+hyp_id: atl_hyp_coral_reef_cloud_001
+tier: draft
+ecosystem_type: coral_reef
+event_variable: coral_bleaching
+mechanism: Exceptionally high summer cloud cover reduced sun hours and radiative stress, so the Society Islands escaped mass bleaching
+  in 1998 despite SST anomalies like past bleaching years.
+driver:
+  variable: cloud cover (sun hours)
+  authority: CF:cloud_area_fraction
+  driver_lag:
+    lag_value: 0
+    lag_unit: weeks
+    lag_note: not stated — concurrent
+  driver_direction: negative
+region_asserted: Society Islands (Tahiti, Moorea), French Polynesia, 1998
+evidence_class: observational
+citation:
+  doi: 10.3354/meps222209
+  title: Cloudy weather may have saved Society Island reef corals during the 1998 ENSO event
+  year: 2001
+  citation_source: openalex
+sentence_pointer: 'abstract: "exceptionally high cloud cover significantly reduced the number of sun hours during the summer of 1998"'
+hypothesis_source: literature
+realisable_as: satellite cloud fraction or insolation (e.g. a CoastWatch PAR product on ERDDAP) · weekly mean · lag 0–2 weeks — buildable
+  on ERDDAPGriddap; it modulates BLEACHING given heat, and only partly DHW (clouds also slow heating), so against FKNMS's event it is
+  partly a second event (T12)
+realisation:
+  result: untested
+recorded_by: agent_proteus
+recorded_at: '2026-10-12T17:30:00Z'

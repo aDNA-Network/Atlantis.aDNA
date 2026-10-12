@@ -1,0 +1,29 @@
+hyp_id: atl_hyp_coral_reef_turbidity_001
+tier: draft
+ecosystem_type: coral_reef
+event_variable: coral_bleaching (during thermal stress)
+mechanism: Moderate turbidity (Kd490 0.080–0.127) reduced bleaching during thermal-stress events by reducing light.
+driver:
+  variable: diffuse attenuation coefficient Kd490
+  authority: CF:volume_attenuation_coefficient_of_downwelling_radiative_flux_in_sea_water
+  driver_lag:
+    lag_value: 0
+    lag_unit: weeks
+    lag_note: not stated — concurrent
+  driver_direction: nonmonotone
+region_asserted: global (3,694 sites)
+evidence_class: observational
+citation:
+  doi: 10.1111/gcb.14948
+  title: Turbid reefs moderate coral bleaching under climate‐related temperature stress
+  year: 2020
+  citation_source: openalex
+sentence_pointer: 'abstract: "K d 490, a measurement positively related to turbidity, between 0.080 and 0.127 reduced coral bleaching
+  during thermal-stress events"'
+hypothesis_source: literature
+realisable_as: gridded Kd490 (NOAA CoastWatch ocean colour, ERDDAP) · weekly mean · lag 0 — buildable on ERDDAPGriddap; it moderates
+  bleaching given heat, not DHW onset (a second event, T12)
+realisation:
+  result: untested
+recorded_by: agent_proteus
+recorded_at: '2026-10-12T17:30:00Z'

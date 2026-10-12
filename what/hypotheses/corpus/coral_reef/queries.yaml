@@ -29,3 +29,7 @@ queries:
   - {id: q_mhw_2023,        theme: marine_heatwave, filter: "publication_year:>2022", search: "2023 marine heatwave Florida coral bleaching"}
   - {id: q_mhw_drivers,     theme: marine_heatwave, filter: "publication_year:>1979", search: "marine heatwave drivers Caribbean Gulf of Mexico air-sea heat flux"}
   - {id: q_keys_warming,    theme: trend,           filter: "publication_year:>1979", search: "Florida Keys reef water temperature trend warming bleaching"}
+  # added at the first read (2026-10-12): two classics the themed queries missed, and the Keys' own heatwave forcing
+  - {id: q_hurricane_keys,  theme: storms,          filter: "publication_year:>1979", search: "hurricanes benefit bleached corals"}
+  - {id: q_prestress,       theme: thermal_history, filter: "publication_year:>1979", search: "climate change disables coral bleaching protection"}
+  - {id: q_keys_forcing,    theme: marine_heatwave, filter: "publication_year:>1979", search: "Florida Keys sea temperature atmospheric forcing heat flux reef"}

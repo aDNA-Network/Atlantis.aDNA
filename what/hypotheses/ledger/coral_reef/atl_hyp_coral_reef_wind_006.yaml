@@ -1,0 +1,28 @@
+hyp_id: atl_hyp_coral_reef_wind_006
+tier: draft
+ecosystem_type: coral_reef
+event_variable: marine_heatwave
+mechanism: The lowest turbidity and wind speed coincided with long-lasting, repeated and severe marine heatwaves on turbid equatorial
+  Atlantic reefs.
+driver:
+  variable: wind speed
+  authority: CF:wind_speed
+  driver_lag:
+    lag_value: 0
+    lag_unit: weeks
+    lag_note: not stated — concurrent
+  driver_direction: negative
+region_asserted: equatorial southwestern Atlantic (Brazil), 2019–2022
+evidence_class: observational
+citation:
+  doi: 10.3389/fmars.2023.1061488
+  title: Heatwaves and a decrease in turbidity drive coral bleaching in Atlantic marginal equatorial reefs
+  year: 2023
+  citation_source: openalex
+sentence_pointer: 'abstract: "The lowest turbidity and wind speed matched long-lasting, repeated, and severe MHWs"'
+hypothesis_source: literature
+realisable_as: reef-light wind speed (NDBC C-MAN) · weekly mean · lag 0–4 weeks — needs NDBCStdmet built
+realisation:
+  result: untested
+recorded_by: agent_proteus
+recorded_at: '2026-10-12T17:30:00Z'

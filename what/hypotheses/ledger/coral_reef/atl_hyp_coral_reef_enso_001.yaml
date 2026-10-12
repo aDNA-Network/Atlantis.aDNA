@@ -1,0 +1,30 @@
+hyp_id: atl_hyp_coral_reef_enso_001
+tier: draft
+ecosystem_type: coral_reef
+event_variable: sea_surface_temperature (Caribbean)
+mechanism: Central Pacific El Niño events bear a statistical relationship with Caribbean sea surface temperature; Eastern Pacific events
+  do not.
+driver:
+  variable: Central Pacific El Niño (Niño 4 / El Niño Modoki)
+  authority: NOAA_PSL:nina4
+  driver_lag:
+    lag_value: 0
+    lag_unit: months
+    lag_note: not stated — concurrent
+  driver_direction: positive
+region_asserted: Caribbean Sea
+evidence_class: observational
+citation:
+  doi: 10.14288/1.0228057
+  title: 'Caribbean sea surface temperatures and El Niño : a new outlook'
+  year: 2016
+  citation_source: openalex
+sentence_pointer: 'abstract: "a bootstrapping technique determined that Central Pacific El Niño events bear a relationship, while Eastern
+  Pacific event types do not"'
+hypothesis_source: literature
+realisable_as: ENSO index (NOAA PSL Niño 4 or the Modoki index, monthly) · broadcast · lag scanned 0–6 months at realisation — a small
+  index stream; no built fetcher
+realisation:
+  result: untested
+recorded_by: agent_proteus
+recorded_at: '2026-10-12T17:30:00Z'

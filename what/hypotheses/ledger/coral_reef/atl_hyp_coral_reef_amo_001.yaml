@@ -1,0 +1,30 @@
+hyp_id: atl_hyp_coral_reef_amo_001
+tier: draft
+ecosystem_type: coral_reef
+event_variable: sea_surface_temperature (western Florida Keys, multidecadal)
+mechanism: Multidecadal warming and cooling in the western Florida Keys corresponds to Atlantic Multidecadal Variability, which lags
+  the Keys' temperatures by 5–11 years.
+driver:
+  variable: Atlantic Multidecadal Variability index
+  authority: NOAA_PSL:AMO
+  driver_lag:
+    lag_value: 0
+    lag_unit: years
+    lag_note: as stated, the AMV LAGS the Keys' temperatures by 5–11 years; as a driver of Keys SST it has no forward lead, so recorded
+      as concurrent
+  driver_direction: positive
+region_asserted: Marquesas Keys, western Florida Keys
+evidence_class: observational
+citation:
+  doi: 10.1029/2023pa004748
+  title: 20th Century Warming in the Western Florida Keys Was Dominated by Increasing Winter Temperatures
+  year: 2024
+  citation_source: openalex
+sentence_pointer: 'abstract: "correspond to Atlantic Multidecadal Variability (AMV), with the AMV lagging behind western Florida Keys
+  temperatures by 5–11 years"'
+hypothesis_source: literature
+realisable_as: 'unrealisable as a warning: an index that lags the Keys'' own temperatures by years cannot lead an 8-week onset'
+realisation:
+  result: untested
+recorded_by: agent_proteus
+recorded_at: '2026-10-12T17:30:00Z'

@@ -33,7 +33,10 @@ from atlantis_core.hypotheses import POINTER_MAX_WORDS, QUOTE_MAX_WORDS, SCHEMA
 from atlantis_core.hypotheses.corpus import bare_doi, cached_text, load_manifest
 
 QUOTE = re.compile(r"[\"“]([^\"“”]+)[\"”]")
-_FOLD = str.maketrans({"‘": "'", "’": "'", "“": '"', "”": '"', "–": "-", "—": "-", "−": "-", " ": " "})
+# Typographic variants a verbatim quotation may be typed without (M-3b-i: the corpus's first run met U+2010 HYPHEN in two
+# abstracts, which an ASCII quotation of them did not match). Folding is equivalence of glyphs, never of words.
+_FOLD = str.maketrans({"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"', "\u2010": "-", "\u2011": "-", "\u2012": "-",
+                       "\u2013": "-", "\u2014": "-", "\u2212": "-", "\u2043": "-", "\ufe63": "-", "\uff0d": "-", "\u00a0": " ", "\u202f": " "})
 
 
 def _norm(s: str) -> str:

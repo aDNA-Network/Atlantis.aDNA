@@ -1,0 +1,31 @@
+hyp_id: atl_hyp_coral_reef_sea_level_anomaly_001
+tier: draft
+ecosystem_type: coral_reef
+event_variable: marine_heatwave (subsurface) and coral_bleaching
+mechanism: Mesoscale eddies changed thermocline depth and internal-wave cooling; an eddy-induced reduction of internal waves in early
+  2019 prolonged a subsurface heatwave and severe bleaching.
+driver:
+  variable: sea level anomaly (mesoscale eddies)
+  authority: CF:sea_surface_height_above_sea_level
+  driver_lag:
+    lag_value: 0
+    lag_unit: weeks
+    lag_note: 'inferred: concurrent — the abstract links eddy-altered sea level and thermocline to the heatwave''s depth and duration
+      in the same months'
+  driver_direction: positive
+region_asserted: Moorea, French Polynesia, 15 years
+evidence_class: observational
+citation:
+  doi: 10.1038/s41467-022-35550-5
+  title: Hidden heatwaves and severe coral bleaching linked to mesoscale eddies and thermocline dynamics
+  year: 2023
+  citation_source: openalex
+sentence_pointer: 'abstract: "Pronounced eddy-induced reductions in internal waves during early 2019 contributed to a prolonged subsurface
+  MHW and unexpectedly severe coral bleaching"'
+hypothesis_source: literature
+realisable_as: gridded sea-level anomaly (altimetry, e.g. via ERDDAP) · weekly mean over the zone envelope · lag 0–4 weeks — buildable
+  on ERDDAPGriddap; but it bears on SUBSURFACE heat that CRW's surface DHW does not see, so against FKNMS's event it is a proxy at best
+realisation:
+  result: untested
+recorded_by: agent_proteus
+recorded_at: '2026-10-12T17:30:00Z'

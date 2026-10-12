@@ -1,0 +1,29 @@
+hyp_id: atl_hyp_coral_reef_amo_002
+tier: draft
+ecosystem_type: coral_reef
+event_variable: sea_surface_temperature (Atlantic Warm Pool)
+mechanism: Atlantic Warm Pool SSTs vary with the Atlantic Multidecadal Oscillation, a quasi-periodic 60–80-year oscillation of North
+  Atlantic SST.
+driver:
+  variable: Atlantic Multidecadal Oscillation index
+  authority: NOAA_PSL:AMO
+  driver_lag:
+    lag_value: 0
+    lag_unit: years
+    lag_note: not stated — concurrent
+  driver_direction: positive
+region_asserted: northeastern Yucatán Peninsula, Mexico (Atlantic Warm Pool), 1775–2008
+evidence_class: observational
+citation:
+  doi: 10.1029/2012pa002313
+  title: Corals record persistent multidecadal SST variability in the Atlantic Warm Pool since 1775 AD
+  year: 2012
+  citation_source: openalex
+sentence_pointer: 'abstract: "AWP SSTs vary in concert the Atlantic Multidecadal Oscillation (AMO)"'
+hypothesis_source: literature
+realisable_as: AMO index (NOAA PSL, monthly) · broadcast to every zone · lag 0 — a small index stream; near-constant within a season,
+  so it can only shift the base rate between years, which FKNMS's train→test rise already shows (ruling 16)
+realisation:
+  result: untested
+recorded_by: agent_proteus
+recorded_at: '2026-10-12T17:30:00Z'

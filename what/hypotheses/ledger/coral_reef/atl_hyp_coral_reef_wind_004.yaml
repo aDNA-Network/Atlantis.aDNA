@@ -1,0 +1,32 @@
+hyp_id: atl_hyp_coral_reef_wind_004
+tier: draft
+ecosystem_type: coral_reef
+event_variable: coral_bleaching (and rapid mortality)
+mechanism: Very calm conditions — wind below 3 m/s on 8 of the 14 preceding days — combined with high SST to cause unusual, rapid bleaching
+  mortality.
+driver:
+  variable: wind speed
+  authority: CF:wind_speed
+  driver_lag:
+    lag_value: 2
+    lag_unit: weeks
+    lag_note: 'as stated: the two weeks before the event'
+  driver_direction: threshold
+  driver_threshold:
+    threshold_value: 3.0
+    threshold_unit: m/s
+region_asserted: Iriomote, Japan
+evidence_class: observational
+citation:
+  doi: 10.12688/f1000research.12660.1
+  title: Rapid coral mortality following doldrums-like conditions on Iriomote, Japan
+  year: 2017
+  citation_source: openalex
+sentence_pointer: 'abstract: "The two weeks prior to the event included 8 days where the average wind speed was less than 3 ms -1"'
+hypothesis_source: literature
+realisable_as: reef-light wind speed (NDBC C-MAN) · count of days below 3 m/s over the preceding 2 weeks · lag 0–2 weeks — needs NDBCStdmet
+  built
+realisation:
+  result: untested
+recorded_by: agent_proteus
+recorded_at: '2026-10-12T17:30:00Z'

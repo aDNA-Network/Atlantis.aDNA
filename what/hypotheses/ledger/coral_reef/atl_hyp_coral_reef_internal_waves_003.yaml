@@ -1,0 +1,30 @@
+hyp_id: atl_hyp_coral_reef_internal_waves_003
+tier: draft
+ecosystem_type: coral_reef
+event_variable: coral_bleaching (and mortality)
+mechanism: Frequent upslope intrusions of cold water from breaking large-amplitude internal waves mitigated bleaching and mortality
+  in shallow water during a region-wide SST anomaly.
+driver:
+  variable: large-amplitude internal wave exposure
+  authority: CF:sea_water_temperature
+  driver_lag:
+    lag_value: 0
+    lag_unit: weeks
+    lag_note: not stated — concurrent
+  driver_direction: negative
+region_asserted: Andaman Sea, 2010
+evidence_class: observational
+citation:
+  doi: 10.1098/rspb.2014.0650
+  title: Large-amplitude internal waves benefit corals during thermal stress
+  year: 2014
+  citation_source: openalex
+sentence_pointer: 'abstract: "frequent upslope intrusions of cold sub-pycnocline waters due to breaking large-amplitude internal waves
+  (LAIW) mitigated coral bleaching and mortality in shallow waters"'
+hypothesis_source: literature
+realisable_as: 'unrealisable on FKNMS''s grid: internal-wave cooling acts on the reef SLOPE at depth; CRW''s 5 km DHW is a satellite
+  SURFACE product that cannot see it (needs in-situ thermistor arrays, not a public stream on the zones × weeks grid)'
+realisation:
+  result: untested
+recorded_by: agent_proteus
+recorded_at: '2026-10-12T17:30:00Z'

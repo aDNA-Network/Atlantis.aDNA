@@ -1,0 +1,30 @@
+hyp_id: atl_hyp_coral_reef_forecast_sst_001
+tier: draft
+ecosystem_type: coral_reef
+event_variable: degree_heating_week (CRW alert levels, up to 4 months ahead)
+mechanism: Applying CRW's heat-stress algorithm to NCEP CFSv2 SST ensembles predicts the probability of bleaching-level heat stress
+  four months ahead.
+driver:
+  variable: CFSv2 ensemble SST forecast
+  authority: NOAA_NCEP:CFSv2
+  driver_lag:
+    lag_value: 4
+    lag_unit: months
+    lag_note: 'as stated: up to four months in advance'
+  driver_direction: positive
+region_asserted: global shallow-water coral reefs (skill 2011–2015)
+evidence_class: model
+citation:
+  doi: 10.3389/fmars.2018.00057
+  title: 'Predicting Heat Stress to Inform Reef Management: NOAA Coral Reef Watch''s 4-Month Coral Bleaching Outlook'
+  year: 2018
+  citation_source: openalex
+sentence_pointer: 'abstract: "the probability of heat stress capable of causing mass coral bleaching is predicted for four months in
+  advance"'
+hypothesis_source: literature
+realisable_as: 'the CRW Four-Month Outlook itself (weekly probabilities) — a COMPARATOR more than a driver: the operational product
+  a model must beat at the same base rate (the FKNMS steward''s question); archive access unverified, no built fetcher'
+realisation:
+  result: untested
+recorded_by: agent_proteus
+recorded_at: '2026-10-12T17:30:00Z'

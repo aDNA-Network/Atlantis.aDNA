@@ -1,0 +1,30 @@
+hyp_id: atl_hyp_coral_reef_internal_waves_002
+tier: draft
+ecosystem_type: coral_reef
+event_variable: reef_water_temperature (reef surface)
+mechanism: Episodic cool subsurface incursions on a Florida Keys reef are driven by strong semidiurnal internal tides and higher-frequency
+  internal waves.
+driver:
+  variable: internal tide and internal wave activity
+  authority: CF:sea_water_temperature
+  driver_lag:
+    lag_value: 0
+    lag_unit: days
+    lag_note: not stated — concurrent
+  driver_direction: negative
+region_asserted: a Florida Keys reef, May–August 2003
+evidence_class: observational
+citation:
+  doi: 10.1175/jpo2808.1
+  title: Spatial and Temporal Variability of Internal Wave Forcing on a Coral Reef
+  year: 2005
+  citation_source: openalex
+sentence_pointer: 'abstract: "Episodic incursions of cool, subsurface water were driven by periods of strong semidiurnal internal tide
+  and higher-frequency internal wave activity"'
+hypothesis_source: literature
+realisable_as: 'unrealisable on FKNMS''s grid: internal-wave cooling acts on the reef SLOPE at depth; CRW''s 5 km DHW is a satellite
+  SURFACE product that cannot see it (needs in-situ thermistor arrays, not a public stream on the zones × weeks grid)'
+realisation:
+  result: untested
+recorded_by: agent_proteus
+recorded_at: '2026-10-12T17:30:00Z'

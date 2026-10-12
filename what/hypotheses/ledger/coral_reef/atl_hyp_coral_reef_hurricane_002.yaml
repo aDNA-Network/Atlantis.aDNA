@@ -1,0 +1,29 @@
+hyp_id: atl_hyp_coral_reef_hurricane_002
+tier: draft
+ecosystem_type: coral_reef
+event_variable: degree_heating_week (CRW thermal stress)
+mechanism: Tropical-cyclone cool wakes reduced Coral Reef Watch thermal stress across the Caribbean in 2005 and 2010, below critical
+  levels at some reefs.
+driver:
+  variable: tropical cyclone cool wake
+  authority: NOAA_NHC:HURDAT2
+  driver_lag:
+    lag_value: 0
+    lag_unit: weeks
+    lag_note: not stated — concurrent
+  driver_direction: negative
+region_asserted: Caribbean, 2005 and 2010 (back to 1985)
+evidence_class: observational
+citation:
+  doi: 10.1111/gcb.12541
+  title: Tropical cyclone cooling combats region‐wide coral bleaching
+  year: 2014
+  citation_source: openalex
+sentence_pointer: 'abstract: "it is evident that TC cooling reduced thermal stress at a region-wide scale"'
+hypothesis_source: literature
+realisable_as: tropical-cyclone best tracks (NOAA NHC HURDAT2) · a weekly indicator of a track within a radius of the zone · lag 0–2
+  weeks — a new point-track stream; no built fetcher
+realisation:
+  result: untested
+recorded_by: agent_proteus
+recorded_at: '2026-10-12T17:30:00Z'

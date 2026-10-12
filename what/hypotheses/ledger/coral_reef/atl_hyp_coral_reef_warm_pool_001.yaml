@@ -1,0 +1,28 @@
+hyp_id: atl_hyp_coral_reef_warm_pool_001
+tier: draft
+ecosystem_type: coral_reef
+event_variable: coral_bleaching (severity)
+mechanism: The most severe 2005 Caribbean bleaching coincided with waters nearest the western Atlantic warm pool.
+driver:
+  variable: Atlantic Warm Pool proximity / extent
+  authority: NOAA_PSL:AWP
+  driver_lag:
+    lag_value: 0
+    lag_unit: months
+    lag_note: not stated — concurrent
+  driver_direction: positive
+region_asserted: wider Caribbean, 2005
+evidence_class: observational
+citation:
+  doi: 10.1371/journal.pone.0013969
+  title: 'Caribbean Corals in Crisis: Record Thermal Stress, Bleaching, and Mortality in 2005'
+  year: 2010
+  citation_source: openalex
+sentence_pointer: 'abstract: "The most severe bleaching coincided with waters nearest a western Atlantic warm pool that was centered
+  off the northern end of the Lesser Antilles"'
+hypothesis_source: literature
+realisable_as: Atlantic Warm Pool area index (NOAA PSL, monthly) · broadcast · lag 0–3 months — a small index stream; no built fetcher
+realisation:
+  result: untested
+recorded_by: agent_proteus
+recorded_at: '2026-10-12T17:30:00Z'

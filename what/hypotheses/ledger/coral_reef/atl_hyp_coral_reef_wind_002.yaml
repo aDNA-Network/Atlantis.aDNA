@@ -1,0 +1,30 @@
+hyp_id: atl_hyp_coral_reef_wind_002
+tier: draft
+ecosystem_type: coral_reef
+event_variable: marine_heatwave / sea_surface_temperature
+mechanism: Doldrums — weak winds and reduced cloud — promote increased solar heating of the ocean surface, and persistent doldrums build
+  into marine heatwaves.
+driver:
+  variable: wind speed (doldrums)
+  authority: CF:wind_speed
+  driver_lag:
+    lag_value: 0
+    lag_unit: weeks
+    lag_note: not stated — concurrent; the abstract says persistence of the doldrums builds the heat
+  driver_direction: negative
+region_asserted: Great Barrier Reef
+evidence_class: observational
+citation:
+  doi: 10.5194/egusphere-2026-2114
+  title: The development and duration of doldrums over the Great Barrier Reef
+  year: 2026
+  citation_source: openalex
+sentence_pointer: 'abstract: "the development of doldrums, characterised by weak winds and reduced cloud cover, which promote increased
+  solar heating of the ocean surface"'
+hypothesis_source: literature
+realisable_as: reef-light wind speed (NDBC C-MAN, hourly) · weekly mean and calm-day count · lag 0–4 weeks — a heating driver, so it
+  bears directly on DHW onset; needs NDBCStdmet built
+realisation:
+  result: untested
+recorded_by: agent_proteus
+recorded_at: '2026-10-12T17:30:00Z'

@@ -2,15 +2,15 @@
 # unreviewed/ (gitignored). Re-running needs --refresh and replaces this record.
 corpus_schema: atl_corpus_manifest_v0
 ecosystem_type: coral_reef
-retrieved_at: '2026-10-12T16:15:12Z'
+retrieved_at: '2026-10-12T16:20:35Z'
 generated_by: atlantis_core.hypotheses corpus (standalone intake; Ingest.aDNA has no literature class yet)
 sources:
   search: OpenAlex /works (no key; mailto omitted)
   abstracts: OpenAlex abstract_inverted_index, else Europe PMC by DOI
 per_query: 25
 requests:
-  api.openalex.org: 18
-  www.ebi.ac.uk: 23
+  api.openalex.org: 21
+  www.ebi.ac.uk: 25
 abstract_text: unreviewed/<openalex_id>.txt — gitignored; never committed (operator ruling 3, SO-3)
 queries:
 - id: q_wind_keys
@@ -139,15 +139,36 @@ queries:
   server_count: 3217
   kept: 25
   cost_usd: 0.001
+- id: q_hurricane_keys
+  search: hurricanes benefit bleached corals
+  filter: publication_year:>1979
+  theme: storms
+  server_count: 2899
+  kept: 25
+  cost_usd: 0.001
+- id: q_prestress
+  search: climate change disables coral bleaching protection
+  filter: publication_year:>1979
+  theme: thermal_history
+  server_count: 359
+  kept: 25
+  cost_usd: 0.001
+- id: q_keys_forcing
+  search: Florida Keys sea temperature atmospheric forcing heat flux reef
+  filter: publication_year:>1979
+  theme: marine_heatwave
+  server_count: 968
+  kept: 25
+  cost_usd: 0.001
 counts:
-  works: 337
-  with_abstract: 319
+  works: 380
+  with_abstract: 359
   abstract_from:
     europe_pmc: 5
-    none: 18
-    openalex: 314
+    none: 21
+    openalex: 354
   agency: 0
-result_sha256: def31b5ba93cca14884988f63ca878defdb72df667ca78824782288d6df97e1a
+result_sha256: d9586c395632234880bdc01e3dda64a566b4cae3ceb7ff65ab7b1c0a554eae8d
 works:
 - openalex_id: W1029104004
   doi: null
@@ -238,6 +259,7 @@ works:
   - q_cloud
   - q_dhw_forecast
   - q_hurricane
+  - q_hurricane_keys
   - q_keys_warming
   - q_ssta_persist
   - q_tides
@@ -254,6 +276,7 @@ works:
   venue: null
   cited_by: 85
   queries:
+  - q_keys_forcing
   - q_loop_current
   - q_winter
   abstract:
@@ -364,6 +387,7 @@ works:
   queries:
   - q_cloud
   - q_hurricane
+  - q_hurricane_keys
   abstract:
     source: openalex
     words: 107
@@ -482,6 +506,7 @@ works:
   venue: Diversity
   cited_by: 314
   queries:
+  - q_hurricane_keys
   - q_ssta_persist
   abstract:
     source: openalex
@@ -567,6 +592,32 @@ works:
     source: openalex
     words: 330
     sha256: 814f7cb1be0614dbb91cf132dc7c29e52c6910eae8e02c630b53d417968ea0f3
+- openalex_id: W2001305890
+  doi: 10.1175/2011jpo4344.1
+  title: The Modification of Bottom Boundary Layer Turbulence and Mixing by Internal Waves Shoaling on a Barrier Reef
+  year: 2011
+  type: article
+  venue: Journal of Physical Oceanography
+  cited_by: 103
+  queries:
+  - q_keys_forcing
+  abstract:
+    source: openalex
+    words: 145
+    sha256: 3d9dea76a2883a3cd128d334158b6bc471b1c0a6579c15c4afb345b674af13b2
+- openalex_id: W2006497999
+  doi: 10.1029/97pa01134
+  title: Modeled estimates of global reef habitat and carbonate production since the Last Glacial Maximum
+  year: 1997
+  type: article
+  venue: Paleoceanography
+  cited_by: 216
+  queries:
+  - q_keys_forcing
+  abstract:
+    source: openalex
+    words: 324
+    sha256: f1c38005fe037e83b549205bf35b8f25dd49d112ccd11ccc5489f4e4a829a215
 - openalex_id: W2013719615
   doi: 10.3354/meps096189
   title: Effects of coral bleaching on tissue regeneration potential and colony survival
@@ -576,6 +627,7 @@ works:
   cited_by: 163
   queries:
   - q_hurricane
+  - q_hurricane_keys
   abstract:
     source: openalex
     words: 397
@@ -594,6 +646,19 @@ works:
     source: openalex
     words: 401
     sha256: a4e300f42840540ed9116b9ec33e7a9399b1b563390674b62f51697c943ff580
+- openalex_id: W2018600083
+  doi: 10.1175/2009jpo4300.1
+  title: Long-Term Sea Surface Temperature Variability along the U.S. East Coast
+  year: 2009
+  type: article
+  venue: Journal of Physical Oceanography
+  cited_by: 156
+  queries:
+  - q_keys_forcing
+  abstract:
+    source: openalex
+    words: 184
+    sha256: 069cedd85053faae2fe4cf58ec014b85d917bd98049b66db2f6166e8057e8a31
 - openalex_id: W2019094761
   doi: 10.1371/journal.pone.0023047
   title: Severe 2010 Cold-Water Event Caused Unprecedented Mortality to Corals of the Florida Reef Tract and Reversed Previous Survivorship Patterns
@@ -628,6 +693,7 @@ works:
   venue: Journal of Geophysical Research Atmospheres
   cited_by: 91
   queries:
+  - q_keys_forcing
   - q_loop_current
   abstract:
     source: openalex
@@ -646,6 +712,20 @@ works:
     source: openalex
     words: 363
     sha256: f2af36ca9a5848e486477243645dd40da7f07fa08ac11b04bcb6223a3e0f5c89
+- openalex_id: W2022937729
+  doi: 10.5479/si.00775630.496-8.146
+  title: Belize. Assessment of Selected Reef Sites in Northern and South-Central Belize, Including Recovery from Bleaching and Hurricane Disturbances
+    (Stony Corals, Algae and Fish)
+  year: 2003
+  type: article
+  venue: Atoll research bulletin
+  cited_by: 11
+  queries:
+  - q_hurricane_keys
+  abstract:
+    source: openalex
+    words: 192
+    sha256: 226f5b641c85f39a997aa9c7bdff90e3771d791044eb1da44a0c3c4bdf4724e3
 - openalex_id: W2024501581
   doi: 10.1371/journal.pone.0085213
   title: Patterns in Temporal Variability of Temperature, Oxygen and pH along an Environmental Gradient in a Coral Reef
@@ -697,6 +777,7 @@ works:
   cited_by: 99
   queries:
   - q_internal_waves
+  - q_keys_forcing
   abstract:
     source: openalex
     words: 262
@@ -782,6 +863,32 @@ works:
     source: openalex
     words: 178
     sha256: 86078a8e386dd84559afb812ba8018c50a749fff7c32b2df47d21f944b9248ed
+- openalex_id: W2046227467
+  doi: 10.1016/s0022-1694(96)03103-4
+  title: Groundwater flow beneath a hypersaline pond, Cluett Key, Florida Bay, Florida
+  year: 1997
+  type: article
+  venue: Journal of Hydrology
+  cited_by: 11
+  queries:
+  - q_keys_forcing
+  abstract:
+    source: openalex
+    words: 401
+    sha256: 5bb1fff8c65d8735b7420bf7c8bc8f4ac6e586956ca930e9e33f667cb94af243
+- openalex_id: W2048069353
+  doi: 10.3354/meps337001
+  title: 'Western Indian Ocean coral communities: bleaching responses and susceptibility to extinction'
+  year: 2007
+  type: article
+  venue: Marine Ecology Progress Series
+  cited_by: 311
+  queries:
+  - q_hurricane_keys
+  abstract:
+    source: openalex
+    words: 232
+    sha256: ee51c3106363da5abcc8f26bd34a68c0e86ed5f905185bd804872366c83e2b7d
 - openalex_id: W2054171341
   doi: 10.1111/j.1365-294x.2008.03787.x
   title: A restoration genetics guide for coral reef conservation
@@ -819,6 +926,7 @@ works:
   - q_cloud
   - q_dhw_forecast
   - q_hurricane
+  - q_hurricane_keys
   abstract:
     source: openalex
     words: 296
@@ -893,6 +1001,19 @@ works:
     source: openalex
     words: 225
     sha256: e9341b8e55641658ff78960dd79cf8ac04f2598bb7185ed34613fa8ec454bd22
+- openalex_id: W2105525705
+  doi: 10.3354/meps09641
+  title: Observed and modeled larval settlement of a reef fish to the Florida Keys
+  year: 2012
+  type: article
+  venue: Marine Ecology Progress Series
+  cited_by: 78
+  queries:
+  - q_keys_forcing
+  abstract:
+    source: openalex
+    words: 236
+    sha256: 22b8bde3cff7c80e3fd857c1db77797579c0cb610ffb06ce0c6f7e0191060935
 - openalex_id: W2107224678
   doi: 10.1357/002224006778715711
   title: 'Variation beneath the surface: Quantifying complex thermal environments on coral reefs in the Caribbean, Bahamas and Florida'
@@ -914,6 +1035,7 @@ works:
   venue: Frontiers in Microbiology
   cited_by: 342
   queries:
+  - q_keys_forcing
   - q_tides
   abstract:
     source: openalex
@@ -940,11 +1062,25 @@ works:
   venue: Limnology and Oceanography
   cited_by: 37
   queries:
+  - q_keys_forcing
   - q_keys_warming
   abstract:
     source: openalex
     words: 238
     sha256: 0977dbde7dbbf5534266008615c19953f91620a318fd5d8438f62fc8c0e6c107
+- openalex_id: W2116022248
+  doi: 10.1016/j.marpolbul.2009.09.009
+  title: 'The coral reef crisis: The critical importance of<350ppm CO2'
+  year: 2009
+  type: article
+  venue: Marine Pollution Bulletin
+  cited_by: 432
+  queries:
+  - q_keys_forcing
+  abstract:
+    source: openalex
+    words: 302
+    sha256: aced1eccca5386294601616a07fbc7cfa5d13d393d05acef3aae0a9ec513aba1
 - openalex_id: W2116565443
   doi: 10.4319/lo.2004.49.2.0442
   title: The continuity and intensity of ultraviolet irradiation affect the kinetics of biosynthesis, accumulation, and conversion of mycosporine‐like
@@ -959,6 +1095,19 @@ works:
     source: openalex
     words: 275
     sha256: 0052f5f5df2377056ab5933b7438951efc6ea9ad89ddf477c8c7b3011ece3527
+- openalex_id: W2119314599
+  doi: 10.1111/gcb.12698
+  title: The dynamics of architectural complexity on coral reefs under climate change
+  year: 2014
+  type: article
+  venue: Global Change Biology
+  cited_by: 137
+  queries:
+  - q_hurricane_keys
+  abstract:
+    source: openalex
+    words: 301
+    sha256: ddef688bc91b237e75438258cc48908e9917ca6d9dfd24f7e946ecf5573d8da7
 - openalex_id: W2120278981
   doi: 10.1029/2005pa001257
   title: Evidence of multidecadal salinity variability in the eastern tropical North Atlantic
@@ -1007,6 +1156,7 @@ works:
   cited_by: 230
   queries:
   - q_internal_waves
+  - q_keys_forcing
   - q_tides
   abstract:
     source: openalex
@@ -1133,6 +1283,32 @@ works:
     source: openalex
     words: 206
     sha256: 6828ed1ae01d545744337a4e70495dfb3f45e1d575b147f7f894b036185a0cda
+- openalex_id: W2139068468
+  doi: 10.1111/j.1365-2486.2010.02366.x
+  title: How much time can herbivore protection buy for coral reefs under realistic regimes of hurricanes and coral bleaching?
+  year: 2010
+  type: article
+  venue: Global Change Biology
+  cited_by: 69
+  queries:
+  - q_hurricane_keys
+  abstract:
+    source: openalex
+    words: 358
+    sha256: 0067fc0135f9c71b4b6cfdbd9419decdf2018ec6e835cd672d2bdba419d90837
+- openalex_id: W2139662614
+  doi: 10.1073/pnas.0701194104
+  title: Hurricanes benefit bleached corals
+  year: 2007
+  type: article
+  venue: Proceedings of the National Academy of Sciences
+  cited_by: 141
+  queries:
+  - q_hurricane_keys
+  abstract:
+    source: openalex
+    words: 112
+    sha256: 65a87787a23b8ac2bdb554112e4941d3645879decd7f5cf9b63a4a03b782b8aa
 - openalex_id: W2140887442
   doi: 10.4319/lo.2000.45.3.0677
   title: Seasonal patterns of tissue biomass and densities of symbiotic dinoflagellates in reef corals and relation to coral bleaching
@@ -1246,6 +1422,7 @@ works:
   cited_by: 915
   queries:
   - q_hurricane
+  - q_hurricane_keys
   - q_ssta_persist
   abstract:
     source: openalex
@@ -1406,6 +1583,7 @@ works:
   - q_crews
   - q_dhw_forecast
   - q_hurricane
+  - q_hurricane_keys
   - q_wind_keys
   abstract:
     source: openalex
@@ -1492,6 +1670,19 @@ works:
     source: openalex
     words: 145
     sha256: cb93cbe2072d9668764f0f951fe9c048457c457597f0fb3cb1499b8a631af4f3
+- openalex_id: W2341497316
+  doi: 10.1126/science.aac7125
+  title: Climate change disables coral bleaching protection on the Great Barrier Reef
+  year: 2016
+  type: article
+  venue: Science
+  cited_by: 488
+  queries:
+  - q_prestress
+  abstract:
+    source: openalex
+    words: 124
+    sha256: f9817420bbf8607f3173ba75be850eca95d4b1c2af0de48551b17f63b54829b3
 - openalex_id: W2341669096
   doi: 10.2307/1542147
   title: Bleaching Patterns of Four Species of Caribbean Reef Corals
@@ -1533,6 +1724,19 @@ works:
     source: openalex
     words: 1061
     sha256: aee57b936dec1c47d2e6fbc86d3e29255f53d15cf48a94b9f86b9f7dda74da9b
+- openalex_id: W2396677326
+  doi: 10.3390/d8020012
+  title: Recent Advances in Understanding the Effects of Climate Change on Coral Reefs
+  year: 2016
+  type: article
+  venue: Diversity
+  cited_by: 135
+  queries:
+  - q_prestress
+  abstract:
+    source: openalex
+    words: 196
+    sha256: 5cf775e416fdd631ef0e0e29fc4b75dcf4cdaf19ad7aaa866cb71edc92791c02
 - openalex_id: W2409045074
   doi: 10.1038/srep20717
   title: Coral community response to bleaching on a highly disturbed reef
@@ -1546,6 +1750,19 @@ works:
     source: openalex
     words: 196
     sha256: d28629db6eb498bd08d0f46880995aa0a990a60075cdc19e947d6b183c290ab7
+- openalex_id: W2412612022
+  doi: 10.25781/kaust-6ng26
+  title: 'Coral Reef Functioning Along a Cross-shelf Environmental Gradient: Abiotic and Biotic Drivers of Coral Reef Growth in the Red Sea'
+  year: 2016
+  type: dissertation
+  venue: King Abdullah University of Science and Technology Repository (King Abdullah University of Science and Technology)
+  cited_by: 1
+  queries:
+  - q_keys_forcing
+  abstract:
+    source: openalex
+    words: 362
+    sha256: 3f32a4d0fd3aa2566e02092cb4391b716df6ec456ccf6e15f232b049f3b04e00
 - openalex_id: W2413006009
   doi: 10.14288/1.0228057
   title: 'Caribbean sea surface temperatures and El Niño : a new outlook'
@@ -1601,6 +1818,19 @@ works:
     source: openalex
     words: 204
     sha256: 39e46a40b908ae0279dbedb2b861fc002b4a4b04710df13682312f8dfcfae7ba
+- openalex_id: W2502592061
+  doi: 10.1146/annurev-environ-110615-085610
+  title: 'Coral Reefs Under Climate Change and Ocean Acidification: Challenges and Opportunities for Management and Policy'
+  year: 2016
+  type: review
+  venue: Annual Review of Environment and Resources
+  cited_by: 145
+  queries:
+  - q_prestress
+  abstract:
+    source: openalex
+    words: 150
+    sha256: 13535d60927cd09dcd84b697267f2500c3ed37b55e948f3fa38e37697faded11
 - openalex_id: W2512962919
   doi: 10.1007/978-94-017-7499-4_5
   title: 'Eastern Pacific Coral Reef Provinces, Coral Community Structure and Composition: An Overview'
@@ -1640,6 +1870,19 @@ works:
     source: openalex
     words: 426
     sha256: eb368386f72a6a362017ec0dcf62e753c690c54ae74081abdfc5a8956de0ca6f
+- openalex_id: W2522525957
+  doi: null
+  title: The economics of worldwide coral reef degradation
+  year: 2003
+  type: article
+  venue: null
+  cited_by: 328
+  queries:
+  - q_hurricane_keys
+  abstract:
+    source: openalex
+    words: 1136
+    sha256: 2720ae60547dca578eb42c74d1098c8e1fa847fd7f58d445e4fdb4c249478b06
 - openalex_id: W2560236436
   doi: 10.1038/srep38402
   title: Warming Trends and Bleaching Stress of the World’s Coral Reefs 1985–2012
@@ -1650,6 +1893,7 @@ works:
   queries:
   - q_hurricane
   - q_keys_warming
+  - q_prestress
   - q_wind_keys
   abstract:
     source: openalex
@@ -1703,6 +1947,7 @@ works:
   cited_by: 3384
   queries:
   - q_enso_caribbean
+  - q_prestress
   abstract:
     source: europe_pmc
     words: 148
@@ -1877,6 +2122,7 @@ works:
   cited_by: 52
   queries:
   - q_dhw_forecast
+  - q_prestress
   abstract:
     source: none
     words: 0
@@ -1933,6 +2179,19 @@ works:
     source: openalex
     words: 200
     sha256: f5d13d893d33350bfa4b7d8d728b9be80f39f4aee90f38ebdade11e4975511a4
+- openalex_id: W2768806590
+  doi: 10.1038/s41598-017-15853-0
+  title: An estimate of diapycnal nutrient fluxes to the euphotic zone in the Florida Straits
+  year: 2017
+  type: article
+  venue: Scientific Reports
+  cited_by: 15
+  queries:
+  - q_keys_forcing
+  abstract:
+    source: openalex
+    words: 180
+    sha256: 69a1d107f87524eb7dc3366263da33c7bd8850c2e90d4d12794d935d6e8b36cd
 - openalex_id: W2770411467
   doi: 10.3389/fmars.2017.00376
   title: Environmental Drivers of Variation in Bleaching Severity of Acropora Species during an Extreme Thermal Anomaly
@@ -1946,6 +2205,19 @@ works:
     source: openalex
     words: 279
     sha256: b5f5fb4cf905722bfa4277726a821f1d908a70ef31a98b5d8be0124dbe415c48
+- openalex_id: W2773645053
+  doi: 10.1186/s12915-017-0459-2
+  title: A multi-trait systems approach reveals a response cascade to bleaching in corals
+  year: 2017
+  type: article
+  venue: BMC Biology
+  cited_by: 67
+  queries:
+  - q_prestress
+  abstract:
+    source: openalex
+    words: 271
+    sha256: 60093438eee88c3790edaa3aec9655cf28682301b6c19e4039a9b5a6971363df
 - openalex_id: W2775058493
   doi: 10.1038/s41467-017-02319-0
   title: Forest productivity in southwestern Europe is controlled by coupled North Atlantic and Atlantic Multidecadal Oscillations
@@ -1994,12 +2266,39 @@ works:
   cited_by: 51
   queries:
   - q_hurricane
+  - q_hurricane_keys
   - q_keys_warming
   - q_wind_keys
   abstract:
     source: openalex
     words: 155
     sha256: f392b3836308e17a4b13389d0b0ec9cc9de0edff27d3b002f8dc9c1dcee876d1
+- openalex_id: W2785898233
+  doi: 10.18520/cs/v114/i02/384-387
+  title: Climate Change-Induced Coral Bleaching in Malvan Marine Sanctuary, Maharashtra, India
+  year: 2018
+  type: article
+  venue: Current Science
+  cited_by: 18
+  queries:
+  - q_prestress
+  abstract:
+    source: openalex
+    words: 11
+    sha256: 6581fdefcda9a3962915d5ccaf4fb4141ec0d983f14790d62c9d3f4436514ca7
+- openalex_id: W2787517606
+  doi: 10.3389/fmars.2018.00004
+  title: 'The Future of Coral Reefs Subject to Rapid Climate Change: Lessons from Natural Extreme Environments'
+  year: 2018
+  type: article
+  venue: Frontiers in Marine Science
+  cited_by: 276
+  queries:
+  - q_prestress
+  abstract:
+    source: openalex
+    words: 328
+    sha256: df46960ad1baec5c9bc636e48f935469ac8d930612b6bd99afaca332e2e45e3b
 - openalex_id: W2789998615
   doi: 10.3389/fmars.2018.00057
   title: 'Predicting Heat Stress to Inform Reef Management: NOAA Coral Reef Watch''s 4-Month Coral Bleaching Outlook'
@@ -2035,6 +2334,7 @@ works:
   venue: InTech eBooks
   cited_by: 8
   queries:
+  - q_prestress
   - q_ssta_persist
   abstract:
     source: openalex
@@ -2074,6 +2374,7 @@ works:
   venue: Nature Communications
   cited_by: 368
   queries:
+  - q_prestress
   - q_turbidity
   abstract:
     source: openalex
@@ -2131,6 +2432,19 @@ works:
     source: openalex
     words: 192
     sha256: 402069b7ec5b3bfeb1fcaf828914ba6c4cbdae2510e14030b00685ae0a98bae0
+- openalex_id: W2896145793
+  doi: 10.1016/j.cub.2018.08.061
+  title: The Roles of Introgression and Climate Change in the Rise to Dominance of Acropora Corals
+  year: 2018
+  type: article
+  venue: Current Biology
+  cited_by: 86
+  queries:
+  - q_prestress
+  abstract:
+    source: openalex
+    words: 214
+    sha256: f8ac4e72f8ea639de1f0876e5dff71122815e18932a5d14e09ae005afa3c2cc1
 - openalex_id: W2897388410
   doi: 10.5194/bg-16-695-2019
   title: Multi-trace-element sea surface temperature coral reconstruction for the southern Mozambique Channel reveals teleconnections with the
@@ -2184,6 +2498,19 @@ works:
     source: openalex
     words: 150
     sha256: f08067a16b87ee4710a7fd2dd711eb8c44fa88e89103eb5bb89b39e161c98f23
+- openalex_id: W2902539101
+  doi: 10.1038/s41396-018-0323-6
+  title: 'Marine probiotics: increasing coral resistance to bleaching through microbiome manipulation'
+  year: 2018
+  type: article
+  venue: The ISME Journal
+  cited_by: 459
+  queries:
+  - q_prestress
+  abstract:
+    source: openalex
+    words: 253
+    sha256: ad96f93de4c133e61223ab7f4ad97544ba147c13c4b4288b3351eb938b7b9141
 - openalex_id: W2904589856
   doi: 10.1111/gcb.14545
   title: Role of host genetics and heat‐tolerant algal symbionts in sustaining populations of the endangered coral Orbicella faveolata in the
@@ -2253,6 +2580,19 @@ works:
     source: none
     words: 0
     sha256: null
+- openalex_id: W2919978253
+  doi: 10.1038/s41598-019-38962-4
+  title: Climate change drives trait-shifts in coral reef communities
+  year: 2019
+  type: article
+  venue: Scientific Reports
+  cited_by: 71
+  queries:
+  - q_prestress
+  abstract:
+    source: openalex
+    words: 210
+    sha256: fd1e9dbc08311aeb3ceadaaa92425cd433564ee91250e35141cc4de2addd0ef4
 - openalex_id: W2920350379
   doi: 10.1371/journal.pone.0212790
   title: Recent and future trends in sea surface temperature across the Persian Gulf and Gulf of Oman
@@ -2274,11 +2614,25 @@ works:
   venue: Limnology and Oceanography
   cited_by: 122
   queries:
+  - q_keys_forcing
   - q_tides
   abstract:
     source: openalex
     words: 246
     sha256: 7999b8025acb99182f0c10b3d68d63f3d67d159d32aabc61a98454e1a6a55d36
+- openalex_id: W2933318106
+  doi: 10.5287/ora-o1zmqxyqr
+  title: 'Rising seas, surprising storms: temporalities of climate and catastrophe in Vermont, New York and the Florida Keys'
+  year: 2016
+  type: dissertation
+  venue: Oxford University Research Archive (ORA) (University of Oxford)
+  cited_by: 0
+  queries:
+  - q_keys_forcing
+  abstract:
+    source: openalex
+    words: 287
+    sha256: 507bd5b6287d2b5fe6fe683c281ee942ecebbf17df7a810c73ea4b941e56fb64
 - openalex_id: W2938712956
   doi: 10.1029/2018jc014698
   title: Coral Reef Calcification and Production After the 2016 Bleaching Event at Lizard Island, Great Barrier Reef
@@ -2316,6 +2670,7 @@ works:
   - q_cloud
   - q_enso_caribbean
   - q_hurricane
+  - q_hurricane_keys
   abstract:
     source: openalex
     words: 288
@@ -2333,6 +2688,19 @@ works:
     source: openalex
     words: 241
     sha256: 00108788b6a51a6c6f3897f5d8ed2eb17e7e9510a93a5c343160eb6d59ed37a1
+- openalex_id: W2944017778
+  doi: 10.1007/s10712-019-09531-1
+  title: Forcing Factors Affecting Sea Level Changes at the Coast
+  year: 2019
+  type: article
+  venue: Surveys in Geophysics
+  cited_by: 348
+  queries:
+  - q_keys_forcing
+  abstract:
+    source: openalex
+    words: 184
+    sha256: 9352c6298de8f49a7cee1bc375a72200d87813cecd779d0b9b8e797b84bb0fea
 - openalex_id: W2949165504
   doi: 10.1007/s00338-019-01829-1
   title: New high-resolution sea surface temperature forecasts for coral reef management on the Great Barrier Reef
@@ -2346,6 +2714,19 @@ works:
     source: openalex
     words: 289
     sha256: 8fdf5ee3237d12afcd8b9b6733e193f69d65e2874fa122f7018c458ab278b3b7
+- openalex_id: W2949887847
+  doi: 10.1002/lno.11166
+  title: Spatial variation in the biochemical and isotopic composition of corals during bleaching and recovery
+  year: 2019
+  type: article
+  venue: Limnology and Oceanography
+  cited_by: 74
+  queries:
+  - q_hurricane_keys
+  abstract:
+    source: openalex
+    words: 257
+    sha256: 25d617c1e8d862212489ec84e159f75dc73cdd88caebacc2bf743e3c8fcddb5c
 - openalex_id: W2952780249
   doi: 10.1038/s41467-019-10206-z
   title: A global assessment of marine heatwaves and their drivers
@@ -2408,6 +2789,7 @@ works:
   cited_by: 340
   queries:
   - q_hurricane
+  - q_keys_forcing
   abstract:
     source: openalex
     words: 292
@@ -2425,6 +2807,19 @@ works:
     source: openalex
     words: 330
     sha256: 8a659a8a2ff3be3741250d06f060809c06ea17bda5bde8ae5f2fe95ed02cb1a7
+- openalex_id: W2975955957
+  doi: 10.1038/s41558-019-0593-7
+  title: Forecasting global coral bleaching
+  year: 2019
+  type: article
+  venue: Nature Climate Change
+  cited_by: 13
+  queries:
+  - q_prestress
+  abstract:
+    source: none
+    words: 0
+    sha256: null
 - openalex_id: W2977071180
   doi: 10.1038/s41558-019-0576-8
   title: Temperature patterns and mechanisms influencing coral bleaching during the 2016 El Niño
@@ -2433,6 +2828,7 @@ works:
   venue: Nature Climate Change
   cited_by: 129
   queries:
+  - q_prestress
   - q_ssta_persist
   abstract:
     source: none
@@ -2451,6 +2847,19 @@ works:
     source: openalex
     words: 159
     sha256: 3e299064bdf85187ae1f412de1101240554490abcd5a48d72ab426515e0bcae5
+- openalex_id: W2996587260
+  doi: null
+  title: 'Hurricanes, Coral Bleaching, and the Florida Keys Reef Tract: Can Hurricanes Benefit Temperature Stressed Corals?'
+  year: 2006
+  type: article
+  venue: AGUFM
+  cited_by: 0
+  queries:
+  - q_hurricane_keys
+  abstract:
+    source: none
+    words: 0
+    sha256: null
 - openalex_id: W2997097630
   doi: 10.1016/j.ocemod.2019.101555
   title: Variability of bottom carbonate chemistry over the deep coral reefs in the Florida Straits and the impacts of mesoscale processes
@@ -2637,6 +3046,19 @@ works:
     source: openalex
     words: 84
     sha256: 8d8c1a66a3ba95c833b7dfdbcd7ba8027c04774c418f77cb8e0feb39edba99ec
+- openalex_id: W3029360321
+  doi: 10.1038/s41598-020-65194-8
+  title: Temporal variation in daily temperature minima in coral reefs of Nanwan Bay, Southern Taiwan
+  year: 2020
+  type: article
+  venue: Scientific Reports
+  cited_by: 17
+  queries:
+  - q_keys_forcing
+  abstract:
+    source: openalex
+    words: 212
+    sha256: c0e837f9b9b7337791d4e3e760ed1bb1f4a17e35a804a8d6c04071987cc6878c
 - openalex_id: W3030523065
   doi: 10.3389/fmars.2020.00372
   title: The Influence of Eddies on Coral Larval Retention in the Flower Garden Banks
@@ -2690,6 +3112,19 @@ works:
     source: openalex
     words: 310
     sha256: 4e7cd10b8de42b2444d205958d84bfff7e974eefb65745fa6cc5ea08a23d7f64
+- openalex_id: W3040444699
+  doi: 10.3354/meps13402
+  title: Highly variable taxa-specific coral bleaching responses to thermal stresses
+  year: 2020
+  type: article
+  venue: Marine Ecology Progress Series
+  cited_by: 85
+  queries:
+  - q_prestress
+  abstract:
+    source: openalex
+    words: 231
+    sha256: 1ae31e0e415dcb42f5dbb6fc4a19d7452ee209ade50f0a94c48554f4a7d1b241
 - openalex_id: W3047951618
   doi: 10.1038/s41598-020-70372-9
   title: Internal tides can provide thermal refugia that will buffer some coral reefs from future global warming
@@ -2782,6 +3217,32 @@ works:
     source: openalex
     words: 400
     sha256: 3f8f37b31b5bc99ad268f3891cf03db44083437d95a6fb957ad38ef14bd80832
+- openalex_id: W3091837040
+  doi: 10.1002/lno.11620
+  title: Water temperature control on CO2 flux and evaporation over a subtropical seagrass meadow revealed by atmospheric eddy covariance
+  year: 2020
+  type: article
+  venue: Limnology and Oceanography
+  cited_by: 29
+  queries:
+  - q_keys_forcing
+  abstract:
+    source: openalex
+    words: 250
+    sha256: 8b7dfc1c77efde8b5957147285db900e913149f0e5bdd94350a82c3eae646af7
+- openalex_id: W3092339752
+  doi: 10.1002/ecs2.3159
+  title: Resistance, resilience, and vulnerability of social‐ecological systems to hurricanes in Puerto Rico
+  year: 2020
+  type: article
+  venue: Ecosphere
+  cited_by: 38
+  queries:
+  - q_hurricane_keys
+  abstract:
+    source: openalex
+    words: 228
+    sha256: 3048c68839aaad745bc13962ff2dafe4738238c248342e1e95b7984ad1eb2e0e
 - openalex_id: W3093961821
   doi: 10.1371/journal.pone.0239978
   title: Optimising cool-water injections to reduce thermal stress on coral reefs of the Great Barrier Reef
@@ -2809,6 +3270,19 @@ works:
     source: openalex
     words: 206
     sha256: da8ea74379b3c47c77acbd467e8b6dc9f67614d3b4702382d62682949bdd93fa
+- openalex_id: W3095656185
+  doi: 10.3390/microorganisms8111682
+  title: Defining Coral Bleaching as a Microbial Dysbiosis within the Coral Holobiont
+  year: 2020
+  type: article
+  venue: Microorganisms
+  cited_by: 133
+  queries:
+  - q_prestress
+  abstract:
+    source: openalex
+    words: 166
+    sha256: c41495cce65643a890f784ae268f5b87a7c0907bd44b72f40c7cd7817f255ba9
 - openalex_id: W3099823726
   doi: 10.1038/s41597-020-00733-6
   title: High resolution spatiotemporal patterns of seawater temperatures across the Belize Mesoamerican Barrier Reef
@@ -2830,11 +3304,25 @@ works:
   venue: Ecological Applications
   cited_by: 157
   queries:
+  - q_prestress
   - q_tides
   abstract:
     source: openalex
     words: 269
     sha256: 192a0a62c3cdb02425f1e3880d7a9c5b573e243897044bd44cd20a8bcecaaece
+- openalex_id: W3131895982
+  doi: 10.1371/journal.pone.0244599
+  title: Hurricane impacts on a coral reef soundscape
+  year: 2021
+  type: article
+  venue: PLoS ONE
+  cited_by: 15
+  queries:
+  - q_hurricane_keys
+  abstract:
+    source: openalex
+    words: 257
+    sha256: 0754cd7cb9d4ce53014b8cffcb3d7c5e0de34bebe73cadd20be8082f9ec2c62c
 - openalex_id: W3161627998
   doi: 10.3390/microorganisms9061120
   title: Composition of Prokaryotic and Eukaryotic Microbial Communities in Waters around the Florida Reef Tract
@@ -2862,6 +3350,19 @@ works:
     source: openalex
     words: 243
     sha256: 6c9c196d15e75c222ac0615de654ba51bf9429a1f874687525b6a6c3742e7556
+- openalex_id: W3166770701
+  doi: 10.1101/2021.06.04.447049
+  title: Mangrove forests mitigate coral bleaching under thermal stress from climate change
+  year: 2021
+  type: preprint
+  venue: bioRxiv (Cold Spring Harbor Laboratory)
+  cited_by: 5
+  queries:
+  - q_prestress
+  abstract:
+    source: openalex
+    words: 150
+    sha256: 5e40ec933ab845907a1e95e3d4066195b3225785adff0ccbd85ec0f6542d179f
 - openalex_id: W3167928731
   doi: 10.1175/jpo-d-20-0283.1
   title: Submesoscale Instability in the Straits of Florida
@@ -3058,6 +3559,7 @@ works:
   queries:
   - q_cloud
   - q_hurricane
+  - q_hurricane_keys
   - q_ssta_persist
   - q_tides
   - q_turbidity
@@ -3074,12 +3576,26 @@ works:
   venue: Global Change Biology
   cited_by: 207
   queries:
+  - q_hurricane_keys
   - q_ssta_persist
   - q_turbidity
   abstract:
     source: openalex
     words: 201
     sha256: a62d668f24b20bceb0b0b7dbd825986cc04ac6f3c77c20119ed5d5206010ad9b
+- openalex_id: W4233334986
+  doi: 10.3410/f.1088924.543235
+  title: Faculty Opinions recommendation of Hurricanes benefit bleached corals.
+  year: 2007
+  type: peer-review
+  venue: Faculty Opinions – Post-Publication Peer Review of the Biomedical Literature
+  cited_by: 0
+  queries:
+  - q_hurricane_keys
+  abstract:
+    source: none
+    words: 0
+    sha256: null
 - openalex_id: W4240881894
   doi: 10.26686/wgtn.16992418.v1
   title: Sedimentary Processes and the Holocene Development of Palmyra Atoll, Equatorial Pacific Ocean
@@ -3208,6 +3724,7 @@ works:
   venue: Journal of Geophysical Research Biogeosciences
   cited_by: 22
   queries:
+  - q_keys_forcing
   - q_mhw_drivers
   abstract:
     source: openalex
@@ -3294,6 +3811,19 @@ works:
     source: openalex
     words: 346
     sha256: ed4ecaef4b2ddb650d02fee1bb0e204f6c7131b5001254a5a3c83556408a82e4
+- openalex_id: W4310202129
+  doi: 10.3390/w14233840
+  title: Marine Heat Waves over Natural and Urban Coastal Environments of South Florida
+  year: 2022
+  type: article
+  venue: Water
+  cited_by: 9
+  queries:
+  - q_keys_forcing
+  abstract:
+    source: openalex
+    words: 376
+    sha256: ecb66b7f67e0073dae1e21867f23bd3f475d271b7f78c7afae1af50d86d0a92d
 - openalex_id: W4310987519
   doi: 10.12688/f1000research.108724.4
   title: Unprecedented early-summer heat stress and forecast of coral bleaching on the Great Barrier Reef, 2021-2022
@@ -3388,6 +3918,19 @@ works:
     source: openalex
     words: 222
     sha256: 3c1b67c54dd9fb7b00fb7493fcd104d305d27ab539cd3a6eb00043e82ff967a9
+- openalex_id: W4323362137
+  doi: 10.3390/ani13050949
+  title: 'The Evolution of Coral Reef under Changing Climate: A Scientometric Review'
+  year: 2023
+  type: review
+  venue: Animals
+  cited_by: 34
+  queries:
+  - q_prestress
+  abstract:
+    source: openalex
+    words: 222
+    sha256: 5440573b8e852b5a59707d024b0fec5a49dac9fbeb79e969a0dacbba3b40b645
 - openalex_id: W4327718594
   doi: 10.1029/2022gc010728
   title: Apparently Seasonal Variations of the Seawater Sr/Ca Ratio Across the Florida Keys Reef Tract
@@ -3427,6 +3970,19 @@ works:
     source: openalex
     words: 263
     sha256: 76c30c4cbd867b5f55dfafce7bff49112cd9e84f7c3357b6e5e62030244f99e5
+- openalex_id: W4365451778
+  doi: 10.1007/s00338-023-02371-x
+  title: Hydrodynamic and atmospheric drivers create distinct thermal environments within a coral reef atoll
+  year: 2023
+  type: article
+  venue: Coral Reefs
+  cited_by: 30
+  queries:
+  - q_keys_forcing
+  abstract:
+    source: openalex
+    words: 250
+    sha256: 06f5abccc5c513f5342d4bf38c23fb88e4108d9dfb7d3cb749539fe525863488
 - openalex_id: W4366254525
   doi: 10.1016/j.marpolbul.2023.114907
   title: Differential bleaching susceptibility among coral taxa and colony sizes, relative to bleaching severity across Australia's Great Barrier
@@ -3438,6 +3994,7 @@ works:
   queries:
   - q_enso_caribbean
   - q_mhw_2023
+  - q_prestress
   abstract:
     source: openalex
     words: 155
@@ -3547,6 +4104,19 @@ works:
     source: openalex
     words: 288
     sha256: 89da972e320f2a8c32a3cdf796baacc660c0549f9de010582a4610707ac649b1
+- openalex_id: W4386069173
+  doi: 10.1038/s41467-023-40601-6
+  title: Emergent increase in coral thermal tolerance reduces mass bleaching under climate change
+  year: 2023
+  type: article
+  venue: Nature Communications
+  cited_by: 121
+  queries:
+  - q_prestress
+  abstract:
+    source: openalex
+    words: 168
+    sha256: d7d41ae2d2892a78decfc7ebc12a4c392bf2a4f835268c08cae56a285cd22316
 - openalex_id: W4386532737
   doi: 10.1146/annurev-marine-042023-093037
   title: Impacts of Climate Change on Marine Foundation Species
@@ -3570,6 +4140,7 @@ works:
   queries:
   - q_cloud
   - q_dhw_forecast
+  - q_prestress
   abstract:
     source: openalex
     words: 199
@@ -3649,6 +4220,7 @@ works:
   cited_by: 139
   queries:
   - q_cloud
+  - q_hurricane_keys
   abstract:
     source: openalex
     words: 268
@@ -3753,6 +4325,7 @@ works:
   cited_by: 17
   queries:
   - q_hurricane
+  - q_hurricane_keys
   abstract:
     source: openalex
     words: 173
@@ -3765,6 +4338,7 @@ works:
   venue: Science Advances
   cited_by: 86
   queries:
+  - q_prestress
   - q_ssta_persist
   abstract:
     source: openalex
@@ -3993,6 +4567,19 @@ works:
     source: openalex
     words: 209
     sha256: c9507d1ef1a25dc938bfb0eb6840b9aa22708c10b62f5fafc3e078d1c870d17f
+- openalex_id: W4409828740
+  doi: 10.29121/granthaalayah.v13.i13(4ismer).2025.6052
+  title: 'THE SILENT SCREAM OF THE REEF: VISUALISING CORAL BLEACHING IN CHASING CORAL'
+  year: 2025
+  type: article
+  venue: International Journal of Research -GRANTHAALAYAH
+  cited_by: 0
+  queries:
+  - q_hurricane_keys
+  abstract:
+    source: openalex
+    words: 187
+    sha256: 6d9a62233378b7a47e29560ade2e11256d7ec0aae308e4f8b3c8f167423de610
 - openalex_id: W4410031711
   doi: 10.36948/ijfmr.2025.v07i02.43084
   title: 'Uncovering Coral Health: A Comprehensive Exploratory Analysis of Florida Keys Reef Ecosystems'
@@ -4032,6 +4619,19 @@ works:
     source: openalex
     words: 150
     sha256: e4e3a0a30c10c42ce0d3ce1334334ad9d2984089b2a7b696f570abc99edcfeab
+- openalex_id: W4412124447
+  doi: 10.1201/9781003589600-1
+  title: Revisiting the Coral Reefs of the Andaman Sea – Factors Affecting Resilience, Recovery and Reef Refugia
+  year: 2025
+  type: book-chapter
+  venue: CRC Press eBooks
+  cited_by: 0
+  queries:
+  - q_keys_forcing
+  abstract:
+    source: openalex
+    words: 259
+    sha256: f423cb8a16deb8ece4448276bbf4d2902540a56492d54b26f7eb295863a8fd4b
 - openalex_id: W4412192562
   doi: 10.1029/2025gl115458
   title: Climate‐Driven Stratification Intensifies Internal Wave Cooling on a Shallow Island Reef
@@ -4276,6 +4876,19 @@ works:
     source: openalex
     words: 252
     sha256: dba81a3cf81b8d65d3f3c681e47a70766e77b537a5fc9d322acbdf6de5037faf
+- openalex_id: W7128445421
+  doi: 10.3389/feart.2026.1761959
+  title: 'Antarctica’s uncertain future: global sea-level rise from oceanic and atmospheric forcing, with a focus on atmospheric rivers'
+  year: 2026
+  type: article
+  venue: Frontiers in Earth Science
+  cited_by: 2
+  queries:
+  - q_keys_forcing
+  abstract:
+    source: openalex
+    words: 142
+    sha256: 513635197394c582c007c1d31354c62869e083ccfae8ef6aa1a8a7594407e616
 - openalex_id: W7128470761
   doi: 10.1038/s41467-025-67506-w
   title: Severe and widespread coral reef damage during the 2014-2017 Global Coral Bleaching Event

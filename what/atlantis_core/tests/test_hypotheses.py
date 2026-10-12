@@ -250,6 +250,17 @@ def test_quote_folding_in_the_check(root):
     assert keys(root) == set()
 
 
+def test_quote_folding_covers_unicode_hyphens(root):
+    """M-3b-i finding: real abstracts carry U+2010 HYPHEN; an ASCII quotation of them must match, and a word change must not."""
+    fetched(root)
+    t = root / "corpus" / "coral_reef" / "unreviewed" / "W111.txt"
+    t.write_text("Low wind speeds reduce mixing, and reef\u2010flat water warms\u00a0rapidly.\n")
+    r = copy.deepcopy(ROW); r["sentence_pointer"] = 'abstract: "reef-flat water warms rapidly"'; put(root, r)
+    assert keys(root) == set()
+    r["sentence_pointer"] = 'abstract: "reef-flat water cools rapidly"'; put(root, r)
+    assert keys(root) == {"quote_not_in_text"}
+
+
 def test_agency_url_citation(root):
     fetched(root)
     r = copy.deepcopy(ROW); r["citation"] = {"url": "https://example.org/crw/method", "title": "CRW method", "year": 2014,

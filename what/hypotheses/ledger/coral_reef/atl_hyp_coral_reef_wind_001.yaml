@@ -1,0 +1,28 @@
+hyp_id: atl_hyp_coral_reef_wind_001
+tier: draft
+ecosystem_type: coral_reef
+event_variable: coral_bleaching (mass thermal bleaching years)
+mechanism: Mass thermal bleaching years on the Great Barrier Reef have more doldrums days and fewer strong trade-wind days.
+driver:
+  variable: doldrums days (weak trade winds)
+  authority: CF:wind_speed
+  driver_lag:
+    lag_value: 0
+    lag_unit: months
+    lag_note: not stated — concurrent
+  driver_direction: positive
+region_asserted: Great Barrier Reef (Davies Reef soundings), 1996–2024
+evidence_class: observational
+citation:
+  doi: 10.5194/wcd-7-109-2026
+  title: Trade wind regimes during the Great Barrier Reef coral bleaching season
+  year: 2026
+  citation_source: openalex
+sentence_pointer: 'abstract: "Years with mass thermal bleaching are correlated with more doldrums days"'
+hypothesis_source: literature
+realisable_as: reef-light wind speed (NDBC C-MAN MLRF1 · SMKF1 · LONF1 · SANF1) · weekly count of calm days · lag 0–4 weeks — the stream
+  discovery recorded as next; needs the declared NDBCStdmet fetcher built
+realisation:
+  result: untested
+recorded_by: agent_proteus
+recorded_at: '2026-10-12T17:30:00Z'

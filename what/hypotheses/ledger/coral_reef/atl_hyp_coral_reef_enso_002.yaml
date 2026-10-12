@@ -1,0 +1,27 @@
+hyp_id: atl_hyp_coral_reef_enso_002
+tier: draft
+ecosystem_type: coral_reef
+event_variable: marine_heatwave (Caribbean)
+mechanism: Caribbean marine heatwaves develop under El Niño conditions and marine cold spells under La Niña.
+driver:
+  variable: ENSO state
+  authority: NOAA_PSL:nina34
+  driver_lag:
+    lag_value: 0
+    lag_unit: months
+    lag_note: not stated — concurrent
+  driver_direction: positive
+region_asserted: Caribbean Sea, four decades of daily SST
+evidence_class: observational
+citation:
+  doi: 10.1029/2023jc020147
+  title: Caribbean Marine Heatwaves, Marine Cold Spells, and Co‐Occurrence of Bleaching Events
+  year: 2023
+  citation_source: openalex
+sentence_pointer: 'abstract: "Our results suggest MHWs and MCSs development is related to El Niño/La Niña conditions, respectively"'
+hypothesis_source: literature
+realisable_as: ENSO index (NOAA PSL Niño 3.4 / ONI, monthly) · broadcast · lag scanned 0–6 months — a small index stream; no built fetcher
+realisation:
+  result: untested
+recorded_by: agent_proteus
+recorded_at: '2026-10-12T17:30:00Z'

@@ -1,0 +1,30 @@
+hyp_id: atl_hyp_coral_reef_florida_current_001
+tier: draft
+ecosystem_type: coral_reef
+event_variable: sea_surface_temperature (winter, western Florida Keys)
+mechanism: The 20th-century winter warming of the western Florida Keys was driven partly by fewer upwelling cyclonic eddies off a weakening
+  Florida Current.
+driver:
+  variable: cyclonic eddy upwelling off the Florida Current
+  authority: NOAA_AOML:florida_current_transport
+  driver_lag:
+    lag_value: 0
+    lag_unit: years
+    lag_note: not stated — a centennial trend, not a lagged driver
+  driver_direction: negative
+region_asserted: Marquesas Keys, western Florida Keys (coral Sr/Ca, 1830–1980)
+evidence_class: observational
+citation:
+  doi: 10.1029/2023pa004748
+  title: 20th Century Warming in the Western Florida Keys Was Dominated by Increasing Winter Temperatures
+  year: 2024
+  citation_source: openalex
+sentence_pointer: 'abstract: "We hypothesize that the winter warming trend was driven partially by a decrease in upwelling associated
+  cyclonic eddies spinning off the Florida Current"'
+hypothesis_source: literature
+realisable_as: Florida Current cable transport (NOAA AOML, daily) · seasonal mean · — a slowly varying covariate; at FKNMS's 8-week
+  horizon it can shift a season's base level, not warn of a week; no built fetcher
+realisation:
+  result: untested
+recorded_by: agent_proteus
+recorded_at: '2026-10-12T17:30:00Z'

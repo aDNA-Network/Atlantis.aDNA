@@ -1,0 +1,31 @@
+hyp_id: atl_hyp_coral_reef_winter_warming_001
+tier: draft
+ecosystem_type: coral_reef
+event_variable: degree_heating_week (bleaching-level stress frequency)
+mechanism: Annual SST trends exceed summer trends on most reefs, so summer-like temperatures last longer and the winter reprieve shortens;
+  bleaching-level stress tripled.
+driver:
+  variable: winter sea surface temperature (shortened winter reprieve)
+  authority: CF:sea_surface_temperature
+  driver_lag:
+    lag_value: 3
+    lag_unit: months
+    lag_note: 'inferred: the preceding winter conditions the next summer''s stress (the abstract''s ''shortening of the winter reprieve'');
+      the interval is the season gap, not a figure in the abstract'
+  driver_direction: positive
+region_asserted: global reef pixels, 1985–2012
+evidence_class: observational
+citation:
+  doi: 10.1038/srep38402
+  title: Warming Trends and Bleaching Stress of the World’s Coral Reefs 1985–2012
+  year: 2016
+  citation_source: openalex
+sentence_pointer: 'abstract: "the period of summer-like temperatures has become longer through the record, with a corresponding shortening
+  of the ''winter'' reprieve"'
+hypothesis_source: literature
+realisable_as: 'DERIVABLE from FKNMS''s own CRW SSTA: the preceding winter''s (Dec–Mar) mean SSTA per zone · seasonal · lag 3–6 months
+  — a vital, no fetcher; bears directly on how early DHW starts to accumulate'
+realisation:
+  result: untested
+recorded_by: agent_proteus
+recorded_at: '2026-10-12T17:30:00Z'

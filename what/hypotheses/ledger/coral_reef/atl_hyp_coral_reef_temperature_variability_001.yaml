@@ -1,0 +1,29 @@
+hyp_id: atl_hyp_coral_reef_temperature_variability_001
+tier: draft
+ecosystem_type: coral_reef
+event_variable: coral_bleaching (severity)
+mechanism: High-frequency temperature variability (daily range) was the strongest predictor of bleaching prevalence and mitigated it.
+driver:
+  variable: daily range of in-situ water temperature
+  authority: CF:sea_water_temperature
+  driver_lag:
+    lag_value: 0
+    lag_unit: weeks
+    lag_note: not stated — concurrent
+  driver_direction: negative
+region_asserted: five reef regions globally (81 bleaching events)
+evidence_class: observational
+citation:
+  doi: 10.1038/s41467-018-04074-2
+  title: High frequency temperature variability reduces the risk of coral bleaching
+  year: 2018
+  citation_source: openalex
+sentence_pointer: 'abstract: "a 1 °C increase in daily temperature range would reduce the odds of more severe bleaching by a factor
+  of 33"'
+hypothesis_source: literature
+realisable_as: reef-light water temperature (NDBC C-MAN, hourly) · weekly mean daily range · lag 0–4 weeks — needs NDBCStdmet built;
+  CRW's daily product has no diurnal range
+realisation:
+  result: untested
+recorded_by: agent_proteus
+recorded_at: '2026-10-12T17:30:00Z'
