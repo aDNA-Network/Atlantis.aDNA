@@ -58,7 +58,7 @@ def bare_doi(doi: str | None) -> str | None:
 
 
 def _strip_tags(s: str) -> str:
-    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", s))).strip()
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"</?[A-Za-z][A-Za-z0-9]*(?:\s[^<>]*)?/?>", " ", s))).strip()
 
 
 def _sha(s: str) -> str:

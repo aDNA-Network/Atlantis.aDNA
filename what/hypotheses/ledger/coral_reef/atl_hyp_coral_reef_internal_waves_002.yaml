@@ -1,5 +1,5 @@
 hyp_id: atl_hyp_coral_reef_internal_waves_002
-tier: draft
+tier: reviewed
 ecosystem_type: coral_reef
 event_variable: reef_water_temperature (reef surface)
 mechanism: Episodic cool subsurface incursions on a Florida Keys reef are driven by strong semidiurnal internal tides and higher-frequency
@@ -28,3 +28,4 @@ realisation:
   result: untested
 recorded_by: agent_proteus
 recorded_at: '2026-10-12T17:30:00Z'
+reviewed_by: agent_faithfulness_reader_m3b_i

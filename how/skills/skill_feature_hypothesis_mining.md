@@ -101,10 +101,22 @@ open-access text if the manifest's work has one — and write **one row per mech
 - **No pointer, no row.** `sentence_pointer` quotes the sentence the row rests on — `abstract: "<≤ 25 words, verbatim>"`
   — or, when the claim is not in the abstract, a locator (`Results ¶2`, `Fig. 4`). A quotation is checked verbatim
   against the cached text; a locator cannot be, and the check says so.
-- **The paper's claim in the paper's terms** (`mechanism`): do not strengthen it. "Associated with" stays associated.
+- **The paper's claim in the paper's terms** (`mechanism`): do not strengthen it. "Associated with" stays associated;
+  **keep every hedge** ("suggest", "hypothesize", "may", "can", "contributed to", "appear to be associated"). The run of
+  record stripped hedges from 9 of 32 mechanisms while their quotations kept them, so `--check` passed and the rows
+  overstated their papers. Only the faithfulness reader caught it (M-3b-i).
+- **Quote the finding, not the framing.** An abstract's opening background sentence restates others' work; a row resting
+  on it is a `review`-class claim at most. Quote the sentence that carries *this* paper's result.
 - **Lag and direction as stated.** If inferred, `lag_note: "inferred: <how>"`; if none, `lag_value: 0` with
-  `"not stated — concurrent"`. A sign the paper does not give is `nonmonotone` only if the paper says so; otherwise the
-  row is not written.
+  `"not stated — concurrent"`. For a trend or a multidecadal claim, say so in the note ("a trend, not a lagged driver"):
+  "concurrent" means nothing there. A lag the paper states in the *other* direction (the index lags the region) means
+  the index is not a driver of it, so write no row.
+- **No sign, no row.** "Consistent with", "bears a relationship", "related to" and "decreased or increased" give no
+  sign. A sign the paper does not give is `nonmonotone` only if the paper says so ("moderate beats low and extreme" is
+  a hump: `nonmonotone`). Otherwise the row is not written. The run of record broke this on four rows; the reader caught
+  them, and they were withdrawn.
+- **Two rows are a contradiction only if their events match.** Cyclone *power* raising bleaching *severity* does not
+  contradict cool wakes lowering *DHW*.
 - **Evidence class** is what the cited work did, not what it cites. A review that restates a mechanism is `review`.
 - **Region** is where the paper looked. A pantropical claim is a candidate for the Keys (README rule 5), not a Keys
   finding.
@@ -140,11 +152,13 @@ Warnings, never failures: `quote_unverified` (no cached text — a fresh clone, 
 
 ### 6. Review: draft → reviewed
 
-A **fresh-context reader** (an `Agent` that did not extract) re-reads each row against its cached text and answers, per
+A **fresh-context reader** (an `Agent` that did not extract, briefed to be adversarial) re-reads each row against its cached text and answers, per
 row: is the mechanism the paper's claim, not a stronger one? are lag, direction and evidence class as the text gives
 them? does the quotation say what the row says? It returns a verdict per row; only rows it confirms are promoted —
 `tier: reviewed`, `reviewed_by: <the reader's id>`. A row it questions stays `draft` with the question recorded in the
-hand-off. `validated` (two readers) is not attempted until the schema has a second-reviewer slot.
+hand-off. A corrected row stays `draft`: the extractor's correction is not a second reading. A row the text cannot carry
+is **withdrawn**, never deleted (SO-2): it moves to `what/hypotheses/withdrawn/<eco>/` with a `withdrawn: {by, on, why}`
+block, outside the checked ledger. `validated` (two readers) is not attempted until the schema has a second-reviewer slot.
 
 ### 7. Hand off: the realisation memo
 
@@ -173,8 +187,12 @@ before every add, so no `unreviewed/` file is ever staged.
 - **OpenAlex ranking moves.** A manifest is a retrieval record, not a reproducible query result; `result_sha256` pins
   what this retrieval returned.
 - **One reviewer.** `reviewed` is one second reader, not consensus.
+- **Upstream truncation.** OpenAlex's reconstructed abstracts can lose a span that held markup-like text (one
+  coral_reef abstract reads "breeze winds (5 weeks"). The intake cannot repair it. A quotation outside the gap still
+  verifies; one across it fails, as it should.
 
 ## Run of record
 
-M-3b-i (2026-10-12): `coral_reef`, for FloridaKeysCoral's DHW ≥ 4 onset. Findings:
+M-3b-i (2026-10-12): `coral_reef`, for FloridaKeysCoral's DHW ≥ 4 onset. 32 rows extracted; the reader confirmed 15,
+questioned 17. 6 were withdrawn and 11 corrected (still draft). The ledger holds 26. Findings:
 `how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m3b_i_ledger_and_skill.md`.

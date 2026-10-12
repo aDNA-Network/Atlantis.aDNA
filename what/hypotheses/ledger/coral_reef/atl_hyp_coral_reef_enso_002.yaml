@@ -2,7 +2,8 @@ hyp_id: atl_hyp_coral_reef_enso_002
 tier: draft
 ecosystem_type: coral_reef
 event_variable: marine_heatwave (Caribbean)
-mechanism: Caribbean marine heatwaves develop under El Niño conditions and marine cold spells under La Niña.
+mechanism: The authors' results suggest Caribbean marine-heatwave development is related to El Niño conditions, and marine cold spells
+  to La Niña.
 driver:
   variable: ENSO state
   authority: NOAA_PSL:nina34

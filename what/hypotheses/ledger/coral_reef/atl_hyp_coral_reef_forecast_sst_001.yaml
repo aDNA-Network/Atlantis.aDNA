@@ -1,5 +1,5 @@
 hyp_id: atl_hyp_coral_reef_forecast_sst_001
-tier: draft
+tier: reviewed
 ecosystem_type: coral_reef
 event_variable: degree_heating_week (CRW alert levels, up to 4 months ahead)
 mechanism: Applying CRW's heat-stress algorithm to NCEP CFSv2 SST ensembles predicts the probability of bleaching-level heat stress
@@ -28,3 +28,4 @@ realisation:
   result: untested
 recorded_by: agent_proteus
 recorded_at: '2026-10-12T17:30:00Z'
+reviewed_by: agent_faithfulness_reader_m3b_i

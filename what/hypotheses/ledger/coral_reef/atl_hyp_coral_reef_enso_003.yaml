@@ -2,10 +2,10 @@ hyp_id: atl_hyp_coral_reef_enso_003
 tier: draft
 ecosystem_type: coral_reef
 event_variable: degree_heating_week (southern Japan, summer)
-mechanism: La Niña and negative Indian Ocean Dipole events suppressed tropical cyclones, weakening vertical-mixing cooling and so building
-  up DHW.
+mechanism: La Niña and negative Indian Ocean Dipole events contributed to suppressing tropical cyclones, weakening vertical-mixing cooling
+  and so building up DHW in southern Japan.
 driver:
-  variable: ENSO state (La Niña)
+  variable: Niño 3.4 index (La Niña = negative)
   authority: NOAA_PSL:nina34
   driver_lag:
     lag_value: 0
@@ -23,8 +23,8 @@ citation:
 sentence_pointer: 'abstract: "La Niña and negative Indian Ocean Dipole events contributed to suppressing tropical cyclone activity and
   thus building up the Degree Heating Week"'
 hypothesis_source: literature
-realisable_as: ENSO index (NOAA PSL Niño 3.4 / ONI) · broadcast · lag scanned 0–6 months — a small index stream; note the sign (La Niña
-  builds DHW here) is opposite to enso_002's Caribbean reading
+realisable_as: ENSO index (NOAA PSL Niño 3.4 / ONI) · broadcast · lag scanned 0–6 months — a small index stream; a lower (La Niña) index
+  goes with MORE DHW here — a regional reading, not comparable with enso_002's Caribbean heatwave frequency
 realisation:
   result: untested
 recorded_by: agent_proteus

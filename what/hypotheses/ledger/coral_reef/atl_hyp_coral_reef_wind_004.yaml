@@ -2,8 +2,8 @@ hyp_id: atl_hyp_coral_reef_wind_004
 tier: draft
 ecosystem_type: coral_reef
 event_variable: coral_bleaching (and rapid mortality)
-mechanism: Very calm conditions — wind below 3 m/s on 8 of the 14 preceding days — combined with high SST to cause unusual, rapid bleaching
-  mortality.
+mechanism: Very calm conditions (8 of the 14 preceding days below 3 m/s) with SST 1.0–1.5 °C above the 30-year mean preceded an unusual,
+  rapid bleaching mortality; the authors hypothesize low water movement caused anoxic stress.
 driver:
   variable: wind speed
   authority: CF:wind_speed
@@ -11,10 +11,7 @@ driver:
     lag_value: 2
     lag_unit: weeks
     lag_note: 'as stated: the two weeks before the event'
-  driver_direction: threshold
-  driver_threshold:
-    threshold_value: 3.0
-    threshold_unit: m/s
+  driver_direction: negative
 region_asserted: Iriomote, Japan
 evidence_class: observational
 citation:

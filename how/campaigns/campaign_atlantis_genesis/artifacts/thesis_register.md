@@ -43,15 +43,20 @@ yet. Status of every claim is **supported-by-one-exemplar** or **untested** — 
     hypothesis row, `atlantis_core.hypotheses` and the skill are planned P3 deliverables, and no instance forced them.
     The mapping-template pin moves to 0.9.0, which makes FKNMS's `mapping.yaml` pin move federation upkeep in M-3b-ii
     (as at M-2c-ii), not an instance patch.
-  - *T8, interim (no status change):* the extraction target yields rows. There are 32 `coral_reef` rows from 28 works,
-    each pointing at a sentence verified verbatim against the cached abstract. Of these, **12** are realisable from FKNMS's
-    own streams or a declared fetcher, **16** need an ordinary new stream, and **4** are `unrealisable` on this grid
-    (`what/hypotheses/realisation_coral_reef_2026-10-12.md`). The falsifier's first half ("rows no fetcher can realise")
-    is not met. Its second half ("rows with no SHAP never written up") is M-3b-ii's to test.
-  - *T12, a finding for its row (no status change):* by the paper's own outcome, **15 of 32 rows are about bleaching or
-    coral cover given heat**, not about what brings heat on. A ledger mined for a DHW-defined event finds about half its
-    literature testing a different event. That is T12's point (a second event is a second model), met at the literature
-    stage.
+  - *T8, interim (no status change):* the extraction target yields rows.
+    - 32 rows were extracted from 28 works, each quoting a sentence verified verbatim against its cached abstract.
+    - A fresh-context faithfulness reader confirmed 15 and questioned 17. 6 were withdrawn and archived (no sign stated,
+      a lag stated in the other direction, background framing). 11 were corrected and stay draft.
+    - The ledger holds **26 rows, 15 reviewed**. **10** are realisable from FKNMS's own streams or a declared fetcher,
+      **12** need an ordinary new stream, and **4** are `unrealisable` on this grid
+      (`what/hypotheses/realisation_coral_reef_2026-10-12.md`).
+    - The falsifier's first half ("rows no fetcher can realise") is not met. Its second half ("rows with no SHAP never
+      written up") is M-3b-ii's to test.
+    - **No reviewed row about heat onset is realisable from FKNMS's existing streams**, so the test needs one new stream.
+  - *T12, a finding for its row (no status change):* by the paper's own outcome, **15 of 26 rows are about bleaching or
+    coral cover given heat**, not about what brings heat on. A ledger mined for a DHW-defined event finds over half its
+    literature testing a different event. That is T12's point (a second event is a second model), met at the
+    literature stage.
 - **M-3a re-read (2026-10-10, C-033). No row's status changes, and none is proposed to.**
   - *Obligations:* no row names M-3a. T7 and T8 stay with **M-3b**. T11 and T2 stay with **the P3 gate**, as above. T5's
     check now also runs at discovery (`surveillance_declared` → R8): FKNMS passes absent-with-reason, and its memo records

@@ -1,5 +1,5 @@
 hyp_id: atl_hyp_coral_reef_amo_002
-tier: draft
+tier: reviewed
 ecosystem_type: coral_reef
 event_variable: sea_surface_temperature (Atlantic Warm Pool)
 mechanism: Atlantic Warm Pool SSTs vary with the Atlantic Multidecadal Oscillation, a quasi-periodic 60–80-year oscillation of North
@@ -27,3 +27,4 @@ realisation:
   result: untested
 recorded_by: agent_proteus
 recorded_at: '2026-10-12T17:30:00Z'
+reviewed_by: agent_faithfulness_reader_m3b_i

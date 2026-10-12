@@ -4,7 +4,7 @@ ecosystem_type: coral_reef
 event_variable: coral_bleaching (severity)
 mechanism: The most severe 2005 Caribbean bleaching coincided with waters nearest the western Atlantic warm pool.
 driver:
-  variable: Atlantic Warm Pool proximity / extent
+  variable: proximity to the 2005 western Atlantic warm pool
   authority: NOAA_PSL:AWP
   driver_lag:
     lag_value: 0
@@ -21,7 +21,8 @@ citation:
 sentence_pointer: 'abstract: "The most severe bleaching coincided with waters nearest a western Atlantic warm pool that was centered
   off the northern end of the Lesser Antilles"'
 hypothesis_source: literature
-realisable_as: Atlantic Warm Pool area index (NOAA PSL, monthly) · broadcast · lag 0–3 months — a small index stream; no built fetcher
+realisable_as: 'unrealisable as a broadcast index: the text gives proximity to one year''s warm-pool centre, which a basin AWP area
+  index cannot encode; a per-zone distance to the warm-pool edge from gridded SST is conceivable, not built'
 realisation:
   result: untested
 recorded_by: agent_proteus

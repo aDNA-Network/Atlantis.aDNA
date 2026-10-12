@@ -2,7 +2,8 @@ hyp_id: atl_hyp_coral_reef_sst_variability_001
 tier: draft
 ecosystem_type: coral_reef
 event_variable: coral_cover (and its rate of decline)
-mechanism: FKNMS sites with moderately high SST variability kept higher coral cover and declined more slowly, 1994–2008.
+mechanism: FKNMS sites with moderately high SST variability showed a trend toward higher coral cover and slower decline, 1994–2008;
+  the authors read moderate variability as better than low variability or extremes.
 driver:
   variable: SST variability (variance)
   authority: CF:sea_surface_temperature
@@ -10,7 +11,7 @@ driver:
     lag_value: 0
     lag_unit: years
     lag_note: not stated — concurrent
-  driver_direction: positive
+  driver_direction: nonmonotone
 region_asserted: Florida Keys National Marine Sanctuary (36 CREMP sites)
 evidence_class: observational
 citation:

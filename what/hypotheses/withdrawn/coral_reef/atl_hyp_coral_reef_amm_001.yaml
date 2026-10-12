@@ -1,3 +1,5 @@
+# WITHDRAWN at M-3b-i (faithfulness pass, skill step 6) — archived, not deleted (SO-2). Not part of the ledger;
+# not checked by atlantis_core.hypotheses (the `withdrawn` key is outside AtlHypothesis on purpose).
 hyp_id: atl_hyp_coral_reef_amm_001
 tier: draft
 ecosystem_type: coral_reef
@@ -27,3 +29,7 @@ realisation:
   result: untested
 recorded_by: agent_proteus
 recorded_at: '2026-10-12T17:30:00Z'
+withdrawn:
+  by: agent_faithfulness_reader_m3b_i
+  'on': '2026-10-12'
+  why: 'no sign stated — "consistent with" the AMM (skill step 3: no sign, no row)'

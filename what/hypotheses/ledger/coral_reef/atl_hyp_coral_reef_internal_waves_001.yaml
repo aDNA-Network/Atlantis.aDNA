@@ -2,8 +2,8 @@ hyp_id: atl_hyp_coral_reef_internal_waves_001
 tier: draft
 ecosystem_type: coral_reef
 event_variable: reef_water_temperature (reef slope, 20–30 m)
-mechanism: Internal waves force synchronised pulses of cool water onto the Florida Keys reef slope, strongest March–September, linked
-  to Florida Current frontal eddies.
+mechanism: Ten-year records show regionally synchronous high-frequency temperature variation along the Florida Keys reef tract, suggestive
+  of semidiurnal internal-wave forcing, strongest March–September and apparently associated with Florida Current dynamics.
 driver:
   variable: semidiurnal temperature variation (internal waves)
   authority: CF:sea_water_temperature
@@ -19,8 +19,8 @@ citation:
   title: Regional synchrony of temperature variation and internal wave forcing along the Florida Keys reef tract
   year: 2014
   citation_source: openalex
-sentence_pointer: 'abstract: "The synchronized forcing of cool water onto the reef slope sites across the FLKRT is likely to affect
-  physiological responses to temperature variation"'
+sentence_pointer: 'abstract: "strong, regional-scale synchrony in high-frequency temperature variation suggestive of internal wave forcing
+  at predominately semidiurnal frequencies"'
 hypothesis_source: literature
 realisable_as: 'unrealisable on FKNMS''s grid: internal-wave cooling acts on the reef SLOPE at depth; CRW''s 5 km DHW is a satellite
   SURFACE product that cannot see it (needs in-situ thermistor arrays, not a public stream on the zones × weeks grid)'

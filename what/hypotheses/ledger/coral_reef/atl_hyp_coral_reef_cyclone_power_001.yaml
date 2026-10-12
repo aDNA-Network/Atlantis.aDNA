@@ -2,8 +2,8 @@ hyp_id: atl_hyp_coral_reef_cyclone_power_001
 tier: draft
 ecosystem_type: coral_reef
 event_variable: coral_bleaching (severity)
-mechanism: Cumulative tropical-cyclone power is associated with HIGHER bleaching severity worldwide — the opposite of sustained background
-  wind (and of the cool-wake rows).
+mechanism: Cumulative tropical-cyclone power is associated with higher bleaching severity worldwide — the opposite of the paper's sustained-background-wind
+  effect.
 driver:
   variable: cumulative tropical-cyclone power
   authority: NOAA_NHC:HURDAT2
@@ -22,8 +22,8 @@ citation:
 sentence_pointer: 'abstract: "whereas cumulative tropical-cyclone power has the opposite effect"'
 hypothesis_source: literature
 realisable_as: tropical-cyclone best tracks (NOAA NHC HURDAT2) · a weekly indicator of a track within a radius of the zone · lag 0–2
-  weeks — a new point-track stream; no built fetcher; it contradicts hurricane_001/002 in sign — a ledger contradiction worth a test
-  of its own
+  weeks — a new point-track stream; no built fetcher; its event is bleaching SEVERITY across reefs (damage can raise severity while
+  cool wakes lower DHW), so it does not contradict hurricane_002's thermal-stress reading
 realisation:
   result: untested
 recorded_by: agent_proteus

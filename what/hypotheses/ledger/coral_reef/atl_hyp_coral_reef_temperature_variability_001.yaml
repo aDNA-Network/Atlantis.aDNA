@@ -1,5 +1,5 @@
 hyp_id: atl_hyp_coral_reef_temperature_variability_001
-tier: draft
+tier: reviewed
 ecosystem_type: coral_reef
 event_variable: coral_bleaching (severity)
 mechanism: High-frequency temperature variability (daily range) was the strongest predictor of bleaching prevalence and mitigated it.
@@ -27,3 +27,4 @@ realisation:
   result: untested
 recorded_by: agent_proteus
 recorded_at: '2026-10-12T17:30:00Z'
+reviewed_by: agent_faithfulness_reader_m3b_i

@@ -2,8 +2,8 @@ hyp_id: atl_hyp_coral_reef_cloud_001
 tier: draft
 ecosystem_type: coral_reef
 event_variable: coral_bleaching
-mechanism: Exceptionally high summer cloud cover reduced sun hours and radiative stress, so the Society Islands escaped mass bleaching
-  in 1998 despite SST anomalies like past bleaching years.
+mechanism: Exceptionally high summer cloud cover reduced sun hours; the authors suggest the reduced radiative stress may have prevented
+  large-scale bleaching in the Society Islands in 1998.
 driver:
   variable: cloud cover (sun hours)
   authority: CF:cloud_area_fraction
@@ -19,7 +19,8 @@ citation:
   title: Cloudy weather may have saved Society Island reef corals during the 1998 ENSO event
   year: 2001
   citation_source: openalex
-sentence_pointer: 'abstract: "exceptionally high cloud cover significantly reduced the number of sun hours during the summer of 1998"'
+sentence_pointer: 'abstract: "We suggest that reduced radiative stress, resulting from high cloud cover, may have prevented large-scale
+  coral bleaching in 1998"'
 hypothesis_source: literature
 realisable_as: satellite cloud fraction or insolation (e.g. a CoastWatch PAR product on ERDDAP) · weekly mean · lag 0–2 weeks — buildable
   on ERDDAPGriddap; it modulates BLEACHING given heat, and only partly DHW (clouds also slow heating), so against FKNMS's event it is

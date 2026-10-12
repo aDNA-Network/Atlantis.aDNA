@@ -129,6 +129,12 @@ def test_corpus_manifest_is_metadata_only(root):
     assert m["requests"] == {"api.openalex.org": 2, "www.ebi.ac.uk": 1}
 
 
+def test_strip_tags_keeps_inequalities():
+    """III-faithfulness finding (M-3b-i): a markup stripper of `<[^>]+>` eats `(<4 m/s … >5 weeks)` whole. Only tags go."""
+    assert C._strip_tags("<p>breeze winds (<4 m/s) for >5 weeks</p>") == "breeze winds (<4 m/s) for >5 weeks"
+    assert C._strip_tags("<h4>Results</h4><i>K.</i> brevis &amp; wind") == "Results K. brevis & wind"
+
+
 def test_corpus_refuses_to_replace_a_manifest(root):
     fetched(root)
     with pytest.raises(LedgerError, match="--refresh"):

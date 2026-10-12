@@ -1,5 +1,5 @@
 hyp_id: atl_hyp_coral_reef_cloud_002
-tier: draft
+tier: reviewed
 ecosystem_type: coral_reef
 event_variable: coral_bleaching (extent and location)
 mechanism: El Niño weather — reduced cloud cover, above-average air temperature and pressure — rather than El Niño's SST warming alone
@@ -28,3 +28,4 @@ realisation:
   result: untested
 recorded_by: agent_proteus
 recorded_at: '2026-10-12T17:30:00Z'
+reviewed_by: agent_faithfulness_reader_m3b_i
