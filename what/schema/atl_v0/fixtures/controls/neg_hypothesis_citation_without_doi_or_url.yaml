@@ -24,6 +24,7 @@ hypotheses:
   sentence_pointer: Results, paragraph 2
   hypothesis_source: literature
   realisable_as: buoy wind speed (NDBC stdmet) · weekly mean · lag 1 week
+  realisability: declared_fetcher
   realisation:
     result: untested
   recorded_by: agent_example

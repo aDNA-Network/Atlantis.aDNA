@@ -184,7 +184,7 @@ enums:
     permissible_values:
       coral_reef:    {meaning: ENVO:01000049, description: "marine coral reef biome (FKNMS; the first ledger)"}
       estuary:       {meaning: ENVO:01000020, description: "estuarine biome"}
-      neritic_shelf: {meaning: ENVO:01000042, description: "neritic epipelagic zone biome — the shelf water column (the exemplar's K. brevis)"}
+      neritic_pelagic: {meaning: ENVO:01000042, description: "neritic epipelagic zone biome — the WATER COLUMN over a shelf (the exemplar's K. brevis), not the seabed; renamed from neritic_shelf before any row used it (III M-3b-i F-12e)"}
 
   DriverDirection:
     # Closed. Control: neg_hypothesis_unknown_direction (an unlisted value rejected AT its slot). Nearest miss NOT caught: a direction that misreads the paper.
@@ -235,6 +235,21 @@ enums:
       semantic_scholar: {}
       europe_pmc: {}
       agency: {description: "An agency portal or technical-report series (NOAA, CRW, FWC)"}
+
+  Realisability:
+    # Closed. Controls: neg_hypothesis_unknown_realisability · neg_hypothesis_without_realisability. Nearest miss NOT caught: a class that misreads the row's realisable_as (a reader's catch, skill step 6).
+    description: >-
+      0.9.0 (III M-3b-i F-4). How a row could be realised as a vital, as a class the index can count (T8's falsifier,
+      counted by code, not by hand). local. `existing_stream`: from the instance's own streams (a vital, no fetcher).
+      `declared_fetcher`: a stream whose atlantis_core fetcher is declared but not built. `new_stream`: an ordinary stream
+      no fetcher yet declares (an index, a track, an ERDDAP field, a reanalysis). `unrealisable`: no public stream
+      observes the driver at the patient's scale, the lag is longer than the record, or the row is the event's own
+      definition (skill step 4). Instance-relative: it is read against the instance named in the ledger's hand-off memo.
+    permissible_values:
+      existing_stream: {}
+      declared_fetcher: {}
+      new_stream: {}
+      unrealisable: {}
 
   RealisationResult:
     # Closed. Control: neg_hypothesis_unknown_result. Nearest miss NOT caught: `supported` written for a driver whose SHAP was not measured (atlantis_core.hypotheses check: a tested result needs tested_at and write_up).
@@ -408,6 +423,8 @@ slots:
   sentence_pointer: {range: string, required: true, pattern: '\S', description: "0.9.0. README rule 1 — no pointer, no row: a section/paragraph, or a quotation of ≤ 25 words. Controls: neg_hypothesis_without_sentence_pointer (absent) · neg_hypothesis_sentence_pointer_blank. Nearest miss NOT caught: a quotation over 25 words, or one not in the paper (atlantis_core.hypotheses check: word count always; verbatim against the cached text when the cache is present)."}
   hypothesis_source: {range: HypothesisSource, required: true, description: "0.9.0. Control: neg_hypothesis_unknown_source."}
   realisable_as:    {range: string, required: true, pattern: '\S', description: "0.9.0 (skill step 4). The candidate vital in stream-class terms (source · transform · lag), or `unrealisable: <why>` — T8's falsifier made visible (rows no fetcher can realise). Control: neg_hypothesis_realisable_as_blank."}
+  realisability:    {range: Realisability, required: true, description: "0.9.0 (III M-3b-i F-4). Controls: neg_hypothesis_unknown_realisability · neg_hypothesis_without_realisability."}
+  reviewed_sha256:  {range: string, pattern: "^[a-f0-9]{64}(?!\\n)$", description: "0.9.0 (III M-3b-i F-3). The sha256 of the row as the reviewer read it (canonical JSON of the row minus tier, reviewed_by and reviewed_sha256), written at promotion; atlantis_core check recomputes it and fails reviewed_content_changed, so `reviewed` stays bound to what was reviewed. Control: neg_hypothesis_reviewed_sha256_malformed. Nearest miss NOT caught: a hash written without a review (the reader's id is the record of who read)."}
   realisation:      {range: AtlRealisation, required: true, inlined: true, description: "0.9.0. Present on every row (`result: untested` until an instance realises it); filled when an instance turns the row into a vital. Required, not optional: an optional inlined object is emitted anyOf [object, null], and a defect inside it would be rejected only as an unnamed branch (the controls could not name it)."}
   reviewed_by:      {range: string, description: "0.9.0. Who confirmed the extraction is faithful to the cited text. REQUIRED and non-blank when tier = reviewed (AtlHypothesis rule). Nearest miss NOT caught: a reviewer who is the extractor (atlantis_core check), or `validated` with fewer than two reviewers (atlantis_core check refuses `validated` until a second-reviewer slot exists)."}
   driver_lag:       {range: AtlLagSpec, required: true, inlined: true, description: "0.9.0. Required: a realisation needs a lag. A paper that states none is recorded as lag_value 0 with lag_note `not stated — concurrent`, or an inferred lag with `inferred: <how>` (the skill, step 3). Required for the same reason as realisation."}
@@ -593,7 +610,7 @@ classes:
       caught: a long quotation pasted INTO sentence_pointer or mechanism (atlantis_core check counts the pointer's words;
       mechanism is a reviewer's catch).
     slots: [hyp_id, ecosystem_type, event_variable, mechanism, driver, region_asserted, evidence_class, citation,
-            sentence_pointer, hypothesis_source, realisable_as, realisation, reviewed_by]
+            sentence_pointer, hypothesis_source, realisable_as, realisability, realisation, reviewed_by, reviewed_sha256]
     rules:
       - preconditions:
           slot_conditions:

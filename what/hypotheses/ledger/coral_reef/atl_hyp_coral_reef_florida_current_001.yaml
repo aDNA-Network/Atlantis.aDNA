@@ -24,6 +24,7 @@ sentence_pointer: 'abstract: "We hypothesize that the winter warming trend was d
 hypothesis_source: literature
 realisable_as: Florida Current cable transport (NOAA AOML, daily) · seasonal mean · — a slowly varying covariate; at FKNMS's 8-week
   horizon it can shift a season's base level, not warn of a week; no built fetcher
+realisability: new_stream
 realisation:
   result: untested
 recorded_by: agent_proteus

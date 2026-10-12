@@ -24,8 +24,10 @@ sentence_pointer: 'abstract: "the probability of heat stress capable of causing 
 hypothesis_source: literature
 realisable_as: 'the CRW Four-Month Outlook itself (weekly probabilities) — a COMPARATOR more than a driver: the operational product
   a model must beat at the same base rate (the FKNMS steward''s question); archive access unverified, no built fetcher'
+realisability: new_stream
 realisation:
   result: untested
 recorded_by: agent_proteus
 recorded_at: '2026-10-12T17:30:00Z'
 reviewed_by: agent_faithfulness_reader_m3b_i
+reviewed_sha256: eede81c5704c9ac3c66a29666977afc9aaf68be89ad6c8300a97e179467c92a7

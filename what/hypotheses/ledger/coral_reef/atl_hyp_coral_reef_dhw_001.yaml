@@ -21,9 +21,12 @@ citation:
 sentence_pointer: 'abstract: "a significant predictive relationship between accumulated heat stress (measured using NOAA Coral Reef
   Watch''s Degree Heating Weeks) and bleaching intensity"'
 hypothesis_source: literature
-realisable_as: 'already FKNMS''s EVENT variable: the row supports the event definition (DHW as a bleaching proxy, T12), not a new vital'
+realisable_as: 'unrealisable as a driver: DHW is FKNMS''s EVENT variable — the row supports the event definition (DHW as a bleaching
+  proxy, T12), not a new vital (skill step 4)'
+realisability: unrealisable
 realisation:
   result: untested
 recorded_by: agent_proteus
 recorded_at: '2026-10-12T17:30:00Z'
 reviewed_by: agent_faithfulness_reader_m3b_i
+reviewed_sha256: 5e2901c8c3dfe9aa5f475f9fc112a8bf3453861cd97347466bd06a54ff7104e4

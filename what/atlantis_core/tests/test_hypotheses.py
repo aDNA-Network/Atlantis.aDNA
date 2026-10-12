@@ -9,7 +9,9 @@ import yaml
 from atlantis_core.hypotheses import LedgerError
 from atlantis_core.hypotheses import corpus as C
 from atlantis_core.hypotheses.__main__ import main as hyp_main
-from atlantis_core.hypotheses.check import check_ledger, quotes
+import hashlib
+
+from atlantis_core.hypotheses.check import check_ledger, quotes, review_hash, stamp_review
 from atlantis_core.hypotheses.index import _cell, render, write_or_check
 
 
@@ -88,8 +90,20 @@ ROW = {"hyp_id": "atl_hyp_coral_reef_wind_001", "tier": "draft", "ecosystem_type
        "region_asserted": "example tract", "evidence_class": "observational",
        "citation": {"doi": "10.1000/abc.1", "title": "Wind and reef heat", "year": 2001, "citation_source": "openalex"},
        "sentence_pointer": 'abstract: "reef water warms rapidly during calm periods"', "hypothesis_source": "literature",
-       "realisable_as": "buoy wind speed · weekly mean · lag 0–2 weeks", "realisation": {"result": "untested"},
+       "realisable_as": "buoy wind speed · weekly mean · lag 0–2 weeks", "realisability": "declared_fetcher",
+       "realisation": {"result": "untested"},
        "recorded_by": "agent_proteus", "recorded_at": "2026-10-12T00:00:00Z"}
+
+
+def recache(root, wid, text):
+    """Rewrite a cached abstract AND its manifest hash, as a real re-fetch would (a cache edit alone is tampering)."""
+    (root / "corpus" / "coral_reef" / "unreviewed" / f"{wid}.txt").write_text(text + "\n")
+    mp = root / "corpus" / "coral_reef" / "manifest.yaml"
+    m = yaml.safe_load(mp.read_text())
+    for w in m["works"]:
+        if w["openalex_id"] == wid:
+            w["abstract"]["sha256"] = hashlib.sha256(text.encode()).hexdigest()
+    mp.write_text(yaml.safe_dump(m, sort_keys=False, allow_unicode=True))
 
 
 def put(root, row, name=None, eco="coral_reef"):
@@ -247,7 +261,8 @@ def test_warnings_not_failures(root):
 
 
 def test_quote_matching_folds_quotes_dashes_case_and_space():
-    assert quotes('abstract: “Reef  water  WARMS rapidly” and "calm"') == ["Reef  water  WARMS rapidly", "calm"]
+    assert set(quotes('abstract: “Reef  water  WARMS rapidly” and "calm"')) == {"Reef  water  WARMS rapidly", "calm"}
+    assert quotes("abstract: 'reef water warms' in MHWs' frequency") == ["reef water warms"]   # an apostrophe is not a quote
 
 
 def test_quote_folding_in_the_check(root):
@@ -259,8 +274,7 @@ def test_quote_folding_in_the_check(root):
 def test_quote_folding_covers_unicode_hyphens(root):
     """M-3b-i finding: real abstracts carry U+2010 HYPHEN; an ASCII quotation of them must match, and a word change must not."""
     fetched(root)
-    t = root / "corpus" / "coral_reef" / "unreviewed" / "W111.txt"
-    t.write_text("Low wind speeds reduce mixing, and reef\u2010flat water warms\u00a0rapidly.\n")
+    recache(root, "W111", "Low wind speeds reduce mixing, and reef\u2010flat water warms\u00a0rapidly.")
     r = copy.deepcopy(ROW); r["sentence_pointer"] = 'abstract: "reef-flat water warms rapidly"'; put(root, r)
     assert keys(root) == set()
     r["sentence_pointer"] = 'abstract: "reef-flat water cools rapidly"'; put(root, r)
@@ -283,7 +297,7 @@ def test_index_writes_then_checks(root, capsys):
     assert write_or_check(root, check=True) == 0
     md = (root / "LEDGER.md").read_text()
     assert "GENERATED — never hand-edit" in md and "`atl_hyp_coral_reef_wind_001`" in md and "wind_speed → 0 weeks" in md
-    r = copy.deepcopy(ROW); r["tier"] = "reviewed"; r["reviewed_by"] = "agent_reader"; put(root, r)
+    stamp_review(root / "ledger" / "coral_reef" / f"{ROW['hyp_id']}.yaml", "agent_reader")
     assert write_or_check(root, check=True) == 1           # stale
 
 
@@ -304,3 +318,99 @@ def test_cell_refuses_markdown_injection():
 def test_cli_flags(root, capsys):
     assert hyp_main(["--check", "--root", str(root)]) == 1
     assert hyp_main(["corpus", "--index", "--root", str(root), "--ecosystem", "coral_reef"]) == 1
+
+
+# ── III M-3b-i hardening (F-2, F-3, F-8, F-9, F-12): each new key planted ─────────────────────────────────────────
+def test_cache_tampered(root):
+    """F-2a: a fabricated sentence appended to the cache and quoted used to pass. The cache must hash to the manifest."""
+    fetched(root)
+    t = root / "corpus" / "coral_reef" / "unreviewed" / "W111.txt"
+    t.write_text(t.read_text().rstrip("\n") + " Wind has no effect on reef heat.\n")
+    r = copy.deepcopy(ROW); r["sentence_pointer"] = 'abstract: "Wind has no effect on reef heat"'; put(root, r)
+    assert "cache_tampered" in keys(root)
+
+
+@pytest.mark.parametrize("ptr, key", [
+    ("abstract: '" + " ".join(["word"] * 26) + "'", "quote_too_long"),     # F-2b: single quotes no longer bypass
+    ("abstract: ‘reef water cools rapidly’", "quote_not_in_text"),
+    ("just some words with no locator or quote", "pointer_unparsed"),
+])
+def test_every_quote_glyph_is_a_quotation(root, ptr, key):
+    fetched(root)
+    r = copy.deepcopy(ROW); r["sentence_pointer"] = ptr; put(root, r)
+    assert key in keys(root)
+
+
+def test_quote_after_negation(root):
+    """F-3 plant P8: a fragment that follows the paper's 'not' and omits it."""
+    fetched(root)
+    recache(root, "W111", "Low wind does not cause reef water to warm rapidly during calm periods.")
+    r = copy.deepcopy(ROW); r["sentence_pointer"] = 'abstract: "cause reef water to warm rapidly"'; put(root, r)
+    assert keys(root) == {"quote_after_negation"}
+    r["sentence_pointer"] = 'abstract: "does not cause reef water to warm rapidly"'; put(root, r)
+    assert keys(root) == set()
+
+
+def test_quote_must_match_at_word_boundaries(root):
+    fetched(root)
+    r = copy.deepcopy(ROW); r["sentence_pointer"] = 'abstract: "eef water warms rapidly"'; put(root, r)   # mid-word start
+    assert keys(root) == {"quote_not_in_text"}
+
+
+def test_verbatim_overflow_row_and_work(root):
+    """F-9 plant P7: an abstract pasted into `mechanism`; and copying spread across two rows citing one work."""
+    long = " ".join(f"w{i}" for i in range(60))
+    fetched(root); recache(root, "W111", long)
+    r = copy.deepcopy(ROW); r["sentence_pointer"] = 'abstract: "w0 w1 w2 w3"'; r["mechanism"] = long; put(root, r)
+    assert "verbatim_overflow" in keys(root)
+    r["mechanism"] = " ".join(f"w{i}" for i in range(0, 15)); put(root, r)
+    r2 = copy.deepcopy(r); r2["hyp_id"] = "atl_hyp_coral_reef_wind_002"; r2["mechanism"] = " ".join(f"w{i}" for i in range(20, 35)); put(root, r2)
+    assert keys(root) == {"verbatim_overflow"}          # 15 + 15 words of one work, each row under the cap
+
+
+def test_reviewed_is_bound_to_its_content(root):
+    fetched(root); put(root, ROW)
+    f = root / "ledger" / "coral_reef" / f"{ROW['hyp_id']}.yaml"
+    r = copy.deepcopy(ROW); r.update(tier="reviewed", reviewed_by="agent_reader"); put(root, r)
+    assert keys(root) == {"reviewed_unbound"}
+    stamp_review(f, "agent_reader")
+    assert keys(root) == set()
+    r = yaml.safe_load(f.read_text()); r["mechanism"] = "Calm periods always heat reef water."; put(root, r)
+    assert keys(root) == {"reviewed_content_changed"}
+    r = yaml.safe_load(f.read_text()); r["mechanism"] = ROW["mechanism"]; r["realisation"] = {
+        "result": "not_supported", "realised_in": "X.aDNA", "realised_vital": "atl_vital_wind", "tested_at": "2026-10-12", "write_up": "m.md"}
+    put(root, r)
+    assert keys(root) == set()                          # filling the realisation does not void the review
+    with pytest.raises(ValueError):
+        stamp_review(f, " AGENT_Proteus ")
+
+
+def test_reviewer_is_extractor_casefolded(root):
+    fetched(root)
+    r = copy.deepcopy(ROW); r.update(tier="reviewed", reviewed_by="Agent_Proteus "); r["reviewed_sha256"] = review_hash(r); put(root, r)
+    assert "reviewer_is_extractor" in keys(root)
+
+
+@pytest.mark.parametrize("rel", ["coral_reef/atl_hyp_coral_reef_wind_001.yml", "coral_reef/deeper/atl_hyp_coral_reef_wind_001.yaml"])
+def test_row_misplaced(root, rel):
+    fetched(root)
+    p = root / "ledger" / rel; p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(yaml.safe_dump({**ROW, "tier": "validated"}))
+    assert keys(root) == {"row_misplaced"}
+
+
+def test_intake_fails_closed(root):
+    """F-8: an outage must not replace the record; a socket guard must not be swallowed."""
+    down = Fake([("api.openalex.org", lambda p: p.get("search") == "wind reef", R(code=503))] + session().routes)
+    with pytest.raises(LedgerError, match="nothing written"):
+        C.fetch_corpus("coral_reef", root, session=down, now="2026-10-12T00:00:00Z")
+    assert not (root / "corpus" / "coral_reef" / "manifest.yaml").exists()
+    m = C.fetch_corpus("coral_reef", root, session=down, now="2026-10-12T00:00:00Z", allow_partial=True)
+    assert m["partial"] is True and m["queries"][0]["error"]
+
+    class Guard:
+        def get(self, *a, **k):
+            raise AssertionError("a socket was opened")
+    with pytest.raises(AssertionError):
+        C.fetch_corpus("coral_reef", root, session=Guard(), refresh=True, now="2026-10-12T00:00:00Z")
+

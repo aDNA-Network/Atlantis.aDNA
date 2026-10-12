@@ -24,6 +24,7 @@ sentence_pointer: 'abstract: "Sites that experienced moderately high SST variabi
 hypothesis_source: literature
 realisable_as: 'derivable from CRW SSTA (per-zone variance over the preceding year) — but its event is coral COVER, not DHW onset: not
   this instance''s event (T12)'
+realisability: existing_stream
 realisation:
   result: untested
 recorded_by: agent_proteus

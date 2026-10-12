@@ -24,8 +24,10 @@ sentence_pointer: 'abstract: "Episodic incursions of cool, subsurface water were
 hypothesis_source: literature
 realisable_as: 'unrealisable on FKNMS''s grid: internal-wave cooling acts on the reef SLOPE at depth; CRW''s 5 km DHW is a satellite
   SURFACE product that cannot see it (needs in-situ thermistor arrays, not a public stream on the zones × weeks grid)'
+realisability: unrealisable
 realisation:
   result: untested
 recorded_by: agent_proteus
 recorded_at: '2026-10-12T17:30:00Z'
 reviewed_by: agent_faithfulness_reader_m3b_i
+reviewed_sha256: de8b9c458a87e876f8adf038b13eab07a65ccc2f258e98cc279722828be3a950

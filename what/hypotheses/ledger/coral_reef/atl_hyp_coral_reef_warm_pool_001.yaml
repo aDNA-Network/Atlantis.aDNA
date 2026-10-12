@@ -23,6 +23,7 @@ sentence_pointer: 'abstract: "The most severe bleaching coincided with waters ne
 hypothesis_source: literature
 realisable_as: 'unrealisable as a broadcast index: the text gives proximity to one year''s warm-pool centre, which a basin AWP area
   index cannot encode; a per-zone distance to the warm-pool edge from gridded SST is conceivable, not built'
+realisability: unrealisable
 realisation:
   result: untested
 recorded_by: agent_proteus

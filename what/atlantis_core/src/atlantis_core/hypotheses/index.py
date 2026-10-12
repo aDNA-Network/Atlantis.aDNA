@@ -53,14 +53,17 @@ def render(root: Path) -> str:
                " · ".join(f"{k} {v}" for k, v in sorted(Counter(r.get("tier", "draft") for r in rs).items())) +
                " · results " + " · ".join(f"{k} {v}" for k, v in sorted(Counter(r["realisation"]["result"] for r in rs).items())) +
                f" · pointers quoting text {sum(1 for r in rs if quotes(r['sentence_pointer']))}\n")
-    out.append("| hyp_id | ecosystem | event | driver → lag | direction | evidence | year | tier | realisable as | realised in | result |")
-    out.append("|---|---|---|---|---|---|---|---|---|---|---|")
+    rz = Counter(r.get("realisability") for r in rs)
+    out.append("**Realisability** (T8, counted by code; instance-relative, see the ledger's hand-off memo): " +
+               " · ".join(f"{k} {rz.get(k, 0)}" for k in ("existing_stream", "declared_fetcher", "new_stream", "unrealisable")) + "\n")
+    out.append("| hyp_id | ecosystem | event | driver → lag | direction | evidence | year | tier | realisability | realisable as | realised in | result |")
+    out.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
     for r in rs:
         d, z = r["driver"], r["realisation"]
         out.append("| " + " | ".join(_cell(x) for x in (
             f"`{r['hyp_id']}`", r["ecosystem_type"], r["event_variable"], f"{d['variable']} → {_lag(d)}",
             d["driver_direction"], r["evidence_class"], r["citation"]["year"], r.get("tier", "draft"),
-            r["realisable_as"], z.get("realised_in") or "—", z["result"])) + " |")
+            r.get("realisability"), r["realisable_as"], z.get("realised_in") or "—", z["result"])) + " |")
     return "\n".join(out) + "\n"
 
 

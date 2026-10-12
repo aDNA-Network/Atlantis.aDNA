@@ -26,8 +26,10 @@ sentence_pointer: 'abstract: "We show that winds of 4 m/s represents a critical 
   threshold temperatures"'
 hypothesis_source: literature
 realisable_as: reef-light wind speed (NDBC C-MAN, hourly) · weekly count of days below 4 m/s · lag 0–2 weeks — needs NDBCStdmet built
+realisability: declared_fetcher
 realisation:
   result: untested
 recorded_by: agent_proteus
 recorded_at: '2026-10-12T17:30:00Z'
 reviewed_by: agent_faithfulness_reader_m3b_i
+reviewed_sha256: 6ca7599680d2828fd01a19b94eca616debc0316f6fdb5eaf5bd09f7b93aeaeb3

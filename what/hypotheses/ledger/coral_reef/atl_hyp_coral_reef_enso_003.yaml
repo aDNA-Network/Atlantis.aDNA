@@ -25,6 +25,7 @@ sentence_pointer: 'abstract: "La Niña and negative Indian Ocean Dipole events c
 hypothesis_source: literature
 realisable_as: ENSO index (NOAA PSL Niño 3.4 / ONI) · broadcast · lag scanned 0–6 months — a small index stream; a lower (La Niña) index
   goes with MORE DHW here — a regional reading, not comparable with enso_002's Caribbean heatwave frequency
+realisability: new_stream
 realisation:
   result: untested
 recorded_by: agent_proteus

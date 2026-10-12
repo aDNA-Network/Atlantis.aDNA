@@ -22,8 +22,10 @@ citation:
 sentence_pointer: 'abstract: "The lowest turbidity and wind speed matched long-lasting, repeated, and severe MHWs"'
 hypothesis_source: literature
 realisable_as: reef-light wind speed (NDBC C-MAN) · weekly mean · lag 0–4 weeks — needs NDBCStdmet built
+realisability: declared_fetcher
 realisation:
   result: untested
 recorded_by: agent_proteus
 recorded_at: '2026-10-12T17:30:00Z'
 reviewed_by: agent_faithfulness_reader_m3b_i
+reviewed_sha256: 2da7ac6e055a79f858b39de89f7eae067ff832a87f43f7f46bbe3da578909ad0

@@ -788,6 +788,10 @@
                         "null"
                     ]
                 },
+                "realisability": {
+                    "$ref": "#/$defs/Realisability",
+                    "description": "0.9.0 (III M-3b-i F-4). Controls: neg_hypothesis_unknown_realisability \u00b7 neg_hypothesis_without_realisability."
+                },
                 "realisable_as": {
                     "description": "0.9.0 (skill step 4). The candidate vital in stream-class terms (source \u00b7 transform \u00b7 lag), or `unrealisable: <why>` \u2014 T8's falsifier made visible (rows no fetcher can realise). Control: neg_hypothesis_realisable_as_blank.",
                     "pattern": "\\S",
@@ -822,6 +826,14 @@
                         "null"
                     ]
                 },
+                "reviewed_sha256": {
+                    "description": "0.9.0 (III M-3b-i F-3). The sha256 of the row as the reviewer read it (canonical JSON of the row minus tier, reviewed_by and reviewed_sha256), written at promotion; atlantis_core check recomputes it and fails reviewed_content_changed, so `reviewed` stays bound to what was reviewed. Control: neg_hypothesis_reviewed_sha256_malformed. Nearest miss NOT caught: a hash written without a review (the reader's id is the record of who read).",
+                    "pattern": "^[a-f0-9]{64}(?!\\n)$",
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
                 "sentence_pointer": {
                     "description": "0.9.0. README rule 1 \u2014 no pointer, no row: a section/paragraph, or a quotation of \u2264 25 words. Controls: neg_hypothesis_without_sentence_pointer (absent) \u00b7 neg_hypothesis_sentence_pointer_blank. Nearest miss NOT caught: a quotation over 25 words, or one not in the paper (atlantis_core.hypotheses check: word count always; verbatim against the cached text when the cache is present).",
                     "pattern": "\\S",
@@ -851,6 +863,7 @@
                 "sentence_pointer",
                 "hypothesis_source",
                 "realisable_as",
+                "realisability",
                 "realisation"
             ],
             "then": {
@@ -1580,7 +1593,7 @@
             "enum": [
                 "coral_reef",
                 "estuary",
-                "neritic_shelf"
+                "neritic_pelagic"
             ],
             "title": "EcosystemType",
             "type": "string"
@@ -1658,6 +1671,17 @@
                 "literature"
             ],
             "title": "Modality",
+            "type": "string"
+        },
+        "Realisability": {
+            "description": "0.9.0 (III M-3b-i F-4). How a row could be realised as a vital, as a class the index can count (T8's falsifier, counted by code, not by hand). local. `existing_stream`: from the instance's own streams (a vital, no fetcher). `declared_fetcher`: a stream whose atlantis_core fetcher is declared but not built. `new_stream`: an ordinary stream no fetcher yet declares (an index, a track, an ERDDAP field, a reanalysis). `unrealisable`: no public stream observes the driver at the patient's scale, the lag is longer than the record, or the row is the event's own definition (skill step 4). Instance-relative: it is read against the instance named in the ledger's hand-off memo.",
+            "enum": [
+                "existing_stream",
+                "declared_fetcher",
+                "new_stream",
+                "unrealisable"
+            ],
+            "title": "Realisability",
             "type": "string"
         },
         "RealisationResult": {

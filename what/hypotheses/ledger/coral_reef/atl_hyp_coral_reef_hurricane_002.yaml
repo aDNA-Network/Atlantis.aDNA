@@ -23,8 +23,10 @@ sentence_pointer: 'abstract: "it is evident that TC cooling reduced thermal stre
 hypothesis_source: literature
 realisable_as: tropical-cyclone best tracks (NOAA NHC HURDAT2) · a weekly indicator of a track within a radius of the zone · lag 0–2
   weeks — a new point-track stream; no built fetcher
+realisability: new_stream
 realisation:
   result: untested
 recorded_by: agent_proteus
 recorded_at: '2026-10-12T17:30:00Z'
 reviewed_by: agent_faithfulness_reader_m3b_i
+reviewed_sha256: b1f3f3f7420287e4895a507c65eb38448d4e2cffcc8cb656c1cd3f5b8a0966b4

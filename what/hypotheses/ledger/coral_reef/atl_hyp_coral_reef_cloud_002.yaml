@@ -24,8 +24,10 @@ sentence_pointer: 'abstract: "weather patterns during El Niño that result in re
 hypothesis_source: literature
 realisable_as: satellite cloud fraction / PAR (ERDDAP) · weekly mean · lag 0–2 weeks — buildable on ERDDAPGriddap; a heating driver
   (less cloud → more surface heat gain), so it can bear on DHW onset as well as on bleaching
+realisability: new_stream
 realisation:
   result: untested
 recorded_by: agent_proteus
 recorded_at: '2026-10-12T17:30:00Z'
 reviewed_by: agent_faithfulness_reader_m3b_i
+reviewed_sha256: 2befb0616feca842430e74ec5ce27311044402e15b10982cdc5c2560494f5c77

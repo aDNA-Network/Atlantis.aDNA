@@ -24,8 +24,10 @@ sentence_pointer: 'abstract: "we identify sustained background wind speed as a m
 hypothesis_source: literature
 realisable_as: reef-light wind speed (NDBC C-MAN) · weekly mean · lag 0–4 weeks — needs NDBCStdmet built; the claim is about bleaching
   SEVERITY given heat (a second event, T12), which is why its realisation against DHW onset would test a different claim
+realisability: declared_fetcher
 realisation:
   result: untested
 recorded_by: agent_proteus
 recorded_at: '2026-10-12T17:30:00Z'
 reviewed_by: agent_faithfulness_reader_m3b_i
+reviewed_sha256: 6753c1d5a3d093fa788d4a29ed7ddcf5c3a4fe8a7086d07e1313b859fad41c74

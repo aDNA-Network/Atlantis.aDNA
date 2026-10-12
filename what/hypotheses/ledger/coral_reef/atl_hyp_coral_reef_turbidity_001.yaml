@@ -23,8 +23,10 @@ sentence_pointer: 'abstract: "K d 490, a measurement positively related to turbi
 hypothesis_source: literature
 realisable_as: gridded Kd490 (NOAA CoastWatch ocean colour, ERDDAP) · weekly mean · lag 0 — buildable on ERDDAPGriddap; it moderates
   bleaching given heat, not DHW onset (a second event, T12)
+realisability: new_stream
 realisation:
   result: untested
 recorded_by: agent_proteus
 recorded_at: '2026-10-12T17:30:00Z'
 reviewed_by: agent_faithfulness_reader_m3b_i
+reviewed_sha256: 947503d1bf8ffc611caa97dc98eea6b2fc3ca6b491ff56648eebec2e1379665f

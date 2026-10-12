@@ -8,9 +8,10 @@ driver:
   variable: wind speed
   authority: CF:wind_speed
   driver_lag:
-    lag_value: 2
+    lag_value: 0
     lag_unit: weeks
-    lag_note: 'as stated: the two weeks before the event'
+    lag_note: 'not a lag: the abstract gives a 14-day WINDOW before the event (8 of 14 days below 3 m/s); recorded as concurrent, read
+      over a 2-week window'
   driver_direction: negative
 region_asserted: Iriomote, Japan
 evidence_class: observational
@@ -21,8 +22,9 @@ citation:
   citation_source: openalex
 sentence_pointer: 'abstract: "The two weeks prior to the event included 8 days where the average wind speed was less than 3 ms -1"'
 hypothesis_source: literature
-realisable_as: reef-light wind speed (NDBC C-MAN) · count of days below 3 m/s over the preceding 2 weeks · lag 0–2 weeks — needs NDBCStdmet
+realisable_as: reef-light wind speed (NDBC C-MAN) · count of days below 3 m/s over the preceding 2-week window · lag 0 — needs NDBCStdmet
   built
+realisability: declared_fetcher
 realisation:
   result: untested
 recorded_by: agent_proteus

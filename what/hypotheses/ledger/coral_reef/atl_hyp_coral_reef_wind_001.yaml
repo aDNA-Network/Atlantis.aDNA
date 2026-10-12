@@ -22,8 +22,10 @@ sentence_pointer: 'abstract: "Years with mass thermal bleaching are correlated w
 hypothesis_source: literature
 realisable_as: reef-light wind speed (NDBC C-MAN MLRF1 · SMKF1 · LONF1 · SANF1) · weekly count of calm days · lag 0–4 weeks — the stream
   discovery recorded as next; needs the declared NDBCStdmet fetcher built
+realisability: declared_fetcher
 realisation:
   result: untested
 recorded_by: agent_proteus
 recorded_at: '2026-10-12T17:30:00Z'
 reviewed_by: agent_faithfulness_reader_m3b_i
+reviewed_sha256: 9a6d5baf756bd4aa77c43828d3daddde44d55425426f354ef910915c6e9b0a05

@@ -23,10 +23,12 @@ citation:
 sentence_pointer: 'abstract: "the degree heating weeks calculated based on offshore temperature substantially underestimated the thermal
   stresses experienced by the reef"'
 hypothesis_source: literature
-realisable_as: net air–sea heat flux (a reanalysis, daily) · weekly mean · lag 0–2 weeks — a heating driver of DHW itself; no built
-  fetcher (reanalysis is not on CRW's ERDDAP); also a caution that FKNMS's 5 km DHW can understate reef-scale stress
+realisable_as: 'unrealisable as stated: the paper''s effect is the reef-minus-offshore temperature DIFFERENCE, which CRW''s 5 km product
+  (an offshore-like field) cannot carry; read as a caution that FKNMS''s DHW can understate reef-scale stress'
+realisability: unrealisable
 realisation:
   result: untested
 recorded_by: agent_proteus
 recorded_at: '2026-10-12T17:30:00Z'
 reviewed_by: agent_faithfulness_reader_m3b_i
+reviewed_sha256: 4dd5e087f5a3572eb37b5a0020a830c9b24d222514e385c2d673860380a4db39

@@ -25,6 +25,7 @@ hypotheses:
   sentence_pointer: Results, paragraph 2
   hypothesis_source: literature
   realisable_as: ' '
+  realisability: declared_fetcher
   realisation:
     result: untested
   recorded_by: agent_example

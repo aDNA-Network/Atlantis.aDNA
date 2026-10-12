@@ -23,8 +23,10 @@ sentence_pointer: 'abstract: "a 1 °C increase in daily temperature range would 
 hypothesis_source: literature
 realisable_as: reef-light water temperature (NDBC C-MAN, hourly) · weekly mean daily range · lag 0–4 weeks — needs NDBCStdmet built;
   CRW's daily product has no diurnal range
+realisability: declared_fetcher
 realisation:
   result: untested
 recorded_by: agent_proteus
 recorded_at: '2026-10-12T17:30:00Z'
 reviewed_by: agent_faithfulness_reader_m3b_i
+reviewed_sha256: 5efab046bbd90be991d60679a5e5d533363fdf1cff7495b8af1a4ca64db5e0e0

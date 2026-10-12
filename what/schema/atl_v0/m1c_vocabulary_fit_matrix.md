@@ -155,7 +155,7 @@ does not apply to it. The other six name the method's reading of a paper — eve
 |---|---|
 | `EcosystemType.coral_reef` | **bound** `ENVO:01000049` marine coral reef biome (OLS 2026-10-12) |
 | `EcosystemType.estuary` | **bound** `ENVO:01000020` estuarine biome |
-| `EcosystemType.neritic_shelf` | **bound** `ENVO:01000042` neritic epipelagic zone biome (the shelf water column; the exemplar's *K. brevis*) |
+| `EcosystemType.neritic_pelagic` | **bound** `ENVO:01000042` neritic epipelagic zone biome (the shelf water column; the exemplar's *K. brevis*) |
 | `DriverDirection.positive` · `.negative` | `local`: the sign the paper asserts for the driver's effect on the event |
 | `DriverDirection.nonmonotone` · `.threshold` | `local`: an optimum / a level past which the effect appears |
 | `LagUnit.days` · `.weeks` · `.months` · `.years` | `local`: the paper's own unit; UCUM would name `d`/`wk`/`mo`/`a`, but the slot records the paper's words and converts at realisation |

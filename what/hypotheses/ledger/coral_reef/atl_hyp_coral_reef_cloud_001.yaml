@@ -25,6 +25,7 @@ hypothesis_source: literature
 realisable_as: satellite cloud fraction or insolation (e.g. a CoastWatch PAR product on ERDDAP) · weekly mean · lag 0–2 weeks — buildable
   on ERDDAPGriddap; it modulates BLEACHING given heat, and only partly DHW (clouds also slow heating), so against FKNMS's event it is
   partly a second event (T12)
+realisability: new_stream
 realisation:
   result: untested
 recorded_by: agent_proteus

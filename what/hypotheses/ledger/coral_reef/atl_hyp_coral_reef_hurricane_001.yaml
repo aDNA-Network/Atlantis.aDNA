@@ -2,8 +2,8 @@ hyp_id: atl_hyp_coral_reef_hurricane_001
 tier: draft
 ecosystem_type: coral_reef
 event_variable: coral_bleaching (extent and recovery time)
-mechanism: Hurricane-induced cooling explains the documented differences in the extent and recovery time of 2005 bleaching between the
-  Florida Reef Tract and the U.S. Virgin Islands.
+mechanism: Cooling after a hurricane passed is credited with the different bleaching extent and recovery times seen on the Florida Reef
+  Tract and in the U.S. Virgin Islands in 2005.
 driver:
   variable: tropical cyclone passage (induced sea surface cooling)
   authority: NOAA_NHC:HURDAT2
@@ -24,6 +24,7 @@ sentence_pointer: 'abstract: "hurricane-induced cooling was responsible for the 
 hypothesis_source: literature
 realisable_as: tropical-cyclone best tracks (NOAA NHC HURDAT2) · a weekly indicator of a track within a radius of the zone · lag 0–2
   weeks — a new point-track stream; no built fetcher
+realisability: new_stream
 realisation:
   result: untested
 recorded_by: agent_proteus

@@ -69,6 +69,7 @@ class _Http:
     def __init__(self, session=None, timeout: int = 60, retries: int = 3):
         self._s, self.timeout, self.retries = session, timeout, retries
         self.hosts: Counter = Counter()
+        self.failed = 0
 
     def json(self, url, params):
         if self._s is None:
@@ -82,8 +83,9 @@ class _Http:
                 if r.status_code >= 400:
                     err = f"HTTP {r.status_code}"; continue
                 return r.json()
-            except Exception as e:  # noqa: BLE001
-                err = f"{type(e).__name__}: {str(e)[:160]}"
+            except (OSError, ValueError) as e:   # III M-3b-i F-8: network and decode errors only — requests' errors are
+                err = f"{type(e).__name__}: {str(e)[:160]}"   # OSError subclasses; an AssertionError (a test's socket guard) propagates
+        self.failed += 1
         print(f"  ✗ {url[:70]} {params}: {err}", file=sys.stderr)
         return None
 
@@ -113,7 +115,7 @@ def load_queries(path: Path) -> dict:
 
 
 def fetch_corpus(ecosystem: str, root: Path, *, session=None, refresh: bool = False, max_per_query: int | None = None,
-                 europepmc: bool = True, now: str | None = None) -> dict:
+                 europepmc: bool = True, now: str | None = None, allow_partial: bool = False) -> dict:
     """Run every query in `corpus/<ecosystem>/queries.yaml`; write the manifest and the gitignored abstracts.
     Refuses to overwrite an existing manifest unless `refresh` (a manifest is a retrieval record; OpenAlex's ranking moves)."""
     cdir = root / "corpus" / ecosystem
@@ -162,6 +164,10 @@ def fetch_corpus(ecosystem: str, root: Path, *, session=None, refresh: bool = Fa
                                        "sha256": _sha(text) if text else None}}
             if text:
                 texts[key] = text
+    failed_q = [q["id"] for q in qrec if q.get("error")]
+    if (failed_q or H.failed) and not allow_partial:   # III M-3b-i F-8: fail closed — never replace a record with a partial one
+        raise LedgerError(f"{len(failed_q)} quer{'y' if len(failed_q) == 1 else 'ies'} unanswered {failed_q} and {H.failed} failed "
+                          f"request(s) — nothing written; retry, or pass --allow-partial to record a partial retrieval")
     for w in works.values():
         w["queries"] = sorted(set(w["queries"]))
     wl = [works[k] for k in sorted(works)]
@@ -178,6 +184,7 @@ def fetch_corpus(ecosystem: str, root: Path, *, session=None, refresh: bool = Fa
         "sources": {"search": "OpenAlex /works (no key; mailto omitted)",
                     "abstracts": "OpenAlex abstract_inverted_index, else Europe PMC by DOI" if europepmc else "OpenAlex abstract_inverted_index"},
         "per_query": per,
+        "partial": bool(failed_q or H.failed),
         "requests": dict(sorted(H.hosts.items())),
         "abstract_text": "unreviewed/<openalex_id>.txt — gitignored; never committed (operator ruling 3, SO-3)",
         "queries": qrec,

@@ -24,6 +24,7 @@ sentence_pointer: 'abstract: "strong, regional-scale synchrony in high-frequency
 hypothesis_source: literature
 realisable_as: 'unrealisable on FKNMS''s grid: internal-wave cooling acts on the reef SLOPE at depth; CRW''s 5 km DHW is a satellite
   SURFACE product that cannot see it (needs in-situ thermistor arrays, not a public stream on the zones × weeks grid)'
+realisability: unrealisable
 realisation:
   result: untested
 recorded_by: agent_proteus

@@ -21,9 +21,10 @@ citation:
   citation_source: openalex
 sentence_pointer: 'abstract: "whereas cumulative tropical-cyclone power has the opposite effect"'
 hypothesis_source: literature
-realisable_as: tropical-cyclone best tracks (NOAA NHC HURDAT2) · a weekly indicator of a track within a radius of the zone · lag 0–2
-  weeks — a new point-track stream; no built fetcher; its event is bleaching SEVERITY across reefs (damage can raise severity while
-  cool wakes lower DHW), so it does not contradict hurricane_002's thermal-stress reading
+realisable_as: cumulative tropical-cyclone power per zone (summed from HURDAT2 track intensities within a radius) · seasonal · — a new
+  track-derived stream, no built fetcher; its event is bleaching SEVERITY across reefs (damage can raise severity while cool wakes lower
+  DHW)
+realisability: new_stream
 realisation:
   result: untested
 recorded_by: agent_proteus

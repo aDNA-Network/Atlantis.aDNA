@@ -46,7 +46,7 @@ could see it coming, at the lag that would change a decision.
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| `ecosystem` | `EcosystemType` | yes | `coral_reef` · `estuary` · `neritic_shelf` (ENVO-bound; a new type is a schema change with its looked-up term). The ledger's directory and join key (README rule 5) |
+| `ecosystem` | `EcosystemType` | yes | `coral_reef` · `estuary` · `neritic_pelagic` (ENVO-bound; a new type is a schema change with its looked-up term). The ledger's directory and join key (README rule 5) |
 | `event` | string | yes | The event variable as the instance names it (`degree_heating_week`) |
 | `instance` | path | no | The instance whose streams decide what is realisable now (step 4). Read-only |
 
@@ -111,8 +111,12 @@ open-access text if the manifest's work has one — and write **one row per mech
   `"not stated — concurrent"`. For a trend or a multidecadal claim, say so in the note ("a trend, not a lagged driver"):
   "concurrent" means nothing there. A lag the paper states in the *other* direction (the index lags the region) means
   the index is not a driver of it, so write no row.
+- **Paraphrase; do not copy.** Only `sentence_pointer` quotes. `check` fails a row that copies over 25 words of its
+  abstract in runs of ≥ 6 across its fields, or rows that together copy over 25 words of one abstract outside their
+  quotations (`verbatim_overflow`; III M-3b-i F-9).
 - **No sign, no row.** "Consistent with", "bears a relationship", "related to" and "decreased or increased" give no
-  sign. A sign the paper does not give is `nonmonotone` only if the paper says so ("moderate beats low and extreme" is
+  sign. A **paired** statement does give one: "X and Y relate to A and B, respectively" pairs X with A (III M-3b-i F-7
+  asked for this reading to be written down). A sign the paper does not give is `nonmonotone` only if the paper says so ("moderate beats low and extreme" is
   a hump: `nonmonotone`). Otherwise the row is not written. The run of record broke this on four rows; the reader caught
   them, and they were withdrawn.
 - **Two rows are a contradiction only if their events match.** Cyclone *power* raising bleaching *severity* does not
@@ -125,9 +129,13 @@ open-access text if the manifest's work has one — and write **one row per mech
 
 ### 4. Translate: the `realisable_as` column
 
-For every row, say what vital would realise it, in stream-class terms — `buoy wind speed (NDBC C-MAN) · weekly mean ·
+For every row, set the closed `realisability` class (`existing_stream` · `declared_fetcher` · `new_stream` ·
+`unrealisable` — `LEDGER.md` counts them, so T8 is counted by code, not by hand) and say in `realisable_as` what vital
+would realise it, in stream-class terms — `buoy wind speed (NDBC C-MAN) · weekly mean ·
 lag 1–2 weeks` — or `unrealisable: <why>` (a driver no public stream observes at the patient's scale; a lag longer than
-the record; a mechanism that is the event's own definition). **This column is T8's falsifier made visible:** a ledger
+the record; a mechanism that is the event's own definition; an effect the instance's stream cannot carry, such as a
+reef-minus-offshore difference read from a 5 km field). A **window** is not a **lag**: "8 of the 14 preceding days" is
+lag 0 over a 2-week window. **This column is T8's falsifier made visible:** a ledger
 whose rows no fetcher can realise has failed T8 as worded, and the count says so before anyone trains.
 
 ### 5. Check and index
@@ -144,7 +152,11 @@ $A/.venv/bin/python -m atlantis_core.hypotheses --index --check    # writes noth
 | `citation_without_doi_or_url` · `citation_not_in_manifest` · `no_manifest` | the cited work is not in the retrieval record |
 | `quote_too_long` · `pointer_too_long` | a quotation over 25 words; a pointer over 40 |
 | `quote_not_in_text` | a quotation not verbatim in the cached abstract (whitespace, quotes, dashes, case folded) |
-| `reviewer_is_extractor` · `validated_needs_two_reviewers` | a review is a second reader; `validated` waits for a second-reviewer slot |
+| `cache_tampered` | the cached abstract does not hash to the manifest — the text a quote is checked against must be the text retrieved |
+| `pointer_unparsed` · `quote_after_negation` | a pointer that is neither a quotation (any quote glyph) nor a locator; a fragment that drops the paper's "not" |
+| `verbatim_overflow` | more than 25 copied words of one abstract (above) |
+| `reviewer_is_extractor` · `reviewed_unbound` · `reviewed_content_changed` · `validated_needs_two_reviewers` | a review is a second reader, bound to what it read; `validated` waits for a second-reviewer slot |
+| `row_misplaced` | a row file that is not `ledger/<eco>/<hyp_id>.yaml` |
 | `tested_incomplete` | a result other than `untested` without realised_in · realised_vital · tested_at · write_up |
 
 Warnings, never failures: `quote_unverified` (no cached text — a fresh clone, or a withheld abstract) and
@@ -154,7 +166,12 @@ Warnings, never failures: `quote_unverified` (no cached text — a fresh clone, 
 
 A **fresh-context reader** (an `Agent` that did not extract, briefed to be adversarial) re-reads each row against its cached text and answers, per
 row: is the mechanism the paper's claim, not a stronger one? are lag, direction and evidence class as the text gives
-them? does the quotation say what the row says? It returns a verdict per row; only rows it confirms are promoted —
+them? does the quotation say what the row says? It returns a verdict per row; only rows it confirms are promoted, with
+`python -m atlantis_core.hypotheses --stamp-review <hyp_id> --reviewer <id>`. That writes `reviewed_sha256`, a hash of
+the paper-facing fields the reader judged: a later edit to them fails `reviewed_content_changed`; filling `realisation`
+or re-translating `realisable_as` does not. The reader also **flags** (never confirms) a `realisable_as` or a lag
+encoding that misreads the paper, and applies step 3's rules to **every** row alike, mechanically where it can (grep the
+trigger phrases). Promotion sets —
 `tier: reviewed`, `reviewed_by: <the reader's id>`. A row it questions stays `draft` with the question recorded in the
 hand-off. A corrected row stays `draft`: the extractor's correction is not a second reading. A row the text cannot carry
 is **withdrawn**, never deleted (SO-2): it moves to `what/hypotheses/withdrawn/<eco>/` with a `withdrawn: {by, on, why}`
@@ -187,6 +204,8 @@ before every add, so no `unreviewed/` file is ever staged.
 - **OpenAlex ranking moves.** A manifest is a retrieval record, not a reproducible query result; `result_sha256` pins
   what this retrieval returned.
 - **One reviewer.** `reviewed` is one second reader, not consensus.
+- **Budget.** The faithfulness reader is its own lane: about 130 kT for 32 rows at M-3b-i. A card carries a line for
+  it beside main and the III reviewer (III M-3b-i F-10).
 - **Upstream truncation.** OpenAlex's reconstructed abstracts can lose a span that held markup-like text (one
   coral_reef abstract reads "breeze winds (5 weeks"). The intake cannot repair it. A quotation outside the gap still
   verifies; one across it fails, as it should.
@@ -194,5 +213,6 @@ before every add, so no `unreviewed/` file is ever staged.
 ## Run of record
 
 M-3b-i (2026-10-12): `coral_reef`, for FloridaKeysCoral's DHW ≥ 4 onset. 32 rows extracted; the reader confirmed 15,
-questioned 17. 6 were withdrawn and 11 corrected (still draft). The ledger holds 26. Findings:
+questioned 17. 6 were withdrawn and 11 corrected (still draft). The III review demoted one more (14 reviewed of 26)
+and hardened `check`. Reef-light wind was ruled for M-3b-ii. Findings:
 `how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m3b_i_ledger_and_skill.md`.
