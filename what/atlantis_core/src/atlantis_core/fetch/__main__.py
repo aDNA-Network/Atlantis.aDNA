@@ -74,14 +74,15 @@ def completeness_note(inst, sid: str) -> str | None:
         return None
     if not (getattr(f, "daily", False) and art.exists()):
         return None
-    c = provenance.daily_completeness(pd.read_parquet(art), f.date_col, f.unit_column(spec.get("fetch") or {}))
+    col = f.unit_column(spec.get("fetch") or {})
+    c = provenance.daily_completeness(pd.read_parquet(art), f.date_col, col)
     short = c.get("dates_per_unit", {}).get("min", c["n_dates"]) < c["n_dates"]
     if not (c["n_missing"] or short):
         return None
     days = ", ".join(c["missing_dates"]) + (" …" if c["n_missing"] > len(c["missing_dates"]) else "")
     return (f"{sid}: {c['n_dates']} of {c['calendar_days']} calendar days present"
             + (f"; missing {c['n_missing']}: {days}" if c["n_missing"] else "")
-            + (f"; a unit has only {c['dates_per_unit']['min']} of them" if short else ""))
+            + (f"; a {col} has only {c['dates_per_unit']['min']} of them" if short else ""))   # station, zone…
 
 
 def posture_problem(root: Path) -> str | None:

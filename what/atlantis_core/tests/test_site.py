@@ -309,6 +309,9 @@ def _as_the_entry_saw_it(src, entry, dst):
             dst.mkdir(parents=True, exist_ok=True); shutil.copy(src / f, dst / f)
     shutil.copytree(src / "what" / "geometry", dst / "what" / "geometry")
     pinned = {p["stream_ref"] for p in entry["evaluation"]["data_pins"]}
+    feats = yaml.safe_load((dst / "features.yaml").read_text())      # III M-3b-ii-a F-5: the vitals too, not only the streams
+    feats["vitals"] = [v for v in feats["vitals"] if v["stream_ref"] in pinned]
+    (dst / "features.yaml").write_text(yaml.safe_dump(feats, sort_keys=False))
     cfg = yaml.safe_load((dst / "atlantis.yaml").read_text())
     cfg["streams"] = {k: v for k, v in cfg["streams"].items() if k in pinned}
     (dst / "atlantis.yaml").write_text(yaml.safe_dump(cfg, sort_keys=False))
@@ -324,11 +327,17 @@ def test_board_check_compares_the_interval_the_page_cites(tmp_path):
     run's interval, projected by the board's own `interval_extras`, must equal the entry's `evaluation_extras.paired_interval`."""
     from pathlib import Path
     fkc = Path(__file__).resolve().parents[4] / "FloridaKeysCoral.aDNA"
-    entry_p = fkc / "what" / "board" / "entries" / "2026-10-08_florida_keys_coral_v3.json"
-    if not entry_p.exists():
-        pytest.skip("FloridaKeysCoral.aDNA v3 not present (local-only instance)")
+    entries = sorted((fkc / "what" / "board" / "entries").glob("*_florida_keys_coral_v*.json"),
+                     key=lambda p: int(p.stem.rsplit("_v", 1)[1]))
+    if not entries:
+        pytest.skip("FloridaKeysCoral.aDNA has no board entry (local-only instance)")
+    entry = json.loads(entries[-1].read_text())                       # the NEWEST entry: what the page cites today (F-5)
+    if entry["evaluation_extras"].get("paired_interval") is None:
+        pytest.skip(f"{entries[-1].name} carries no paired interval")
     m = json.loads((fkc / "outputs" / "atlantis_core" / "metrics.json").read_text())
-    entry = json.loads(entry_p.read_text())
+    assert m["semantic_hash"] == entry["evaluation"]["config_hash"], (
+        f"FKNMS outputs/metrics.json is from config {m['semantic_hash']}, its newest entry {entries[-1].name} from "
+        f"{entry['evaluation']['config_hash']}: a run without its entry (write the entry), or an entry without its run")
     inst = load_instance(_as_the_entry_saw_it(fkc, entry, tmp_path / "fkc"))
     from atlantis_core.config import semantic_hash
     assert semantic_hash(inst) == entry["evaluation"]["config_hash"]      # the copy IS the config v3 was run on

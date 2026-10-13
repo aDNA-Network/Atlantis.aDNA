@@ -90,7 +90,8 @@ class Fetcher:
         df = self._download(spec or {})
         self.write_atomic(df, self.artifact)
         provenance.summarise(self.artifact, self.summary, self.date_col, self.extras,
-                             fetched_at=provenance.now_utc(), pipeline_version=self.pipeline_version)
+                             fetched_at=provenance.now_utc(), pipeline_version=self.pipeline_version,
+                             fetched_at_source=getattr(self, "fetched_at_source", "fetch"))
         return df
 
     def _download(self, spec: dict):

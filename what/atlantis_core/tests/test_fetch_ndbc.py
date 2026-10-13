@@ -1,5 +1,5 @@
 """NDBCStdmet (M-3b-ii-a, WI-19) and the calm-day grammar op `weekly_count_lt`. Offline: a fake session serves gzipped
-yearly files in each of NDBC's three header forms; the socket guard fails any real connection."""
+yearly files in each of NDBC's four header forms (the 2005–06 one further down); the socket guard fails any real connection."""
 import gzip, json, shutil, socket
 
 import numpy as np
@@ -20,7 +20,7 @@ def no_sockets(monkeypatch):
     monkeypatch.setattr(socket.socket, "connect", refuse)
 
 
-# ── three header forms, as NDBC writes them ──────────────────────────────────────────────────────────────────────────
+# ── header forms, as NDBC writes them ──────────────────────────────────────────────────────────────────────────
 def pre1999(year, hours, wspd):
     """YY MM DD hh — two-digit year, no minute, hourly."""
     head = "YY MM DD hh WD   WSPD GST  WVHT  DPD   APD  MWD  BAR    ATMP  WTMP  DEWP  VIS"
@@ -133,7 +133,7 @@ def test_parse_refuses_a_header_without_the_variable():
 def test_download_reduces_to_daily_and_records_absent_years(tmp_path):
     f = ndbc(tmp_path, FakeNDBC(two_station_files()))
     df = f.fetch(SPEC)
-    assert list(df.columns) == ["date", "station", "wspd", "n_hours"]
+    assert list(df.columns) == ["date", "station", "wspd", "n_hours", "qc_low_ratio", "qc_stuck"]
     a = df[df["station"] == "AAAF1"].set_index("date")
     # 1998-07-01: 23 valid hours of 3.0 (the sentinel hour dropped) → kept; 1998-07-02: 17 hours < 18 → dropped
     assert a.loc["1998-07-01", "wspd"] == pytest.approx(3.0) and a.loc["1998-07-01", "n_hours"] == 23
@@ -146,17 +146,29 @@ def test_download_reduces_to_daily_and_records_absent_years(tmp_path):
     sa, sb = red["per_station"]["AAAF1"], red["per_station"]["BBBF1"]
     assert sa["years_present"] == [1998, 2006] and sa["years_absent"] == list(range(1999, 2006))
     assert sa["days_short"] == 1 and sa["days_kept"] == 2 and sa["n_obs_missing"] == 1 and sa["rows_malformed"] == 0
+    assert sa["cadence"]["1998"]["rows_per_day_median"] == 20.5 and sa["cadence"]["2006"]["minutes"] == [0, 10, 20, 30, 40, 50]
+    assert set(red["raw_files"]["AAAF1"]) == {"1998", "2006"} and len(red["raw_files"]["AAAF1"]["1998"]["sha256"]) == 64
+    assert sorted(sa["absent_confirmed_at"]) == [str(y) for y in range(1999, 2006)]
     assert sb["years_present"] == [1999] and sb["days_kept"] == 1
     assert s["completeness"]["dates_per_unit"] == {"min": 1, "max": 2}      # per station: the verify note can see a gap
 
 
-def test_duplicate_timestamps_across_year_files_count_once(tmp_path):
-    files = {"aaaf1h2006.txt.gz": y2005(2006, hours_of("2006-12-31", 24) + hours_of("2007-01-01", 1), [4.0] * 25),
-             "aaaf1h2007.txt.gz": y2005(2007, hours_of("2007-01-01", 24), [8.0] * 24)}
+def test_duplicate_timestamps_identical_kept_once_conflicting_dropped(tmp_path):
+    """III F-2: SMKF1 2020 holds a second block that is LONF1's record. Disagreeing copies are not resolved by file order."""
+    files = {"aaaf1h2006.txt.gz": y2005(2006, hours_of("2006-12-31", 24) + hours_of("2007-01-01", 2), [4.0] * 25 + [8.0]),
+             "aaaf1h2007.txt.gz": y2005(2007, hours_of("2007-01-01", 24) + hours_of("2007-01-02", 3), [8.0] * 27)}
     f = ndbc(tmp_path, FakeNDBC(files))
     df = f.fetch({"stations": ["AAAF1"], "years": [2006, 2007], "variable": "WSPD", "min_hours": 18}).set_index("date")
-    assert f.reduction["per_station"]["AAAF1"]["duplicates"] == 1
-    assert df.loc["2007-01-01", "wspd"] == pytest.approx(4.0 / 24 + 8.0 * 23 / 24)   # the first file's row kept, once
+    ps = f.reduction["per_station"]["AAAF1"]
+    # 2007-01-01 00:00 is 4.0 in one file, 8.0 in the other → dropped; 01:00 is 8.0 in both → kept once
+    assert ps["duplicates_conflicting"] == 1 and ps["conflicting_span"] == ["2007-01-01 00:00:00"] * 2
+    assert ps["duplicates_identical"] == 1
+    assert df.loc["2007-01-01", "wspd"] == pytest.approx(8.0) and df.loc["2007-01-01", "n_hours"] == 23
+    within = {"aaaf1h2006.txt.gz": y2005(2006, hours_of("2006-07-01", 24) + hours_of("2006-07-01", 24, 0), [4.0] * 24 + [1.0] * 24)}
+    g = ndbc(tmp_path / "w", FakeNDBC(within))
+    out = g.fetch({"stations": ["AAAF1"], "years": [2006, 2006], "variable": "WSPD"})
+    assert len(out) == 0                                               # a whole day of conflicts keeps nothing
+    assert g.reduction["per_station"]["AAAF1"]["duplicates_conflicting"] == 24
 
 
 def test_a_station_with_no_year_present_is_refused(tmp_path):
@@ -178,20 +190,22 @@ def test_offline_and_cache(tmp_path):
         NDBCStdmet(tmp_path, "wind.parquet", "wind_fetch_summary.json", offline=True, session=Boom()).fetch(SPEC)
     fake = FakeNDBC(two_station_files())
     first = ndbc(tmp_path, fake).fetch(SPEC)
-    n_calls = len(fake.calls)
-    assert n_calls == 2 * 9                                            # every station-year asked once, 404s included
+    assert len(fake.calls) == 3 + 2 * 15                               # 3 files once; each of 15 absent years asked twice
     again = NDBCStdmet(tmp_path, "wind.parquet", "wind_fetch_summary.json", session=Boom()).fetch(SPEC)
     pd.testing.assert_frame_equal(first, again)                        # the artifact is the cache hit
     (tmp_path / "wind.parquet").unlink(); (tmp_path / "wind_fetch_summary.json").unlink()
     rebuilt = NDBCStdmet(tmp_path, "wind.parquet", "wind_fetch_summary.json", session=Boom()).fetch(SPEC)
-    pd.testing.assert_frame_equal(first, rebuilt)                      # the raw cache (404s as zero-byte files) re-reduces offline
+    pd.testing.assert_frame_equal(first, rebuilt)                      # the raw cache (+ absence sidecars) re-reduces offline
+    s = json.loads((tmp_path / "wind_fetch_summary.json").read_text())
+    assert s["fetched_at_source"].startswith("offline re-reduction") and s["reduction"]["requests"] == 0   # III F-6
 
 
 def test_a_cached_artifact_on_another_basis_is_refused(tmp_path):
     ndbc(tmp_path, FakeNDBC(two_station_files())).fetch(SPEC)
     f = NDBCStdmet(tmp_path, "wind.parquet", "wind_fetch_summary.json", session=Boom())
     assert f.provenance_problem(SPEC) is None
-    for k, v in (("min_hours", 12), ("years", [1998, 2007]), ("stations", ["AAAF1"]), ("variable", "GST")):
+    for k, v in (("min_hours", 12), ("years", [1998, 2007]), ("stations", ["AAAF1"]), ("variable", "GST"),
+                 ("qc", {"low_ratio": 0.3})):
         with pytest.raises(ValueError, match=f"different basis.*{k}"):
             f.fetch({**SPEC, k: v})
 
@@ -205,6 +219,147 @@ def test_bind_refuses_a_mapped_station_the_spec_does_not_fetch(tmp_path):
     f.bind(Inst(), "s")
     with pytest.raises(ValueError, match=r"\['CCCF1'\] are mapped"):
         f.fetch(SPEC)
+
+
+# ── QC flags (III F-1; operator ruling 8): a failed anemometer reads as calm, a stuck one repeats ──────────────────────
+def _three_lights(days=60, faulty=None, stuck=None, factor=0.2):
+    """Three stations, hourly, 2006-07-01 on. `faulty`: (station, first day, n days) read at 0.2 ×. `stuck`: (station,
+    day, n hours) read 0.0 from 00:00."""
+    files = {}
+    for st, level in (("AAAF1", 6.0), ("BBBF1", 5.0), ("CCCF1", 7.0)):
+        t = list(pd.date_range("2006-07-01", periods=24 * days, freq="h"))
+        v = [level + (i % 5) * 0.1 for i in range(len(t))]                      # never repeats for 6 h on its own
+        if faulty and faulty[0] == st:
+            for i, x in enumerate(t):
+                if 0 <= (x.normalize() - pd.Timestamp("2006-07-01")).days - faulty[1] < faulty[2]:
+                    v[i] *= factor
+        if stuck and stuck[0] == st:
+            i0 = (pd.Timestamp(stuck[1]) - pd.Timestamp("2006-07-01")).days * 24
+            for i in range(i0, i0 + stuck[2]):
+                v[i] = 0.0
+        files[f"{st.lower()}h2006.txt.gz"] = y2005(2006, t, v)
+    return files
+
+
+QC_SPEC = {"stations": ["AAAF1", "BBBF1", "CCCF1"], "years": [2006, 2006], "variable": "WSPD", "min_hours": 18}
+
+
+def test_qc_flags_a_station_reading_far_below_the_others_and_deletes_nothing(tmp_path):
+    f = ndbc(tmp_path, FakeNDBC(_three_lights(faulty=("AAAF1", 20, 25))))
+    df = f.fetch(QC_SPEC)
+    a = df[df["station"] == "AAAF1"].set_index("date")
+    fault = pd.date_range("2006-07-21", periods=25)
+    assert a.loc[fault[3]:fault[-4], "qc_low_ratio"].all()                 # inside the fault (the window's edges aside)
+    assert not a.loc[:"2006-07-12", "qc_low_ratio"].any() and not a.loc["2006-08-24":, "qc_low_ratio"].any()
+    assert len(a) == 60 and a.loc[fault[10], "wspd"] < 2                   # flagged, never removed
+    assert not df[df["station"] != "AAAF1"]["qc_low_ratio"].any()          # the others are not blamed
+    assert f.reduction["per_station"]["AAAF1"]["days_flagged"]["qc_low_ratio"] >= 19
+    clean = ndbc(tmp_path / "c", FakeNDBC(_three_lights())).fetch(QC_SPEC)
+    assert not clean["qc_low_ratio"].any() and not clean["qc_stuck"].any()
+
+
+def test_qc_ratio_is_against_the_OTHER_stations(tmp_path):
+    """Two lights, one at 0.3 ×: against the other it is 0.3 (flagged); against a median that includes itself it would
+    be ≈ 0.46 and pass. With two lights reporting (47% of FKNMS test days) that difference is the whole check."""
+    files = {k: v for k, v in _three_lights(faulty=("AAAF1", 20, 25)).items() if not k.startswith("cccf1")}
+    files["aaaf1h2006.txt.gz"] = _three_lights(faulty=("AAAF1", 20, 25), factor=0.3)["aaaf1h2006.txt.gz"]
+    df = ndbc(tmp_path, FakeNDBC(files)).fetch({**QC_SPEC, "stations": ["AAAF1", "BBBF1"]})
+    a = df[df["station"] == "AAAF1"].set_index("date")
+    assert a.loc["2006-07-25":"2006-08-10", "qc_low_ratio"].all()
+
+
+@pytest.mark.parametrize("hours,flagged", [(6, True), (5, False)])
+def test_qc_flags_a_stuck_run(tmp_path, hours, flagged):
+    f = ndbc(tmp_path, FakeNDBC(_three_lights(stuck=("BBBF1", "2006-07-10", hours))))
+    b = f.fetch(QC_SPEC).query("station == 'BBBF1'").set_index("date")
+    assert bool(b.loc["2006-07-10", "qc_stuck"]) is flagged and b["qc_stuck"].sum() == int(flagged)
+
+
+# ── absence is confirmed and recorded; the raw cache is pinned (III F-3) ─────────────────────────────────────────────
+class Flaky(FakeNDBC):
+    """The first reply for `name` is a 404, then the real file; or an empty 200 for `empty`."""
+    def __init__(self, files, once_404=(), empty=()):
+        super().__init__(files); self.once, self.empty = set(once_404), set(empty)
+    def get(self, url, params=None, timeout=None):
+        name = url.rsplit("/", 1)[-1]
+        if name in self.once:
+            self.once.discard(name); self.calls.append(name); return Resp(404)
+        if name in self.empty:
+            self.calls.append(name); return Resp(200, b"")
+        return super().get(url, params, timeout)
+
+
+def test_a_transient_404_is_not_absence_and_an_empty_200_fails(tmp_path):
+    f = ndbc(tmp_path, Flaky(two_station_files(), once_404={"aaaf1h2006.txt.gz"}))
+    f.fetch(SPEC)
+    assert 2006 in f.reduction["per_station"]["AAAF1"]["years_present"]   # confirmed on the second ask
+    g = ndbc(tmp_path / "e", Flaky(two_station_files(), empty={"aaaf1h2006.txt.gz"}))
+    with pytest.raises(ValueError, match="empty body"):
+        g.fetch(SPEC)
+
+
+def test_absence_sidecar_legacy_zero_byte_and_current_year(tmp_path):
+    fake = FakeNDBC(two_station_files())
+    ndbc(tmp_path, fake).fetch(SPEC)
+    side = tmp_path / "wind" / "AAAF1" / "aaaf1h1999.txt.gz.absent.json"
+    assert json.loads(side.read_text())["confirmed_by"] == 2
+    # a 0.10.0 zero-byte cache file is never read as absence: it is asked again
+    (tmp_path / "wind.parquet").unlink(); (tmp_path / "wind_fetch_summary.json").unlink(); side.unlink()
+    (tmp_path / "wind" / "AAAF1" / "aaaf1h1999.txt.gz").write_bytes(b"")
+    fake2 = FakeNDBC(two_station_files())
+    ndbc(tmp_path, fake2).fetch(SPEC)
+    assert fake2.calls == ["aaaf1h1999.txt.gz"] * 2
+    this = pd.Timestamp.now(tz="UTC").year
+    with pytest.raises(ValueError, match="only after the year ends"):
+        ndbc(tmp_path / "y", FakeNDBC({})).fetch({**SPEC, "years": [this - 1, this]})
+
+
+def test_verify_sees_a_raw_cache_changed_under_its_reduction(tmp_path):
+    ndbc(tmp_path, FakeNDBC(two_station_files())).fetch(SPEC)
+    f = NDBCStdmet(tmp_path, "wind.parquet", "wind_fetch_summary.json", session=Boom())
+    assert f.provenance_problem(SPEC) is None
+    raw = tmp_path / "wind" / "BBBF1" / "bbbf1h1999.txt.gz"
+    raw.write_bytes(gzip.compress(y1999(1999, hours_of("1999-07-01", 24), [1.0] * 24).encode()))
+    assert "raw cache" in f.provenance_problem(SPEC) and "BBBF1 1999" in f.provenance_problem(SPEC)
+
+
+# ── the record's other forms (III F-7, F-12) ─────────────────────────────────────────────────────────────────────────
+def y2005_no_hash(year, times, wspd):
+    """2005–2006: YYYY … mm, no '#', no units line."""
+    head = "YYYY MM DD hh mm WD   WSPD GST  WVHT  DPD   APD  MWD  BAR    ATMP  WTMP  DEWP  VIS  TIDE"
+    rows = [f"{t.year} {t.month:02d} {t.day:02d} {t.hour:02d} {t.minute:02d} 159 {w:4.1f} 05.4 99.00 99.00 99.00 999 1018.9  24.4  23.2 999.0 99.0 99.00"
+            for t, w in zip(times, wspd)]
+    return "\n".join([head, *rows]) + "\n"
+
+
+def test_parse_the_2005_form_repeated_headers_garbled_minutes_and_50_stamps():
+    t = [pd.Timestamp("2005-07-01 00:50"), pd.Timestamp("2005-07-01 01:50")]
+    df = parse_stdmet(y2005_no_hash(2005, t, [3.0, 4.0]).encode(), "WSPD")
+    assert list(df["time"]) == t and df.attrs == {"malformed": 0, "header_lines": 0}
+    txt = y2005(2020, hours_of("2020-11-30", 2), [3.0, 4.0])
+    head, units = txt.splitlines()[:2]
+    txt += "\n".join([head, units]) + "\n" + "\n".join(y2005(2020, hours_of("2020-12-01", 1), [5.0]).splitlines()[2:]) + "\n"
+    txt += "2020 12 01 01 xx  31  6.0  4.5 99.00 99.00 99.00 999 1023.4  18.9 999.0  12.1 99.0 99.00\n"   # garbled minute
+    df = parse_stdmet(txt.encode(), "WSPD")
+    assert list(df["v"]) == [3.0, 4.0, 5.0]                                # not filled with minute 0
+    assert df.attrs == {"malformed": 1, "header_lines": 2}                 # a repeated header + units line, counted apart
+    t2 = y1999(1999, hours_of("1999-07-01", 2), [3.0, 4.0])
+    t2 += t2.splitlines()[0] + "\n" + "\n".join(y1999(1999, hours_of("1999-07-02", 1), [5.0]).splitlines()[1:]) + "\n"
+    df = parse_stdmet(t2.encode(), "WSPD")
+    assert list(df["v"]) == [3.0, 4.0, 5.0] and df.attrs == {"malformed": 0, "header_lines": 1}   # a YYYY header repeated
+
+
+def test_a_stray_row_from_outside_the_span_is_dropped_and_counted(tmp_path):
+    files = {"aaaf1h2006.txt.gz": y2005(2006, hours_of("2005-12-31", 24) + hours_of("2006-07-01", 24), [9.0] * 24 + [3.0] * 24)}
+    f = ndbc(tmp_path, FakeNDBC(files))
+    df = f.fetch({"stations": ["AAAF1"], "years": [2006, 2006], "variable": "WSPD"})
+    assert f.reduction["per_station"]["AAAF1"]["rows_stray_year"] == 24   # a full stray day: min_hours would keep it
+    assert list(df["date"]) == [pd.Timestamp("2006-07-01")]
+
+
+def test_a_station_listed_twice_is_refused(tmp_path):
+    with pytest.raises(ValueError, match="listed twice"):
+        ndbc(tmp_path, FakeNDBC(two_station_files())).fetch({**SPEC, "stations": ["AAAF1", "BBBF1", "AAAF1"]})
 
 
 # ── the calm-day op ──────────────────────────────────────────────────────────────────────────────────────────────────
@@ -240,6 +395,19 @@ def test_weekly_count_lt_counts_on_the_unit_value_and_an_empty_week_is_nan():
     assert np.isnan(out.loc[nxt + pd.Timedelta(weeks=1), 1])             # past the data: NaN
 
 
+def test_weekly_count_lt_on_a_point_stream():
+    """III F-7: the Obs branch — per unit × week, observations below the threshold; an unobserved week is NaN."""
+    mon = pd.Timestamp("2024-07-01")
+    d = pd.DataFrame({"unit": [1, 1, 1, 2, 2], "date": [mon, mon + pd.Timedelta(days=1), mon + pd.Timedelta(days=8), mon,
+                                                       mon + pd.Timedelta(days=9)],
+                      "value": [3.0, 5.0, 6.0, 1.0, np.nan]})                  # unit 2's week 2: one row, its value missing
+    ev = ops.Evaluator("s", d, "point", pd.date_range(mon, periods=3, freq="7D"), [1, 2], {"c": 4.0})
+    out = ev.weekly(grammar.parse("weekly_count_lt(value, c)", constants=["c"], where="t"))
+    nxt = mon + pd.Timedelta(weeks=1)
+    assert out.loc[mon, 1] == 1.0 and out.loc[mon, 2] == 1.0 and out.loc[nxt, 1] == 0.0
+    assert np.isnan(out.loc[nxt, 2]) and np.isnan(out.loc[mon + pd.Timedelta(weeks=2), 1])
+
+
 def test_weekly_count_lt_refuses_a_series_threshold():
     mon = pd.Timestamp("2024-07-01")
     data = pd.DataFrame({"date": [mon], "station": ["A"], "value": [1.0]})
@@ -266,7 +434,8 @@ def test_selftest_passes_with_a_calm_vital_and_catches_a_future_read(variant_mas
     inst = _with_calm_vital(variant_master, tmp_path / "inst")
     st.run(inst, verbose=False)                                       # synthetic station values straddle 1000
     orig = ops.Evaluator.f_weekly_count_lt
+    # III F-4: a plant that leaves (primary, t) non-NaN, so the LEAK check (C1) is what must see it, not C4's NaN check
     monkeypatch.setattr(ops.Evaluator, "f_weekly_count_lt",
-                        lambda self, x, thr, window=None: ops.Weekly(orig(self, x, thr).df.shift(-1)))   # next week's count
-    with pytest.raises(st.LeakError):
+                        lambda self, x, thr, window=None: ops.Weekly((lambda d: d.add(d.shift(-1), fill_value=0))(orig(self, x, thr).df)))
+    with pytest.raises(st.LeakError, match="C1"):
         st.run(inst, verbose=False)

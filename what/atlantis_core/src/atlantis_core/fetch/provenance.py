@@ -27,13 +27,13 @@ def now_utc() -> str:
 
 
 def summarise(artifact: Path, summary_path: Path, date_col: str, extras=None, fetched_at: str | None = None,
-              pipeline_version: str | None = None) -> dict:
+              pipeline_version: str | None = None, fetched_at_source: str = "fetch") -> dict:
     artifact, summary_path = Path(artifact), Path(summary_path)
     df = pd.read_parquet(artifact)
     digest = sha256(artifact)
     prev = json.loads(summary_path.read_text()) if summary_path.exists() else {}
     if fetched_at is not None:
-        src = "fetch"
+        src = fetched_at_source         # "fetch", or what the fetcher says it did instead (M-3b-ii-a III F-6)
     elif prev.get("sha256") == digest and prev.get("fetched_at"):
         fetched_at, src = prev["fetched_at"], prev.get("fetched_at_source", "fetch")
     else:

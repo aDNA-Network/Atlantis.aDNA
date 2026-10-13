@@ -232,6 +232,17 @@ def test_item_9_holds_only_the_newest_entry_to_the_current_config(forked, exempl
     assert not any("2026-10-02_example_v2.json: config_hash" in x and "≠" in x for x in r["reasons"])
 
 
+def test_item_9_supersession_agrees_with_the_board_on_a_well_formed_board():
+    """III M-3b-ii-a F-11: conform re-implements the board's rule; on the Atlantis board itself the two must agree."""
+    from pathlib import Path
+    from atlantis_core.board.index import load, supersession
+    from atlantis_core.conform import _newest_versions
+    board = Path(__file__).resolve().parents[2] / "board" / "entries"
+    docs = load(board)
+    assert supersession(docs)                                         # the board has superseded entries to compare
+    assert _newest_versions(sorted(board.glob("*.json"))) == supersession(docs)
+
+
 def CORE_PAGE(sid: str, body: str) -> str:
     """A page as atlantis_core.site writes it: the sections live in the embedded copy (json escapes `</` as the build does)."""
     copy = {"title": "t", "sections": [{"id": sid, "nav": "n", "eyebrow": "e", "title": "Limits", "body": f"<p>{body}</p>"}]}

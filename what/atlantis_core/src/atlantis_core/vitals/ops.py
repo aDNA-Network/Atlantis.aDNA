@@ -179,7 +179,8 @@ class Evaluator:
     def f_weekly_count_lt(self, x, thr, window=None):
         """Observations per unit × week below `thr` (M-3b-ii-a). On a station stream the comparison is made on the UNIT's
         daily value (the mean over its stations that day), never per station. A week with no observation is NaN: an empty
-        week is not a week of zero calm days."""
+        week is not a week of zero calm days. It is a COUNT, not a share: a partly observed week counts fewer calm days
+        (pair it with weekly_count(value) when weeks are gappy; III M-3b-ii-a F-12e)."""
         if not isinstance(thr, float):
             raise TypeError("weekly_count_lt threshold must be a constant or a literal")
         if isinstance(x, Obs):

@@ -151,9 +151,12 @@ def posture(root: Path) -> dict:
 
 
 def _newest_versions(entries) -> dict:
-    """entry_id → the newer entry that supersedes it, as `board.index.supersession` derives it (within one
-    (source, instance, stem) the highest version supersedes the lower ones). An entry whose file does not parse, or whose
-    id is not a board id, supersedes nothing and is superseded by nothing: it is checked in full."""
+    """entry_id → the newer entry that supersedes it, by the rule `board.index.supersession` derives (within one
+    (source, instance, stem) the highest version supersedes the lower ones). A re-implementation, not a call (III M-3b-ii-a
+    F-11): the board's refuses to run on a board holding an entry its gate refuses, and conform must still check that entry.
+    So an entry whose file does not parse, or whose id is not a board id, supersedes nothing and is superseded by nothing:
+    it is checked in full. An explicit `superseded_by` is the board's to police. `tests/test_conform.py` holds the two to
+    the same answer on a well-formed board."""
     from atlantis_core.board.index import ENTRY_ID
     docs = []
     for e in entries:
@@ -392,7 +395,7 @@ def check(root, items=None, stage: str = "declared", selftest: bool = True) -> d
         entries = sorted((root / "what" / "board" / "entries").glob("*.json"))
         if not entries:
             R[9]["status"] = "n/a"; R[9]["reasons"].append("no board entry yet (after a run)")
-        newest = _newest_versions(entries)   # M-3b-ii-a: the board's own derived supersession (board.index), read here
+        newest = _newest_versions(entries)   # M-3b-ii-a: the board's supersession RULE, re-implemented (see the helper)
         for e in entries:
             read(9, str(e.relative_to(root)))
             from atlantis_core.board import BoardError, assert_green, validate
