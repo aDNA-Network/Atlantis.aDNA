@@ -111,6 +111,17 @@ def test_parse_each_header_form(form):
     assert df["v"].iloc[0] == pytest.approx(4.2) and np.isnan(df["v"].iloc[1]) and df["v"].iloc[2] == 0.0   # 99 → NaN; 0 stays
 
 
+def test_parse_takes_rows_shorter_than_their_header_and_counts_the_malformed():
+    """LONF1 2000 (found live at the M-3b-ii-a fetch): a 17-column header naming TIDE, rows of 16 and 17 fields."""
+    txt = ("YYYY MM DD hh WD   WSPD GST  WVHT  DPD   APD  MWD  BAR    ATMP  WTMP  DEWP  VIS  TIDE\n"
+           "2000 01 01 14  37  2.3  2.6 99.00 99.00 99.00 999 1022.5  21.0  20.4 999.0 99.0\n"
+           "2000 01 01 15  70  2.6  2.9 99.00 99.00 99.00 999 1023.2  21.2  20.4 999.0 99.0 99.00\n"
+           "2000 01 01 16  70\n"                                                   # too short to hold WSPD
+           "2000 13 01 17  70  2.6  2.9 99.00 99.00 99.00 999 1023.2  21.2  20.4 999.0 99.0\n")   # month 13
+    df = parse_stdmet(txt.encode(), "WSPD", where="x")
+    assert list(df["v"]) == [2.3, 2.6] and df.attrs["malformed"] == 2
+
+
 def test_parse_refuses_a_header_without_the_variable():
     with pytest.raises(ValueError, match="lacks"):
         parse_stdmet(b"YY MM DD hh WD GST\n90 01 01 00 159 05.4\n", "WSPD", where="x")
@@ -134,7 +145,7 @@ def test_download_reduces_to_daily_and_records_absent_years(tmp_path):
     assert red["day_boundary"] == "UTC" and red["min_hours"] == 18 and red["stations"] == ["AAAF1", "BBBF1"]
     sa, sb = red["per_station"]["AAAF1"], red["per_station"]["BBBF1"]
     assert sa["years_present"] == [1998, 2006] and sa["years_absent"] == list(range(1999, 2006))
-    assert sa["days_short"] == 1 and sa["days_kept"] == 2 and sa["n_obs_missing"] == 1
+    assert sa["days_short"] == 1 and sa["days_kept"] == 2 and sa["n_obs_missing"] == 1 and sa["rows_malformed"] == 0
     assert sb["years_present"] == [1999] and sb["days_kept"] == 1
     assert s["completeness"]["dates_per_unit"] == {"min": 1, "max": 2}      # per station: the verify note can see a gap
 

@@ -17,6 +17,8 @@ spec: {stations: [ids], years: [y0, y1], variable (a header column, e.g. WSPD), 
        value_name (default: the stream's `columns.value`, else the variable lower-cased)}
 
 Reduction, per station and UTC day:
+  0. Only the leading columns the read needs are parsed; a row too short to hold them, or whose timestamp does not parse,
+     is dropped and counted (`rows_malformed`). NDBC rows may carry fewer trailing fields than their header names.
   1. Rows with the same timestamp across adjacent year files are counted once (the first file's row; `duplicates`).
   2. A day keeps its value only if at least `min_hours` distinct clock hours carry a valid observation. A shorter day is
      dropped and counted (`days_short`), never filled. The value is the mean of every valid observation that day, so a
@@ -36,7 +38,7 @@ min_hours) differs from the spec is refused by `fetch`, `fetch --verify` and con
 """
 from __future__ import annotations
 
-import gzip, io, json
+import gzip, json
 
 import numpy as np
 import pandas as pd
@@ -69,8 +71,13 @@ def parse_stdmet(raw: bytes, variable: str, where: str = "?") -> pd.DataFrame:
     missing = [c for c in (ycol, "MM", "DD", "hh", variable) if c is None or c not in cols]
     if missing:
         raise ValueError(f"{where}: header {cols[:8]}… lacks {missing}")
-    df = pd.read_csv(io.StringIO("\n".join(body)), sep=r"\s+", header=None, names=cols, usecols=range(len(cols)),
-                     dtype=str, engine="python")
+    # Only the leading columns this read needs are taken: NDBC rows can carry fewer trailing fields than the header names
+    # (LONF1 2000: a 17-column header with `TIDE`, rows of 16 and 17). A row too short to hold them is dropped and counted.
+    want = [c for c in (ycol, "MM", "DD", "hh", "mm", variable) if c in cols]
+    need = max(cols.index(c) for c in want) + 1
+    split = [ln.split() for ln in body]
+    keep = [r[:need] for r in split if len(r) >= need]
+    df = pd.DataFrame(keep, columns=cols[:need], dtype=str)
     num = {c: pd.to_numeric(df[c], errors="coerce") for c in (ycol, "MM", "DD", "hh", variable)}
     yr = num[ycol]
     yr = yr.where(yr >= 100, yr + 1900)                     # two-digit years are the 19xx files (before 1999)
@@ -79,7 +86,10 @@ def parse_stdmet(raw: bytes, variable: str, where: str = "?") -> pd.DataFrame:
                        errors="coerce")
     v = num[variable].astype(float)
     v = v.mask(v.isin(SENTINELS))
-    out = pd.DataFrame({"time": t, "v": v}).dropna(subset=["time"])
+    out = pd.DataFrame({"time": t, "v": v})
+    bad_time = int(out["time"].isna().sum())
+    out = out.dropna(subset=["time"])
+    out.attrs["malformed"] = (len(split) - len(keep)) + bad_time   # short rows + rows whose timestamp does not parse
     return out
 
 
@@ -156,13 +166,14 @@ class NDBCStdmet(Fetcher):
         st_col, val = self.unit_column(spec), self.value_name(spec)
         frames, stations = [], {}
         for st in b["stations"]:
-            present, absent, parts = [], [], []
+            present, absent, parts, malformed = [], [], [], 0
             for y in range(y0, y1 + 1):
                 raw = self._year(st, y)
                 if raw is None:
                     absent.append(y); continue
                 present.append(y)
                 parts.append(parse_stdmet(raw, var, where=f"{st} {y}"))
+                malformed += parts[-1].attrs.get("malformed", 0)
             if not present:
                 raise ValueError(f"station {st}: no stdmet year file in {y0}–{y1} (every year 404) — check the id; "
                                  f"a station with no data would read as an empty column")
@@ -180,7 +191,7 @@ class NDBCStdmet(Fetcher):
             frames.append(pd.DataFrame({self.date_col: kept.index, st_col: st, val: kept["v"].to_numpy(),
                                         "n_hours": kept["n_hours"].to_numpy(dtype=int)}))
             stations[st] = {"years_present": present, "years_absent": absent, "n_obs_valid": int(len(ok)),
-                            "n_obs_missing": int(obs["v"].isna().sum()), "duplicates": int(dup),
+                            "n_obs_missing": int(obs["v"].isna().sum()), "duplicates": int(dup), "rows_malformed": int(malformed),
                             "days_kept": int(len(kept)), "days_short": int(short.sum()),
                             "first_day": str(kept.index.min().date()) if len(kept) else None,
                             "last_day": str(kept.index.max().date()) if len(kept) else None}
