@@ -298,6 +298,26 @@ def test_page_data_carries_the_paired_interval():
     assert "paired_interval_model_vs_climatology" not in _metrics(inst, m)
 
 
+def _as_the_entry_saw_it(src, entry, dst):
+    """M-3b-ii-a: FKNMS gained a stream after v3, so the live instance is no longer the config v3 was run on. A small copy
+    (registries + geometry, no data) restricted to the streams the entry pins is: the test reads the instance AS THE ENTRY
+    SAW IT, and its result no longer depends on what the live instance has added since (C-035: a count names its tree)."""
+    import shutil
+    import yaml
+    for f in ("atlantis.yaml", "streams.yaml", "features.yaml", "events.yaml", "units.yaml"):
+        if (src / f).exists():
+            dst.mkdir(parents=True, exist_ok=True); shutil.copy(src / f, dst / f)
+    shutil.copytree(src / "what" / "geometry", dst / "what" / "geometry")
+    pinned = {p["stream_ref"] for p in entry["evaluation"]["data_pins"]}
+    cfg = yaml.safe_load((dst / "atlantis.yaml").read_text())
+    cfg["streams"] = {k: v for k, v in cfg["streams"].items() if k in pinned}
+    (dst / "atlantis.yaml").write_text(yaml.safe_dump(cfg, sort_keys=False))
+    reg = yaml.safe_load((dst / "streams.yaml").read_text())
+    reg["observation_streams"] = [x for x in reg["observation_streams"] if x["stream_id"] in pinned]
+    (dst / "streams.yaml").write_text(yaml.safe_dump(reg, sort_keys=False))
+    return dst
+
+
 def test_board_check_compares_the_interval_the_page_cites(tmp_path):
     """III M-2c-ii F-3 (C-037): 8255d9b let a page cite the paired interval, but board_check compared `evaluation` only — a
     doctored matched-volume estimate passed it. Planted first against the FKNMS v3 entry and run (skipped if absent): the
@@ -307,9 +327,11 @@ def test_board_check_compares_the_interval_the_page_cites(tmp_path):
     entry_p = fkc / "what" / "board" / "entries" / "2026-10-08_florida_keys_coral_v3.json"
     if not entry_p.exists():
         pytest.skip("FloridaKeysCoral.aDNA v3 not present (local-only instance)")
-    inst = load_instance(fkc)
     m = json.loads((fkc / "outputs" / "atlantis_core" / "metrics.json").read_text())
     entry = json.loads(entry_p.read_text())
+    inst = load_instance(_as_the_entry_saw_it(fkc, entry, tmp_path / "fkc"))
+    from atlantis_core.config import semantic_hash
+    assert semantic_hash(inst) == entry["evaluation"]["config_hash"]      # the copy IS the config v3 was run on
     assert board_check(m, entry, inst)["fields_checked"] >= 25
     for path, v in ((("budgets", "10pct", "matched_volume_precision", "estimate"), 0.05),
                     (("auroc", "seasons_favouring_model"), 7), (("auprc", "per_season", "2022"), 0.2), (("season_start_month",), 8)):
