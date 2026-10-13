@@ -81,7 +81,7 @@ def test_offline_never_touches_network(inst_dir, capsys):
 
 def test_declared_fetcher_says_so(inst_dir, capsys):
     s = inst_dir / "streams.yaml"; doc = yaml.safe_load(s.read_text())
-    next(x for x in doc["observation_streams"] if x["stream_id"] == USGS)["fetcher"] = "NDBCStdmet"
+    next(x for x in doc["observation_streams"] if x["stream_id"] == USGS)["fetcher"] = "OBISOccurrence"   # NDBC was the example until it was built (M-3b-ii-a)
     s.write_text(yaml.safe_dump(doc, sort_keys=False))
     _receipt(inst_dir); _ratified_pin(inst_dir)
     assert fetch_main(["--instance", str(inst_dir), "--stream", USGS], session=Boom()) == 1

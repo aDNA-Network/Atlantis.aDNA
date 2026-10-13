@@ -12,6 +12,8 @@ Value kinds: obs (per observation, point streams) → daily (date × entity) →
                                   day-of-year on daily, ISO-week-of-year on weekly; era years inclusive
     weekly_max|min|mean|median|p90(x)   aggregate per unit × ISO week          obs|daily → weekly
     weekly_count(x)               non-null count per unit × week, 0-filled     obs|daily → weekly
+    weekly_count_lt(x, thr)       per unit × week, the observations (days, on daily) whose UNIT-level value is < thr;
+                                  a week with no observation is NaN, not 0 (M-3b-ii-a: calm days)   obs|daily → weekly
     at_week_end(x)                sample on the Sunday closing each week       daily → weekly
     rolling_max(x) · rolling_sum(x)   trailing window = the vital's `window`   weekly → weekly
     diff(x)                       x − x shifted by the vital's `window`        weekly → weekly
@@ -29,7 +31,7 @@ import ast
 FUNCS = {
     "log10p1": (1, False), "roll_mean_days": (3, False), "anomaly": (1, False),
     "weekly_max": (1, False), "weekly_min": (1, False), "weekly_mean": (1, False), "weekly_median": (1, False),
-    "weekly_p90": (1, False), "weekly_count": (1, False), "at_week_end": (1, False),
+    "weekly_p90": (1, False), "weekly_count": (1, False), "weekly_count_lt": (2, False), "at_week_end": (1, False),
     "rolling_max": (1, True), "rolling_sum": (1, True), "diff": (1, True),
     "weeks_since_ge": (2, False), "weeks_since_gt": (2, False),
     "harmonic_sin": (1, False), "harmonic_cos": (1, False),

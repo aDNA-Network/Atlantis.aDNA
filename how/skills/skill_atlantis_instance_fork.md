@@ -141,8 +141,9 @@ frontmatter agrees. Flipping the status word alone does not open the gate. Each 
 fetcher's keys (the fetcher's docstring and `spec_required`). The interview does not derive them: they come from the
 source's documentation and the steward, and fork checks only that the keys are present.
 
-A stream whose fetcher is **declared, not built** (NDBC · OBIS · GBIF today) stops here with that message. **CRW is built**
-(M-2a-i). `CoralReefWatch` takes `{base, variable, years}`; its zones come from the instance's pinned polygons, not the
+A stream whose fetcher is **declared, not built** (OBIS · GBIF today) stops here with that message. **CRW is built**
+(M-2a-i), and **NDBC is built** (M-3b-ii-a: `NDBCStdmet` takes `{stations, years, variable, min_hours}`; every station the
+stream's `stations` map names must be in the spec). `CoralReefWatch` takes `{base, variable, years}`; its zones come from the instance's pinned polygons, not the
 spec. The fetch summary's `reduction` block records per zone `n_cells`, `fallback` (a zone smaller than one 5 km cell
 takes the nearest cell) and `shared_cells`. Review it with the steward: a fallback zone is one cell, not a zone mean. Building
 it is an Atlantis template change (P2 rule), done there, never inside the instance.

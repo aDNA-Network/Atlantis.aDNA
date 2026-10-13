@@ -176,6 +176,23 @@ class Evaluator:
     def f_weekly_p90(self, x, window=None): return self._aggregate(x, "p90")
     def f_weekly_count(self, x, window=None): return self._aggregate(x, "count", fill=0)
 
+    def f_weekly_count_lt(self, x, thr, window=None):
+        """Observations per unit × week below `thr` (M-3b-ii-a). On a station stream the comparison is made on the UNIT's
+        daily value (the mean over its stations that day), never per station. A week with no observation is NaN: an empty
+        week is not a week of zero calm days."""
+        if not isinstance(thr, float):
+            raise TypeError("weekly_count_lt threshold must be a constant or a literal")
+        if isinstance(x, Obs):
+            d = x.df.assign(b=(x.df["v"] < thr).astype(float).where(x.df["v"].notna()))
+            agg = d.groupby(["unit", "week"])["b"].sum(min_count=1)
+            return self._weekly_frame(agg.rename("v").reset_index())
+        if isinstance(x, Daily):
+            u = self._to_units(x)
+            b = (u < thr).astype(float).where(u.notna())
+            agg = b.groupby(week_start(pd.Series(u.index)).values).sum(min_count=1)
+            return Weekly(agg.reindex(index=self.weekly_index, columns=self.units))
+        raise TypeError(f"weekly_count_lt needs obs or daily, got {type(x).__name__}")
+
     def f_at_week_end(self, x, window=None):
         if not isinstance(x, Daily): raise TypeError("at_week_end needs daily")
         u = self._to_units(x)

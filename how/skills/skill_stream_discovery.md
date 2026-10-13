@@ -198,8 +198,9 @@ The exit code is 0 when the rows validate, the compare is empty and no trap fail
 - **A rule grid declares no geometry.** `longitude_by_unit` reads a gridded stream's per-unit `boxes` as the unit's space.
   The boxes are a proxy, not a boundary, so its fail asks for a ruling, not a re-grid. Polygons are checked against
   their own bounding boxes, and containment makes those pass by construction.
-- **Probes exist for ArcGIS, ERDDAP/CRW and NWIS only.** NDBC, OBIS and GBIF are declared fetchers with no probe. Their
-  traps report `na` with the reason.
+- **Probes exist for ArcGIS, ERDDAP/CRW and NWIS only.** NDBC is built (M-3b-ii-a) but has no probe yet; OBIS and GBIF
+  are declared fetchers with no probe. Their traps report `na` with the reason. *(An NDBC station's years can be read
+  from the historical stdmet directory listing, which is what M-3b-ii-a did by hand.)*
 - **`server_count` is a count only on ArcGIS.** ERDDAP is checked for coverage, and a value revised inside a covered
   range is not seen. NWIS is compared day by day, so its revised values *are* seen.
 - **Server-count drift is a fail by design.** A source revised since the fetch means a re-fetch would differ. The ruling
