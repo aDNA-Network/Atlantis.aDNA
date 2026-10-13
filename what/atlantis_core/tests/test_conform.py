@@ -211,6 +211,27 @@ def test_items_9_10_after_a_run(forked, exemplar_dir):
     assert check(forked, [9], selftest=False)[9]["status"] == "fail"
 
 
+def test_item_9_holds_only_the_newest_entry_to_the_current_config(forked, exemplar_dir):
+    """M-3b-ii-a (FKNMS gained a stream after v3): within one stem the newest version is the instance's entry; an older
+    version is the record of an earlier config (SO-2) — still validated, never held to today's hash. The newest is."""
+    from atlantis_core.config import semantic_hash
+    inst = load_instance(forked)
+    (forked / "what/board/entries").mkdir(parents=True)
+    base = json.loads((exemplar_dir.parents[1] / "board/entries/2026-10-02_gulf_karenia_brevis_v1.json").read_text())
+    base["evaluation"]["unit_ref"] = inst.cfg["board"]["unit_ref"]
+    def put(v, h):
+        e = json.loads(json.dumps(base)); e["entry_id"] = f"2026-10-0{v}_example_v{v}"
+        e["evaluation"]["config_hash"] = h; e["evaluation_extras"]["semantic_hash"] = h
+        (forked / f"what/board/entries/{e['entry_id']}.json").write_text(json.dumps(e))
+    put(1, "0000000000"); put(2, semantic_hash(inst))
+    r = check(forked, [9], selftest=False)[9]
+    assert r["status"] == "pass" and any("superseded by 2026-10-02_example_v2" in x for x in r["reasons"])
+    put(3, "1111111111")                                              # the newest entry is for another config → fail
+    r = check(forked, [9], selftest=False)[9]
+    assert r["status"] == "fail" and any("2026-10-03_example_v3.json: config_hash" in x for x in r["reasons"])
+    assert not any("2026-10-02_example_v2.json: config_hash" in x and "≠" in x for x in r["reasons"])
+
+
 def CORE_PAGE(sid: str, body: str) -> str:
     """A page as atlantis_core.site writes it: the sections live in the embedded copy (json escapes `</` as the build does)."""
     copy = {"title": "t", "sections": [{"id": sid, "nav": "n", "eyebrow": "e", "title": "Limits", "body": f"<p>{body}</p>"}]}

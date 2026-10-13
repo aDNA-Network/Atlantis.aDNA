@@ -9,6 +9,8 @@ A reviewer conforms an instance from its DECLARATIONS: `atlantis.yaml` · `units
   - item 6: nothing — it RE-RUNS the self-test (synthetic, no data) instead of trusting the receipt; `--no-selftest`
     falls back to the receipt;
   - items 9–10: board entries under `what/board/entries/` and pages under `site/`, only once they exist (else n/a);
+    item 9 holds only the NEWEST version of each (source, instance, stem) to the current `semantic_hash`; an older version
+    is the record of an earlier config (SO-2), still validated, and said (ⓘ), never failed for its hash (M-3b-ii-a);
   - item 12: `gitleaks detect --no-git` over the instance directory (absent gitleaks → "not run", which FAILS the item).
 It writes nothing.
 
@@ -146,6 +148,27 @@ def posture(root: Path) -> dict:
     if out["problems"] and not out["why_not_ratified"]:
         out["why_not_ratified"] = out["problems"][0]
     return out
+
+
+def _newest_versions(entries) -> dict:
+    """entry_id → the newer entry that supersedes it, as `board.index.supersession` derives it (within one
+    (source, instance, stem) the highest version supersedes the lower ones). An entry whose file does not parse, or whose
+    id is not a board id, supersedes nothing and is superseded by nothing: it is checked in full."""
+    from atlantis_core.board.index import ENTRY_ID
+    docs = []
+    for e in entries:
+        try:
+            ent = json.loads(e.read_text())
+        except ValueError:
+            continue
+        m = ENTRY_ID.match(str(ent.get("entry_id", ""))) if isinstance(ent, dict) else None
+        if m:
+            docs.append(((ent.get("source"), ent.get("instance"), m.group(2)), int(m.group(3)), ent["entry_id"]))
+    latest = {}
+    for k, v, eid in docs:
+        if k not in latest or v > latest[k][0]:
+            latest[k] = (v, eid)
+    return {eid: latest[k][1] for k, v, eid in docs if latest[k][1] != eid}
 
 
 def check(root, items=None, stage: str = "declared", selftest: bool = True) -> dict:
@@ -369,6 +392,7 @@ def check(root, items=None, stage: str = "declared", selftest: bool = True) -> d
         entries = sorted((root / "what" / "board" / "entries").glob("*.json"))
         if not entries:
             R[9]["status"] = "n/a"; R[9]["reasons"].append("no board entry yet (after a run)")
+        newest = _newest_versions(entries)   # M-3b-ii-a: the board's own derived supersession (board.index), read here
         for e in entries:
             read(9, str(e.relative_to(root)))
             from atlantis_core.board import BoardError, assert_green, validate
@@ -379,9 +403,15 @@ def check(root, items=None, stage: str = "declared", selftest: bool = True) -> d
                 if ev9.get("unit_ref") != (cfg.get("board") or {}).get("unit_ref"):
                     fail(9, f"{e.name}: unit_ref {ev9.get('unit_ref')!r} is not this instance's board.unit_ref")
                 xh = (ent.get("evaluation_extras") or {}).get("semantic_hash") or ev9.get("config_hash")
-                if xh != semantic_hash(inst):
+                top = newest.get(ent.get("entry_id"))
+                if top:   # a superseded entry is a record of an EARLIER config (SO-2): checked, but not held to today's hash
+                    if xh != semantic_hash(inst):
+                        R[9]["reasons"].append(f"ⓘ {e.name}: superseded by {top}; its config_hash {xh!r} is its own record, "
+                                               f"not checked against the current {semantic_hash(inst)!r}")
+                elif xh != semantic_hash(inst):
                     fail(9, f"{e.name}: config_hash {xh!r} ≠ this instance's semantic_hash {semantic_hash(inst)!r} — "
-                            f"an entry for another config (or another instance)")
+                            f"an entry for another config (or another instance); if the config changed since the run, the "
+                            f"next run writes the entry for this one")
                 if ent["evaluation"].get("claim") != "method_demonstration" and not ent["evaluation"].get("owner_ruling_ref"):
                     fail(9, f"{e.name}: a non-demonstration claim without owner_ruling_ref (SO-4)")
             except (BoardError, KeyError, ValueError) as x:

@@ -30,8 +30,11 @@ cd what/atlantis_core && uv sync && .venv/bin/python -m pytest              # of
   writes nothing.
 - **`conform`** is contract v0.2.0 §B as a machine check. It prints one ✅/✗ per item with the files read. Items 9–10 are
   n/a before a run. Item 6 re-runs the self-test. Item 12 is gitleaks: absent means not run, which fails the item. It
-  writes nothing. `tests/test_conform.py` feeds each item the defects its contract row names. The exemplar is a reference
-  run inside Atlantis, not a forked instance: it has no `units.yaml`, `mapping.yaml` or posture ADR, and conform says so.
+  writes nothing. `tests/test_conform.py` feeds each item the defects its contract row names. Item 9 holds only the
+  **newest** version of each entry stem to the current `semantic_hash` (the board's own derived supersession); older
+  versions are records of earlier configs (SO-2), validated and named ⓘ (M-3b-ii-a, 0.10.0). The exemplar is a reference
+  run inside Atlantis, not a forked instance: it has no `units.yaml`, `mapping.yaml` or posture ADR, and conform says
+  so.
 
 ## The pipeline, the run-spec, the board, the records (M-1d-ii)
 
