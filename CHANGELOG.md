@@ -1,5 +1,40 @@
 # CHANGELOG — Atlantis.aDNA
 
+## 2026-10-12 — v0.18.0 · M-3b-ii-a: `NDBCStdmet` built · core 0.10.1 · reef-light wind fetched into FKNMS · QC flags
+
+- **M-3b-ii split at open** (C-042) into ii-a (this) and ii-b (realise and test). Steward rulings: a **Keys-wide synoptic
+  index** (MLRF1 ends 2019, SMKF1 lacks 2016–17, the Tortugas have no light in the test era); the calm threshold scanned
+  on val (ii-b); NDBC licence = public (FKNMS ADR-001 addendum); `min_hours` 18; years 1987–2025.
+- **Core 0.10.0 → 0.10.1:**
+  - `NDBCStdmet` **BUILT** (WI-19):
+    - all four header forms; sentinels → NaN; per station and UTC day the mean of valid observations, kept if ≥
+      `min_hours` hours report;
+    - identical duplicate timestamps kept once, conflicting ones dropped and counted;
+    - **QC flag columns, no value deleted** (`qc_low_ratio`, `qc_stuck`);
+    - absences confirmed twice and recorded as sidecars (an empty 200 fails; the current year is refused);
+    - the raw cache pinned and re-hashed by `--verify`; per station-year cadence; an offline re-reduction says so.
+  - `weekly_count_lt(x, thr)`: calm days on the unit-level value; an empty week is NaN, not 0.
+  - Conform item 9 holds only the **newest** entry of each stem to the current config. Older entries are records of
+    earlier configs (SO-2).
+  - The site test reads FKNMS as each entry saw it.
+- **FKNMS:**
+  - `atl_stream_fkc_wind_ndbc_daily`: 42,742 station-days, sha256 `9abb791d…`, receipt `81bca06518`;
+  - `fetch --verify` ✅ ×4; conform fetched 11 pass, item 9 outstanding by construction until ii-b's v4;
+  - mapping pin → atl_v0 0.9.0; federation pin → `9084905`.
+- **Findings:**
+  - **LONF1 2020-02-27…06-04 is a failed anemometer** in the test window, reading 0.14–0.20 × the others. It is flagged,
+    not deleted. My sanity read had called it "drift", from an agreement check run on a window that excluded test.
+  - SMKF1 2020 held LONF1's record (659 conflicting timestamps).
+  - SMKF1's offset moves ≈ −0.9 m/s across its gap.
+  - The cadence turns 10-minute at `test_start`.
+  - The calm share at c = 4 rises 23.8 → 29.4% unmasked (27.3% in test, masked).
+  - ii-b rules the mask before any vital.
+- **Register:** touch-check, no status change; **T9 +1** (conform item 9); a T7 caution for ii-b.
+- **III:** PASS-WITH-FINDINGS 0/1/8/3, all dispositioned (rulings 8–9). ACCUMULATE: C-045…C-048 + ten bumps; C-042
+  and C-030 are graduation candidates.
+- **Budget:** main ≈ 400 kT (carded ≈ 150, re-carded ≈ 420 at a SITREP ≈ 65 kT past the line) · III ≈ 300 kT.
+- **Suite:** 863 passed at `9084905` (279 s; 851 at `590f70b`). **Not pushed.**
+
 ## 2026-10-12 — v0.17.0 · M-3b-i: the hypothesis ledger · atl_v0 0.9.0 · core 0.9.0 `hypotheses` · the coral_reef ledger · wind ruled
 
 - **M-3b split at open** (C-042) into M-3b-i (this) and M-3b-ii (realise and test).

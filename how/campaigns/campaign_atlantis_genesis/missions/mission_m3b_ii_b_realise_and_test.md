@@ -46,6 +46,22 @@ table. The raw anemometer height is kept (C-MAN heights differ from the row's mo
 4. Fill `realisation` on the realised rows (wind_003, wind_006). A filled realisation does not void their review
    (`reviewed_sha256` excludes it).
 5. Card lines for main and the III reviewer at observed sizes (III M-3b-i F-10).
+6. **QC mask and station offsets, ruled BEFORE any vital** (M-3b-ii-a III F-1, F-2, F-8; FKNMS `STATE.md` has the
+   numbers). The stream carries flag columns, and no value was deleted:
+   - `qc_low_ratio` marks LONF1 2020-02-27…06-04, a **failed anemometer** at 0.14–0.20 × the others (99 days, all in test);
+   - `qc_stuck` marks 73 station-days of identical runs of ≥ 6 h.
+
+   The index's reporting set shifts by segment: all four lights on 56.8% of train days, never in test, and two on 49.5%
+   of test reporting days. SMKF1's offset against SANF1 moves ≈ −0.9 m/s across its 2016–17 gap, while LONF1's is stable.
+   Cadence changes from hourly to 10-minute at `test_start`.
+
+   Calm share at c = 4, % of reporting days, train / val / test: 23.8 / 27.7 / 29.4 unmasked, 23.7 / 27.6 / 27.3 masked.
+   Rule which flags mask the index, and how station offsets are treated (fitted on train only). Run a SANF1-only
+   sensitivity. Read any "support" against it: an era-confounded calm vital is a proxy for the decade, not for the wind.
+7. **conform item 9 is outstanding by construction** until the run writes v4 under `81bca06518` (the newest entry, v3,
+   is for `c07b7c0288`; core `5312f52`). The run is what closes it.
+8. The site test that reads the live FKNMS now reads it as each entry saw it (`590f70b`); a new v4 page/entry test
+   follows that pattern.
 
 ## Acceptance criteria
 

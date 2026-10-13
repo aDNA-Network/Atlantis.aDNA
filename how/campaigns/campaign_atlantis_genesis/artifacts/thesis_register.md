@@ -6,7 +6,7 @@ status: draft   # statuses ruled at each phase gate; the register itself stays a
 created: 2026-10-02
 updated: 2026-10-12
 last_edited_by: agent_proteus
-mission: m3b_i   # M-3b-i 2026-10-12: C-033 re-read, no row changed; T8 interim note and a T12 finding (below); M-3a 2026-10-10: C-033 re-read, no row changed, two exemplar data findings recorded (below); M-2c-ii: re-read T2 · T10 · T11 at M-2c-ii 2026-10-08 (proposed for the P3 gate, not ruled); before that: statuses RULED at the P2 gate 2026-10-08 (III review artifacts/p2_gate_iii_review.md, G-1…G-12); re-cut at M-2b (T1 T3 T9 T10; notes on T4 T6 T11); authored at mission_m0_atlantis_genesis_planning
+mission: m3b_ii_a   # M-3b-ii-a 2026-10-12: C-033 touch-check, no row changed; T9 +1 (conform item 9); a T7 caution for ii-b; M-3b-i 2026-10-12: C-033 re-read, no row changed; T8 interim note and a T12 finding (below); M-3a 2026-10-10: C-033 re-read, no row changed, two exemplar data findings recorded (below); M-2c-ii: re-read T2 · T10 · T11 at M-2c-ii 2026-10-08 (proposed for the P3 gate, not ruled); before that: statuses RULED at the P2 gate 2026-10-08 (III review artifacts/p2_gate_iii_review.md, G-1…G-12); re-cut at M-2b (T1 T3 T9 T10; notes on T4 T6 T11); authored at mission_m0_atlantis_genesis_planning
 campaign_id: campaign_atlantis_genesis
 evidence_source: what/exemplars/gulf_karenia_brevis/outputs/metrics.json   # config_hash e9dea88254 · P2: FloridaKeysCoral.aDNA outputs/atlantis_core/metrics.json, config c07b7c0288 (board 2026-10-08_florida_keys_coral_v1; v3 from M-2c-ii) · exemplar board 2026-10-08_gulf_karenia_brevis_v4 (M-2c-ii's T11 reading)
 tags: [artifact, thesis_register, m0, atlantis, tidewatch]
@@ -37,6 +37,26 @@ yet. Status of every claim is **supported-by-one-exemplar** or **untested** — 
 
 ## Reading the register
 
+- **M-3b-ii-a touch-check (2026-10-12, C-033, after the III fixes; the build half, so no row is tested here). No row's
+  status changes.**
+  - *Obligations:* T7 and T8 stay with **M-3b-ii-b**, which realises and tests the row. T11 and T2 stay with **the P3
+    gate**.
+  - *T9:* **+1** under the M-2c-i counting rule. Conform item 9 held every board entry to the current config. So once
+    FKNMS gained a stream after v3, v1–v3 all failed, and they would have failed forever after a v4. Core `5312f52`
+    reads the board's own derived supersession. The other changes are not counted:
+    - `NDBCStdmet` and `weekly_count_lt` are the planned build of a declared fetcher, plus the operation the ruled row
+      needs (planned extensions, as the CRW fetcher at M-2a-i);
+    - the LONF1-2000 parser fix is a defect in that new code, caught on its first real use (as the M-2b page script);
+    - the site-test pin (`590f70b`) is test-only.
+
+    The FKNMS `mapping.yaml` pin move 0.8.0 → 0.9.0 is upkeep. Instance-local patches: 0.
+  - *T7, a caution carried to ii-b (no evidence on the claim yet):* the reef-light index carries a **failed
+    anemometer in the test window**: LONF1 2020-02-27…06-04 read at 0.14–0.20 × the others (III F-1). It was first read
+    as "drift" (C-030). It is now flagged, not deleted. SMKF1's offset against SANF1 also moves ≈ −0.9 m/s across its
+    gap, and the reporting set changes by segment. The index's calm-day share rises with the event's base rate (c = 4,
+    23.8 → 29.4% unmasked; 27.3% in test with the flags masked). A calm vital could earn attribution as a proxy for the
+    decade or for a sensor fault, and keeping lever, proxy and artifact apart is what T7 is for. The *artifact* tag is
+    the honest one for a flagged-fault effect.
 - **M-3b-i re-read (2026-10-12, C-033). No row's status changes, and none is proposed to.** The re-cut of T7 and T8 is
   M-3b-ii's, once a row is realised and tested.
   - *Obligations:* T7 and T8 stay with **M-3b-ii**. T11 and T2 stay with **the P3 gate**. T9: **+0**. The schema's 0.9.0

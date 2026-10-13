@@ -1,15 +1,15 @@
 ---
 type: state
 status: p3_open
-phase: "P3 open — P2 gate MET 2026-10-08, CONDITIONAL GO P3: (a) MET · (b) P3 re-carded ≈2.3× · (c) M-3b off the exemplar · (d) P4 bar before P4; M-3a ✅ 2026-10-10; M-3b split 2026-10-12, M-3b-i ✅ 2026-10-12; next M-3b-ii (opus, reef-light wind)"
+phase: "P3 open — P2 gate MET 2026-10-08, CONDITIONAL GO P3: (a) MET · (b) P3 re-carded ≈2.3× · (c) M-3b off the exemplar · (d) P4 bar before P4; M-3a ✅ 2026-10-10; M-3b split 2026-10-12, M-3b-i ✅ 2026-10-12; M-3b-ii split, M-3b-ii-a ✅ 2026-10-12; next M-3b-ii-b (opus, QC mask then the wind vitals)"
 campaigns: [campaign_atlantis_genesis]
-mission: m3b_ii   # QUEUED (opus; reef-light wind, ruled 2026-10-12); M-3b-i ✅ 2026-10-12 (atl_v0 0.9.0 · 126 controls · core 0.9.0 hypotheses · coral_reef ledger 26 rows, 14 reviewed · III 0/2/8/2); M-3b split 2026-10-12; M-3a ✅ 2026-10-10 (core 0.8.0 discover · skill · exemplar + FKNMS runs · GREEN cap counted-once · CEL ack staged · III 0/2/7/3); M-2c-ii ✅ 2026-10-08 (FKNMS v3 · T11 falsified as worded on FKNMS, proposed for P3 gate · III 11/11); M-2c-i ✅ 2026-10-08 (core 0.7.0 · atl_v0 0.8.0 · board v4 · III 10/10); M-2c split 2026-10-08; P2 gate ✅ 2026-10-08 (conditional GO P3; opus decision brief + III review of the gate case, PASS-WITH-FINDINGS 0/6/4/2); M-2b ✅ 2026-10-08 (board v2 · core 0.6.1 · atl_v0 0.7.0 · III 8/8); M-2a-ii ✅ 2026-10-08 (forked · fetched · conforms · III 9/9 · core 0.5.3); M-1f ✅ 2026-10-07 (board v3); M-2a-i ✅ 2026-10-06; M-2a split 2026-10-06; M-1e ✅ 2026-10-03 (board v2); P1 gate ✅ 2026-10-03 (conditional GO); M-1d-ii ✅ · M-1d-i ✅ · M-1b-ii-b ✅ 2026-10-03; M-1b-ii-a ✅ · M-1b-i ✅ · M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
+mission: m3b_ii_b   # QUEUED (opus; QC mask + station offsets ruled first, then the wind vitals); M-3b-ii-a ✅ 2026-10-12 (core 0.10.1 NDBCStdmet + weekly_count_lt + QC flags · conform item 9 supersession · FKNMS wind fetched, Keys-wide index · III 0/1/8/3); M-3b-ii split 2026-10-12; M-3b-i ✅ 2026-10-12 (atl_v0 0.9.0 · 126 controls · core 0.9.0 hypotheses · coral_reef ledger 26 rows, 14 reviewed · III 0/2/8/2); M-3b split 2026-10-12; M-3a ✅ 2026-10-10 (core 0.8.0 discover · skill · exemplar + FKNMS runs · GREEN cap counted-once · CEL ack staged · III 0/2/7/3); M-2c-ii ✅ 2026-10-08 (FKNMS v3 · T11 falsified as worded on FKNMS, proposed for P3 gate · III 11/11); M-2c-i ✅ 2026-10-08 (core 0.7.0 · atl_v0 0.8.0 · board v4 · III 10/10); M-2c split 2026-10-08; P2 gate ✅ 2026-10-08 (conditional GO P3; opus decision brief + III review of the gate case, PASS-WITH-FINDINGS 0/6/4/2); M-2b ✅ 2026-10-08 (board v2 · core 0.6.1 · atl_v0 0.7.0 · III 8/8); M-2a-ii ✅ 2026-10-08 (forked · fetched · conforms · III 9/9 · core 0.5.3); M-1f ✅ 2026-10-07 (board v3); M-2a-i ✅ 2026-10-06; M-2a split 2026-10-06; M-1e ✅ 2026-10-03 (board v2); P1 gate ✅ 2026-10-03 (conditional GO); M-1d-ii ✅ · M-1d-i ✅ · M-1b-ii-b ✅ 2026-10-03; M-1b-ii-a ✅ · M-1b-i ✅ · M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
 persona: proteus   # RULED 2026-10-02 (ADR-001 ratified)
-last_session: session_stanley_20261012_085758_m3b_i_ledger (opus)
+last_session: session_stanley_20261013_011418_m3b_ii_a_ndbc_fetch (opus)
 created: 2026-09-23
 updated: 2026-10-12
 last_edited_by: agent_proteus
-tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_complete, m1b_ii_a_complete, m1b_ii_b_complete, m1d_i_complete, m1d_ii_complete, p1_gate_met, p2_conditional_go, m1e_complete, board_v2, atl_v0_0_4_0, m2a_split, m2a_i_complete, atl_v0_0_5_0, core_0_4_0, crw_built, m1f_complete, board_v3, atl_v0_0_6_0, core_0_5_0, m2a_ii_complete, core_0_5_1, core_0_5_2, core_0_5_3, floridakeyscoral_forked, floridakeyscoral_fetched, m2b_complete, core_0_6_0, core_0_6_1, atl_v0_0_7_0, floridakeyscoral_on_board, p2_gate_met, p3_conditional_go, p3_open, m2c_split, m2c_i_complete, core_0_7_0, atl_v0_0_8_0, board_v4, m2c_ii_complete, fknms_v3, p2_condition_a_met, t11_falsified_fknms_proposed, m3a_complete, core_0_8_0, discover_built, green_cap_ruled, m3b_split, m3b_i_complete, atl_v0_0_9_0, core_0_9_0, hypothesis_ledger, envo_bound, wind_ruled]
+tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_complete, m1b_ii_a_complete, m1b_ii_b_complete, m1d_i_complete, m1d_ii_complete, p1_gate_met, p2_conditional_go, m1e_complete, board_v2, atl_v0_0_4_0, m2a_split, m2a_i_complete, atl_v0_0_5_0, core_0_4_0, crw_built, m1f_complete, board_v3, atl_v0_0_6_0, core_0_5_0, m2a_ii_complete, core_0_5_1, core_0_5_2, core_0_5_3, floridakeyscoral_forked, floridakeyscoral_fetched, m2b_complete, core_0_6_0, core_0_6_1, atl_v0_0_7_0, floridakeyscoral_on_board, p2_gate_met, p3_conditional_go, p3_open, m2c_split, m2c_i_complete, core_0_7_0, atl_v0_0_8_0, board_v4, m2c_ii_complete, fknms_v3, p2_condition_a_met, t11_falsified_fknms_proposed, m3a_complete, core_0_8_0, discover_built, green_cap_ruled, m3b_split, m3b_i_complete, atl_v0_0_9_0, core_0_9_0, hypothesis_ledger, envo_bound, wind_ruled, m3b_ii_split, m3b_ii_a_complete, core_0_10_0, core_0_10_1, ndbc_built, wind_fetched, qc_flags]
 ---
 
 # STATE — Atlantis.aDNA
@@ -25,6 +25,8 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
 5b. **Hypothesis ledger (M-3b-i):** `how/skills/skill_feature_hypothesis_mining.md` → `python -m atlantis_core.hypotheses
    corpus --ecosystem <eco>` · `--index [--check]` · `--stamp-review <hyp_id> --reviewer <id>` → `what/hypotheses/LEDGER.md`
    (the coral_reef ledger; abstracts gitignored in `corpus/*/unreviewed/`).
+5c. **NDBC (M-3b-ii-a):** `fetch/ndbc.py` (`NDBCStdmet`: four header forms, QC flag columns, confirmed absences, the raw
+   cache pinned) · the grammar's `weekly_count_lt` · FKNMS `atl_stream_fkc_wind_ndbc_daily` (Keys-wide index).
 6. The ontology is controlled (M-1c; 0.3.0 at M-1d-i; 0.4.0 at M-1e; 0.5.0 at M-2a-i; 0.6.0 at M-1f): `what/schema/atl_v0/README.md` (proof table · known limits) · `LINKML_BIN=<scratch venv>/bin what/schema/atl_v0/fixtures/controls/run_controls.sh` → ALL WORLDS AGREE (65 controls; 0.7.0 at M-2b; **78 at 0.8.0, M-2c-i**).
 6. III review goes through `iii/` in a fresh context (SO-10).
 7. The core (M-1b-i + ii-a + ii-b + M-1d-i + M-1d-ii): `what/atlantis_core/README.md` · `cd what/atlantis_core && uv sync && .venv/bin/python -m pytest` (744 at the M-2c-ii close, ~5 min; core 0.7.0; `node` on PATH for the page-script checks) ·
@@ -38,30 +40,30 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
 
 ## ⏭ QUEUED — Next Live Session
 
-**M-3b-i ✅ 2026-10-12** (opus; M-3b split at open, ruling 1):
+**M-3b-ii-a ✅ 2026-10-12** (opus; M-3b-ii split at open, ruling 1):
 - **Delivered:**
-  - atl_v0 **0.9.0** `AtlHypothesis` (126 controls, ALL WORLDS AGREE; `EcosystemType` bound to ENVO biome terms);
-  - core **0.9.0** `atlantis_core.hypotheses` (corpus · check, 21 failure keys · index · `--stamp-review`);
-  - `skill_feature_hypothesis_mining`.
-- **The coral_reef ledger:** 380 works were retrieved (manifest committed, abstracts gitignored) and 32 rows extracted.
-  - A fresh-context faithfulness reader confirmed 15 and questioned 17. Six were withdrawn (archived). The III review
-    demoted one more.
-  - The ledger holds **26 rows, 14 `reviewed`**, each hash-bound to what its reader read.
-  - Realisability, counted by code: existing 3 · declared 6 · new 11 · unrealisable 6.
+  - core **0.10.0 → 0.10.1**: `NDBCStdmet` BUILT (WI-19) — four header forms, QC flag columns (`qc_low_ratio`,
+    `qc_stuck`; no value deleted), conflicting duplicates dropped, absences confirmed and recorded, the raw cache pinned;
+  - `weekly_count_lt` (calm days on the unit-level value);
+  - conform item 9 holds only the newest entry to the current config;
+  - in FKNMS: `atl_stream_fkc_wind_ndbc_daily`, a **Keys-wide synoptic index** (steward ruling 2), 42,742 station-days,
+    receipt `81bca06518`, ADR-001 NDBC addendum ratified, mapping pin → 0.9.0, federation pin → `9084905`.
 - **Findings:**
-  - no reviewed heat-onset row is realisable from FKNMS's existing streams;
-  - 15 of 26 rows are about bleaching *given* heat, not what brings heat on.
-- **Ruled (7):** **M-3b-ii realises reef-light wind** (NDBC C-MAN, WI-19). Event-matched reviewed support is 2 rows,
-  remote; the 4 m/s threshold is a regional transfer, scanned not fixed.
-- **Folded in:** the Noether ack delivered (`e77f534`); LatticeProtocol has committed it as its read receipt.
-- **III:** PASS-WITH-FINDINGS 0/2/8/2 (`missions/aar/iii_review_m3b_i.md`). The majors and code minors are fixed
-  (`dcdbe65`). ACCUMULATE: C-043, C-044 new, and eight bumps (ruling 8).
-- **Suite:** **834 passed at `dcdbe65`** (284 s); 820 at `b989318`; 822 at `bf5a6a8`.
-- **Budget:** main ≈ 508 kT against ≈ 170 carded, re-carded to ≈ 460 at the +50% SITREP (ruling 5, reported about 55 kT
-  past the line). The faithfulness reader was ≈ 133 kT and the III reviewer ≈ 278 kT.
+  - **LONF1 2020-02-27…06-04 is a failed anemometer** in the test window (0.14–0.20 × the others). It is flagged, not
+    deleted. My sanity read called it drift (C-045, C-030).
+  - SMKF1 2020 held LONF1's record; its 659 conflicting timestamps were dropped.
+  - SMKF1's offset moves ≈ −0.9 m/s across its gap.
+  - Cadence turns 10-minute at `test_start`.
+  - The calm share at c = 4 is 23.8 / 27.7 / 29.4% unmasked and 23.7 / 27.6 / 27.3% masked.
+  - Conform item 9 is outstanding by construction until ii-b's v4.
+- **III:** PASS-WITH-FINDINGS 0/1/8/3 (`missions/aar/iii_review_m3b_ii_a.md`). All dispositioned (rulings 8–9).
+  ACCUMULATE: C-045…C-048 + ten bumps; C-042 and C-030 are graduation candidates (ruling 10).
+- **Register:** touch-check, no status change; **T9 +1** (conform item 9); a T7 caution.
+- **Suite:** **851 passed at `590f70b`** (286 s); **863 passed at `9084905`** (279 s; FKNMS at `fa0beed`).
+- **Budget:** main ≈ 400 kT (carded ≈ 150, re-carded ≈ 420 at a SITREP ≈ 65 kT past the line, C-042) · III ≈ 300 kT.
 
-**Next: M-3b-ii** (opus), `missions/mission_m3b_ii_realise_and_test.md`: reef-light wind in FloridaKeysCoral. It builds
-`NDBCStdmet` first, so **re-card at open** if the build plus the realisation does not fit ≈ 180 kT.
+**Next: M-3b-ii-b** (opus), `missions/mission_m3b_ii_b_realise_and_test.md`. Opening obligation 6 comes **first**: rule
+the QC mask and the station-offset treatment before any vital.
 
 **Pending operator acts:**
 - **The push.** Nothing since M-2c-i is pushed (`origin/main` = `76bb143`); run gitleaks first.
@@ -69,40 +71,76 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
   - the exemplar re-grid and the 02359170 refresh (exemplar v5);
   - T11's status and T2's wording;
   - **T8's falsifier quantifier** ("any" vs "mostly" unrealisable: 6 of 26);
-  - C-035 to C-044.
+  - C-035 to C-048; graduation of C-042 · C-030 (with the earlier candidates);
+  - the card-template counter check (III M-3b-ii-a F-9).
 - **The FKNMS steward's question:** is a model worth running for a lever-free heat event whose operational product CRW
   publishes (the 4-month Outlook is forecast_sst_001★), when the calendar is not beaten?
 - **Carried:**
   - the graduation memo → `III.aDNA`; the Hestia memo → `Home.aDNA`; C-015's acceptance; FKNMS's remote;
   - a memo to Demeter: Ingest.aDNA has no literature class, and the standalone intake stands in.
 
-**Next Session Prompt (self-contained, M-3b-ii, opus):**
+**Next Session Prompt (self-contained, M-3b-ii-b, opus):**
 
-> You are Proteus in `~/aDNA/Atlantis.aDNA`, on **opus**, opening **M-3b-ii**. Realise the ruled ledger driver,
-> **reef-light wind**, as an `AtlVital` in **FloridaKeysCoral** (never the exemplar), train, SHAP-test it, and write it
-> up either way (T8). Read, in order:
+> You are Proteus in `~/aDNA/Atlantis.aDNA`, on **opus**, opening **M-3b-ii-b**. Realise reef-light wind as `AtlVital`s in
+> **FloridaKeysCoral** (never the exemplar). Scan the calm threshold on val, train, SHAP-test, and write it up either
+> way (T8). Read, in order:
 > 1. STATE.
-> 2. The card `how/campaigns/campaign_atlantis_genesis/missions/mission_m3b_ii_realise_and_test.md`, including its
->    opening obligations.
-> 3. `what/hypotheses/realisation_coral_reef_2026-10-12.md` (§2 and §5).
-> 4. The rows `what/hypotheses/ledger/coral_reef/atl_hyp_coral_reef_wind_00{1,3,4,5,6}.yaml`.
-> 5. `what/atlantis_core/src/atlantis_core/fetch/{base,ndbc,nwis}.py` (the declared fetcher and a built sibling).
-> 6. `~/aDNA/FloridaKeysCoral.aDNA/{STATE.md, streams.yaml, atlantis.yaml, discovery/discovery_memo.md}`.
+> 2. The card `how/campaigns/campaign_atlantis_genesis/missions/mission_m3b_ii_b_realise_and_test.md`, all eight opening
+>    obligations.
+> 3. `~/aDNA/FloridaKeysCoral.aDNA/STATE.md` (the wind stream's numbers and the ⛔/⚠ notes).
+> 4. `missions/aar/iii_review_m3b_ii_a.md` (F-1, F-2, F-8).
+> 5. `what/hypotheses/realisation_coral_reef_2026-10-12.md` §3 · the rows `atl_hyp_coral_reef_wind_00{3,6}.yaml`.
+> 6. `what/atlantis_core/src/atlantis_core/{run.py, vitals/ops.py, fetch/ndbc.py}`.
 >
-> **First:** propose to the operator via `AskUserQuestion` whether this card fits one sitting with the `NDBCStdmet` build
-> (C-042), and put the station-to-zone map and the calm-threshold scan to the steward. Probe `how/sessions/active/` in
-> both vaults and open a lease in each.
+> **First, via `AskUserQuestion`:**
+> - the **QC mask** (`qc_low_ratio` / `qc_stuck` → NaN in the index?) and the **station-offset treatment** (fitted on
+>   train only), plus a SANF1-only sensitivity;
+> - whether `run` can score val without test (the scan path; re-card at open if it is a core change that does not fit).
+>
+> A mask needs a way for the instance to apply the flags. That is likely a core change (a stream-level
+> `mask_columns`, or a grammar term), and it goes through the self-test.
+>
+> Probe `how/sessions/active/` in both vaults and open a lease in each.
 >
 > **Doctrine for the sitting:**
 > - Compare with board v3 at **its** base rate (15.0%) and budgets only (C-031, C-034).
-> - The vital is a `proxy` (T7: "no lever, still").
+> - The vitals are `proxy`; a flagged-fault effect is an `artifact` (T7).
 > - Re-run the self-test before any vitals commit (SO-7).
-> - Fill `realisation` on the realised rows; their review survives it.
+> - Fill `realisation` on the realised rows.
 > - Review through `iii/` in a fresh context.
 > - Record the suite count with its commit (C-035).
-> - SITREP **at** the +50% line (C-042). Write the AAR.
+> - Read the token counter **at every commit**, and SITREP **at** the +50% line (C-042, three running).
+> - Write the AAR.
 
 ## What's in place
+
+### M-3b-ii-a (2026-10-12 — Atlantis `9bbe34f` · `b5629dc` · `e8b79c0` · `5312f52` · `590f70b` · `9084905` + close; instance `51c7203` · `fa0beed`)
+
+- **Rulings 1–10** (AskUserQuestion; operator 1 · 7–10, steward 2–6):
+  1. split;
+  2. a Keys-wide synoptic index;
+  3. the threshold scanned on val (ii-b);
+  4. NDBC licence = public (ADR-001 addendum);
+  5. `min_hours` 18;
+  6. years 1987–2025;
+  7. re-card ≈ 420 kT;
+  8. QC flags in the fetcher now;
+  9. code minors and the card fixed;
+  10. ACCUMULATE accepted.
+- **Core 0.10.1:**
+  - `NDBCStdmet` (`fetch/ndbc.py`):
+    - four header forms; daily means ≥ `min_hours`;
+    - identical duplicates kept once, conflicting ones dropped;
+    - QC flag columns: `qc_low_ratio` (a centred 15-day median of station ÷ others < 0.4) and `qc_stuck` (≥ 6 h
+      identical);
+    - absences confirmed twice and kept as sidecars; an empty 200 fails; the current year is refused;
+    - the raw cache pinned by sidecar + `reduction.raw_files`, re-hashed by `--verify`;
+    - `cadence`; `fetched_at_source` for re-reductions.
+  - `weekly_count_lt`.
+  - Conform item 9 holds only the newest entry of each stem to the current hash.
+  - The site test reads each entry's own view of FKNMS.
+  - `provenance.summarise(fetched_at_source=…)`.
+- **III:** 0/1/8/3 (`missions/aar/iii_review_m3b_ii_a.md`); AAR `missions/aar/aar_m3b_ii_a_ndbc_fetch.md`. T9 +1.
 
 ### M-3b-i (2026-10-12 — Atlantis `6dce435` · `e77f534` · `b5a01bf` · `507924b` · `b989318` · `73c0d1c` · `916f8b9` · `bf5a6a8` · `dcdbe65` + close)
 
@@ -469,7 +507,7 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
 - ~~WI-18~~ **closed 2026-10-03 (M-1d-ii)** — the template is fixed and validated (schema copy beside it). The upstream
   note goes by memo (24 of 26 workspace `.dataset.yaml` fail it). Original text follows: `how/templates/template_dataset_pair/` fails the lattice-labs `dataset_yaml_schema.json` it claims (sha256
   placement, `storage.location`/`provider`, lineage keys). M-1d-ii fixes the template; the upstream note goes by memo.
-- WI-19 — *(P1 gate: NDBC dropped from M-2. **CRW BUILT 2026-10-06 (M-2a-i)**; NDBC, OBIS and GBIF remain declared.)* `NDBCStdmet` (and OBIS, GBIF, CRW) are declared, not built. The first instance with a buoy stream needs NDBC; it
+- WI-19 — *(**NDBC BUILT 2026-10-12 (M-3b-ii-a, core 0.10.0–0.10.1)** for FKNMS's reef lights; OBIS and GBIF remain declared.)* *(P1 gate: NDBC dropped from M-2. **CRW BUILT 2026-10-06 (M-2a-i)**.)* `NDBCStdmet` (and OBIS, GBIF, CRW) are declared, not built. The first instance with a buoy stream needs NDBC; it
   is built in `atlantis_core` (the P2 rule). M-2 (gridded-only) does not need it.
 - WI-20 — *(**P2 gate 2026-10-08:** ruled. The memo `who/coordination/coord_2026_10_08_proteus_to_argus_graduation_wi20.md` proposes C-004 · C-005 · C-009 (7) · C-010 · C-023, with C-015 listed below the bar because its `accepted` field was never set. It supersedes the undelivered 10-03 memo. Delivery is a peer write, `#needs-human`.)* *(M-2a-ii: **C-010 (3)** joins, C-023 → 4; candidates C-004 · C-005 (4) · C-009 (5) · C-010 · C-015 · C-023 (4).)* *(M-1f: the candidates at frequency ≥ 3 are now **C-004 · C-005 (4) · C-009 (5) · C-015 · C-023 (3)**; M-2a-i had C-004 · C-005 · C-009 · C-015.)* **graduation proposed 2026-10-03** (C-009 reached frequency 4 at M-1e, which strengthens the memo) (P1 gate ruling: memo filed, awaiting Argus + Stanley co-ratification at III.aDNA). III learning store: C-004 and C-009 are at frequency 3, graduation candidates for the ADR-003 ceremony at
   III.aDNA. Operator's call, at the P1 gate or after.

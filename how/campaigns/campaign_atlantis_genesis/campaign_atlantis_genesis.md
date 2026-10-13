@@ -184,6 +184,13 @@ and a calm-day grammar op (core 0.10.0) and fetches the reef-light wind into FKN
 calm threshold on val, trains, SHAP-tests and writes it up either way. Same sitting (steward): the station map is a
 Keys-wide synoptic index (MLRF1 ends 2019, SMKF1 lacks 2016–17, the Tortugas have no station in the test era), and the
 threshold is scanned on val, test scored once.
+
+**M-3b-ii-a ✅ 2026-10-12:**
+- *Delivered:* core 0.10.1 `NDBCStdmet` (WI-19, QC flag columns) and `weekly_count_lt`; conform item 9 reads
+  supersession; the reef-light wind fetched into FKNMS as a Keys-wide index.
+- *Finding:* a failed anemometer in the test window (LONF1 2020) reads as calm; it is flagged, not deleted. Station mix
+  and cadence also move with the era. ii-b rules the mask first.
+- *Review:* III 0/1/8/3, fixed. T9 +1.
 - *Ruled:* **M-3b-ii realises reef-light wind** (NDBC, WI-19).
 
 ### P4 — Federation & stewards (fable sitting + gate)
