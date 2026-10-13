@@ -4,7 +4,7 @@ mission_id: M-3b-ii
 plan_id: mission_m3b_ii_realise_and_test
 title: "M-3b-ii — one ledger row realised as an AtlVital in FKNMS, trained, SHAP-tested, written up either way · T7/T8 re-cut"
 owner: stanley
-status: planned
+status: split   # 2026-10-12, M-3b-ii ruling 1 (operator, AskUserQuestion, at open; C-042) → M-3b-ii-a + M-3b-ii-b; kept as the parent card
 campaign: campaign_atlantis_genesis
 campaign_id: campaign_atlantis_genesis
 phase: P3
@@ -26,6 +26,14 @@ tags: [mission, m3b_ii, p3, opus, shap, realisation, fknms, t7, t8, atlantis, ti
 ---
 
 # M-3b-ii — realise one row and test it
+
+> **Split 2026-10-12** (M-3b-ii ruling 1, operator, `AskUserQuestion`, at open; C-042) →
+> `mission_m3b_ii_a_ndbc_fetch.md` (`NDBCStdmet` + the calm-day grammar op, core 0.10.0 · the stream fetched into FKNMS ·
+> conform at the fetched stage · III) and `mission_m3b_ii_b_realise_and_test.md` (the vitals · the val scan · the run ·
+> SHAP · memo + board entry · T7/T8 · III). This card stays the parent: its acceptance criteria are the union of the two.
+> Rulings 2–3 at the same open: the **station map is a Keys-wide synoptic index** (the mean over the reef lights reporting
+> that day, given to all 21 zones; the reporting set recorded), and the **calm threshold is scanned on val** (c ∈ {2, 3,
+> 4, 5, 6} m/s, chosen on val log-loss from the train fit; test scored once; the full scan a GREEN table).
 
 **Split from** `mission_m3b_hypothesis_ledger_and_mining.md` (M-3b ruling 1). The other half is
 `mission_m3b_i_ledger_and_skill.md`, which ends on the operator's ruling of which row this half realises.

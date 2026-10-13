@@ -178,6 +178,12 @@ Noether ack delivered.
 - *Finding:* no reviewed heat-onset row is realisable from FKNMS's existing streams, and 15 of 26 rows are about
   bleaching given heat.
 - *Review:* III 0/2/8/2, fixed.
+
+**M-3b-ii split 2026-10-12** (operator, `AskUserQuestion`, at open; C-042): **M-3b-ii-a** builds `NDBCStdmet` (WI-19)
+and a calm-day grammar op (core 0.10.0) and fetches the reef-light wind into FKNMS; **M-3b-ii-b** realises it, scans the
+calm threshold on val, trains, SHAP-tests and writes it up either way. Same sitting (steward): the station map is a
+Keys-wide synoptic index (MLRF1 ends 2019, SMKF1 lacks 2016–17, the Tortugas have no station in the test era), and the
+threshold is scanned on val, test scored once.
 - *Ruled:* **M-3b-ii realises reef-light wind** (NDBC, WI-19).
 
 ### P4 — Federation & stewards (fable sitting + gate)
