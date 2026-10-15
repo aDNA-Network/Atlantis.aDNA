@@ -4,7 +4,7 @@ mission_id: M-3b-ii-b
 plan_id: mission_m3b_ii_b_realise_and_test
 title: "M-3b-ii-b — reef-light wind realised as AtlVitals in FKNMS, the calm threshold scanned on val, trained, SHAP-tested, written up either way · T7/T8 re-cut"
 owner: stanley
-status: planned
+status: split   # 2026-10-15, M-3b-ii-b ruling 3 (operator, AskUserQuestion, at open) → M-3b-ii-b-1 + M-3b-ii-b-2; kept as the parent card
 campaign: campaign_atlantis_genesis
 campaign_id: campaign_atlantis_genesis
 phase: P3
@@ -19,13 +19,22 @@ origin: "M-3b-ii ruling 1 (operator, AskUserQuestion, 2026-10-12, at open): buil
 aar_path: how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m3b_ii_b_realise_and_test.md
 session: TBD
 created: 2026-10-12
-updated: 2026-10-12
+updated: 2026-10-15
 last_edited_by: agent_proteus
 home_vault: Atlantis.aDNA
 tags: [mission, m3b_ii_b, p3, opus, shap, realisation, fknms, t7, t8, atlantis, tidewatch]
 ---
 
 # M-3b-ii-b — realise reef-light wind and test it
+
+> **Split 2026-10-15** (M-3b-ii-b ruling 3, operator, `AskUserQuestion`, at open): the mask, the offsets and a val-only scan
+> path are three core changes before any vital. → **M-3b-ii-b-1** `mission_m3b_ii_b_1_core_mask_offsets_scan.md` (core) ·
+> **M-3b-ii-b-2** `mission_m3b_ii_b_2_realise_and_test.md` (vitals · scan · v4 · SHAP · write-up). Obligation 6 was ruled
+> at the same open:
+> 1. **QC mask = `qc_low_ratio` only.** `qc_stuck` is kept: an identical ≥ 6 h run can be true calm. Its 73
+>    station-days are a recorded limit.
+> 2. **Station offsets fitted on train only, against SANF1. SMKF1 is cut after its 2016–17 gap**, since it has no
+>    train overlap from which to fit a post-gap offset. The SANF1-only index is the sensitivity.
 
 **Split from** `mission_m3b_ii_realise_and_test.md` (M-3b-ii ruling 1). Starts from M-3b-ii-a's fetched, conformed
 stream `atl_stream_fkc_wind_ndbc_daily` (Keys-wide index, ruling 2).

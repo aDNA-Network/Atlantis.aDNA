@@ -193,6 +193,17 @@ threshold is scanned on val, test scored once.
 - *Review:* III 0/1/8/3, fixed. T9 +1.
 - *Ruled:* **M-3b-ii realises reef-light wind** (NDBC, WI-19).
 
+**M-3b-ii-b split 2026-10-15** (operator, `AskUserQuestion`, at open). The QC mask, station offsets and a val-only scan
+path are three core changes before any vital:
+- **M-3b-ii-b-1** builds them (core 0.11.0) and declares them in FKNMS.
+- **M-3b-ii-b-2** realises the wind, scans the calm threshold on val, trains, SHAP-tests and writes it up.
+
+Ruled at the same open:
+- the mask is `qc_low_ratio` only (a stuck run can be true calm);
+- offsets are fitted on train only, against SANF1;
+- SMKF1 is cut after its 2016–17 gap;
+- SANF1-only is the sensitivity.
+
 ### P4 — Federation & stewards (fable sitting + gate)
 M-4 contract v1 ratified · steward governance set · consumer-wrapper template + register · Exchange listing · Network
 share-class ruling · blind-conductor runbook *iff* a partner-data instance exists · **first outside steward**

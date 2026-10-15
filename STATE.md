@@ -3,11 +3,11 @@ type: state
 status: p3_open
 phase: "P3 open — P2 gate MET 2026-10-08, CONDITIONAL GO P3: (a) MET · (b) P3 re-carded ≈2.3× · (c) M-3b off the exemplar · (d) P4 bar before P4; M-3a ✅ 2026-10-10; M-3b split 2026-10-12, M-3b-i ✅ 2026-10-12; M-3b-ii split, M-3b-ii-a ✅ 2026-10-12; next M-3b-ii-b (opus, QC mask then the wind vitals)"
 campaigns: [campaign_atlantis_genesis]
-mission: m3b_ii_b   # QUEUED (opus; QC mask + station offsets ruled first, then the wind vitals); M-3b-ii-a ✅ 2026-10-12 (core 0.10.1 NDBCStdmet + weekly_count_lt + QC flags · conform item 9 supersession · FKNMS wind fetched, Keys-wide index · III 0/1/8/3); M-3b-ii split 2026-10-12; M-3b-i ✅ 2026-10-12 (atl_v0 0.9.0 · 126 controls · core 0.9.0 hypotheses · coral_reef ledger 26 rows, 14 reviewed · III 0/2/8/2); M-3b split 2026-10-12; M-3a ✅ 2026-10-10 (core 0.8.0 discover · skill · exemplar + FKNMS runs · GREEN cap counted-once · CEL ack staged · III 0/2/7/3); M-2c-ii ✅ 2026-10-08 (FKNMS v3 · T11 falsified as worded on FKNMS, proposed for P3 gate · III 11/11); M-2c-i ✅ 2026-10-08 (core 0.7.0 · atl_v0 0.8.0 · board v4 · III 10/10); M-2c split 2026-10-08; P2 gate ✅ 2026-10-08 (conditional GO P3; opus decision brief + III review of the gate case, PASS-WITH-FINDINGS 0/6/4/2); M-2b ✅ 2026-10-08 (board v2 · core 0.6.1 · atl_v0 0.7.0 · III 8/8); M-2a-ii ✅ 2026-10-08 (forked · fetched · conforms · III 9/9 · core 0.5.3); M-1f ✅ 2026-10-07 (board v3); M-2a-i ✅ 2026-10-06; M-2a split 2026-10-06; M-1e ✅ 2026-10-03 (board v2); P1 gate ✅ 2026-10-03 (conditional GO); M-1d-ii ✅ · M-1d-i ✅ · M-1b-ii-b ✅ 2026-10-03; M-1b-ii-a ✅ · M-1b-i ✅ · M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
+mission: m3b_ii_b_1   # ACTIVE 2026-10-15 (opus; M-3b-ii-b split at open, ruling 3: ii-b-1 core mask · offsets · scan / ii-b-2 vitals · v4 · SHAP); obligation 6 ruled (mask qc_low_ratio only · train offsets vs SANF1 · SMKF1 cut after its gap); M-3b-ii-a ✅ 2026-10-12 (core 0.10.1 NDBCStdmet + weekly_count_lt + QC flags · conform item 9 supersession · FKNMS wind fetched, Keys-wide index · III 0/1/8/3); M-3b-ii split 2026-10-12; M-3b-i ✅ 2026-10-12 (atl_v0 0.9.0 · 126 controls · core 0.9.0 hypotheses · coral_reef ledger 26 rows, 14 reviewed · III 0/2/8/2); M-3b split 2026-10-12; M-3a ✅ 2026-10-10 (core 0.8.0 discover · skill · exemplar + FKNMS runs · GREEN cap counted-once · CEL ack staged · III 0/2/7/3); M-2c-ii ✅ 2026-10-08 (FKNMS v3 · T11 falsified as worded on FKNMS, proposed for P3 gate · III 11/11); M-2c-i ✅ 2026-10-08 (core 0.7.0 · atl_v0 0.8.0 · board v4 · III 10/10); M-2c split 2026-10-08; P2 gate ✅ 2026-10-08 (conditional GO P3; opus decision brief + III review of the gate case, PASS-WITH-FINDINGS 0/6/4/2); M-2b ✅ 2026-10-08 (board v2 · core 0.6.1 · atl_v0 0.7.0 · III 8/8); M-2a-ii ✅ 2026-10-08 (forked · fetched · conforms · III 9/9 · core 0.5.3); M-1f ✅ 2026-10-07 (board v3); M-2a-i ✅ 2026-10-06; M-2a split 2026-10-06; M-1e ✅ 2026-10-03 (board v2); P1 gate ✅ 2026-10-03 (conditional GO); M-1d-ii ✅ · M-1d-i ✅ · M-1b-ii-b ✅ 2026-10-03; M-1b-ii-a ✅ · M-1b-i ✅ · M-0 ✅ · M-1a ✅ · M-1c ✅ (2026-10-02)
 persona: proteus   # RULED 2026-10-02 (ADR-001 ratified)
 last_session: session_stanley_20261013_011418_m3b_ii_a_ndbc_fetch (opus)
 created: 2026-09-23
-updated: 2026-10-12
+updated: 2026-10-15
 last_edited_by: agent_proteus
 tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_complete, m1b_ii_a_complete, m1b_ii_b_complete, m1d_i_complete, m1d_ii_complete, p1_gate_met, p2_conditional_go, m1e_complete, board_v2, atl_v0_0_4_0, m2a_split, m2a_i_complete, atl_v0_0_5_0, core_0_4_0, crw_built, m1f_complete, board_v3, atl_v0_0_6_0, core_0_5_0, m2a_ii_complete, core_0_5_1, core_0_5_2, core_0_5_3, floridakeyscoral_forked, floridakeyscoral_fetched, m2b_complete, core_0_6_0, core_0_6_1, atl_v0_0_7_0, floridakeyscoral_on_board, p2_gate_met, p3_conditional_go, p3_open, m2c_split, m2c_i_complete, core_0_7_0, atl_v0_0_8_0, board_v4, m2c_ii_complete, fknms_v3, p2_condition_a_met, t11_falsified_fknms_proposed, m3a_complete, core_0_8_0, discover_built, green_cap_ruled, m3b_split, m3b_i_complete, atl_v0_0_9_0, core_0_9_0, hypothesis_ledger, envo_bound, wind_ruled, m3b_ii_split, m3b_ii_a_complete, core_0_10_0, core_0_10_1, ndbc_built, wind_fetched, qc_flags]
 ---
@@ -39,6 +39,11 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
    `who/governance/contribution_guide.md` (draft).
 
 ## ⏭ QUEUED — Next Live Session
+
+> **2026-10-15: M-3b-ii-b split at open** (ruling 3), and **M-3b-ii-b-1 is active** (core 0.11.0: mask · offsets · val-only
+> scan). Rulings 1–2 (obligation 6): the mask is `qc_low_ratio` only; offsets are fitted on train against SANF1; SMKF1 is
+> cut after its gap; SANF1-only is the sensitivity. Cards: `missions/mission_m3b_ii_b_{1_core_mask_offsets_scan,2_realise_and_test}.md`.
+> What follows is the M-3b-ii-a close, kept until ii-b-1 closes.
 
 **M-3b-ii-a ✅ 2026-10-12** (opus; M-3b-ii split at open, ruling 1):
 - **Delivered:**
