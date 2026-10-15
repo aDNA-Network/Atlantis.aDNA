@@ -154,6 +154,7 @@ def _stuck_days(ok: pd.DataFrame, hours: int) -> pd.DatetimeIndex:
 
 
 class NDBCStdmet(Fetcher):
+    FLAG_COLUMNS = ("qc_low_ratio", "qc_stuck")   # what a stream may name in `mask_columns` (registry R5)
     protocol = "ndbc_stdmet"
     endpoint = "https://www.ndbc.noaa.gov/data/historical/stdmet/"
     spec_required = ("stations", "years", "variable")

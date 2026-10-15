@@ -22,6 +22,13 @@ def normalise(inst: Instance, stream_id: str, raw: pd.DataFrame, grid=None) -> p
     shape, cols = spec["shape"], spec["columns"]
     df = pd.DataFrame({"date": pd.to_datetime(raw[cols["date"]]).values,
                        "value": pd.to_numeric(raw[cols["value"]], errors="coerce").values})
+    for c in spec.get("mask_columns") or []:   # M-3b-ii-b-1: the flags travel with the rows; the evaluator applies them
+        if c not in raw.columns:
+            raise ValueError(f"{stream_id}: mask column {c!r} is declared but absent from the artifact")
+        f = raw[c]
+        if f.isna().any() or not f.isin([True, False]).all():
+            raise ValueError(f"{stream_id}: mask column {c!r} must be boolean with no gaps (an unknown flag is not a pass)")
+        df[c] = f.astype(bool).values
     if shape == "point":
         grid = grid or make_grid(inst)
         df["unit"] = grid.assign(raw[cols["lat"]].values, raw[cols["lon"]].values)
@@ -79,7 +86,9 @@ def evaluator(inst: Instance, sid: str, frames: dict, units, weeks) -> Evaluator
     consts[grammar.EVENT_CONSTANT] = float(inst.event["threshold"])
     return Evaluator(sid, frames[sid], spec["shape"], _weekly_index(weeks, frames[sid]), units, consts,
                      climatology=inst.climatology(sid), stations=spec.get("stations"),
-                     weeks_since_cap=inst.cfg.get("vitals", {}).get("weeks_since_cap", 104))
+                     weeks_since_cap=inst.cfg.get("vitals", {}).get("weeks_since_cap", 104),
+                     mask_columns=spec.get("mask_columns"), station_windows=spec.get("station_windows"),
+                     station_offsets=spec.get("station_offsets"))
 
 
 def build(inst: Instance, frames: dict, with_label: bool = True) -> tuple[pd.DataFrame, dict]:

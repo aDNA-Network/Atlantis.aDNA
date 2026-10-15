@@ -2,9 +2,12 @@
 
 Kinds are explicit (`Obs` · `Daily` · `Weekly` · float) and every function checks what it receives, so a transform that
 type-checks in the grammar but mixes kinds fails loudly here, at registry-check time on synthetic data (selftest).
-Every operation looks only backward in time — the grammar has no forward op. The label lives in `atlantis_core.label`,
+Every operation looks only backward in time — the grammar has no forward op. Before any op reads `value`, a stream's
+declared `mask_columns` blank the flagged rows, `station_windows` drop rows outside a station's window, and
+`station_offsets` subtract each station's era-fitted offset (M-3b-ii-b-1; `_prepared`, `fit_offsets`). The label lives in `atlantis_core.label`,
 the only code that looks past t. (Climatology is the declared exception: `anomaly()` uses its whole era, future weeks
-included, for weeks inside that era — the self-test reports it and checks the era ends before validation.)
+included, for weeks inside that era — the self-test reports it and checks the era ends before validation. An offset era
+is the same kind of exception, reported the same way.)
 """
 from __future__ import annotations
 
@@ -56,11 +59,15 @@ class Evaluator:
     constants, event threshold, weeks_since cap."""
 
     def __init__(self, stream_id, data, shape, weekly_index, units, constants, climatology=None, stations=None,
-                 weeks_since_cap=104):
+                 weeks_since_cap=104, mask_columns=(), station_windows=None, station_offsets=None):
         self.stream_id, self.data, self.shape = stream_id, data, shape
         self.weekly_index, self.units = weekly_index, list(units)
         self.constants, self.climatology, self.stations = dict(constants), climatology, stations or {}
         self.cap = int(weeks_since_cap)
+        self.mask_columns = list(mask_columns or ())
+        self.station_windows = dict(station_windows or {})
+        self.station_offsets = station_offsets      # {reference, era: [y0, y1], min_days} | None
+        self.offsets = None                          # fitted: {station: {"offset": m/s, "n_days": paired era days}}
         self._cache = {}
 
     # -- entry -------------------------------------------------------------------------------------------------------
@@ -93,7 +100,7 @@ class Evaluator:
         return getattr(self, f"f_{fn}")(*args, window=window)
 
     def _value(self):
-        d = self.data
+        d = self._prepared()
         if self.shape == "point":
             return Obs(d[["unit", "date", "value"]].assign(week=week_start(d["date"]).values)
                        .rename(columns={"value": "v"}))
@@ -101,7 +108,60 @@ class Evaluator:
         wide = d.pivot_table(index="date", columns=key, values="value", aggfunc="mean")
         wide = wide.reindex(pd.date_range(wide.index.min(), wide.index.max(), freq="D"))
         wide.columns.name = None
+        if self.station_offsets:
+            self.offsets = self.fit_offsets(wide)
+            wide = wide - pd.Series({s: o["offset"] for s, o in self.offsets.items()}).reindex(wide.columns).fillna(0.0)
         return Daily(wide, "unit" if key == "unit" else "station")
+
+    def _prepared(self) -> pd.DataFrame:
+        """The stream's rows as the vitals may read them (M-3b-ii-b-1). A row outside its station's declared window is
+        dropped; a row any declared mask column flags has its value set to NaN — masked, never zero-filled, so an
+        aggregate skips it and a count does not see it. A flag that is not exactly True (NaN, an inserted row without the
+        column) does not mask: the artifact's flags were checked at `normalise`."""
+        d = self.data
+        if self.station_windows and self.shape == "station_daily":
+            keep = pd.Series(True, index=d.index)
+            for st, (lo, hi) in self.station_windows.items():
+                at = d["station"].eq(st)
+                if lo is not None:
+                    keep &= ~(at & (d["date"] < pd.Timestamp(lo)))
+                if hi is not None:
+                    keep &= ~(at & (d["date"] > pd.Timestamp(hi)))
+            d = d[keep]
+        if self.mask_columns:
+            flagged = np.zeros(len(d), dtype=bool)
+            for c in self.mask_columns:
+                flagged |= d[c].eq(True).to_numpy() if c in d else False
+            if flagged.any():
+                d = d.copy()
+                d.loc[flagged, "value"] = np.nan
+        return d
+
+    def fit_offsets(self, wide: pd.DataFrame) -> dict:
+        """Each station's additive offset against the reference: the mean of (station − reference) over the era's days on
+        which both report (after the mask and the windows). It is subtracted before the station → unit mean, so a change in
+        which stations report does not move the unit's level by their bias. The era is fitted once and used everywhere,
+        like a climatology era (registry R7 keeps it before validation; the self-test reports its dependence). A station of
+        the map with fewer than `min_days` paired era days is refused by name — never given offset 0."""
+        o = self.station_offsets
+        ref, (y0, y1), nmin = o["reference"], (int(o["era"][0]), int(o["era"][1])), int(o.get("min_days", 30))
+        if ref not in wide.columns or wide[ref].notna().sum() == 0:
+            raise ValueError(f"{self.stream_id}: station_offsets reference {ref} has no data")
+        era = wide[(wide.index.year >= y0) & (wide.index.year <= y1)]
+        out = {}
+        for st in wide.columns:
+            if st not in self.stations:
+                continue
+            if st == ref:
+                out[st] = {"offset": 0.0, "n_days": int(era[ref].notna().sum())}
+                continue
+            diff = (era[st] - era[ref]).dropna()
+            if len(diff) < nmin:
+                raise ValueError(f"{self.stream_id}: station {st} has {len(diff)} days paired with {ref} in the offset era "
+                                 f"{y0}–{y1} (< min_days {nmin}) — no offset can be fitted; cut it with station_windows, or "
+                                 f"widen the era")
+            out[st] = {"offset": float(diff.mean()), "n_days": int(len(diff))}
+        return out
 
     # -- helpers -----------------------------------------------------------------------------------------------------
     def _to_units(self, d: Daily) -> pd.DataFrame:

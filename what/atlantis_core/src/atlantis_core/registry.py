@@ -9,12 +9,18 @@ rule). It cannot see across files or into the transform grammar. This does:
       (re-asserted: load_instance does not run linkml-validate)
   R4  a lever vital names a non-blank owner (re-asserted: the schema rule's null hole was M-1c's Finding 1)
   R5  every declared stream has an engine spec in atlantis.yaml (shape · columns · artifact) and a known shape;
-      a station-keyed stream maps its stations to units; `fetcher` (if set) names a known fetcher class
+      a station-keyed stream maps its stations to units; `fetcher` (if set) names a known fetcher class.
+      M-3b-ii-b-1: `mask_columns` is a list of names (within the fetcher's FLAG_COLUMNS when the fetcher declares them);
+      `station_windows` and `station_offsets` sit only on a station-keyed stream that is not the event stream, name
+      mapped stations, and have the right shape (windows [from|null, to|null], from ≤ to; offsets {reference, era [y0, y1],
+      min_days ≥ 1})
   R6  `label.event` names a declared event; its direction is above | below; the label signal aggregates the right way
       (`below` with weekly_max, or `above` with weekly_min, means "a week whose max ≤ thr" — rejected)
   R7  every climatology era ends before validation starts (a training-era normal must not reach val/test weeks), and
       before the first rolling-origin TEST year — unless `climatology_policy.rolling_origin: refit_per_fold` is declared,
-      which is an obligation on eval (M-1b-ii) recorded in `inst.obligations`, not a waiver
+      which is an obligation on eval (M-1b-ii) recorded in `inst.obligations`, not a waiver. A `station_offsets` era
+      obeys the same two bounds, with no refit policy: an offset era that reaches validation or a rolling-origin test year
+      is refused (M-3b-ii-b-1)
   R8  the surveillance channel is declared or declared absent (contract item 5, T5; M-1d-i). Present: a stream with
       `surveillance_channel: true`, a vital in `group: surveillance` that reads one, and an `eval.ablations` entry dropping
       that group. Absent: `atlantis.yaml → surveillance: {declared: absent, reason: <non-blank>}`, and then no stream claims
@@ -34,6 +40,60 @@ SHAPES = {"point": ("date", "value", "lat", "lon"), "unit_daily": ("date", "valu
 
 class RegistryError(ValueError):
     pass
+
+
+def _stream_rows_errors(sid, spec, stream, inst, fetchers) -> list:
+    """R5 for the keys that change which rows, and which values, a stream's vitals read (M-3b-ii-b-1)."""
+    import pandas as pd
+    errs = []
+    mc = spec.get("mask_columns")
+    if mc is not None:
+        if not (isinstance(mc, list) and mc and all(isinstance(c, str) and c for c in mc)):
+            errs.append(f"R5 {sid}: mask_columns must be a non-empty list of column names, got {mc!r}")
+        else:
+            allowed = getattr(fetchers.get(stream.get("fetcher")), "FLAG_COLUMNS", None)
+            bad = [c for c in mc if allowed is not None and c not in allowed]
+            if bad:
+                errs.append(f"R5 {sid}: mask_columns {bad} are not flags {stream.get('fetcher')} writes {list(allowed)}")
+    stations = spec.get("stations") or {}
+    is_event = sid == (inst.events.get((inst.cfg.get("label") or {}).get("event")) or {}).get("event_variable_stream")
+    for key in ("station_windows", "station_offsets"):
+        if spec.get(key) is None:
+            continue
+        if spec.get("shape") != "station_daily":
+            errs.append(f"R5 {sid}: {key} on a {spec.get('shape')} stream — station-keyed streams only"); continue
+        if is_event:
+            errs.append(f"R5 {sid}: {key} on the event stream would re-define the event — not supported"); continue
+    sw = spec.get("station_windows")
+    if sw is not None and spec.get("shape") == "station_daily":
+        if not isinstance(sw, dict) or not sw:
+            errs.append(f"R5 {sid}: station_windows must map station → [from, to]")
+        else:
+            for st, w in sw.items():
+                if st not in stations:
+                    errs.append(f"R5 {sid}: station_windows names {st!r}, not in the stations map"); continue
+                if not (isinstance(w, (list, tuple)) and len(w) == 2) or w[0] is None and w[1] is None:
+                    errs.append(f"R5 {sid}: station_windows[{st}] must be [from, to] with at least one date, got {w!r}"); continue
+                try:
+                    lo, hi = (None if x is None else pd.Timestamp(str(x)) for x in w)
+                except ValueError as ex:
+                    errs.append(f"R5 {sid}: station_windows[{st}] {w!r}: {ex}"); continue
+                if lo is not None and hi is not None and lo > hi:
+                    errs.append(f"R5 {sid}: station_windows[{st}] runs backwards ({w[0]} > {w[1]})")
+    so = spec.get("station_offsets")
+    if so is not None and spec.get("shape") == "station_daily":
+        era = so.get("era") if isinstance(so, dict) else None
+        md = so.get("min_days", 30) if isinstance(so, dict) else None
+        if not isinstance(so, dict) or set(so) - {"reference", "era", "min_days"}:
+            errs.append(f"R5 {sid}: station_offsets must be {{reference, era, min_days}}, got {so!r}")
+        elif so.get("reference") not in stations:
+            errs.append(f"R5 {sid}: station_offsets reference {so.get('reference')!r} is not in the stations map")
+        elif not (isinstance(era, (list, tuple)) and len(era) == 2 and all(isinstance(y, int) and not isinstance(y, bool)
+                                                                          for y in era) and era[0] <= era[1]):
+            errs.append(f"R5 {sid}: station_offsets era must be [first_year, last_year] (ints, first ≤ last), got {era!r}")
+        elif isinstance(md, bool) or not isinstance(md, int) or md < 1:
+            errs.append(f"R5 {sid}: station_offsets min_days must be an int ≥ 1, got {md!r}")
+    return errs
 
 
 def check(inst) -> None:
@@ -87,6 +147,7 @@ def check(inst) -> None:
             errs.append(f"R5 {sid}: station_daily without a stations → units map")
         if s.get("fetcher") and s["fetcher"] not in FETCHERS:
             errs.append(f"R5 {sid}: fetcher {s['fetcher']!r} unknown (known: {sorted(FETCHERS)})")
+        errs += _stream_rows_errors(sid, spec, s, inst, FETCHERS)
     # R6
     ev = cfg.get("label", {}).get("event")
     if ev not in inst.events:
@@ -108,6 +169,16 @@ def check(inst) -> None:
     ro = split.get("rolling_origin_years") or []
     refit = (cfg.get("climatology_policy") or {}).get("rolling_origin") == "refit_per_fold"
     inst.obligations = []
+    for sid, spec in (cfg.get("streams") or {}).items():
+        off = spec.get("station_offsets")
+        era = off.get("era") if isinstance(off, dict) else None
+        if not (isinstance(era, (list, tuple)) and len(era) == 2 and all(isinstance(y, int) for y in era)):
+            continue                                                       # R5 reports the shape
+        if val_start is not None and era[1] >= int(val_start):
+            errs.append(f"R7 {sid}: station_offsets era ends {era[1]} ≥ val_start {val_start}")
+        if ro and era[1] >= min(ro) + 1:
+            errs.append(f"R7 {sid}: station_offsets era ends {era[1]} but rolling-origin folds test "
+                        f"{[y + 1 for y in ro if y + 1 <= era[1]]} — end the era before the first fold's test year")
     for sid, era in (cfg.get("climatology") or {}).items():
         if val_start is not None and int(era[1]) >= int(val_start):
             errs.append(f"R7 {sid}: climatology era ends {era[1]} ≥ val_start {val_start}")

@@ -39,7 +39,7 @@ from atlantis_core.eval.metrics import (THRESHOLD_FROM, at_alert_rates, climatol
                                         trend_baseline)
 from atlantis_core.eval.rolling import clipped_eras
 
-__all__ = ["run", "split", "groups", "ObligationError", "check_fold_selection", "eval_modes", "embargo_weeks", "embargo",
+__all__ = ["run", "split", "select", "groups", "ObligationError", "check_fold_selection", "eval_modes", "embargo_weeks", "embargo",
            "check_label_windows", "horizon_spill", "climatology_at_budget"]
 
 ROLLING_SELECTION = ("per_fold", "full_model")
@@ -193,13 +193,22 @@ def _embargo_of(inst) -> tuple[int, int]:
     return embargo_weeks(inst.cfg["split"], H), H
 
 
+def select(L, train, val, s: dict, E: int):
+    """The selection fit, alone: train embargoed against val, stopped on val embargoed against test. `_fit_main` and the
+    val-only scan (`atlantis_core.scan`, M-3b-ii-b-1) both call this — one construction, so the scan's val numbers are the
+    ones a run's selection model would have produced. Returns the recorder (what was ACTUALLY fitted on), the model, the
+    learner's selection info and the stop set."""
+    R = FitRecorder(L)
+    stop = embargo(val, s["test_start"], E)
+    vm, _, info = R.fit(embargo(train, s["val_start"], E), stop)
+    return R, vm, info, stop
+
+
 def _fit_main(L, train, val, s: dict, E: int, H: int, where: str = ""):
     """Select on train ⊣ the stop set (val), refit on train ∪ stop set ⊣ test; each set embargoed against the period it must
     not see, each boundary checked on what the learner received. The refit is composed here (the learner's own `final`
     is discarded): `refit_fixed` is the same construction, and with the embargo off it receives concat([train, val])."""
-    R = FitRecorder(L)
-    stop = embargo(val, s["test_start"], E)
-    vm, _, info = R.fit(embargo(train, s["val_start"], E), stop)
+    R, vm, info, stop = select(L, train, val, s, E)
     full = pd.concat([train, val])
     final = R.refit_fixed(pd.concat([train, stop]), info)
     (_, f_tr, f_va), = [f for f in R.fits if f[0] == "fit"]     # what was ACTUALLY fitted on (C-023)

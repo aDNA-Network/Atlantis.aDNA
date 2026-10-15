@@ -37,6 +37,9 @@ and once:
       normal is one statistic over the whole era, so the same calendar week in EVERY earlier era year depends on it.
       Asserted: only anomaly() vitals move. Reported: cells, max |Δ|, real vs float residue (pandas' running-sum rolling
       mean leaves ~1e-15). Registry R7 keeps eras before validation.
+      M-3b-ii-b-1, the same for a `station_offsets` era: perturbing the NON-reference stations in the week after a
+      mid-era Monday moves the fitted offsets, so this stream's vitals move at earlier weeks. Asserted: only this stream's
+      vitals move. Reported: the cells. t must lie after every offset era (else C1 would be measuring the era).
 
 The event stream may have any shape (M-1d-i: a station-keyed `below` event — hypoxia — was the dry run's first finding;
 until then the synthetic world placed event values against the threshold, and spiked them, for point streams only). Its
@@ -88,8 +91,14 @@ def patients(inst: Instance) -> list[dict]:
     return ps
 
 
+def offset_eras(inst: Instance) -> dict:
+    """stream → (y0, y1) for every declared `station_offsets` era (M-3b-ii-b-1)."""
+    return {sid: (int(sp["station_offsets"]["era"][0]), int(sp["station_offsets"]["era"][1]))
+            for sid, sp in (inst.cfg.get("streams") or {}).items() if sp.get("station_offsets")}
+
+
 def _span(inst: Instance, t: pd.Timestamp):
-    eras = list((inst.cfg.get("climatology") or {}).values())
+    eras = list((inst.cfg.get("climatology") or {}).values()) + list(offset_eras(inst).values())
     te = pd.Timestamp(inst.cfg["selftest"].get("in_era_week", t))
     first = min([pd.Timestamp(f"{e[0]}-01-01") for e in eras] + [t - W(120), te - W(120)])
     return first, t + W(30)
@@ -169,6 +178,26 @@ def gap_week(inst: Instance, sid: str) -> int:
     return free[0] if free else max(lags) + 1
 
 
+def count_lt_centre(inst: Instance, sid: str) -> float | None:
+    """The median threshold of this stream's `weekly_count_lt` vitals, or None (M-3b-ii-b-1). The synthetic daily
+    values of such a stream are centred on it: a world wholly above (FKNMS calm 2–6 m/s against values near 1000) counts
+    0 calm days whatever is perturbed, and C0 would call the vital dead for the world's fault, not the vital's."""
+    import ast
+    consts = dict(inst.cfg.get("constants") or {})
+    consts[grammar.EVENT_CONSTANT] = float(inst.event["threshold"])
+    thr = []
+    for v in inst.vitals:
+        if v["stream_ref"] != sid:
+            continue
+        for n in ast.walk(grammar.parse(v["transform"], list(inst.cfg.get("constants") or {}), v["vital_id"])):
+            if isinstance(n, ast.Call) and n.func.id == "weekly_count_lt" and len(n.args) == 2:
+                a, sign = n.args[1], 1.0
+                if isinstance(a, ast.UnaryOp):
+                    a, sign = a.operand, -1.0
+                thr.append(sign * (float(a.value) if isinstance(a, ast.Constant) else float(consts[a.id])))
+    return float(np.median(thr)) if thr else None
+
+
 def synth(inst: Instance, t: pd.Timestamp, seed: int = 0, series: str | None = None) -> dict:
     """Raw frames in the instance's own columns, normalised through the real path."""
     rng = np.random.default_rng(seed)
@@ -225,6 +254,12 @@ def synth(inst: Instance, t: pd.Timestamp, seed: int = 0, series: str | None = N
                          rng.uniform(*_event_band(ev), len(days)))       # the safe side of the threshold, every day
                     key = cols["unit"] if shape == "unit_daily" else cols["station"]
                     parts.append(pd.DataFrame({cols["date"]: days[m], key: ent, cols["value"]: v[m]}))
+                elif (c := count_lt_centre(inst, sid)) is not None:
+                    # M-3b-ii-b-1: a count-below vital needs days on both sides of its threshold, or C0 cannot bite
+                    a = max(abs(c), 1.0)
+                    v = c + 0.5 * a * np.sin(2 * np.pi * doy / 365.25) + rng.normal(0, 0.25 * a, len(days))
+                    key = cols["unit"] if shape == "unit_daily" else cols["station"]
+                    parts.append(pd.DataFrame({cols["date"]: days[m], key: ent, cols["value"]: v[m]}))
                 elif shape == "unit_daily":
                     v = 25 + 3 * np.sin(2 * np.pi * doy / 365.25) + rng.normal(0, 1, len(days))
                     parts.append(pd.DataFrame({cols["date"]: days[m], cols["unit"]: ent, cols["value"]: v[m]}))
@@ -234,6 +269,8 @@ def synth(inst: Instance, t: pd.Timestamp, seed: int = 0, series: str | None = N
             if not parts:
                 raise ValueError(f"no selftest patient is fed by {sid}; choose patients every stream reaches")
             raw = pd.concat(parts, ignore_index=True)
+        for c in spec.get("mask_columns") or []:      # M-3b-ii-b-1: nothing flagged in the clean world
+            raw[c] = False
         out[sid] = normalise(inst, sid, raw, grid)
     return out
 
@@ -438,6 +475,11 @@ def run(inst: Instance, verbose: bool = True) -> dict:
     t = pd.Timestamp(st["week"]); H = int(inst.event["horizon"])
     if t != week_start([t]).iloc[0]:
         raise ValueError(f"selftest.week {t.date()} is not a Monday")
+    lmax = max([int(v.get("lag") or 0) for v in inst.vitals] + [0])
+    late = {sid: e for sid, e in offset_eras(inst).items() if t - W(lmax + 1) <= pd.Timestamp(f"{e[1]}-12-31")}
+    if late:
+        raise ValueError(f"selftest.week {t.date()} is not clear of the station_offsets era of {late} by the longest lag "
+                         f"+ 1 ({lmax + 1} weeks) — C0/C1/C8 would be measuring the era; choose a later week")
     ps = patients(inst); P = ps[0]["unit"]; neighbours = [p["unit"] for p in ps[1:]]
     ucol = inst.cfg["grid"].get("unit_column", "unit")
     feats, ev_sid = inst.feature_names, inst.event["event_variable_stream"]
@@ -605,8 +647,45 @@ def run(inst: Instance, verbose: bool = True) -> dict:
         if not mv:
             say("       nothing")
         say("     → only anomaly() vitals; declared: the era normal includes those weeks; eras end before validation (R7).")
+    res["C6_offsets"] = _c6_offsets(inst, frames, base_tab, B, feats, vit, consts, say)
     say(f"✅ atlantis_core self-test passed — {len(inst.streams)} streams, {len(feats)} vitals, {len(ps)} patients, horizon {H}")
     return res
+
+
+def _c6_offsets(inst, frames, base_tab, B, feats, vit, consts, say) -> dict:
+    """C6 for a `station_offsets` era (M-3b-ii-b-1), reported. The perturbation lands on the NON-reference stations only:
+    a spike on every station moves the paired differences not at all, and would report nothing for the wrong reason."""
+    out = {}
+    for sid, (y0, y1) in offset_eras(inst).items():
+        mine = sorted(f for f, v in vit.items() if v["stream_ref"] == sid
+                      and grammar.uses_value(grammar.parse(v["transform"], consts, f)))
+        if not mine:
+            out[sid] = "n/a: no vital reads this stream"
+            say(f"C6 – offsets {sid}: n/a, no vital reads this stream (the era is fitted, and nothing uses it yet)")
+            continue
+        ref = inst.stream_spec(sid)["station_offsets"]["reference"]
+        te = week_start([pd.Timestamp(f"{(y0 + y1) // 2}-07-01")]).iloc[0]
+        f = {k: v.copy() for k, v in frames.items()}
+        d = f[sid]
+        sel = d["date"].between(te + W(1), te + W(1) + pd.Timedelta(days=6)) & d["station"].ne(ref)
+        if not sel.any():
+            raise LeakError(f"C6 offsets {sid}: no non-reference station reports in the synthetic era week {(te + W(1)).date()}")
+        d.loc[sel, "value"] = d.loc[sel, "value"] + 100.0 * (float(d["value"].abs().mean()) + 1.0)
+        mv = moved_table(base_tab, B(f), feats, upto=te)
+        stray = sorted(set(mv) - set(mine))
+        if stray:
+            raise LeakError(f"C6 offsets {sid}: an in-era perturbation of this stream moved other streams' vitals before it: "
+                            f"{ {k: mv[k] for k in stray} }")
+        out[sid] = {k: list(v) for k, v in mv.items()}
+        say(f"C6 ⚠ REPORTED offsets {sid}: non-reference stations perturbed in era week {(te + W(1)).date()} move, at weeks ≤ "
+            f"{te.date()}:")
+        for k, (n, dmax, w0, w1, nreal) in sorted(mv.items()):
+            say(f"       {k}: {n} cells ({nreal} real dependence), max |Δ| {dmax:.2e}, {w0} → {w1}")
+        if not mv:
+            say("       nothing (a count vital may not cross its threshold for a small offset shift)")
+        say(f"     → only {sid}'s vitals; declared: the offsets are one statistic over {y0}–{y1}; the era ends before "
+            f"validation (R7).")
+    return out
 
 
 # -- the receipt (M-1d-i) ---------------------------------------------------------------------------------------------
@@ -626,7 +705,9 @@ def write_receipt(inst: Instance, res: dict) -> Path:
     rec = {"receipt": "atlantis_core.selftest", "passed": True, "semantic_hash": semantic_hash(inst),
            "core_version": __version__, "selftest_code": selftest_code_hash(), "streams": sorted(inst.streams), "n_vitals": res["vitals"],
            "patients": res["patients"], "horizon": int(inst.event["horizon"]),
-           **{k: res[k] for k in ("event_series", "refractory_weeks", "C9", "C6_status") if k in res},   # what run() computed (M-2a-i, III F-3)
+           **{k: res[k] for k in ("event_series", "refractory_weeks", "C9", "C6_status") if k in res},
+           **({"C6_offsets": {k: (v if isinstance(v, str) else sorted(v)) for k, v in res["C6_offsets"].items()}}
+              if res.get("C6_offsets") else {}),   # what run() computed (M-2a-i, III F-3)
            "passed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
     tmp = out.with_suffix(".tmp"); tmp.write_text(json.dumps(rec, indent=1) + "\n"); tmp.rename(out)
     return out

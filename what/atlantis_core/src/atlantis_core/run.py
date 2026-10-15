@@ -90,6 +90,9 @@ def main(argv=None) -> int:
     provenance = {"atlantis_core": __version__, "semantic_hash": semantic_hash(inst),
                   "config_bytes_md5": {p.name: bytes_md5(p) for p in (inst.root / "atlantis.yaml", inst.root / "config.yaml") if p.exists()},
                   "features_report": report, "run_at": pd.Timestamp.now("UTC").isoformat()}
+    if any(sp.get("station_offsets") for sp in inst.cfg["streams"].values()):   # M-3b-ii-b-1: fitted offsets, reported
+        from atlantis_core.scan import station_offsets
+        provenance["station_offsets"] = station_offsets(inst, frames)
 
     res, art = eval_run(inst, model_df, panel, fold_tables=folds, sensitivity_df=sens_df)
     res.update(provenance)
