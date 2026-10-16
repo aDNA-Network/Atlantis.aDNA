@@ -43,7 +43,7 @@ tags: [mission, m3b_ii_b_1, p3, opus, core, qc_mask, station_offsets, scan, fknm
 4. **`atlantis_core.scan`**: per value of one constant, it builds, labels, **drops the test years first**, and runs the
    `_fit_main` selection fit (train, stopped on val). It writes val log-loss and AUPRC at the val base rate as a GREEN
    table. It never refits on train ∪ val and never scores test. The early-stop optimism is disclosed in the output.
-5. **FKNMS:** declare rulings 1–2 on the wind stream, bump the pin, and re-run the self-test (a new receipt hash: v4 is
+5. **FKNMS:** declare rulings 1–2 and **ruling 4** (SANF1 window from 2006-05-01, offset era [2006, 2013]; found at resume) on the wind stream, bump the pin, and re-run the self-test (a new receipt hash: v4 is
    written under it, not `81bca06518`). Run `fetch --verify` and `conform --stage fetched`. Add a descriptive calm-share
    table to STATE: the ruled index vs SANF1-only, train / val / test. **No vitals.**
 

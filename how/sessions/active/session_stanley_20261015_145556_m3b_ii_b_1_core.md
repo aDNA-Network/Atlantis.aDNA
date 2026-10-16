@@ -56,8 +56,29 @@ intent: "M-3b-ii-b split at open → ii-b-1: core 0.11.0 — stream mask_columns
      val, and ≈ 0 in train and test: **the reference SANF1 appears to shift +0.3 in 2014–18**, where c is chosen. This is
      to be ruled. The cut costs 123 test days on which only SMKF1 reported. Script:
      `scratchpad/calm_table.py` (session-local; re-derive).
+- **Resumed after `/clear`** (same sitting, opus, 2026-10-15 ≈ 23:40Z; plan
+  `~/.claude/plans/please-read-the-claude-md-partitioned-naur.md`). **C-042 miss:** the token counter was not read at
+  `2e4f8dd`; the pre-`/clear` total is unknown and is reported as unknown, not estimated.
+- **Finding 2 corrected (read-only diagnostic, year-by-year paired differences, mask + SMKF1 cut):** the reference does
+  **not** shift "+0.3 in 2014–18". **SANF1 steps ≈ +0.8 m/s at its return from the Jan–Apr 2006 outage** (the winter
+  after Wilma). All three other lights drop against it at once (MLRF1−SANF1 ≈ 0 → −0.87; LONF1−SANF1 −0.6 → −1.5;
+  SMKF1−SANF1 +0.6 → −0.2), while their mutual differences stay flat (LONF1−MLRF1 ≈ −0.6, SMKF1−MLRF1 ≈ +0.5 throughout).
+  The 1987–2013 era-mean straddles the break, and that is the val residual. The step is seasonal (larger in winter), so an
+  additive offset is approximate. A second shift sits in test: LONF1−SANF1 ≈ −1.4 in 2008–17, ≈ −0.9 in 2021–25.
+  Only two lights report there, so it cannot be attributed.
+- **Ruling 4 (operator, AskUserQuestion, 2026-10-15): window + re-fit, no core change.** SANF1 `station_windows
+  ['2006-05-01', null]`; offset era **[2006, 2013]** against post-break SANF1 (R7 holds: ends before val 2014 and the first
+  rolling-origin test year 2014). The SANF1-only sensitivity is windowed the same way. Works because `_prepared` applies
+  windows → mask → offsets.
+- **Full suite at `2e4f8dd`: 896 passed** (732 s, no timeout; 8 RuntimeWarnings, all from `test_scan_never_reads_test_years`'
+  poisoned vitals). C-035: recorded with its commit.
+- **Calm table under ruling 4** (scratch `calm_table.py`, which reads the declared FKNMS spec): the 2006 step is absorbed
+  in train (residual 0 by construction), but **SANF1's level moves at each outage**. Val residuals are **+0.2** for all
+  three lights (−0.3 before), and LONF1 is +0.48 in test. Recorded as limit (d) on the ii-b-2 card; the scale shift is
+  limit (e). Offsets: LONF1 −1.338 (1,913 d) · MLRF1 −0.735 (2,065) · SMKF1 −0.122 (2,064).
+- Token counter (this sitting, post-`/clear`, incl. harness context) ≈ 140 kT at the cards commit.
 - **Left:**
-  1. a full suite re-run (with no timeout) → record the count with its commit;
+  1. ~~a full suite re-run~~ done (with no timeout) → record the count with its commit;
   2. Step 5 in FKNMS: declare `mask_columns: [qc_low_ratio]`, `station_offsets {SANF1, [1987, 2013]}`,
      `station_windows {SMKF1: [null, 2015-08-09]}`; move `selftest.week` 2014-01-06 → 2014-03-03 (the era-clearance
      rule); bump the pin; self-test → new receipt; `fetch --verify` and conform; put the table above in FKNMS STATE;

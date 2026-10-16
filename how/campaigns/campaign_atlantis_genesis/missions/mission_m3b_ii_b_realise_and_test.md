@@ -35,6 +35,11 @@ tags: [mission, m3b_ii_b, p3, opus, shap, realisation, fknms, t7, t8, atlantis, 
 >    station-days are a recorded limit.
 > 2. **Station offsets fitted on train only, against SANF1. SMKF1 is cut after its 2016–17 gap**, since it has no
 >    train overlap from which to fit a post-gap offset. The SANF1-only index is the sensitivity.
+>
+> **Ruling 4** (operator, `AskUserQuestion`, 2026-10-15, during ii-b-1; amends ruling 2's era): the reference SANF1
+> steps ≈ +0.8 m/s at its return from the Jan–Apr 2006 outage. The other three lights stay flat against each other.
+> **SANF1 is windowed from 2006-05-01. The offset era is [2006, 2013] against post-break SANF1. The SANF1-only
+> sensitivity carries the same window.** No core change.
 
 **Split from** `mission_m3b_ii_realise_and_test.md` (M-3b-ii ruling 1). Starts from M-3b-ii-a's fetched, conformed
 stream `atl_stream_fkc_wind_ndbc_daily` (Keys-wide index, ruling 2).

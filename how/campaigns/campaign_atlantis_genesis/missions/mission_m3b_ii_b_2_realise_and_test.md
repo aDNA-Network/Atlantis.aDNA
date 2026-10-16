@@ -36,6 +36,24 @@ never scores test.
 - Read the ruled index's descriptive calm-share table and SANF1-only table in FKNMS STATE before reading any SHAP
   "support".
 - v4 is written under the receipt hash ii-b-1 recorded, not `81bca06518`.
+- **Ruling 4:** the ruled index and the SANF1-only sensitivity both start SANF1 at 2006-05-01. The offsets are fitted on
+  2006–2013.
+- **Recorded limits the write-up must disclose:**
+  - **(a)** SANF1's 2006 step is seasonal (larger in winter), so an additive offset is approximate.
+  - **(b)** A second shift sits in test: LONF1−SANF1 ≈ −1.4 in 2008–17 and ≈ −0.9 in 2021–25. Only these two lights
+    report there, so it cannot be attributed or corrected without reading test.
+  - **(d)** **SANF1's level moves at each of its outages**, not once:
+    - +0.8 after 2006;
+    - lower in 2014–15, after its 2013 gap;
+    - back by 2016–17.
+
+    Under the ruled offsets, the residual against SANF1 is 0 in train by construction, **+0.2 m/s for all three lights
+    in val**, and +0.48 for LONF1 in test. A constant offset cannot follow this, and a time-varying one would read val.
+  - **(e)** The ruled index sits on post-2006 SANF1's scale, ≈ +0.6 m/s above the unmasked mean. The calm share is
+    ≈ 5% at c = 3 and ≈ 16% at c = 4. The ruled grid c ∈ {2…6} is read on that scale, and c = 2 will be sparse. Say
+    so beside the scan table.
+  - **(c)** The val→test edge is by ISO week. The last val week holds 1–5 Jan of the first test year, and a val row's
+    label can read them. This is pre-existing in `run`, and the scan inherits it.
 - The SANF1-only sensitivity is a second run, reported beside v4 and not on the board as a separate entry, unless ruled.
 
 See the parent card for the full acceptance list.
