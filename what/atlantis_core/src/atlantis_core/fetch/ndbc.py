@@ -35,11 +35,14 @@ Reduction, per station and UTC day:
   - `qc_low_ratio`: the station's daily value divided by the median of the OTHER stations reporting that day; the
     centred rolling median of that ratio over `ratio_window_days` is below `low_ratio`. A failed anemometer reads as calm
     (LONF1 2020-02-27…06-04 read 0.14–0.20 × the others). The window is CENTRED, so the flag is a retrospective cleaning
-    rule that reads up to half a window ahead: a mask built from it is a ruling, not a vital, and the self-test does
-    not see it.
+    rule that reads up to half a window ahead. It describes the record and may NOT be masked on (R5).
+  - `qc_low_ratio_causal` (III M-3b-ii-b-1 F-5, operator ruling 7): the same rule over the TRAILING window (the day and
+    the `ratio_window_days` − 1 rows before it). The only flag a stream may name in `mask_columns`. Near a fault's onset
+    it flags later than the centred rule; at its end it flags longer.
   - `qc_stuck`: the day is touched by a run of identical consecutive valid observations spanning ≥ `stuck_hours`
-    distinct hours (a stuck sensor; most runs are at 0.0).
-  The summary counts flagged days per station and year. Which flags mask an index is the instance's ruling.
+    distinct hours (a stuck sensor; most runs are at 0.0). A run that crosses midnight flags the earlier day from the
+    later day's hours, so it is not maskable either.
+  The summary counts flagged days per station and year ([low_ratio, stuck, low_ratio_causal]). Which flags mask an index is the instance's ruling.
 
 **An absent year is confirmed, recorded, and never inferred from an empty reply (III F-3).** NDBC answers 404 for a
 station-year it does not hold (MLRF1 after 2019; SMKF1 2016–17). A 404 is asked once more after a backoff; two 404s are
@@ -154,7 +157,11 @@ def _stuck_days(ok: pd.DataFrame, hours: int) -> pd.DatetimeIndex:
 
 
 class NDBCStdmet(Fetcher):
-    FLAG_COLUMNS = ("qc_low_ratio", "qc_stuck")   # what a stream may name in `mask_columns` (registry R5)
+    FLAG_COLUMNS = ("qc_low_ratio_causal",)       # what a stream may name in `mask_columns` (registry R5)
+    # III M-3b-ii-b-1 F-5 (operator ruling 7): flags that read AFTER their day describe the record but may not mask it
+    LOOKAHEAD_FLAGS = {"qc_low_ratio": "a centred window reads up to half of ratio_window_days ahead — mask on "
+                                       "qc_low_ratio_causal",
+                       "qc_stuck": "a run that crosses midnight flags the earlier day from the later day's hours"}
     protocol = "ndbc_stdmet"
     endpoint = "https://www.ndbc.noaa.gov/data/historical/stdmet/"
     spec_required = ("stations", "years", "variable")
@@ -312,23 +319,29 @@ class NDBCStdmet(Fetcher):
         frames = []
         for st, d in daily.items():
             others = wide.drop(columns=[st]).median(axis=1)
-            ratio = (wide[st] / others.where(others > 0)).rolling(w, center=True, min_periods=max(1, w // 2)).median()
+            r = wide[st] / others.where(others > 0)
+            ratio = r.rolling(w, center=True, min_periods=max(1, w // 2)).median()
             low = (ratio < float(qc["low_ratio"])).reindex(d.index, fill_value=False)
+            # III M-3b-ii-b-1 F-5: the same rule over the TRAILING window (this day and the w−1 rows before it) — the
+            # only flag a mask may read (operator ruling 7)
+            low_c = (r.rolling(w, min_periods=max(1, w // 2)).median() < float(qc["low_ratio"])).reindex(d.index, fill_value=False)
             stuck = pd.Series(d.index.isin(_stuck_days(ok_obs[st], int(qc["stuck_hours"]))), index=d.index)
             frames.append(pd.DataFrame({self.date_col: d.index, st_col: st, val: d["v"].to_numpy(),
                                         "n_hours": d["n_hours"].to_numpy(dtype=int),
-                                        "qc_low_ratio": low.to_numpy(dtype=bool), "qc_stuck": stuck.to_numpy(dtype=bool)}))
-            by_year = pd.DataFrame({"low": low, "stuck": stuck}).groupby(d.index.year).sum()
+                                        "qc_low_ratio": low.to_numpy(dtype=bool), "qc_stuck": stuck.to_numpy(dtype=bool),
+                                        "qc_low_ratio_causal": low_c.to_numpy(dtype=bool)}))
+            by_year = pd.DataFrame({"low": low, "stuck": stuck, "low_c": low_c}).groupby(d.index.year).sum()
             stations[st]["days_flagged"] = {"qc_low_ratio": int(low.sum()), "qc_stuck": int(stuck.sum()),
-                                            "either": int((low | stuck).sum())}
-            stations[st]["days_flagged_by_year"] = {str(y): [int(r["low"]), int(r["stuck"])]
-                                                    for y, r in by_year.iterrows() if r["low"] or r["stuck"]}
+                                            "either": int((low | stuck).sum()), "qc_low_ratio_causal": int(low_c.sum())}
+            stations[st]["days_flagged_by_year"] = {str(y): [int(r["low"]), int(r["stuck"]), int(r["low_c"])]
+                                                    for y, r in by_year.iterrows() if r["low"] or r["stuck"] or r["low_c"]}
             stations[st]["first_day"] = str(d.index.min().date()) if len(d) else None
             stations[st]["last_day"] = str(d.index.max().date()) if len(d) else None
         self.fetched_at_source = "fetch" if self.requests else REREDUCED
         self.reduction = {**b, "day_boundary": "UTC", "sentinels": list(SENTINELS),
                           "qc_rule": "flags only, no value deleted: low_ratio = centred rolling median over "
                                      "ratio_window_days of (station / median of the other stations that day) < low_ratio; "
+                                     "low_ratio_causal = the same over the trailing window (the only maskable flag); "
                                      "stuck = a run of identical valid observations over ≥ stuck_hours distinct hours",
                           "requests": int(self.requests), "per_station": stations, "raw_files": raw_files}
         out = pd.concat(frames, ignore_index=True)

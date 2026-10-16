@@ -77,9 +77,25 @@ intent: "M-3b-ii-b split at open → ii-b-1: core 0.11.0 — stream mask_columns
   three lights (−0.3 before), and LONF1 is +0.48 in test. Recorded as limit (d) on the ii-b-2 card; the scale shift is
   limit (e). Offsets: LONF1 −1.338 (1,913 d) · MLRF1 −0.735 (2,065) · SMKF1 −0.122 (2,064).
 - Token counter (this sitting, post-`/clear`, incl. harness context) ≈ 140 kT at the cards commit.
+- FKNMS `dda77c2`: declaration (rulings 1, 2, 4), pin → `8a74961`, receipt `2ba2d4f939`, verify ×4, conform 11 + item 9;
+  STATE calm table. gitleaks: FKNMS clean; Atlantis `76bb143..HEAD` clean (the 9 working-tree hits are pre-existing test
+  fixtures, the gitleaks toml, two exemplar pages and one older session log line).
+- **III (fresh context, via `iii/`): PASS-WITH-FINDINGS 0/1/8/3** → `missions/aar/iii_review_m3b_ii_b_1.md`; reviewer
+  ≈ 290 kT. F-1 (major): the March self-test week blinds C0 to calm vitals. F-2: SANF1's step completes only after its
+  Apr–May 2007 outage, and May–Sep 2006 is pre-break (my yearly diagnostic could not see it).
+- **Rulings 5–8 (operator, AskUserQuestion, 2026-10-16):**
+  - **5** (F-2): SANF1's window is amended to **2007-08-01**, the post-break record, picked from the monthly break
+    diagnostic (not the val residual). The SANF1-only sensitivity follows it.
+  - **6** (F-1, F-5, F-6, F-7): **all four fixed now, core 0.11.1**, plant-first; re-card.
+  - **7** (F-5): **a causal flag for the mask.** NDBCStdmet also writes a trailing-window flag. FKNMS masks on it after
+    an offline re-reduction, and the centred flag stays as a description. The self-test perturbs declared flag columns
+    after t.
+  - **8:** ACCUMULATE accepted: C-049…C-052, plus the recurrences C-005, C-014, C-030, C-032, C-039 and C-042. C-014
+    becomes a graduation candidate.
+- Token counter ≈ 180 kT this sitting at the rulings.
 - **Left:**
   1. ~~a full suite re-run~~ done (with no timeout) → record the count with its commit;
-  2. Step 5 in FKNMS: declare `mask_columns: [qc_low_ratio]`, `station_offsets {SANF1, [1987, 2013]}`,
+  2. ~~(superseded by ruling 4, then 5)~~ Step 5 in FKNMS: declare `mask_columns: [qc_low_ratio]`, `station_offsets {SANF1, [1987, 2013]}`,
      `station_windows {SMKF1: [null, 2015-08-09]}`; move `selftest.week` 2014-01-06 → 2014-03-03 (the era-clearance
      rule); bump the pin; self-test → new receipt; `fetch --verify` and conform; put the table above in FKNMS STATE;
   3. III (fresh context); AAR; CHANGELOG v0.19.0; STATE NSP; close the leases.

@@ -12,6 +12,11 @@ climatology era. For EVERY registered stream:
       that vital at (primary, t). The instrument can fail, vital by vital; a lag counted in rows, not weeks, fails here.
   C1  perturbing week t+1 (all patients; spike, and delete for point streams) moves NO vital and NO `already_in_event`
       flag at ANY patient-week ≤ t; the label at (primary, t) moves iff the stream is the event stream (spike).
+      III M-3b-ii-b-1 F-5: a stream with `mask_columns` also has every declared flag raised over week t+1, and nothing at
+      weeks ≤ t may move (a mask that reaches back from a later day reads the future). The flags the FETCHER writes are
+      not exercised here: a fetcher's flag that reads ahead (a centred window) must be named as such, and is not maskable.
+  C0w (count-below streams) the synthetic world holds 1–6 days below every `weekly_count_lt` threshold in each week C0
+      perturbs, or the run fails as a WORLD fault, not a dead vital (III M-3b-ii-b-1 F-1: calm days in every season).
   C2  perturbing week t+H+1 moves no vital / `already_in_event` at weeks ≤ t, and not y / outcome_unknown at (primary, t).
   C3  (point streams, and the event stream whatever its shape) deleting every observation in t+1..t+H moves no vital /
       `already_in_event` at weeks ≤ t; for the event stream the outcome at (primary, t) becomes unknown.
@@ -178,10 +183,10 @@ def gap_week(inst: Instance, sid: str) -> int:
     return free[0] if free else max(lags) + 1
 
 
-def count_lt_centre(inst: Instance, sid: str) -> float | None:
-    """The median threshold of this stream's `weekly_count_lt` vitals, or None (M-3b-ii-b-1). The synthetic daily
-    values of such a stream are centred on it: a world wholly above (FKNMS calm 2–6 m/s against values near 1000) counts
-    0 calm days whatever is perturbed, and C0 would call the vital dead for the world's fault, not the vital's."""
+def count_lt_thresholds(inst: Instance, sid: str) -> list:
+    """Every threshold of this stream's `weekly_count_lt` vitals, sorted (M-3b-ii-b-1; III F-1). The synthetic daily values
+    of such a stream straddle ALL of them: a world wholly above (FKNMS calm 2–6 m/s against values near 1000) counts 0
+    calm days whatever is perturbed, and C0 would call the vital dead for the world's fault, not the vital's."""
     import ast
     consts = dict(inst.cfg.get("constants") or {})
     consts[grammar.EVENT_CONSTANT] = float(inst.event["threshold"])
@@ -195,7 +200,19 @@ def count_lt_centre(inst: Instance, sid: str) -> float | None:
                 if isinstance(a, ast.UnaryOp):
                     a, sign = a.operand, -1.0
                 thr.append(sign * (float(a.value) if isinstance(a, ast.Constant) else float(consts[a.id])))
-    return float(np.median(thr)) if thr else None
+    return sorted(set(thr))
+
+
+def calm_values(thr: list, n: int, rng) -> np.ndarray:
+    """III M-3b-ii-b-1 F-1: daily values for a count-below stream that hold calm days in EVERY week of EVERY season. The
+    0.11.0 world centred a seasonal sine on the median threshold: at the unit level (a mean over stations) the noise
+    shrank and the sine did not, so calm days existed only near its zero-crossings, and a March `selftest.week` made C0
+    blind. Here day d is below every threshold on even d and above every threshold on odd d (3–4 calm days a week, in
+    every station alike, so the unit mean keeps the pattern); the noise is too small to cross a threshold."""
+    lo, hi = min(thr), max(thr)
+    a = max(abs(lo), abs(hi), 1.0)
+    side = np.where(np.arange(n) % 2 == 0, lo - 0.5 * a, hi + 0.5 * a)
+    return side + rng.normal(0, 0.05 * a, n)
 
 
 def synth(inst: Instance, t: pd.Timestamp, seed: int = 0, series: str | None = None) -> dict:
@@ -254,10 +271,10 @@ def synth(inst: Instance, t: pd.Timestamp, seed: int = 0, series: str | None = N
                          rng.uniform(*_event_band(ev), len(days)))       # the safe side of the threshold, every day
                     key = cols["unit"] if shape == "unit_daily" else cols["station"]
                     parts.append(pd.DataFrame({cols["date"]: days[m], key: ent, cols["value"]: v[m]}))
-                elif (c := count_lt_centre(inst, sid)) is not None:
-                    # M-3b-ii-b-1: a count-below vital needs days on both sides of its threshold, or C0 cannot bite
-                    a = max(abs(c), 1.0)
-                    v = c + 0.5 * a * np.sin(2 * np.pi * doy / 365.25) + rng.normal(0, 0.25 * a, len(days))
+                elif thr := count_lt_thresholds(inst, sid):
+                    # M-3b-ii-b-1: a count-below vital needs days on both sides of its threshold, or C0 cannot bite;
+                    # III F-1: in every week, whatever the season of selftest.week
+                    v = calm_values(thr, len(days), rng)
                     key = cols["unit"] if shape == "unit_daily" else cols["station"]
                     parts.append(pd.DataFrame({cols["date"]: days[m], key: ent, cols["value"]: v[m]}))
                 elif shape == "unit_daily":
@@ -468,6 +485,39 @@ def _c9_episode(inst, frames, tab, P, t, R) -> dict:
             "dip_weeks_dropped": int(sum(bool(rows.get(w, False)) for w in dips))}
 
 
+def flag_week(frames: dict, sid: str, cols: list, week: pd.Timestamp) -> dict:
+    """Raise every named flag column on every row of `sid` in `week` (III M-3b-ii-b-1 F-5: C1 perturbs the mask too)."""
+    f = {k: v.copy() for k, v in frames.items()}
+    d = f[sid]
+    sel = d["date"].between(week, week + pd.Timedelta(days=6))
+    if not sel.any():
+        raise LeakError(f"C1 {sid}: no rows in week {week.date()} to flag — the mask perturbation would be vacuous")
+    for c in cols:
+        d.loc[sel, c] = True
+    return f
+
+
+def world_fault(inst: Instance, sid: str, frames: dict, P, t: pd.Timestamp, lags: list) -> None:
+    """III M-3b-ii-b-1 F-1: before C0 calls a count-below vital dead, the synthetic world must hold a count C0 can move —
+    between 1 and 6 days below every threshold in each perturbed week at (primary, t − lag). A week outside that is the
+    WORLD's fault and is refused by name; moving `selftest.week` until C0 passes would choose the test week by the
+    instrument's outcome."""
+    from atlantis_core.vitals.build import evaluator, patient_grid
+    thr = count_lt_thresholds(inst, sid)
+    if not thr or sid == inst.event["event_variable_stream"]:   # the event stream's values are the event world's (C0 uses
+        return                                                  # spike AND delete there), not the calm world's
+    units, weeks = patient_grid(inst, frames)
+    ev = evaluator(inst, sid, frames, units, weeks)
+    for c in thr:
+        node = grammar.parse(f"weekly_count_lt(value, {c!r})", [], "selftest.world")
+        for lag in sorted(set(lags)):
+            n = ev.weekly(node, None, lag).reindex(weeks).loc[t, P]
+            if not (pd.notna(n) and 1 <= n <= 6):
+                raise LeakError(f"world fault {sid}: week {(t - W(lag)).date()} holds {n} days below {c} at (primary {P}) — "
+                                f"C0 needs 1–6 to call a count-below vital alive or dead; the synthetic world, not the vital, "
+                                f"is at fault (III M-3b-ii-b-1 F-1)")
+
+
 # -- the test -------------------------------------------------------------------------------------------------------
 def run(inst: Instance, verbose: bool = True) -> dict:
     say = print if verbose else (lambda *a, **k: None)
@@ -510,6 +560,7 @@ def run(inst: Instance, verbose: bool = True) -> dict:
         # C0 — per vital, at t − lag
         mine = [f for f, v in vit.items() if v["stream_ref"] == sid
                 and grammar.uses_value(grammar.parse(v["transform"], consts, f))]
+        world_fault(inst, sid, frames, P, t, [int(vit[f].get("lag") or 0) for f in mine])
         dead, cache = [], {}
         for f in mine:
             wk = t - W(int(vit[f].get("lag") or 0))
@@ -555,6 +606,13 @@ def run(inst: Instance, verbose: bool = True) -> dict:
                 raise LeakError(f"C1 {sid}: label did not respond to a t+1 event ({base['y']} → {b1['y']})")
             if sid != ev_sid and moved(base, b1, ["y"]):
                 raise LeakError(f"C1 {sid}: label moved on a non-event stream ({base['y']} → {b1['y']})")
+        # C1 for the mask (III M-3b-ii-b-1 F-5): every declared flag raised over week t+1, all patients, must move no
+        # vital at or before t — a mask that reaches back from a later day reads the future
+        mc = inst.stream_spec(sid).get("mask_columns") or []
+        if mc:
+            _past_clean(inst, base_tab, B(flag_week(frames, sid, mc, t + W(1))), t, feats,
+                        f"C1 LEAK {sid} (mask flags {mc} raised at t+1)")
+            r["C1_mask"] = list(mc)
         # C2 — t+H+1
         tab2 = B(perturb(frames, inst, sid, t + W(H + 1)))
         _past_clean(inst, base_tab, tab2, t, feats, f"C2 {sid} (t+H+1)")
@@ -584,7 +642,7 @@ def run(inst: Instance, verbose: bool = True) -> dict:
         res["streams"][sid] = r
         say(f"   ✅ {sid}: C0 {r['C0_vitals']} vitals bite at t−lag · C8 {r['C8_vitals']} lags calendar"
             + ("" if r["C0_crosses_gap"] or not r["C8_vitals"] else f" (gap t−{r['gap_week']} crossed by no lag: C8 alone guards it)")
-            + " · C1 no leak (whole past, filters) · C2 horizon"
+            + " · C1 no leak (whole past, filters" + (", mask flags" if r.get("C1_mask") else "") + ") · C2 horizon"
             + (" · C3 presence" if "C3" in r else "") + (" · C7 units isolated" if r["C7"] == "ok" else f" · C7 {r['C7']}")
             + (" · label responds" if sid == ev_sid else " · label still"))
 

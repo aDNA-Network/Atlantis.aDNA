@@ -32,7 +32,7 @@ def add_wind(d: Path, *, mask=True, offsets=True, windows=True, vitals=True) -> 
     spec = {"shape": "station_daily", "artifact": "data/raw/example_wind_daily.parquet",
             "columns": {"date": "date", "value": "wspd", "station": "station"}, "stations": copy.deepcopy(WIND_STATIONS)}
     if mask:
-        spec["mask_columns"] = ["qc_low_ratio"]
+        spec["mask_columns"] = ["qc_low_ratio_causal"]
     if offsets:
         spec["station_offsets"] = {"reference": "W1", "era": [2006, 2012], "min_days": 30}
     if windows:
@@ -174,13 +174,13 @@ def test_offset_refused_when_the_reference_has_no_data():
 def test_normalise_carries_flags_and_refuses_a_missing_or_gappy_one(windy):
     inst = load_instance(windy)
     raw = pd.DataFrame({"date": pd.date_range("2010-01-01", periods=3), "station": "W1", "wspd": [1.0, 2.0, 3.0],
-                        "qc_low_ratio": [False, True, False]})
+                        "qc_low_ratio_causal": [False, True, False]})
     n = normalise(inst, WIND, raw)
-    assert n["qc_low_ratio"].tolist() == [False, True, False]
-    with pytest.raises(ValueError, match="mask column 'qc_low_ratio' is declared but absent"):
-        normalise(inst, WIND, raw.drop(columns="qc_low_ratio"))
+    assert n["qc_low_ratio_causal"].tolist() == [False, True, False]
+    with pytest.raises(ValueError, match="mask column 'qc_low_ratio_causal' is declared but absent"):
+        normalise(inst, WIND, raw.drop(columns="qc_low_ratio_causal"))
     with pytest.raises(ValueError, match="must be boolean with no gaps"):
-        normalise(inst, WIND, raw.assign(qc_low_ratio=[False, None, True]))
+        normalise(inst, WIND, raw.assign(qc_low_ratio_causal=[False, None, True]))
 
 
 # ── registry R5 · R7 ───────────────────────────────────────────────────────────────────────────────────────────────────
@@ -199,6 +199,16 @@ def test_registry_accepts_the_declared_wind(windy):
 @pytest.mark.parametrize("edit, msg", [
     (lambda i: i.cfg["streams"][WIND].__setitem__("mask_columns", ["qc_bogus"]), "not flags NDBCStdmet writes"),
     (lambda i: i.cfg["streams"][WIND].__setitem__("mask_columns", []), "non-empty list"),
+    # III M-3b-ii-b-1 F-5: a flag that reads ahead of its day may not mask
+    (lambda i: i.cfg["streams"][WIND].__setitem__("mask_columns", ["qc_low_ratio"]), "'qc_low_ratio', which reads ahead"),
+    (lambda i: i.cfg["streams"][WIND].__setitem__("mask_columns", ["qc_stuck"]), "'qc_stuck', which reads ahead"),
+    # III F-7: the spec is a closed key set
+    (lambda i: i.cfg["streams"][WIND].__setitem__("mask_column", ["qc_low_ratio_causal"]),
+     "unknown stream key 'mask_column' — did you mean 'mask_columns'"),
+    (lambda i: i.cfg["streams"][WIND].__setitem__("station_offset", {}), "unknown stream key 'station_offset' — did you mean"),
+    (lambda i: i.cfg["streams"][WIND].__setitem__("frobnicate", 1), "unknown stream key 'frobnicate' .*under `fetch`"),
+    # III F-6: under per-fold selection the first fold early-stops on min(ro), which no offset era may reach
+    (lambda i: i.cfg["split"].__setitem__("rolling_origin_years", [2012, 2013]), "R7 .* per_fold .* early-stops on 2012"),
     (lambda i: i.cfg["streams"][WIND]["station_offsets"].__setitem__("reference", "W9"), "reference 'W9' is not in the stations"),
     (lambda i: i.cfg["streams"][WIND]["station_offsets"].__setitem__("era", [2012, 2006]), "era must be"),
     (lambda i: i.cfg["streams"][WIND]["station_offsets"].__setitem__("min_days", 0), "min_days must be"),
@@ -216,6 +226,15 @@ def test_registry_accepts_the_declared_wind(windy):
 def test_registry_refuses(windy, edit, msg):
     import re
     assert re.search(msg, _errs(windy, edit)), _errs(windy, edit)
+
+
+def test_offset_era_may_reach_the_first_stop_year_only_without_per_fold_selection(windy):
+    """III F-6: full_model selection does not early-stop on the inner year, so the looser bound (the first TEST year)
+    holds; the default per_fold needs the era to end before min(rolling_origin_years)."""
+    inst = load_instance(windy, check=False)
+    inst.cfg["split"]["rolling_origin_years"] = [2012, 2013]
+    inst.cfg.setdefault("eval", {})["rolling_selection"] = "full_model"
+    registry.check(inst)
 
 
 def test_hash_unchanged_without_the_new_keys(variant_master, tmp_path):
@@ -270,3 +289,56 @@ def test_selftest_synthesises_an_offset_era_older_than_every_other(windy):
     (windy / "atlantis.yaml").write_text(yaml.safe_dump(cfg, sort_keys=False))
     res = selftest.run(load_instance(windy), verbose=False)
     assert isinstance(res["C6_offsets"][WIND], dict) and res["C6_offsets"][WIND]
+
+
+# ── III M-3b-ii-b-1 F-1: calm days in every season; a world without them is the world's fault ─────────────────────────
+def _calm_vitals(d: Path, thresholds=(2.0, 6.0)):
+    fe = yaml.safe_load((d / "features.yaml").read_text())
+    for c in thresholds:
+        fe["vitals"].append({"vital_id": f"atl_vital_example_wind_calm_{int(c)}", "name": f"calm_{int(c)}",
+                             "description": "test", "stream_ref": WIND, "transform": f"weekly_count_lt(value, {c})",
+                             "lag": 0, "group": "wind", "tag": "proxy"})
+    (d / "features.yaml").write_text(yaml.safe_dump(fe, sort_keys=False))
+
+
+@pytest.mark.parametrize("week", ["2014-03-03", "2014-07-07", "2014-10-06", "2015-01-05"])
+def test_selftest_calm_vitals_bite_in_every_season(windy, week):
+    """The 0.11.0 world centred a sine on the median threshold; a March week (FKNMS) left C0 nothing to remove."""
+    from atlantis_core import selftest
+    _calm_vitals(windy)
+    cfg = yaml.safe_load((windy / "atlantis.yaml").read_text())
+    cfg["selftest"]["week"] = week
+    (windy / "atlantis.yaml").write_text(yaml.safe_dump(cfg, sort_keys=False))
+    res = selftest.run(load_instance(windy), verbose=False)
+    assert res["streams"][WIND]["C0_vitals"] == 5
+
+
+def test_selftest_refuses_a_world_without_calm_days_by_name(windy, monkeypatch):
+    from atlantis_core import selftest
+    monkeypatch.setattr(selftest, "calm_values", lambda thr, n, rng: np.full(n, max(thr) + 5.0))   # plant: never calm
+    with pytest.raises(selftest.LeakError, match="world fault"):
+        selftest.run(load_instance(windy), verbose=False)
+
+
+def test_selftest_catches_a_mask_that_reads_the_next_week(windy, monkeypatch):
+    """III F-5: C1 raises every declared flag over t+1; a mask that reaches back a week must be caught."""
+    from atlantis_core import selftest
+    real = Evaluator._prepared
+
+    def ahead(self):
+        d = self.data
+        if self.mask_columns:
+            d = d.copy()
+            for c in self.mask_columns:
+                nxt = d.assign(date=d["date"] - pd.Timedelta(days=7))[["date", "station", c]]
+                d = d.drop(columns=c).merge(nxt, on=["date", "station"], how="left")
+                d[c] = d[c].fillna(False).astype(bool)
+        self.data, keep = d, self.data
+        try:
+            return real(self)
+        finally:
+            self.data = keep
+
+    monkeypatch.setattr(Evaluator, "_prepared", ahead)
+    with pytest.raises(selftest.LeakError, match=r"C1 LEAK .*mask flags"):
+        selftest.run(load_instance(windy), verbose=False)

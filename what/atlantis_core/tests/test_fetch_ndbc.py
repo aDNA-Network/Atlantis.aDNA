@@ -133,7 +133,7 @@ def test_parse_refuses_a_header_without_the_variable():
 def test_download_reduces_to_daily_and_records_absent_years(tmp_path):
     f = ndbc(tmp_path, FakeNDBC(two_station_files()))
     df = f.fetch(SPEC)
-    assert list(df.columns) == ["date", "station", "wspd", "n_hours", "qc_low_ratio", "qc_stuck"]
+    assert list(df.columns) == ["date", "station", "wspd", "n_hours", "qc_low_ratio", "qc_stuck", "qc_low_ratio_causal"]
     a = df[df["station"] == "AAAF1"].set_index("date")
     # 1998-07-01: 23 valid hours of 3.0 (the sentinel hour dropped) → kept; 1998-07-02: 17 hours < 18 → dropped
     assert a.loc["1998-07-01", "wspd"] == pytest.approx(3.0) and a.loc["1998-07-01", "n_hours"] == 23
@@ -439,3 +439,28 @@ def test_selftest_passes_with_a_calm_vital_and_catches_a_future_read(variant_mas
                         lambda self, x, thr, window=None: ops.Weekly((lambda d: d.add(d.shift(-1), fill_value=0))(orig(self, x, thr).df)))
     with pytest.raises(st.LeakError, match="C1"):
         st.run(inst, verbose=False)
+
+
+# ── III M-3b-ii-b-1 F-5 (operator ruling 7): the maskable flag reads no day after its own ─────────────────────────────
+def test_causal_flag_reads_no_later_day_and_catches_the_fault(tmp_path):
+    f = ndbc(tmp_path, FakeNDBC(_three_lights(faulty=("AAAF1", 20, 25))))
+    df = f.fetch(QC_SPEC)
+    a = df[df["station"] == "AAAF1"].set_index("date")
+    fault = pd.date_range("2006-07-21", periods=25)
+    assert a.loc[fault[8]:fault[-1], "qc_low_ratio_causal"].all()          # caught once the trailing window fills
+    assert not a.loc[:"2006-07-20", "qc_low_ratio_causal"].any()           # never before the fault
+    assert f.reduction["per_station"]["AAAF1"]["days_flagged"]["qc_low_ratio_causal"] >= 17
+    # no hindsight: the same fault cut off after 3 days. Up to the 3rd fault day the days are identical, so a flag that
+    # reads no later day must agree on them; the centred flag reads the days after, and does not (the control)
+    short = ndbc(tmp_path / "s", FakeNDBC(_three_lights(faulty=("AAAF1", 20, 3)))).fetch(QC_SPEC)
+    b = short[short["station"] == "AAAF1"].set_index("date")
+    upto = slice(None, "2006-07-23")
+    assert a.loc[upto, "wspd"].equals(b.loc[upto, "wspd"])
+    assert a.loc[upto, "qc_low_ratio_causal"].equals(b.loc[upto, "qc_low_ratio_causal"])
+    assert not a.loc[upto, "qc_low_ratio"].equals(b.loc[upto, "qc_low_ratio"])
+
+
+def test_maskable_flags_exclude_the_ones_that_read_ahead():
+    from atlantis_core.fetch.ndbc import NDBCStdmet
+    assert NDBCStdmet.FLAG_COLUMNS == ("qc_low_ratio_causal",)
+    assert set(NDBCStdmet.LOOKAHEAD_FLAGS) == {"qc_low_ratio", "qc_stuck"}

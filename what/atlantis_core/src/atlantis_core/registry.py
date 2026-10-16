@@ -10,17 +10,20 @@ rule). It cannot see across files or into the transform grammar. This does:
   R4  a lever vital names a non-blank owner (re-asserted: the schema rule's null hole was M-1c's Finding 1)
   R5  every declared stream has an engine spec in atlantis.yaml (shape · columns · artifact) and a known shape;
       a station-keyed stream maps its stations to units; `fetcher` (if set) names a known fetcher class.
-      M-3b-ii-b-1: `mask_columns` is a list of names (within the fetcher's FLAG_COLUMNS when the fetcher declares them);
+      M-3b-ii-b-1: `mask_columns` is a list of names (within the fetcher's FLAG_COLUMNS when the fetcher declares them;
+      a flag the fetcher lists in LOOKAHEAD_FLAGS is refused with its reason, III F-5);
       `station_windows` and `station_offsets` sit only on a station-keyed stream that is not the event stream, name
       mapped stations, and have the right shape (windows [from|null, to|null], from ≤ to; offsets {reference, era [y0, y1],
-      min_days ≥ 1})
+      min_days ≥ 1}). A stream's engine spec is a closed key set (`STREAM_KEYS`): an unknown key is refused by name
+      (III M-3b-ii-b-1 F-7)
   R6  `label.event` names a declared event; its direction is above | below; the label signal aggregates the right way
       (`below` with weekly_max, or `above` with weekly_min, means "a week whose max ≤ thr" — rejected)
   R7  every climatology era ends before validation starts (a training-era normal must not reach val/test weeks), and
       before the first rolling-origin TEST year — unless `climatology_policy.rolling_origin: refit_per_fold` is declared,
       which is an obligation on eval (M-1b-ii) recorded in `inst.obligations`, not a waiver. A `station_offsets` era
       obeys the same two bounds, with no refit policy: an offset era that reaches validation or a rolling-origin test year
-      is refused (M-3b-ii-b-1)
+      is refused (M-3b-ii-b-1). Under `eval.rolling_selection: per_fold` (the default) the bound is one year tighter: the
+      first fold early-stops on min(rolling_origin_years), which no offset era may reach (III M-3b-ii-b-1 F-6)
   R8  the surveillance channel is declared or declared absent (contract item 5, T5; M-1d-i). Present: a stream with
       `surveillance_channel: true`, a vital in `group: surveillance` that reads one, and an `eval.ablations` entry dropping
       that group. Absent: `atlantis.yaml → surveillance: {declared: absent, reason: <non-blank>}`, and then no stream claims
@@ -30,12 +33,17 @@ Raises RegistryError listing every failure, not just the first.
 """
 from __future__ import annotations
 
+import difflib
 from collections import Counter
 
 from atlantis_core.vitals import grammar
 
 SHAPES = {"point": ("date", "value", "lat", "lon"), "unit_daily": ("date", "value", "unit"),
           "station_daily": ("date", "value", "station")}
+# III M-3b-ii-b-1 F-7: a stream's engine spec is a CLOSED key set. An unknown key (a typo such as `mask_column`) used to
+# load green, move the semantic hash, and do nothing. A fetcher's own keys live under `fetch`.
+STREAM_KEYS = ("shape", "columns", "artifact", "summary", "stations", "fetch", "lever_stations",
+               "mask_columns", "station_windows", "station_offsets")
 
 
 class RegistryError(ValueError):
@@ -51,8 +59,13 @@ def _stream_rows_errors(sid, spec, stream, inst, fetchers) -> list:
         if not (isinstance(mc, list) and mc and all(isinstance(c, str) and c for c in mc)):
             errs.append(f"R5 {sid}: mask_columns must be a non-empty list of column names, got {mc!r}")
         else:
-            allowed = getattr(fetchers.get(stream.get("fetcher")), "FLAG_COLUMNS", None)
-            bad = [c for c in mc if allowed is not None and c not in allowed]
+            fcls = fetchers.get(stream.get("fetcher"))
+            allowed = getattr(fcls, "FLAG_COLUMNS", None)
+            ahead = getattr(fcls, "LOOKAHEAD_FLAGS", {}) or {}
+            for c in mc:
+                if c in ahead:   # III M-3b-ii-b-1 F-5: a flag that reads after its day may describe, never mask
+                    errs.append(f"R5 {sid}: mask_columns names {c!r}, which reads ahead of its day ({ahead[c]})")
+            bad = [c for c in mc if allowed is not None and c not in allowed and c not in ahead]
             if bad:
                 errs.append(f"R5 {sid}: mask_columns {bad} are not flags {stream.get('fetcher')} writes {list(allowed)}")
     stations = spec.get("stations") or {}
@@ -137,6 +150,11 @@ def check(inst) -> None:
         spec = specs.get(sid)
         if spec is None:
             errs.append(f"R5 {sid}: no engine spec under atlantis.yaml → streams"); continue
+        unknown = sorted(set(spec) - set(STREAM_KEYS))
+        for k in unknown:
+            near = difflib.get_close_matches(k, STREAM_KEYS, n=1)
+            errs.append(f"R5 {sid}: unknown stream key {k!r}" + (f" — did you mean {near[0]!r}?" if near else
+                                                                  f" (known: {list(STREAM_KEYS)}; a fetcher's keys go under `fetch`)"))
         shape = spec.get("shape")
         if shape not in SHAPES:
             errs.append(f"R5 {sid}: shape {shape!r} not in {sorted(SHAPES)}"); continue
@@ -168,6 +186,7 @@ def check(inst) -> None:
     val_start = split.get("val_start")
     ro = split.get("rolling_origin_years") or []
     refit = (cfg.get("climatology_policy") or {}).get("rolling_origin") == "refit_per_fold"
+    per_fold = (cfg.get("eval") or {}).get("rolling_selection", "per_fold") == "per_fold"
     inst.obligations = []
     for sid, spec in (cfg.get("streams") or {}).items():
         off = spec.get("station_offsets")
@@ -179,6 +198,12 @@ def check(inst) -> None:
         if ro and era[1] >= min(ro) + 1:
             errs.append(f"R7 {sid}: station_offsets era ends {era[1]} but rolling-origin folds test "
                         f"{[y + 1 for y in ro if y + 1 <= era[1]]} — end the era before the first fold's test year")
+        elif ro and per_fold and era[1] >= min(ro):
+            # III M-3b-ii-b-1 F-6: under per-fold selection, fold Y→Y+1 early-stops on its inner year Y. Climatology eras
+            # are clipped to Y−1 for that selection (eval); offsets are not refitted per fold, so the era must end before it
+            errs.append(f"R7 {sid}: station_offsets era ends {era[1]}, but under eval.rolling_selection per_fold the first "
+                        f"fold ({min(ro)}→{min(ro) + 1}) early-stops on {min(ro)}, which the offsets would be fitted on — "
+                        f"end the era by {min(ro) - 1}")
     for sid, era in (cfg.get("climatology") or {}).items():
         if val_start is not None and int(era[1]) >= int(val_start):
             errs.append(f"R7 {sid}: climatology era ends {era[1]} ≥ val_start {val_start}")

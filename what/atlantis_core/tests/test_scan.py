@@ -36,7 +36,7 @@ def world(inst, seed=0) -> dict:
     for st, bias in (("W1", 0.0), ("W2", 1.0), ("W3", -0.5)):
         keep = rng.random(len(days)) > 0.05
         parts.append(pd.DataFrame({"date": days[keep], "station": st, "wspd": (w + bias)[keep],
-                                   "qc_low_ratio": False}))
+                                   "qc_low_ratio_causal": False}))
     raw[WIND] = pd.concat(parts, ignore_index=True)
     parts = []
     for st in ("EXS01", "EXS02", "EXS03"):
@@ -75,17 +75,19 @@ def test_scan_chooses_on_val_and_reports_a_green_table(windy):
 
 
 def test_scan_never_reads_test_years(windy):
-    """Poison every test-WEEK row of the wind AND the event stream: the scan's output must not move by a byte. A test week
+    """Poison every test-WEEK row of every stream (values and mask flags): the scan's output must not move by a byte. A test week
     is one whose ISO week starts in a test year — eval.split's definition. (1–5 Jan of the first test year belong to the
     last val week; poisoning them moves that week's vitals, and the embargo is what keeps its label out of the stop set.)"""
     frames = world(windy)
     r0 = S.scan(windy, "calm", [3.0, 4.0], frames=frames, log=lambda *a: None)
     ts = int(windy.cfg["split"]["test_start"])
     bad = {k: v.copy() for k, v in frames.items()}
-    for sid in (WIND, DO):
+    for sid in bad:                                     # III F-10: every stream, and every flag column
         d = bad[sid]
         late = week_start(d["date"]).dt.year >= ts
         d.loc[late, "value"] = np.where(np.arange(late.sum()) % 2, np.inf, -np.inf)
+        for c in windy.stream_spec(sid).get("mask_columns") or []:
+            d.loc[late, c] = True
         assert late.any()
     r1 = S.scan(windy, "calm", [3.0, 4.0], frames=bad, log=lambda *a: None)
     assert _strip(r0) == _strip(r1)
@@ -123,3 +125,16 @@ def test_scan_refuses_an_undeclared_or_unread_constant(windy):
     windy.cfg["constants"]["unused"] = 1.0
     with pytest.raises(ValueError, match="no vital reads constant 'unused'"):
         S.scan(windy, "unused", [1.0], frames={}, log=lambda *a: None)
+
+
+def test_scan_refuses_values_scored_on_different_stop_rows(windy, monkeypatch):
+    """III F-11: a value that changed the stop set would win or lose on different rows."""
+    frames = world(windy)
+    real, calls = S.select, []
+    def shrinking(L, train, val, s, E):
+        R, vm, info, stop = real(L, train, val, s, E)
+        calls.append(1)
+        return R, vm, info, (stop if len(calls) == 1 else stop.iloc[:-1])
+    monkeypatch.setattr(S, "select", shrinking)
+    with pytest.raises(ObligationError, match="different stop rows"):
+        S.scan(windy, "calm", [3.0, 4.0], frames=frames, log=lambda *a: None)

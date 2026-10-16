@@ -3,7 +3,8 @@
     python -m atlantis_core.scan --instance <dir> --constant calm_threshold --values 2,3,4,5,6 [--out outputs/scan_<name>]
 
 For each value: the constant is overridden, the vitals and the label are built as `run` builds them, **the test weeks
-are dropped before anything is split or fitted** (a test week is one whose ISO week starts in a test year — `eval.split`'s
+are dropped before anything is split or fitted** — belt and braces: `split` and `select` never read test anyway, so the
+drop is a second guard, not the one the poison test proves (III M-3b-ii-b-1 F-10) — (a test week is one whose ISO week starts in a test year — `eval.split`'s
 definition; the last val week holds the first days of the first test year, and a val row's label window can read them,
 as in `run`), and the selection fit `run` would make (`eval.select`: train
 embargoed against val, stopped on val embargoed against test) is scored on that stop set. It never refits on train ∪ val
@@ -14,8 +15,10 @@ semantic hash it would run under, val log-loss · AUROC · AUPRC at the val base
 the fitted station offsets of every stream that declares them.
 
 **Disclosed bias.** An xgboost selection model is early-stopped on this same val set, so its val log-loss is optimistic.
-The optimism is the same kind for every value, so the rows compare with one another; none of them compares with a test
-number. Method demonstration, not an operational forecast (SO-4).
+The optimism is of the same KIND for every value; its size can differ by value, with the trees each value selects (III
+M-3b-ii-b-1 F-11). The rows compare with one another as a selection device; none of them compares with a test number.
+Every value is scored on the SAME stop rows — (unit, week, y) is asserted identical across values, so a value cannot win
+on a different set. Method demonstration, not an operational forecast (SO-4).
 """
 from __future__ import annotations
 
@@ -62,7 +65,7 @@ def scan(inst, name: str, values, frames: dict | None = None, log=print) -> dict
     s = inst.cfg["split"]
     frames = frames if frames is not None else load_frames(inst)
     spec = inst.cfg["learner"]
-    rows = []
+    rows, stop_key = [], None
     for v in values:
         i2 = copy.deepcopy(inst)
         i2.cfg["constants"][name] = float(v)
@@ -83,6 +86,11 @@ def scan(inst, name: str, values, frames: dict | None = None, log=print) -> dict
                                           f"test starts {s['test_start']}")
         p = L.predict(vm, stop)
         y = stop["y"].to_numpy(int)
+        key = pd.util.hash_pandas_object(stop[[inst.cfg["grid"].get("unit_column", "unit"), "week", "y"]].reset_index(drop=True), index=False).sum()
+        if stop_key is not None and key != stop_key:   # III F-11: every value on the same stop rows
+            raise ObligationError(f"scan: {name} = {v:g} is scored on different stop rows (unit, week, y) than "
+                                  f"{values[0]:g} — the values would not compare")
+        stop_key = key
         rows.append({
             "value": float(v), "semantic_hash": semantic_hash(i2),
             "selection": {k: info[k] for k in ("n_trees", "C") if k in info},
@@ -102,8 +110,9 @@ def scan(inst, name: str, values, frames: dict | None = None, log=print) -> dict
             "chosen": best["value"], "rows": rows, "station_offsets": station_offsets(inst, frames),
             "split": {k: s[k] for k in ("min_train_year", "train_end", "val_start", "val_end", "test_start")},
             "test_scored": False,
-            "bias": "xgboost early-stops on the same val set: val log-loss is optimistic, alike for every value — compare "
-                    "rows with one another, never with a test number"}
+            "bias": "xgboost early-stops on the same val set: val log-loss is optimistic — the same kind of optimism for "
+                    "every value, its size can differ by value; every value is scored on the same stop rows; compare rows "
+                    "with one another, never with a test number"}
 
 
 def _json(o):
