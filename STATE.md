@@ -69,7 +69,9 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
   was not read at `2e4f8dd`). III ≈ 290 kT. AAR: `missions/aar/aar_m3b_ii_b_1_core.md`.
 
 **Pending operator acts:**
-- **The push.** Nothing since M-2c-i is pushed (`origin/main` = `76bb143`). gitleaks on `76bb143..HEAD` is clean.
+- ~~The push~~ **done 2026-10-16** (operator-asked): `76bb143..` → `origin/main` (45 commits, M-2c-i → M-3b-ii-b-1, plus
+  this record), fast-forward, gitleaks clean on the range. The `forge` remote (`git.ailedger.dev`) was not pushed: SSH auth
+  fails (WI below). FKNMS has no remote (carried).
 - **At the P3 gate:**
   - the exemplar re-grid and the 02359170 refresh (exemplar v5);
   - T11's status and T2's wording;
@@ -489,6 +491,9 @@ tags: [state, atlantis, tidewatch, p1_open, m1a_complete, m1c_complete, m1b_i_co
 
 ## Watch items
 
+- WI-25 — **The `forge` remote** (`ssh://git@git.ailedger.dev:2222/stanley/Atlantis.aDNA.git`) refuses with "too many
+  authentication failures" and has no `forge/main` ref, so it has never been pushed. Likely an SSH key-offer problem
+  (`IdentitiesOnly yes` + the right key for that host in `~/.ssh/config`). Operator's: fix, or retire the remote. (2026-10-16)
 - ~~WI-1~~ **closed 2026-10-02** — the Home router row landed in Hestia's commit `96ae4a2` (Home.aDNA). Its category text still says "ref. platform"; Hestia's row, Hestia's edit — memo after the gate.
 - WI-2 — Exemplar raw OISST chunk CSVs (193 MB) are gitignored; `data/raw/oisst_region_daily.parquet` is the committed derivative. A fresh clone regenerates via `fetch_env` (≈30 min against ERDDAP).
 - WI-3 — The Artifact link is private; sharing is the operator's act.

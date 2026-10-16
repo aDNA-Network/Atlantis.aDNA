@@ -40,7 +40,9 @@
   - ACCUMULATE: C-049…C-052 accepted, plus six recurrence bumps. C-014 is a graduation candidate.
 - **Budget:** main ≥ 445 kT on a 200 kT card (the pre-`/clear` share is unknown; counter not read at `2e4f8dd`,
   C-042) · III ≈ 290 kT.
-- **AAR:** `missions/aar/aar_m3b_ii_b_1_core.md`. Not pushed.
+- **AAR:** `missions/aar/aar_m3b_ii_b_1_core.md`.
+- **Pushed 2026-10-16** (operator-asked): `origin/main` `76bb143` → here, 45 commits since M-2c-i, gitleaks clean. `forge`
+  is not reachable (SSH auth), a watch item.
 
 ## 2026-10-12 — v0.18.0 · M-3b-ii-a: `NDBCStdmet` built · core 0.10.1 · reef-light wind fetched into FKNMS · QC flags
 

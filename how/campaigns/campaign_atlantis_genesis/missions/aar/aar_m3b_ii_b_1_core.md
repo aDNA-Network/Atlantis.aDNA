@@ -129,7 +129,8 @@ There are no vitals: ii-b-2 realises and tests them.
   - graduation of C-014 · C-030 · C-042 (with the earlier candidates);
   - C-042's fourth recurrence → a counter read in the commit-message template;
   - the card-template counter check (III M-3b-ii-a F-9).
-- **The push** (operator act): nothing since `76bb143` is pushed. gitleaks: `76bb143..HEAD` clean.
+- **The push: done 2026-10-16** on the operator's word. `origin/main` `76bb143` → the close plus this record (45 commits),
+  gitleaks clean. `forge` was not pushed (SSH auth fails, a STATE watch item).
 
 ## Budget
 
