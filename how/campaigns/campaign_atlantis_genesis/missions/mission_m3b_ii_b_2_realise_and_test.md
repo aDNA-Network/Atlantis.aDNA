@@ -41,22 +41,28 @@ never scores test.
 - **Self-test before the scan (III ii-b-1 F-1):** run the self-test with the wind vitals declared, before any scan. Core
   0.11.1's calm world holds calm days in every season, and C0w fails a calm-less week as a *world fault*. **Never move
   `selftest.week` to make C0 pass.** If the week must move, the operator rules it, with the reason.
-- **Ruling 4:** the ruled index and the SANF1-only sensitivity both start SANF1 at 2006-05-01. The offsets are fitted on
-  2006–2013.
+- **Rulings 4–5 and 7:** the ruled index and the SANF1-only sensitivity both start SANF1 at **2007-08-01**. The offsets
+  are fitted on **2007–2012**, ending before the first fold's stop year (III ii-b-1 F-6). The mask reads
+  **`qc_low_ratio_causal`**. FKNMS STATE has the table and the numbers.
 - **Recorded limits the write-up must disclose:**
-  - **(a)** SANF1's 2006 step is seasonal (larger in winter), so an additive offset is approximate.
+  - **(a)** SANF1's break develops from Oct 2006 and completes after its Apr–May 2007 outage. In steady state it is
+    ≈ 0.15–0.3 m/s larger Oct–Mar than Apr–Sep, so an additive offset is approximate (III F-2).
   - **(b)** A second shift sits in test: LONF1−SANF1 ≈ −1.4 in 2008–17 and ≈ −0.9 in 2021–25. Only these two lights
     report there, so it cannot be attributed or corrected without reading test.
-  - **(d)** **SANF1's level moves at each of its outages**, not once:
-    - +0.8 after 2006;
+  - **(d)** **SANF1's level moves at its outages**, not once:
+    - the 2006–07 break;
     - lower in 2014–15, after its 2013 gap;
     - back by 2016–17.
 
-    Under the ruled offsets, the residual against SANF1 is 0 in train by construction, **+0.2 m/s for all three lights
-    in val**, and +0.48 for LONF1 in test. A constant offset cannot follow this, and a time-varying one would read val.
-  - **(e)** The ruled index sits on post-2006 SANF1's scale, ≈ +0.6 m/s above the unmasked mean. The calm share is
-    ≈ 5% at c = 3 and ≈ 16% at c = 4. The ruled grid c ∈ {2…6} is read on that scale, and c = 2 will be sparse. Say
-    so beside the scan table.
+    Under the ruled offsets the residual against SANF1 is 0 in train by construction, **≈ +0.3 m/s for all three
+    lights in val** (+0.33 / +0.26 / +0.31), and **+0.58** for LONF1 in test. A constant offset cannot follow this,
+    and a time-varying one would read val.
+  - **(e)** The ruled index sits on post-2007 SANF1's scale, ≈ +0.7 m/s above the unmasked mean. The calm share is
+    3.9 / 4.3 / 5.3% at c = 3 and 14.0 / 16.2 / 16.4% at c = 4. The rulings remove most of the unmasked rise, not all
+    of it (III F-3). The ruled grid c ∈ {2…6} is read on that scale, and c = 2 will be sparse. Say so beside the scan
+    table.
+  - **(g)** The causal mask misses the first 6 days of the LONF1 2020 failed-anemometer fault (2020-02-27 → 03-03, in
+    test). Those days enter the index as calm days (III F-5).
   - **(f)** **The preprocessing was ruled on the full record (III ii-b-1 F-4).** Station QC, windows and offsets
     (rulings 1, 2, 4, 5) were ruled after inspecting the wind record over train, val and test. The inspection was
     label-blind: no model output or score was read. The test score is not independent of these choices. This goes

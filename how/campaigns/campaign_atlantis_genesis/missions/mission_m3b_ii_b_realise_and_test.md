@@ -40,6 +40,13 @@ tags: [mission, m3b_ii_b, p3, opus, shap, realisation, fknms, t7, t8, atlantis, 
 > steps ≈ +0.8 m/s at its return from the Jan–Apr 2006 outage. The other three lights stay flat against each other.
 > **SANF1 is windowed from 2006-05-01. The offset era is [2006, 2013] against post-break SANF1. The SANF1-only
 > sensitivity carries the same window.** No core change.
+>
+> **Rulings 5–8** (operator, `AskUserQuestion`, 2026-10-16, on the III ii-b-1 review):
+> - **5 (F-2):** SANF1's window is amended to **2007-08-01**, the post-break record, read from the monthly diagnostic.
+>   With F-6, the era is **[2007, 2012]**.
+> - **6:** F-1, F-5, F-6 and F-7 are fixed in core 0.11.1.
+> - **7 (F-5):** the mask reads the causal `qc_low_ratio_causal`.
+> - **8:** ACCUMULATE accepted.
 
 **Split from** `mission_m3b_ii_realise_and_test.md` (M-3b-ii ruling 1). Starts from M-3b-ii-a's fetched, conformed
 stream `atl_stream_fkc_wind_ndbc_daily` (Keys-wide index, ruling 2).

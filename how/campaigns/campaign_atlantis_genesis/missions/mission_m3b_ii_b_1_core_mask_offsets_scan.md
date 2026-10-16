@@ -2,9 +2,9 @@
 type: mission
 mission_id: M-3b-ii-b-1
 plan_id: mission_m3b_ii_b_1_core_mask_offsets_scan
-title: "M-3b-ii-b-1 — core 0.11.0: stream QC mask · era-fitted station offsets + station windows · a val-only scan path · the FKNMS declaration (no vitals)"
+title: "M-3b-ii-b-1 — core 0.11.0 → 0.11.1: stream QC mask · era-fitted station offsets + station windows · a val-only scan path · the FKNMS declaration (no vitals)"
 owner: stanley
-status: active
+status: completed
 campaign: campaign_atlantis_genesis
 campaign_id: campaign_atlantis_genesis
 phase: P3
@@ -12,14 +12,14 @@ campaign_phase: 3
 mission_class: implementation
 executor_tier: opus
 token_budget_estimated: "main ≈ 200 kT (+50% line ≈ 300 kT) · fresh-context III reviewer ≈ 250 kT (observed sizes)"
-token_budget_actual: ""
+token_budget_actual: "main: pre-/clear unknown (≈ 145 kT at d52e140, not read at 2e4f8dd; line probably crossed unseen, III F-9) + post-/clear ≈ 300 kT — ≥ 445 kT on a 200 kT card; the III fixes re-carded in-mission by ruling 6 · III reviewer ≈ 290 kT"
 depends_on: ['M-3b-ii-a']
 split_from: mission_m3b_ii_b_realise_and_test
 origin: "M-3b-ii-b ruling 3 (operator, AskUserQuestion, 2026-10-15, at open): core / realise + test"
 aar_path: how/campaigns/campaign_atlantis_genesis/missions/aar/aar_m3b_ii_b_1_core.md
 session: session_stanley_20261015_145556_m3b_ii_b_1_core
 created: 2026-10-15
-updated: 2026-10-15
+updated: 2026-10-16
 last_edited_by: agent_proteus
 home_vault: Atlantis.aDNA
 tags: [mission, m3b_ii_b_1, p3, opus, core, qc_mask, station_offsets, scan, fknms, atlantis, tidewatch]
@@ -49,15 +49,21 @@ tags: [mission, m3b_ii_b_1, p3, opus, core, qc_mask, station_offsets, scan, fknm
 
 ## Acceptance criteria
 
-- [ ] Each new guard has a test, and each test is red with its guard planted off (plant-first)
-- [ ] Hashes unchanged where the new keys are absent (exemplar, FKNMS before the declaration)
-- [ ] The scan provably never reads test: test-year vitals poisoned → byte-equal output
-- [ ] Full suite green, with the count recorded with its commit (C-035); core 0.11.0
-- [ ] FKNMS self-test green under the declaration (SO-7), with the receipt and the era dependence reported
-- [ ] The descriptive calm-share table (ruled index · SANF1-only) in FKNMS STATE, with the fitted offsets and n_days
-- [ ] III via `iii/` in a fresh context, every finding dispositioned; token counter read at every commit; SITREP at
+- [x] Each new guard has a test, and each test is red with its guard planted off (plant-first)
+- [x] Hashes unchanged where the new keys are absent (exemplar, FKNMS before the declaration)
+- [x] The scan provably never reads test: test-year vitals poisoned → byte-equal output
+- [x] Full suite green, with the count recorded with its commit (C-035); core 0.11.0
+- [x] FKNMS self-test green under the declaration (SO-7), with the receipt and the era dependence reported
+- [x] The descriptive calm-share table (ruled index · SANF1-only) in FKNMS STATE, with the fitted offsets and n_days
+- [x] III via `iii/` in a fresh context, every finding dispositioned; token counter read at every commit; SITREP at
   the +50% line (C-042)
-- [ ] AAR
+- [x] AAR
+
+## Close (2026-10-16)
+
+Core 0.11.1 (`8ea109f`, suite 912). FKNMS `08b08e7`, receipt `199f86613a`. III PASS-WITH-FINDINGS 0/1/8/3,
+all dispositioned (rulings 5–8). The 0.11.0 plant list was not recorded (F-12); the 0.11.1 plants P1–P9 are in the AAR.
+Counter: not read at `2e4f8dd` (F-9).
 
 ## AAR
 

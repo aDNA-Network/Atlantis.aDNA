@@ -204,6 +204,15 @@ Ruled at the same open:
 - SMKF1 is cut after its 2016–17 gap;
 - SANF1-only is the sensitivity.
 
+**M-3b-ii-b-1 ✅ 2026-10-16** (core 0.11.0 → 0.11.1; FKNMS wind declared):
+- *Built:* the mask, the station windows and era-fitted offsets, and a val-only scan.
+- *Ruled (4–5):* SANF1's 2006–07 break → SANF1 from 2007-08-01, era [2007, 2012].
+- *Ruled (7):* the mask reads a causal flag.
+- *Finding:* the reference light's level moves at its outages (val residual ≈ +0.3 m/s under any constant offset). The
+  rulings remove most of the calm-share rise, not all of it.
+- *Review:* III 0/1/8/3. The major, F-1, is a self-test week that blinded C0 to calm vitals; fixed in 0.11.1.
+- *Next:* M-3b-ii-b-2 (opus).
+
 ### P4 — Federation & stewards (fable sitting + gate)
 M-4 contract v1 ratified · steward governance set · consumer-wrapper template + register · Exchange listing · Network
 share-class ruling · blind-conductor runbook *iff* a partner-data instance exists · **first outside steward**

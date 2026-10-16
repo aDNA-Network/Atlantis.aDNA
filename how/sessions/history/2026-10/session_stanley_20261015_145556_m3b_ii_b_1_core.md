@@ -1,14 +1,14 @@
 ---
 type: session
 created: 2026-10-15
-updated: 2026-10-15
+updated: 2026-10-16
 last_edited_by: agent_proteus
 tags: [session, m3b, m3b_ii_b, m3b_ii_b_1, p3, qc_mask, station_offsets, scan, fknms, atlantis, tidewatch]
 session_id: session_stanley_20261015_145556_m3b_ii_b_1_core
 user: stanley
 started: 2026-10-15T21:55:56Z
-completed: ""
-status: active
+completed: "2026-10-16T17:20:00Z"
+status: completed
 executor_tier: opus
 mission: m3b_ii_b_1
 campaign: campaign_atlantis_genesis
@@ -99,3 +99,28 @@ intent: "M-3b-ii-b split at open → ii-b-1: core 0.11.0 — stream mask_columns
      `station_windows {SMKF1: [null, 2015-08-09]}`; move `selftest.week` 2014-01-06 → 2014-03-03 (the era-clearance
      rule); bump the pin; self-test → new receipt; `fetch --verify` and conform; put the table above in FKNMS STATE;
   3. III (fresh context); AAR; CHANGELOG v0.19.0; STATE NSP; close the leases.
+- `8ea109f`: core 0.11.1 (III fixes; plants P1–P9 red; **suite 912 passed**, 316 s). ACCUMULATE applied (ruling 8).
+- FKNMS `08b08e7`:
+  - the wind re-reduced offline (+ `qc_low_ratio_causal`, sha256 `d837c210…`; the shared columns byte-identical; the
+    causal flag differs on III's 6 LONF1 days);
+  - rulings 5 and 7 declared; era [2007, 2012]; `selftest.week` back to 2014-01-06;
+  - receipt `199f86613a`; verify ×4; conform 11 + item 9; STATE rewritten (F-2, F-3, F-4, F-8).
+  - I caught one more over-reach of my own before the commit ("SANF1-only flat at c ≥ 4" is false at c = 4 and 5).
+- Close: card completed · AAR · roster · charter · STATE (NSP for ii-b-2) · CHANGELOG v0.19.0. Token counter ≈ 300 kT
+  this sitting at close.
+
+## SITREP
+
+- **Completed:** M-3b-ii-b-1. Core 0.11.1 (suite 912 @ `8ea109f`). FKNMS wind index declared (receipt `199f86613a`).
+  III 0/1/8/3, all dispositioned. AAR written.
+- **In progress:** none.
+- **Next up:** M-3b-ii-b-2 (opus). The self-test with the vitals comes first, then the val scan → v4 → SHAP → write-up.
+- **Blockers (`#needs-human`):**
+  - the push (`76bb143..HEAD` gitleaks-clean);
+  - the P3-gate items in STATE.
+- **Files touched:**
+  - Atlantis: `what/atlantis_core/{registry,selftest,scan,fetch/ndbc,__init__}.py`, `pyproject.toml`, `README.md`,
+    tests ×3, the four M-3b-ii-b cards, the roster, the charter, the III review, the learning store, the AAR, STATE,
+    CHANGELOG, this log;
+  - FKNMS: `atlantis.yaml`, `streams.yaml`, the wind parquet and summary, the federation pin, STATE, the lease.
+- **Next Session Prompt:** STATE § ⏭ QUEUED (opus).

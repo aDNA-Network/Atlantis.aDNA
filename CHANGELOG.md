@@ -1,5 +1,47 @@
 # CHANGELOG — Atlantis.aDNA
 
+## 2026-10-16 — v0.19.0 · M-3b-ii-b-1: core 0.11.1 — QC mask · station windows · era-fitted offsets · val-only scan · FKNMS wind declared
+
+- **M-3b-ii-b split at open** (ruling 3): ii-b-1 (core) and ii-b-2 (vitals · scan · v4 · SHAP · write-up).
+- **Core 0.11.0** (`2e4f8dd`):
+  - stream `mask_columns`: a flagged row's value → NaN, never 0;
+  - `station_windows`;
+  - `station_offsets {reference, era, min_days}`: mean paired difference over the era, after the mask, subtracted before
+    the station → unit mean; R5/R7;
+  - the self-test reports the offset era (C6) and refuses a week inside its lag reach;
+  - `eval.select` factored out of `_fit_main`;
+  - **`atlantis_core.scan`**: per value of one constant, the selection fit scored on val; test weeks dropped first,
+    test never scored.
+  - Suite **896 passed at `2e4f8dd`** (732 s).
+- **Core 0.11.1** (`8ea109f`, the III fixes, rulings 5–8):
+  - F-1: a season-proof calm world (days below every `weekly_count_lt` threshold in every week), and **C0w**, which
+    fails a calm-less perturbed week as a *world fault*;
+  - F-5: `NDBCStdmet` writes **`qc_low_ratio_causal`** (a trailing window), the only maskable flag. `qc_low_ratio`
+    (centred) and `qc_stuck` (a run crossing midnight) are `LOOKAHEAD_FLAGS`, which R5 refuses as masks. C1 raises the
+    mask flags at t+1;
+  - F-6: under `per_fold` selection an offset era must end before `min(rolling_origin_years)`;
+  - F-7: a stream spec is a closed key set (`STREAM_KEYS`, did-you-mean);
+  - F-10/F-11: every scanned value is asserted to score the same stop rows; the bias is reworded.
+  - Plant-first **9/9 red**. Suite **912 passed at `8ea109f`** (316 s).
+- **FKNMS** (`dda77c2`, `08b08e7`):
+  - the wind re-reduced offline under 0.11.1 (+ the causal flag, sha256 `d837c210…`, shared columns byte-identical);
+  - mask `qc_low_ratio_causal`; SMKF1 to 2015-08-09; **SANF1 from 2007-08-01**;
+  - offsets vs SANF1 on **2007–2012** (LONF1 −1.437 · MLRF1 −0.830 · SMKF1 −0.210);
+  - receipt **`199f86613a`**; verify ✅ ×4; conform 11 + item 9; pin → `8ea109f`.
+- **Findings:**
+  - **SANF1, the offset reference, breaks ≈ +0.8 m/s across 2006–07**, completing after its Apr–May 2007 outage. The
+    three other lights stay flat against each other. My first, yearly diagnostic could not see it inside 2006; ruling 4
+    became ruling 5 (III F-2).
+  - **The reference's level also moves at later outages:** val residual ≈ +0.3 m/s under any constant offset, LONF1
+    +0.58 in test (limit d).
+  - **The rulings remove most of the calm-share rise, not all:** c = 4, train → test +5.6 points unmasked, +2.4 ruled.
+  - The causal mask misses the LONF1 2020 fault's first 6 days.
+- **III:** PASS-WITH-FINDINGS 0/1/8/3 (`missions/aar/iii_review_m3b_ii_b_1.md`), all dispositioned.
+  - ACCUMULATE: C-049…C-052 accepted, plus six recurrence bumps. C-014 is a graduation candidate.
+- **Budget:** main ≥ 445 kT on a 200 kT card (the pre-`/clear` share is unknown; counter not read at `2e4f8dd`,
+  C-042) · III ≈ 290 kT.
+- **AAR:** `missions/aar/aar_m3b_ii_b_1_core.md`. Not pushed.
+
 ## 2026-10-12 — v0.18.0 · M-3b-ii-a: `NDBCStdmet` built · core 0.10.1 · reef-light wind fetched into FKNMS · QC flags
 
 - **M-3b-ii split at open** (C-042) into ii-a (this) and ii-b (realise and test). Steward rulings: a **Keys-wide synoptic
